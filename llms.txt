@@ -1,0 +1,31 @@
+# Shipwright Studio
+
+> Shipwright Studio is an independent engineering studio crafting websites, web apps, and AI infrastructure for startups and small teams. Based in the San Francisco Bay Area, working worldwide. Founded and run by a senior software engineer.
+
+## Services
+
+- **Custom website development**: Fast, accessible, search-friendly marketing sites and landing pages. Modern stack, no bloated templates.
+- **Web application development**: Interactive dashboards, internal tools, and customer-facing apps — designed, engineered, and deployed end to end.
+- **AI infrastructure**: LLM application engineering, inference cost optimization, GPU communication and distributed training performance.
+
+## Selected work
+
+- **Lumen** (https://shipwright-studio.pages.dev/lumen/): An interactive photography lab that teaches the exposure triangle (aperture, shutter speed, ISO) with real-time canvas simulations of depth of field, motion blur, noise, and light metering.
+- **Forge** (https://shipwright-studio.pages.dev/forge/): An LLM inference cost estimator. Enter model size, quantization, GPU type, batch size, and traffic to estimate GPU count, latency, and monthly serving cost.
+- **The Lab** (https://shipwright-studio.pages.dev/ideas/): An open bank of 100 web experiments — games, developer tools, browser extension prototypes, and small apps. Two new experiments are designed, built, and shipped every day.
+
+## Process
+
+1. Discovery call — goals, scope, and constraints.
+2. Proposal — fixed scope, timeline, and price.
+3. Build — weekly demos, no surprises.
+4. Launch — deployed, measured, handed over with documentation.
+
+## Contact
+
+- The studio does not publish an email address. Use the contact form: https://shipwright-studio.pages.dev/#contact
+- Typical response time: within one business day.
+
+## About the format of this file
+
+This file follows the llms.txt convention (https://llmstxt.org/): a concise, markdown-formatted summary of this site intended for AI assistants and answer engines.
