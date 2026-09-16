@@ -18,10 +18,14 @@ const observer = new IntersectionObserver(
 );
 document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
 
-// Contact form -> POSTs to Web3Forms, which emails the studio owner.
-// No email address is exposed anywhere on the site; the access key below is
-// public by design (tied to the owner's inbox at web3forms.com).
-const WEB3FORMS_KEY = 'PASTE_YOUR_WEB3FORMS_KEY';
+// Contact form -> POSTs directly to Web3Forms from the visitor's browser
+// (their free tier only accepts client-side submissions).
+// No email address appears anywhere on the site or in this repo.
+// The access key below is a BUILD-TIME placeholder: the deploy step replaces
+// __WEB3FORMS_KEY__ with the real key, so the key never lands in git.
+// (Web3Forms designs this key as public — it only routes to the owner's
+// inbox and reveals no email address.)
+const WEB3FORMS_KEY = '__WEB3FORMS_KEY__';
 const formStatus = document.getElementById('formStatus');
 document.getElementById('contactForm').addEventListener('submit', async e => {
   e.preventDefault();
@@ -30,14 +34,17 @@ document.getElementById('contactForm').addEventListener('submit', async e => {
   const name = (data.get('name') || '').toString().trim();
   const email = (data.get('email') || '').toString().trim();
   const message = (data.get('message') || '').toString().trim();
+  const company = (data.get('company') || '').toString(); // honeypot
   const btn = form.querySelector('button[type="submit"]');
   const say = (msg, ok) => {
     formStatus.textContent = msg;
     formStatus.classList.toggle('ok', !!ok);
     formStatus.classList.toggle('err', !ok);
   };
-  if (WEB3FORMS_KEY.indexOf('PASTE_') === 0) {
-    say('The contact form is being wired up — please check back shortly.', false);
+  if (company) {
+    // Bot filled the honeypot — pretend it worked, send nothing.
+    say('Message sent — I reply within one business day.', true);
+    form.reset();
     return;
   }
   btn.disabled = true;
@@ -53,7 +60,7 @@ document.getElementById('contactForm').addEventListener('submit', async e => {
         botcheck: '',
       }),
     });
-    const out = await res.json();
+    const out = await res.json().catch(() => ({}));
     if (out.success) {
       say('Message sent — I reply within one business day.', true);
       form.reset();
