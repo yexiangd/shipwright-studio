@@ -18,17 +18,53 @@ const observer = new IntersectionObserver(
 );
 document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
 
-// Contact form -> opens the visitor's email app (no backend, nothing stored)
-const CONTACT_EMAIL = 'hello@shipwright.studio';
-document.getElementById('contactForm').addEventListener('submit', e => {
+// Contact form -> POSTs to Web3Forms, which emails the studio owner.
+// No email address is exposed anywhere on the site; the access key below is
+// public by design (tied to the owner's inbox at web3forms.com).
+const WEB3FORMS_KEY = 'PASTE_YOUR_WEB3FORMS_KEY';
+const formStatus = document.getElementById('formStatus');
+document.getElementById('contactForm').addEventListener('submit', async e => {
   e.preventDefault();
-  const data = new FormData(e.target);
+  const form = e.target;
+  const data = new FormData(form);
   const name = (data.get('name') || '').toString().trim();
   const email = (data.get('email') || '').toString().trim();
   const message = (data.get('message') || '').toString().trim();
-  const subject = encodeURIComponent(`Project inquiry from ${name}`);
-  const body = encodeURIComponent(`${message}\n\n— ${name} (${email})`);
-  window.location.href = `mailto:${CONTACT_EMAIL}?subject=${subject}&body=${body}`;
+  const btn = form.querySelector('button[type="submit"]');
+  const say = (msg, ok) => {
+    formStatus.textContent = msg;
+    formStatus.classList.toggle('ok', !!ok);
+    formStatus.classList.toggle('err', !ok);
+  };
+  if (WEB3FORMS_KEY.indexOf('PASTE_') === 0) {
+    say('The contact form is being wired up — please check back shortly.', false);
+    return;
+  }
+  btn.disabled = true;
+  btn.textContent = 'Sending…';
+  try {
+    const res = await fetch('https://api.web3forms.com/submit', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+      body: JSON.stringify({
+        access_key: WEB3FORMS_KEY,
+        name, email, message,
+        subject: `Project inquiry from ${name} — Shipwright Studio`,
+        botcheck: '',
+      }),
+    });
+    const out = await res.json();
+    if (out.success) {
+      say('Message sent — I reply within one business day.', true);
+      form.reset();
+    } else {
+      say('Something went wrong sending. Please try again in a bit.', false);
+    }
+  } catch (err) {
+    say('Something went wrong sending. Please try again in a bit.', false);
+  }
+  btn.disabled = false;
+  btn.textContent = 'Send message';
 });
 
 // Footer year
