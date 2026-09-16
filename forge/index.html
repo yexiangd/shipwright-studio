@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Forge — LLM Inference Cost Estimator · Shipwright Studio</title>
+  <meta name="description" content="Forge estimates GPU count, latency and monthly cost for serving an LLM — model size, quantization, batch and traffic in, dollars out. A self-initiated demo by Shipwright Studio." />
+  <meta property="og:title" content="Forge — LLM Inference Cost Estimator" />
+  <meta property="og:description" content="How many GPUs does your LLM need? Slide the knobs, watch the math." />
+  <meta property="og:type" content="website" />
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..700;1,9..144,300..700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    :root{
+      --bg:#0a0c0f; --surface:#10141a; --surface-2:#161b23;
+      --text:#f2efe6; --muted:#a6abb4; --faint:#6d737c;
+      --line:rgba(255,255,255,.09); --accent:#d2a24c; --accent-soft:rgba(210,162,76,.12);
+      --green:#7fd08a; --radius:14px;
+      --font-display:"Fraunces",Georgia,serif; --font-body:"Inter",-apple-system,"Segoe UI",sans-serif;
+      --font-mono:"JetBrains Mono",ui-monospace,monospace;
+    }
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{background:var(--bg);color:var(--text);font-family:var(--font-body);font-size:16px;line-height:1.6;-webkit-font-smoothing:antialiased}
+    ::selection{background:var(--accent);color:#0a0c0f}
+    a{color:inherit}
+    h1,h2,h3{font-family:var(--font-display);font-weight:500;letter-spacing:-.01em;line-height:1.12}
+    h1 em{font-style:italic;color:var(--accent)}
+    .container{max-width:1200px;margin:0 auto;padding:0 24px}
+    .eyebrow{font-family:var(--font-mono);font-size:12px;letter-spacing:.22em;text-transform:uppercase;color:var(--accent);margin-bottom:14px}
+    .topbar{position:sticky;top:0;z-index:20;display:flex;align-items:center;justify-content:space-between;
+      padding:14px 24px;background:rgba(10,12,15,.82);backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
+    .back{font-family:var(--font-mono);font-size:13px;color:var(--muted);text-decoration:none}
+    .back:hover{color:var(--accent)}
+    .demo-tag{font-family:var(--font-mono);font-size:11px;letter-spacing:.18em;text-transform:uppercase;
+      color:var(--accent);border:1px solid rgba(210,162,76,.4);border-radius:999px;padding:6px 14px;background:var(--accent-soft)}
+
+    .intro{padding:72px 0 36px;text-align:center}
+    .intro h1{font-size:clamp(40px,6vw,76px);margin-bottom:12px}
+    .intro .lede{color:var(--muted);max-width:660px;margin:0 auto;font-size:18px}
+    .intro .lede strong{color:var(--text);font-weight:600}
+
+    .forge{display:grid;grid-template-columns:380px 1fr;gap:24px;padding:12px 0 70px;align-items:start}
+    @media(max-width:960px){.forge{grid-template-columns:1fr}}
+    .panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:24px;display:flex;flex-direction:column;gap:24px}
+    .ctl label{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px}
+    .ctl .name{font-size:14px;font-weight:600}
+    .ctl .val{font-family:var(--font-mono);font-size:14px;color:var(--accent)}
+    .ctl input[type=range]{width:100%;appearance:none;-webkit-appearance:none;height:26px;background:transparent;cursor:pointer}
+    .ctl input[type=range]::-webkit-slider-runnable-track{height:4px;border-radius:2px;background:linear-gradient(90deg,var(--accent) var(--fill,50%),#2a2f38 var(--fill,50%))}
+    .ctl input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;border-radius:50%;background:var(--text);border:3px solid var(--accent);margin-top:-7px}
+    .ctl input[type=range]::-moz-range-track{height:4px;border-radius:2px;background:#2a2f38}
+    .ctl input[type=range]::-moz-range-progress{height:4px;border-radius:2px;background:var(--accent)}
+    .ctl input[type=range]::-moz-range-thumb{width:12px;height:12px;border-radius:50%;background:var(--text);border:3px solid var(--accent)}
+    .ctl .hint{font-size:12px;color:var(--faint);font-family:var(--font-mono);margin-top:2px}
+
+    .seg{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+    .seg button{padding:10px 4px;border-radius:10px;border:1px solid var(--line);background:var(--surface-2);
+      color:var(--muted);font-family:var(--font-mono);font-size:13px;cursor:pointer;transition:all .15s}
+    .seg button.active{border-color:var(--accent);color:var(--accent);background:var(--accent-soft)}
+    .gpugrid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+    .gpugrid button{padding:11px 10px;border-radius:10px;border:1px solid var(--line);background:var(--surface-2);
+      color:var(--muted);cursor:pointer;text-align:left;transition:all .15s;font-family:var(--font-body)}
+    .gpugrid button b{display:block;font-size:14px;color:var(--text);font-weight:600}
+    .gpugrid button span{font-family:var(--font-mono);font-size:11px;color:var(--faint)}
+    .gpugrid button.active{border-color:var(--accent);background:var(--accent-soft)}
+    .gpugrid button.active b{color:var(--accent)}
+
+    .results{display:flex;flex-direction:column;gap:18px}
+    .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+    @media(max-width:700px){.stats{grid-template-columns:1fr 1fr}}
+    .stat{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:20px}
+    .stat .k{font-family:var(--font-mono);font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--faint);margin-bottom:8px}
+    .stat .v{font-family:var(--font-display);font-size:32px;color:var(--text)}
+    .stat .v em{font-style:normal;color:var(--accent);font-size:20px}
+    .stat .s{font-family:var(--font-mono);font-size:11.5px;color:var(--muted);margin-top:6px}
+    .stat.hero{border-color:rgba(210,162,76,.45);background:linear-gradient(160deg,rgba(210,162,76,.10),var(--surface) 55%)}
+    .stat.hero .v{color:var(--accent)}
+
+    .mem{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:22px}
+    .mem h3,.notes h3{font-size:17px;margin-bottom:4px}
+    .mem .sub{font-size:13px;color:var(--faint);font-family:var(--font-mono);margin-bottom:14px}
+    .bar{display:flex;height:34px;border-radius:8px;overflow:hidden;border:1px solid var(--line)}
+    .bar div{transition:width .25s}
+    .bar .w{background:linear-gradient(90deg,#8a6a2e,var(--accent))}
+    .bar .k{background:linear-gradient(90deg,#3d5a80,#5b8dd9)}
+    .bar .f{background:#1b2029}
+    .legend{display:flex;gap:18px;margin-top:10px;font-family:var(--font-mono);font-size:12px;color:var(--muted);flex-wrap:wrap}
+    .legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:6px}
+    .legend .sw-w{background:var(--accent)} .legend .sw-k{background:#5b8dd9} .legend .sw-f{background:#2a2f38}
+
+    .notes{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:22px}
+    .notes ul{list-style:none;margin-top:10px;display:flex;flex-direction:column;gap:8px}
+    .notes li{font-size:13.5px;color:var(--muted);padding-left:20px;position:relative}
+    .notes li::before{content:"›";position:absolute;left:4px;color:var(--accent)}
+    .notes code{font-family:var(--font-mono);font-size:12px;color:var(--accent)}
+    .disclaimer{font-size:12.5px;color:var(--faint);font-family:var(--font-mono);line-height:1.7;
+      border-left:2px solid var(--accent);padding-left:14px}
+
+    footer{border-top:1px solid var(--line);padding:34px 0;color:var(--faint);font-size:13px;margin-top:20px}
+    footer .container{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap}
+    footer a{color:var(--muted);text-decoration:none} footer a:hover{color:var(--accent)}
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <a class="back" href="/">&#8592; Shipwright Studio</a>
+    <span class="demo-tag">Interactive demo</span>
+  </header>
+
+  <main class="container">
+    <section class="intro">
+      <p class="eyebrow">Self-initiated &middot; AI infrastructure</p>
+      <h1>Forge</h1>
+      <p class="lede">An <strong>LLM inference cost estimator</strong>. Pick a model, a GPU, and your traffic — get GPU count, latency, and the monthly bill. The same back-of-envelope math used before any serious serving deployment.</p>
+    </section>
+
+    <section class="forge">
+      <aside class="panel">
+        <div class="ctl">
+          <label><span class="name">Model size</span><span class="val" id="pVal">70B</span></label>
+          <input type="range" id="params" min="1" max="180" step="1" value="70" />
+          <p class="hint">parameters, in billions</p>
+        </div>
+        <div>
+          <div class="ctl"><label><span class="name">Quantization</span></label></div>
+          <div class="seg" id="quant">
+            <button data-q="2" class="active">FP16</button><button data-q="1">FP8</button><button data-q="1">INT8</button><button data-q="0.5">INT4</button>
+          </div>
+        </div>
+        <div>
+          <div class="ctl"><label><span class="name">GPU</span></label></div>
+          <div class="gpugrid" id="gpus"></div>
+        </div>
+        <div class="ctl">
+          <label><span class="name">Batch size</span><span class="val" id="bVal">16</span></label>
+          <input type="range" id="batch" min="1" max="128" step="1" value="16" />
+          <p class="hint">concurrent requests per replica</p>
+        </div>
+        <div class="ctl">
+          <label><span class="name">Avg input tokens</span><span class="val" id="inVal">1,024</span></label>
+          <input type="range" id="inTok" min="7" max="15" step="1" value="10" />
+          <p class="hint">log scale · prompt length per request</p>
+        </div>
+        <div class="ctl">
+          <label><span class="name">Avg output tokens</span><span class="val" id="outVal">512</span></label>
+          <input type="range" id="outTok" min="6" max="13" step="1" value="9" />
+          <p class="hint">log scale · completion length per request</p>
+        </div>
+        <div class="ctl">
+          <label><span class="name">Requests / day</span><span class="val" id="rVal">100K</span></label>
+          <input type="range" id="reqDay" min="3" max="7" step="1" value="5" />
+          <p class="hint">log scale · 10³ – 10⁷</p>
+        </div>
+      </aside>
+
+      <div class="results">
+        <div class="stats">
+          <div class="stat hero"><p class="k">GPUs required</p><p class="v" id="sGpus">–</p><p class="s" id="sGpusSub"></p></div>
+          <div class="stat hero"><p class="k">Est. monthly cost</p><p class="v" id="sCost">–</p><p class="s" id="sCostSub"></p></div>
+          <div class="stat"><p class="k">p50 latency / req</p><p class="v" id="sLat">–</p><p class="s" id="sLatSub"></p></div>
+          <div class="stat"><p class="k">Cost / 1M tokens</p><p class="v" id="sTok">–</p><p class="s" id="sTokSub"></p></div>
+        </div>
+
+        <div class="mem">
+          <h3>Memory per replica</h3>
+          <p class="sub" id="memSub"></p>
+          <div class="bar"><div class="w" id="barW"></div><div class="k" id="barK"></div><div class="f" id="barF"></div></div>
+          <div class="legend">
+            <span><i class="sw-w"></i>Weights <b id="legW" style="color:var(--text)"></b></span>
+            <span><i class="sw-k"></i>KV cache <b id="legK" style="color:var(--text)"></b></span>
+            <span><i class="sw-f"></i>Headroom <b id="legF" style="color:var(--text)"></b></span>
+          </div>
+        </div>
+
+        <div class="notes">
+          <h3>How the estimate works</h3>
+          <ul>
+            <li><b style="color:var(--text)">Decode is memory-bandwidth bound:</b> tokens/sec per GPU &asymp; <code>HBM bandwidth &times; 55% &divide; model bytes</code>. An H100 does ~24 tok/s on a 70B FP16 model — matching published vLLM numbers.</li>
+            <li><b style="color:var(--text)">KV cache</b> per token &asymp; <code>2 &times; layers &times; hidden &times; bytes</code>, with depth/width scaled from parameter count. It usually dominates memory at large batch.</li>
+            <li><b style="color:var(--text)">Replicas</b> = ceil(daily output tokens &divide; 86400 &divide; per-replica throughput). GPUs per replica grow until weights + KV cache fit in 90% of HBM.</li>
+            <li><b style="color:var(--text)">Latency</b> &asymp; prefill (compute-bound guess) + output tokens &divide; per-request decode rate + 150ms overhead.</li>
+          </ul>
+        </div>
+
+        <p class="disclaimer">ROUGH ESTIMATES ONLY — real throughput depends on the serving engine (vLLM, TensorRT-LLM, SGLang), continuous batching, prefix caching, and your traffic shape. Validate with a benchmark before signing anything.</p>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="container">
+      <span>Built by <a href="/">Shipwright Studio</a> &middot; interactive demo, computed entirely in your browser</span>
+      <a href="/#work">More work &#8594;</a>
+    </div>
+  </footer>
+
+  <script>
+  (function(){
+    "use strict";
+    var GPUS=[
+      {name:"H100", mem:80, bw:3.35, price:3.50, sub:"80GB · 3.35TB/s"},
+      {name:"A100 80GB", mem:80, bw:2.00, price:2.20, sub:"80GB · 2.0TB/s"},
+      {name:"A100 40GB", mem:40, bw:1.55, price:1.60, sub:"40GB · 1.55TB/s"},
+      {name:"L40S", mem:48, bw:0.864, price:1.30, sub:"48GB · 864GB/s"},
+      {name:"RTX 4090", mem:24, bw:1.008, price:0.80, sub:"24GB · 1.0TB/s"}
+    ];
+    var S={p:70,q:2,gpu:0,batch:16,inTok:1024,outTok:512,reqDay:1e5};
+
+    var $=function(id){return document.getElementById(id);};
+    var gWrap=$("gpus");
+    GPUS.forEach(function(g,i){
+      var b=document.createElement("button");
+      b.innerHTML="<b>"+g.name+"</b><span>"+g.sub+" · $"+g.price.toFixed(2)+"/hr</span>";
+      if(i===0)b.classList.add("active");
+      b.addEventListener("click",function(){
+        S.gpu=i;gWrap.querySelectorAll("button").forEach(function(x,n){
+          x.classList.toggle("active",n===i);});calc();});
+      gWrap.appendChild(b);
+    });
+    $("quant").querySelectorAll("button").forEach(function(b){
+      b.addEventListener("click",function(){
+        S.q=parseFloat(b.dataset.q);
+        $("quant").querySelectorAll("button").forEach(function(x){x.classList.remove("active");});
+        b.classList.add("active");calc();});
+    });
+
+    function fill(el){var p=(el.value-el.min)/(el.max-el.min)*100;
+      el.style.setProperty("--fill",p+"%");}
+    function fmtN(n){return n>=1e6?(n/1e6).toFixed(n>=1e7?0:1)+"M":n>=1e3?(n/1e3).toFixed(0)+"K":""+n;}
+    function fmt$ (n){return n>=1e6?"$"+(n/1e6).toFixed(2)+"M":n>=1e3?"$"+(n/1e3).toFixed(1)+"K":"$"+n.toFixed(0);}
+
+    function bind(id,fn){var el=$(id);el.addEventListener("input",function(){fn(+el.value);fill(el);calc();});fill(el);}
+
+    bind("params",function(v){S.p=v;$("pVal").textContent=v+"B";});
+    bind("batch",function(v){S.batch=v;$("bVal").textContent=v;});
+    bind("inTok",function(v){S.inTok=Math.round(Math.pow(2,v));$("inVal").textContent=fmtN(S.inTok);});
+    bind("outTok",function(v){S.outTok=Math.round(Math.pow(2,v));$("outVal").textContent=fmtN(S.outTok);});
+    bind("reqDay",function(v){S.reqDay=Math.pow(10,v);$("rVal").textContent=fmtN(S.reqDay);});
+
+    function calc(){
+      var g=GPUS[S.gpu],P=S.p,bpp=S.q;
+      var weightsGB=P*bpp;                                    // params * bytes
+      var layers=Math.round(28*Math.pow(P/7,0.30));
+      var hidden=Math.round(4096*Math.pow(P/7,0.35));
+      var kvPerTokB=2*layers*hidden*bpp;
+      var perGpuTokS=g.bw*1e12*0.55/(P*1e9*bpp);               // decode, mem-bound
+      var kvNeedGB=kvPerTokB*(S.inTok+S.outTok)*S.batch/1e9;
+      var n=Math.max(1,Math.ceil(weightsGB/(g.mem*0.9)));
+      var guard=0;
+      while(n*g.mem*0.9<weightsGB+kvNeedGB&&guard++<40)n++;
+      var replicaTokS=n*perGpuTokS*S.batch*0.85;
+      var needTokS=S.reqDay*S.outTok/86400;
+      var replicas=Math.max(1,Math.ceil(needTokS/replicaTokS));
+      var totalGpus=replicas*n;
+      var monthly=totalGpus*g.price*730;
+      var perReqTokS=replicaTokS/S.batch;
+      var prefillS=S.inTok/(n*2500);
+      var lat=prefillS+S.outTok/perReqTokS+0.15;
+      var tokPerMo=S.reqDay*(S.inTok+S.outTok)*30;
+      var per1M=monthly/(tokPerMo/1e6);
+
+      $("sGpus").innerHTML=totalGpus+"<em>× "+g.name+"</em>";
+      $("sGpusSub").textContent=replicas+" replica"+(replicas>1?"s":"")+" × "+n+" GPU"+(n>1?"s":"")+" · "+replicaTokS.toFixed(0)+" tok/s per replica";
+      $("sCost").textContent=fmt$(monthly);
+      $("sCostSub").textContent="$"+g.price.toFixed(2)+"/GPU/hr · 730 hrs/mo";
+      $("sLat").innerHTML=lat<10?lat.toFixed(2)+"<em>s</em>":lat.toFixed(1)+"<em>s</em>";
+      $("sLatSub").textContent="prefill "+prefillS.toFixed(2)+"s + decode "+(S.outTok/perReqTokS).toFixed(2)+"s";
+      $("sTok").textContent="$"+(per1M<10?per1M.toFixed(2):per1M.toFixed(1));
+      $("sTokSub").textContent=fmtN(tokPerMo)+" tokens / month";
+
+      var totMem=n*g.mem,wPct=weightsGB/totMem*100,kPct=kvNeedGB/totMem*100;
+      $("barW").style.width=wPct+"%";$("barK").style.width=kPct+"%";$("barF").style.width=Math.max(0,100-wPct-kPct)+"%";
+      $("memSub").textContent=n+"× "+g.name+" · "+totMem+"GB HBM · "+layers+" layers × "+hidden+" hidden (estimated arch)";
+      $("legW").textContent=weightsGB.toFixed(1)+"GB";
+      $("legK").textContent=kvNeedGB.toFixed(1)+"GB";
+      $("legF").textContent=Math.max(0,totMem-weightsGB-kvNeedGB).toFixed(1)+"GB";
+    }
+    calc();
+  })();
+  </script>
+</body>
+</html>
