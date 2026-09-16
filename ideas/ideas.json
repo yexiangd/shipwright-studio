@@ -1,0 +1,1029 @@
+{
+  "updated": "2026-09-16",
+  "ideas": [
+    {
+      "id": "idea-000a",
+      "slug": "lumen",
+      "title": "Lumen",
+      "category": "app",
+      "tagline": "Photography exposure-triangle interactive lab.",
+      "priority": 100,
+      "effort": "L",
+      "status": "done",
+      "url": "/lumen/",
+      "shipped": "2026-09-16"
+    },
+    {
+      "id": "idea-000b",
+      "slug": "forge",
+      "title": "Forge",
+      "category": "devtool",
+      "tagline": "LLM inference cost estimator — GPUs, latency, monthly bill.",
+      "priority": 100,
+      "effort": "L",
+      "status": "done",
+      "url": "/forge/",
+      "shipped": "2026-09-16"
+    },
+    {
+      "id": "idea-001",
+      "slug": "reaction-time",
+      "title": "Reaction Timer",
+      "category": "game",
+      "tagline": "How fast are your reflexes? Five tries, ranked.",
+      "priority": 100,
+      "effort": "S",
+      "status": "todo"
+    },
+    {
+      "id": "idea-002",
+      "slug": "typing-test",
+      "title": "Typing Speed Test",
+      "category": "game",
+      "tagline": "WPM, accuracy, and a live leaderboard of one: you.",
+      "priority": 99,
+      "effort": "M",
+      "status": "todo"
+    },
+    {
+      "id": "idea-003",
+      "slug": "memory-match",
+      "title": "Memory Match",
+      "category": "game",
+      "tagline": "Flip the cards, clear the board, beat your best time.",
+      "priority": 94,
+      "effort": "S",
+      "status": "todo"
+    },
+    {
+      "id": "idea-004",
+      "slug": "snake",
+      "title": "Snake",
+      "category": "game",
+      "tagline": "The classic, with a speed curve that punishes greed.",
+      "priority": 93,
+      "effort": "S",
+      "status": "todo"
+    },
+    {
+      "id": "idea-005",
+      "slug": "game-2048",
+      "title": "2048",
+      "category": "game",
+      "tagline": "Slide, merge, chase the tile that shall not be named.",
+      "priority": 92,
+      "effort": "M",
+      "status": "todo"
+    },
+    {
+      "id": "idea-006",
+      "slug": "minesweeper",
+      "title": "Minesweeper",
+      "category": "game",
+      "tagline": "Chord, flag, and pray — three difficulties.",
+      "priority": 90,
+      "effort": "M",
+      "status": "todo"
+    },
+    {
+      "id": "idea-007",
+      "slug": "tetris",
+      "title": "Tetris",
+      "category": "game",
+      "tagline": "Seven tetrominoes, one well, zero mercy.",
+      "priority": 88,
+      "effort": "L",
+      "status": "todo"
+    },
+    {
+      "id": "idea-008",
+      "slug": "breakout",
+      "title": "Breakout",
+      "category": "game",
+      "tagline": "One paddle, ninety bricks, endless satisfaction.",
+      "priority": 87,
+      "effort": "S",
+      "status": "todo"
+    },
+    {
+      "id": "idea-009",
+      "slug": "simon-says",
+      "title": "Simon Says",
+      "category": "game",
+      "tagline": "Watch, remember, repeat — until you can't.",
+      "priority": 86,
+      "effort": "S",
+      "status": "todo"
+    },
+    {
+      "id": "idea-010",
+      "slug": "whack-a-mole",
+      "title": "Whack-a-Mole",
+      "category": "game",
+      "tagline": "Sixty seconds. Moles. A hammer cursor.",
+      "priority": 85,
+      "effort": "S",
+      "status": "todo"
+    },
+    {
+      "id": "idea-011",
+      "slug": "aim-trainer",
+      "title": "Aim Trainer",
+      "category": "game",
+      "tagline": "Click the targets, track your precision over time.",
+      "priority": 84,
+      "effort": "S",
+      "status": "todo"
+    },
+    {
+      "id": "idea-012",
+      "slug": "wordle-clone",
+      "title": "Wordle Clone",
+      "category": "game",
+      "tagline": "Six guesses, one five-letter word, daily seed.",
+      "priority": 83,
+      "effort": "M",
+      "status": "todo"
+    },
+    {
+      "id": "idea-013",
+      "slug": "sudoku",
+      "title": "Sudoku",
+      "category": "game",
+      "tagline": "Fresh puzzles generated in-browser, with hints.",
+      "priority": 82,
+      "effort": "L",
+      "status": "todo"
+    },
+    {
+      "id": "idea-014",
+      "slug": "tic-tac-toe",
+      "title": "Tic-Tac-Toe vs AI",
+      "category": "game",
+      "tagline": "Unbeatable minimax, plus a beatable 'easy' mode.",
+      "priority": 80,
+      "effort": "S",
+      "status": "todo"
+    },
+    {
+      "id": "idea-015",
+      "slug": "connect-four",
+      "title": "Connect Four vs AI",
+      "category": "game",
+      "tagline": "Out-think the machine, four in a row.",
+      "priority": 79,
+      "effort": "M",
+      "status": "todo"
+    },
+    {
+      "id": "idea-016",
+      "slug": "hangman",
+      "title": "Hangman",
+      "category": "game",
+      "tagline": "Guess the word before the drawing finishes.",
+      "priority": 78,
+      "effort": "S",
+      "status": "todo"
+    },
+    {
+      "id": "idea-017",
+      "slug": "flappy-flyer",
+      "title": "Flappy Flyer",
+      "category": "game",
+      "tagline": "Tap to fly, thread the pipes, rage responsibly.",
+      "priority": 77,
+      "effort": "S",
+      "status": "todo"
+    },
+    {
+      "id": "idea-018",
+      "slug": "pong",
+      "title": "Pong vs AI",
+      "category": "game",
+      "tagline": "The 1972 original, with a smarter opponent.",
+      "priority": 76,
+      "effort": "S",
+      "status": "todo"
+    },
+    {
+      "id": "idea-019",
+      "slug": "maze-lab",
+      "title": "Maze Lab",
+      "category": "game",
+      "tagline": "Generate mazes, watch A* solve them live.",
+      "priority": 74,
+      "effort": "M",
+      "status": "todo"
+    },
+    {
+      "id": "idea-020",
+      "slug": "game-of-life",
+      "title": "Game of Life",
+      "category": "game",
+      "tagline": "Conway's cellular automaton, paintable and mesmerizing.",
+      "priority": 75,
+      "effort": "M",
+      "status": "todo"
+    },
+    {
+      "id": "idea-021",
+      "slug": "rock-paper-scissors",
+      "title": "Rock Paper Scissors",
+      "category": "game",
+      "tagline": "Best of five against a suspiciously lucky bot.",
+      "priority": 72,
+      "effort": "S",
+      "status": "todo"
+    },
+    {
+      "id": "idea-022",
+      "slug": "nonogram",
+      "title": "Nonogram",
+      "category": "game",
+      "tagline": "Logic-grid pixel puzzles, from 5x5 to 15x15.",
+      "priority": 70,
+      "effort": "M",
+      "status": "todo"
+    },
+    {
+      "id": "idea-023",
+      "slug": "pipe-loop",
+      "title": "Pipe Loop",
+      "category": "game",
+      "tagline": "Rotate the tiles, connect the whole grid.",
+      "priority": 68,
+      "effort": "M",
+      "status": "todo"
+    },
+    {
+      "id": "idea-024",
+      "slug": "asteroids",
+      "title": "Asteroids",
+      "category": "game",
+      "tagline": "Vector-style space rocks, inertia included.",
+      "priority": 66,
+      "effort": "M",
+      "status": "todo"
+    },
+    {
+      "id": "idea-025",
+      "slug": "tiny-platformer",
+      "title": "Tiny Platformer",
+      "category": "game",
+      "tagline": "Run, jump, and wall-slide through 12 hand-made levels.",
+      "priority": 64,
+      "effort": "L",
+      "status": "todo"
+    },
+    {
+      "id": "idea-026",
+      "slug": "chess-puzzles",
+      "title": "Chess Puzzles",
+      "category": "game",
+      "tagline": "Mate-in-two tactics, one puzzle at a time.",
+      "priority": 62,
+      "effort": "M",
+      "status": "todo"
+    },
+    {
+      "id": "idea-027",
+      "slug": "tower-defense",
+      "title": "Mini Tower Defense",
+      "category": "game",
+      "tagline": "Place towers, survive 20 waves.",
+      "priority": 60,
+      "effort": "L",
+      "status": "todo"
+    },
+    {
+      "id": "idea-028",
+      "slug": "orb-eater",
+      "title": "Orb Eater",
+      "category": "game",
+      "tagline": "Eat or be eaten in a petri dish arena.",
+      "priority": 58,
+      "effort": "M",
+      "status": "todo"
+    },
+    {
+      "id": "idea-029",
+      "slug": "lucky-slots",
+      "title": "Lucky Slots",
+      "category": "game",
+      "tagline": "All of the spinning, none of the losing money.",
+      "priority": 55,
+      "effort": "S",
+      "status": "todo"
+    },
+    {
+      "id": "idea-030",
+      "slug": "dice-stats",
+      "title": "Dice Lab",
+      "category": "game",
+      "tagline": "Roll any dice pool, see the distribution live.",
+      "priority": 54,
+      "effort": "S",
+      "status": "todo"
+    },
+    {
+      "id": "idea-031",
+      "slug": "json-formatter",
+      "title": "JSON Formatter",
+      "category": "devtool",
+      "tagline": "Validate, prettify, minify, and query JSON.",
+      "priority": 97,
+      "effort": "S",
+      "status": "todo"
+    },
+    {
+      "id": "idea-032",
+      "slug": "qr-generator",
+      "title": "QR Studio",
+      "category": "devtool",
+      "tagline": "Generate crisp QR codes, download as PNG/SVG.",
+      "priority": 98,
+      "effort": "S",
+      "status": "todo"
+    },
+    {
+      "id": "idea-033",
+      "slug": "password-generator",
+      "title": "Password Forge",
+      "category": "devtool",
+      "tagline": "Memorable or maximum-entropy passwords, strength meter.",
+      "priority": 96,
+      "effort": "S",
+      "status": "todo"
+    },
+    {
+      "id": "idea-034",
+      "slug": "color-palette",
+      "title": "Palette Lab",
+      "category": "devtool",
+      "tagline": "Generate harmonies, check contrast, export tokens.",
+      "priority": 91,
+      "effort": "S",
+      "status": "todo"
+    },
+    {
+      "id": "idea-035",
+      "slug": "regex-tester",
+      "title": "Regex Tester",
+      "category": "devtool",
+      "tagline": "Test patterns live with match highlighting and cheatsheet.",
+      "priority": 89,
+      "effort": "M",
+      "status": "todo"
+    },
+    {
+      "id": "idea-036",
+      "slug": "markdown-preview",
+      "title": "Markdown Live",
+      "category": "devtool",
+      "tagline": "Split-pane markdown with GitHub-flavored rendering.",
+      "priority": 88,
+      "effort": "S",
+      "status": "todo"
+    },
+    {
+      "id": "idea-037",
+      "slug": "cron-parser",
+      "title": "Cron Explainer",
+      "category": "devtool",
+      "tagline": "Paste a cron expression, read it in plain English.",
+      "priority": 84,
+      "effort": "S",
+      "status": "todo"
+    },
+    {
+      "id": "idea-038",
+      "slug": "jwt-decoder",
+      "title": "JWT Decoder",
+      "category": "devtool",
+      "tagline": "Decode headers and payloads, verify expiry — all local.",
+      "priority": 82,
+      "effort": "S",
+      "status": "todo"
+    },
+    {
+      "id": "idea-039",
+      "slug": "timestamp-converter",
+      "title": "Time Converter",
+      "category": "devtool",
+      "tagline": "Unix timestamps to human dates, every timezone.",
+      "priority": 81,
+      "effort": "S",
+      "status": "todo"
+    },
+    {
+      "id": "idea-040",
+      "slug": "base64-lab",
+      "title": "Base64 Lab",
+      "category": "devtool",
+      "tagline": "Encode, decode, and inspect any text or file.",
+      "priority": 80,
+      "effort": "S",
+      "status": "todo"
+    },
+    {
+      "id": "idea-041",
+      "slug": "url-codec",
+      "title": "URL Codec",
+      "category": "devtool",
+      "tagline": "Encode/decode URLs and query strings, parameter table.",
+      "priority": 79,
+      "effort": "S",
+      "status": "todo"
+    },
+    {
+      "id": "idea-042",
+      "slug": "uuid-generator",
+      "title": "UUID Generator",
+      "category": "devtool",
+      "tagline": "Bulk-generate v4 UUIDs, one click to copy.",
+      "priority": 78,
+      "effort": "S",
+      "status": "todo"
+    },
+    {
+      "id": "idea-043",
+      "slug": "hash-generator",
+      "title": "Hash Lab",
+      "category": "devtool",
+      "tagline": "SHA-256/384/512 and friends, computed locally.",
+      "priority": 77,
+      "effort": "S",
+      "status": "todo"
+    },
+    {
+      "id": "idea-044",
+      "slug": "text-diff",
+      "title": "Text Diff",
+      "category": "devtool",
+      "tagline": "Side-by-side diff with word-level highlighting.",
+      "priority": 76,
+      "effort": "M",
+      "status": "todo"
+    },
+    {
+      "id": "idea-045",
+      "slug": "word-counter",
+      "title": "Word Counter",
+      "category": "devtool",
+      "tagline": "Words, characters, reading time, keyword density.",
+      "priority": 75,
+      "effort": "S",
+      "status": "todo"
+    },
+    {
+      "id": "idea-046",
+      "slug": "http-status",
+      "title": "HTTP Status Guide",
+      "category": "devtool",
+      "tagline": "Every status code, explained like a human.",
+      "priority": 74,
+      "effort": "S",
+      "status": "todo"
+    },
+    {
+      "id": "idea-047",
+      "slug": "easing-visualizer",
+      "title": "Easing Visualizer",
+      "category": "devtool",
+      "tagline": "See cubic-bezier curves move, copy the CSS.",
+      "priority": 73,
+      "effort": "S",
+      "status": "todo"
+    },
+    {
+      "id": "idea-048",
+      "slug": "gradient-studio",
+      "title": "Gradient Studio",
+      "category": "devtool",
+      "tagline": "Layer gradients, preview, export CSS.",
+      "priority": 72,
+      "effort": "S",
+      "status": "todo"
+    },
+    {
+      "id": "idea-049",
+      "slug": "shadow-generator",
+      "title": "Shadow Forge",
+      "category": "devtool",
+      "tagline": "Design box-shadows with sliders, copy the code.",
+      "priority": 71,
+      "effort": "S",
+      "status": "todo"
+    },
+    {
+      "id": "idea-050",
+      "slug": "flexbox-playground",
+      "title": "Flexbox Playground",
+      "category": "devtool",
+      "tagline": "Toggle every flex property, watch the layout obey.",
+      "priority": 70,
+      "effort": "M",
+      "status": "todo"
+    },
+    {
+      "id": "idea-051",
+      "slug": "grid-builder",
+      "title": "Grid Builder",
+      "category": "devtool",
+      "tagline": "Draw your grid, get the CSS.",
+      "priority": 69,
+      "effort": "M",
+      "status": "todo"
+    },
+    {
+      "id": "idea-052",
+      "slug": "fluid-type",
+      "title": "Fluid Type Calc",
+      "category": "devtool",
+      "tagline": "clamp() values for type that scales beautifully.",
+      "priority": 68,
+      "effort": "S",
+      "status": "todo"
+    },
+    {
+      "id": "idea-053",
+      "slug": "px-rem",
+      "title": "PX ⇄ REM",
+      "category": "devtool",
+      "tagline": "Instant pixel/rem conversion at any base size.",
+      "priority": 67,
+      "effort": "S",
+      "status": "todo"
+    },
+    {
+      "id": "idea-054",
+      "slug": "aspect-ratio",
+      "title": "Aspect Ratio Calc",
+      "category": "devtool",
+      "tagline": "Fit any dimensions to any ratio.",
+      "priority": 66,
+      "effort": "S",
+      "status": "todo"
+    },
+    {
+      "id": "idea-055",
+      "slug": "key-inspector",
+      "title": "Key Inspector",
+      "category": "devtool",
+      "tagline": "Press any key, see its code, key, and modifiers.",
+      "priority": 65,
+      "effort": "S",
+      "status": "todo"
+    },
+    {
+      "id": "idea-056",
+      "slug": "og-preview",
+      "title": "OG Preview",
+      "category": "devtool",
+      "tagline": "Preview link cards for X, Slack, and iMessage.",
+      "priority": 64,
+      "effort": "S",
+      "status": "todo"
+    },
+    {
+      "id": "idea-057",
+      "slug": "lorem-studio",
+      "title": "Lorem Studio",
+      "category": "devtool",
+      "tagline": "Themed placeholder text: startup, pirate, or classic.",
+      "priority": 62,
+      "effort": "S",
+      "status": "todo"
+    },
+    {
+      "id": "idea-058",
+      "slug": "barcode-generator",
+      "title": "Barcode Gen",
+      "category": "devtool",
+      "tagline": "Code128 barcodes rendered in-browser.",
+      "priority": 60,
+      "effort": "S",
+      "status": "todo"
+    },
+    {
+      "id": "idea-059",
+      "slug": "robots-builder",
+      "title": "robots.txt Builder",
+      "category": "devtool",
+      "tagline": "Click together a crawler policy, download the file.",
+      "priority": 58,
+      "effort": "S",
+      "status": "todo"
+    },
+    {
+      "id": "idea-060",
+      "slug": "entity-codec",
+      "title": "Entity Codec",
+      "category": "devtool",
+      "tagline": "HTML entities encoded and decoded instantly.",
+      "priority": 56,
+      "effort": "S",
+      "status": "todo"
+    },
+    {
+      "id": "idea-061",
+      "slug": "tab-search",
+      "title": "Tab Search",
+      "category": "extension",
+      "tagline": "Find any open tab by title — prototype of the extension.",
+      "priority": 63,
+      "effort": "M",
+      "status": "todo"
+    },
+    {
+      "id": "idea-062",
+      "slug": "reading-mode",
+      "title": "Reading Mode",
+      "category": "extension",
+      "tagline": "Strip any article to clean text — try it on a sample.",
+      "priority": 61,
+      "effort": "M",
+      "status": "todo"
+    },
+    {
+      "id": "idea-063",
+      "slug": "markdown-clipper",
+      "title": "Markdown Clipper",
+      "category": "extension",
+      "tagline": "Paste HTML, get clean markdown back.",
+      "priority": 59,
+      "effort": "S",
+      "status": "todo"
+    },
+    {
+      "id": "idea-064",
+      "slug": "eyedropper",
+      "title": "Screen Picker",
+      "category": "extension",
+      "tagline": "Pick any color on the page, copy every format.",
+      "priority": 57,
+      "effort": "S",
+      "status": "todo"
+    },
+    {
+      "id": "idea-065",
+      "slug": "json-viewer",
+      "title": "JSON Viewer",
+      "category": "extension",
+      "tagline": "Collapsible, searchable JSON tree — the extension preview.",
+      "priority": 55,
+      "effort": "M",
+      "status": "todo"
+    },
+    {
+      "id": "idea-066",
+      "slug": "focus-blocker",
+      "title": "Focus Blocker",
+      "category": "extension",
+      "tagline": "A concept page for the distraction-killing extension.",
+      "priority": 52,
+      "effort": "S",
+      "status": "todo"
+    },
+    {
+      "id": "idea-067",
+      "slug": "quick-notes",
+      "title": "Quick Notes",
+      "category": "extension",
+      "tagline": "Popup notes that persist — localStorage demo.",
+      "priority": 50,
+      "effort": "S",
+      "status": "todo"
+    },
+    {
+      "id": "idea-068",
+      "slug": "dark-lab",
+      "title": "Dark Mode Lab",
+      "category": "extension",
+      "tagline": "Preview any palette in dark mode before you ship it.",
+      "priority": 48,
+      "effort": "S",
+      "status": "todo"
+    },
+    {
+      "id": "idea-069",
+      "slug": "link-checker",
+      "title": "Link Checker",
+      "category": "extension",
+      "tagline": "Paste HTML, find every broken or suspicious link.",
+      "priority": 46,
+      "effort": "M",
+      "status": "todo"
+    },
+    {
+      "id": "idea-070",
+      "slug": "font-detective",
+      "title": "Font Detective",
+      "category": "extension",
+      "tagline": "Inspect the fonts on this very page, live.",
+      "priority": 44,
+      "effort": "S",
+      "status": "todo"
+    },
+    {
+      "id": "idea-071",
+      "slug": "clipboard-lab",
+      "title": "Clipboard Lab",
+      "category": "extension",
+      "tagline": "What your clipboard holds, formats and all.",
+      "priority": 42,
+      "effort": "S",
+      "status": "todo"
+    },
+    {
+      "id": "idea-072",
+      "slug": "session-saver",
+      "title": "Session Saver",
+      "category": "extension",
+      "tagline": "Save and restore tab sessions — concept and demo.",
+      "priority": 40,
+      "effort": "M",
+      "status": "todo"
+    },
+    {
+      "id": "idea-073",
+      "slug": "tab-tiling",
+      "title": "Tab Tiling",
+      "category": "extension",
+      "tagline": "Split-screen layouts for tab hoarders — concept page.",
+      "priority": 38,
+      "effort": "S",
+      "status": "todo"
+    },
+    {
+      "id": "idea-074",
+      "slug": "shot-cropper",
+      "title": "Shot Cropper",
+      "category": "extension",
+      "tagline": "Capture, crop, annotate — the extension concept.",
+      "priority": 36,
+      "effort": "M",
+      "status": "todo"
+    },
+    {
+      "id": "idea-075",
+      "slug": "break-reminder",
+      "title": "Break Reminder",
+      "category": "extension",
+      "tagline": "Gentle nudges to stand up — concept and timer demo.",
+      "priority": 34,
+      "effort": "S",
+      "status": "todo"
+    },
+    {
+      "id": "idea-076",
+      "slug": "pomodoro",
+      "title": "Pomodoro Timer",
+      "category": "app",
+      "tagline": "25 minutes on, 5 off. Your focus, weaponized.",
+      "priority": 95,
+      "effort": "S",
+      "status": "todo"
+    },
+    {
+      "id": "idea-077",
+      "slug": "decision-wheel",
+      "title": "Decision Wheel",
+      "category": "app",
+      "tagline": "Can't decide? Spin. The wheel has no regrets.",
+      "priority": 90,
+      "effort": "S",
+      "status": "todo"
+    },
+    {
+      "id": "idea-078",
+      "slug": "unit-converter",
+      "title": "Unit Converter",
+      "category": "app",
+      "tagline": "Length, mass, temp, data — every unit, instantly.",
+      "priority": 91,
+      "effort": "M",
+      "status": "todo"
+    },
+    {
+      "id": "idea-079",
+      "slug": "event-countdown",
+      "title": "Event Countdown",
+      "category": "app",
+      "tagline": "Count down to anything, with satisfying flip digits.",
+      "priority": 89,
+      "effort": "S",
+      "status": "todo"
+    },
+    {
+      "id": "idea-080",
+      "slug": "stopwatch",
+      "title": "Stopwatch",
+      "category": "app",
+      "tagline": "Laps, splits, and millisecond bragging rights.",
+      "priority": 87,
+      "effort": "S",
+      "status": "todo"
+    },
+    {
+      "id": "idea-081",
+      "slug": "habit-tracker",
+      "title": "Habit Tracker",
+      "category": "app",
+      "tagline": "Check off daily habits, watch the streak grow.",
+      "priority": 83,
+      "effort": "M",
+      "status": "todo"
+    },
+    {
+      "id": "idea-082",
+      "slug": "mortgage-calc",
+      "title": "Mortgage Calc",
+      "category": "app",
+      "tagline": "Payment, amortization, and the true cost of the house.",
+      "priority": 81,
+      "effort": "M",
+      "status": "todo"
+    },
+    {
+      "id": "idea-083",
+      "slug": "tip-splitter",
+      "title": "Tip & Split",
+      "category": "app",
+      "tagline": "Split the bill fairly, tip without math anxiety.",
+      "priority": 79,
+      "effort": "S",
+      "status": "todo"
+    },
+    {
+      "id": "idea-084",
+      "slug": "metronome",
+      "title": "Metronome",
+      "category": "app",
+      "tagline": "From largo to prestissimo, with visual pulse.",
+      "priority": 77,
+      "effort": "S",
+      "status": "todo"
+    },
+    {
+      "id": "idea-085",
+      "slug": "pocket-piano",
+      "title": "Pocket Piano",
+      "category": "app",
+      "tagline": "A playable piano in your browser, with sustain.",
+      "priority": 76,
+      "effort": "M",
+      "status": "todo"
+    },
+    {
+      "id": "idea-086",
+      "slug": "drum-pad",
+      "title": "Drum Pad",
+      "category": "app",
+      "tagline": "Finger-drumming with synthesized kits.",
+      "priority": 74,
+      "effort": "S",
+      "status": "todo"
+    },
+    {
+      "id": "idea-087",
+      "slug": "white-noise",
+      "title": "White Noise",
+      "category": "app",
+      "tagline": "Rain, static, and brown noise for deep work.",
+      "priority": 72,
+      "effort": "S",
+      "status": "todo"
+    },
+    {
+      "id": "idea-088",
+      "slug": "name-picker",
+      "title": "Name Picker",
+      "category": "app",
+      "tagline": "Raffle names fairly — classrooms and giveaways love it.",
+      "priority": 70,
+      "effort": "S",
+      "status": "todo"
+    },
+    {
+      "id": "idea-089",
+      "slug": "quote-generator",
+      "title": "Quote Machine",
+      "category": "app",
+      "tagline": "Aphorisms on demand, from stoics to startups.",
+      "priority": 68,
+      "effort": "S",
+      "status": "todo"
+    },
+    {
+      "id": "idea-090",
+      "slug": "joke-machine",
+      "title": "Joke Machine",
+      "category": "app",
+      "tagline": "Programmer jokes, rated by your groans.",
+      "priority": 66,
+      "effort": "S",
+      "status": "todo"
+    },
+    {
+      "id": "idea-091",
+      "slug": "excuse-generator",
+      "title": "Excuse Generator",
+      "category": "app",
+      "tagline": "Believable excuses for every missed deadline.",
+      "priority": 64,
+      "effort": "S",
+      "status": "todo"
+    },
+    {
+      "id": "idea-092",
+      "slug": "startup-generator",
+      "title": "Startup Idea Gen",
+      "category": "app",
+      "tagline": "It generates startup ideas. Like this one. Meta.",
+      "priority": 62,
+      "effort": "S",
+      "status": "todo"
+    },
+    {
+      "id": "idea-093",
+      "slug": "band-names",
+      "title": "Band Name Gen",
+      "category": "app",
+      "tagline": "Your next band name is one click away.",
+      "priority": 60,
+      "effort": "S",
+      "status": "todo"
+    },
+    {
+      "id": "idea-094",
+      "slug": "date-night",
+      "title": "Date Night Gen",
+      "category": "app",
+      "tagline": "Pick a vibe, get a plan. Romance, outsourced.",
+      "priority": 58,
+      "effort": "S",
+      "status": "todo"
+    },
+    {
+      "id": "idea-095",
+      "slug": "baby-names",
+      "title": "Baby Name Explorer",
+      "category": "app",
+      "tagline": "Browse names by origin and meaning, shortlist yours.",
+      "priority": 56,
+      "effort": "M",
+      "status": "todo"
+    },
+    {
+      "id": "idea-096",
+      "slug": "coin-flip",
+      "title": "Coin Flip",
+      "category": "app",
+      "tagline": "Heads or tails, with physics-grade drama.",
+      "priority": 54,
+      "effort": "S",
+      "status": "todo"
+    },
+    {
+      "id": "idea-097",
+      "slug": "bmi-calc",
+      "title": "BMI Check",
+      "category": "app",
+      "tagline": "Body mass index with honest context, not judgment.",
+      "priority": 52,
+      "effort": "S",
+      "status": "todo"
+    },
+    {
+      "id": "idea-098",
+      "slug": "currency-convert",
+      "title": "Currency Convert",
+      "category": "app",
+      "tagline": "Quick conversions with clearly-labeled sample rates.",
+      "priority": 50,
+      "effort": "S",
+      "status": "todo"
+    },
+    {
+      "id": "idea-099",
+      "slug": "guitar-tuner",
+      "title": "Guitar Tuner",
+      "category": "app",
+      "tagline": "Tune by mic with a needle that tells the truth.",
+      "priority": 48,
+      "effort": "M",
+      "status": "todo"
+    },
+    {
+      "id": "idea-100",
+      "slug": "focus-tones",
+      "title": "Focus Tones",
+      "category": "app",
+      "tagline": "Binaural beats and ambient drones for deep work.",
+      "priority": 46,
+      "effort": "S",
+      "status": "todo"
+    }
+  ]
+}

@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>The Lab — Shipwright Studio</title>
+  <meta name="description" content="The Shipwright Studio idea bank: 100 web experiments, games, dev tools and extensions. Two ship every day." />
+  <link rel="icon" type="image/svg+xml" href="../favicon.svg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..700;1,9..144,300..700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../styles.css" />
+  <style>
+    .lab-hero { padding: 150px 0 40px; }
+    .lab-stats { display: flex; gap: 36px; margin: 34px 0 8px; flex-wrap: wrap; }
+    .lab-stat b { display: block; font-family: var(--font-display); font-size: 40px; font-weight: 500; color: var(--accent); }
+    .lab-stat span { font-family: var(--font-mono); font-size: 12px; letter-spacing: .18em; text-transform: uppercase; color: var(--muted); }
+    .filters { display: flex; gap: 10px; flex-wrap: wrap; margin: 30px 0 34px; }
+    .chip {
+      font-family: var(--font-mono); font-size: 12.5px; letter-spacing: .06em;
+      padding: 8px 16px; border: 1px solid var(--line); border-radius: 999px;
+      background: transparent; color: var(--muted); cursor: pointer; transition: all .2s;
+    }
+    .chip:hover { border-color: var(--accent); color: var(--text); }
+    .chip.active { background: var(--accent-soft); border-color: var(--accent); color: var(--accent); }
+    .idea-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 18px; padding-bottom: 40px; }
+    .idea-card {
+      background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
+      padding: 24px; display: flex; flex-direction: column; gap: 10px;
+      transition: transform .25s, border-color .25s;
+    }
+    .idea-card:hover { transform: translateY(-3px); border-color: rgba(210,162,76,.45); }
+    .idea-card.done { border-color: rgba(210,162,76,.35); }
+    .idea-top { display: flex; justify-content: space-between; align-items: center; }
+    .idea-num { font-family: var(--font-mono); font-size: 12px; color: var(--faint); }
+    .badge {
+      font-family: var(--font-mono); font-size: 11px; letter-spacing: .12em; text-transform: uppercase;
+      padding: 4px 10px; border-radius: 999px; border: 1px solid var(--line); color: var(--muted);
+    }
+    .badge.done { color: var(--accent); border-color: var(--accent); background: var(--accent-soft); }
+    .idea-card h3 { font-size: 22px; }
+    .idea-card p { color: var(--muted); font-size: 15px; flex: 1; }
+    .idea-meta { display: flex; gap: 12px; font-family: var(--font-mono); font-size: 11.5px; color: var(--faint); letter-spacing: .06em; }
+    .idea-open { color: var(--accent); font-weight: 600; font-size: 15px; text-decoration: none; }
+    .idea-open:hover { text-decoration: underline; }
+    .queue-tag { font-family: var(--font-mono); font-size: 11.5px; color: var(--faint); }
+    .lab-note { color: var(--faint); font-size: 14px; padding: 0 0 90px; max-width: 640px; }
+    .lab-note code { font-family: var(--font-mono); color: var(--muted); font-size: 13px; }
+  </style>
+</head>
+<body>
+  <header class="nav">
+    <div class="nav-inner">
+      <a href="../" class="brand" aria-label="Shipwright Studio home">
+        <svg class="brand-mark" viewBox="0 0 32 32" fill="none" aria-hidden="true">
+          <circle cx="16" cy="16" r="14.5" stroke="currentColor" stroke-width="1.5"/>
+          <path d="M16 7v14M16 7c-2.5 0-4 1.6-4 3.5M16 7c2.5 0 4 1.6 4 3.5M10 15.5c0 4 2.8 7 6 7s6-3 6-7M10 15.5l-2.5-1M10 15.5l2-2M22 15.5l2.5-1M22 15.5l-2-2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+          <circle cx="16" cy="7" r="1.6" fill="currentColor"/>
+        </svg>
+        <span class="brand-name">Shipwright <em>Studio</em></span>
+      </a>
+      <nav class="nav-links">
+        <a href="../#work">Work</a>
+        <a href="../#services">Services</a>
+        <a href="../#contact">Contact</a>
+      </nav>
+      <a href="../#contact" class="btn btn-small nav-cta">Start a project</a>
+    </div>
+  </header>
+
+  <main>
+    <section class="lab-hero">
+      <div class="container">
+        <p class="eyebrow">The Lab</p>
+        <h1>100 ideas.<br />Two ship <em>daily</em>.</h1>
+        <p class="section-sub">An open idea bank of web experiments — games, dev tools, extensions, and small apps. Every morning the two highest-priority ideas get designed, built, and deployed here.</p>
+        <div class="lab-stats">
+          <div class="lab-stat"><b id="statShipped">–</b><span>Shipped</span></div>
+          <div class="lab-stat"><b id="statQueued">–</b><span>In queue</span></div>
+          <div class="lab-stat"><b id="statTotal">–</b><span>Total ideas</span></div>
+        </div>
+        <div class="filters" id="catFilters"></div>
+        <div class="filters" id="statusFilters" style="margin-top:-18px"></div>
+        <div class="idea-grid" id="ideaGrid"></div>
+        <p class="lab-note">The queue is data, not decoration: <code>ideas.json</code> in <a href="https://github.com/yexiangd/shipwright-studio" style="color:var(--muted)">the repo</a> holds every idea with its priority and status, and the daily builder works straight through it. Have a better idea? Send it through the contact form.</p>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const CATS = { all: 'All', game: 'Games', devtool: 'Dev tools', extension: 'Extensions', app: 'Apps & fun' };
+    const STATUS = { all: 'All', done: 'Shipped', todo: 'Queued' };
+    let ideas = [], catF = 'all', statusF = 'all';
+
+    function chipRow(el, opts, current, onPick) {
+      el.innerHTML = '';
+      for (const [k, label] of Object.entries(opts)) {
+        const b = document.createElement('button');
+        b.className = 'chip' + (k === current ? ' active' : '');
+        b.textContent = label;
+        b.onclick = () => onPick(k);
+        el.appendChild(b);
+      }
+    }
+
+    function render() {
+      chipRow(document.getElementById('catFilters'), CATS, catF, k => { catF = k; render(); });
+      chipRow(document.getElementById('statusFilters'), STATUS, statusF, k => { statusF = k; render(); });
+      const done = ideas.filter(i => i.status === 'done');
+      const todo = ideas.filter(i => i.status === 'todo').sort((a, b) => b.priority - a.priority);
+      document.getElementById('statShipped').textContent = done.length;
+      document.getElementById('statQueued').textContent = todo.length;
+      document.getElementById('statTotal').textContent = ideas.length;
+      const queueRank = new Map(todo.map((t, i) => [t.id, i + 1]));
+      const ordered = [...done, ...todo].filter(i =>
+        (catF === 'all' || i.category === catF) && (statusF === 'all' || i.status === statusF));
+      const grid = document.getElementById('ideaGrid');
+      grid.innerHTML = '';
+      for (const idea of ordered) {
+        const card = document.createElement('article');
+        card.className = 'idea-card' + (idea.status === 'done' ? ' done' : '');
+        const top = idea.status === 'done'
+          ? `<span class="badge done">Shipped</span>`
+          : `<span class="queue-tag">Queue #${queueRank.get(idea.id)}</span>`;
+        const action = idea.status === 'done' && idea.url
+          ? `<a class="idea-open" href="${idea.url}">Open &rarr;</a>` : '';
+        card.innerHTML = `
+          <div class="idea-top"><span class="idea-num">${idea.id}</span>${top}</div>
+          <h3>${idea.title}</h3>
+          <p>${idea.tagline}</p>
+          <div class="idea-meta"><span>${CATS[idea.category] || idea.category}</span><span>Effort ${idea.effort}</span></div>
+          ${action}`;
+        grid.appendChild(card);
+      }
+    }
+
+    fetch('ideas.json').then(r => r.json()).then(d => { ideas = d.ideas; render(); });
+  </script>
+</body>
+</html>
