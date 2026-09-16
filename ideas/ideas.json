@@ -1028,6 +1028,306 @@
       "priority": 46,
       "effort": "S",
       "status": "todo"
+    },
+    {
+      "id": "idea-101",
+      "slug": "backtest-visualizer",
+      "title": "Backtest Visualizer",
+      "category": "devtool",
+      "tagline": "Upload a returns CSV and get equity curve, drawdown, and monthly heatmap.",
+      "priority": 90,
+      "effort": "M",
+      "status": "todo"
+    },
+    {
+      "id": "idea-102",
+      "slug": "options-payoff",
+      "title": "Options Payoff Lab",
+      "category": "devtool",
+      "tagline": "Payoff diagrams for multi-leg option strategies with Greeks.",
+      "priority": 89,
+      "effort": "M",
+      "status": "todo"
+    },
+    {
+      "id": "idea-103",
+      "slug": "kelly-calculator",
+      "title": "Kelly Criterion Calculator",
+      "category": "devtool",
+      "tagline": "Optimal position sizing from win rate and payoff ratio.",
+      "priority": 88,
+      "effort": "S",
+      "status": "todo"
+    },
+    {
+      "id": "idea-104",
+      "slug": "correlation-heatmap",
+      "title": "Correlation Heatmap",
+      "category": "devtool",
+      "tagline": "Paste price data, see the asset correlation matrix as a heatmap.",
+      "priority": 87,
+      "effort": "M",
+      "status": "todo"
+    },
+    {
+      "id": "idea-105",
+      "slug": "monte-carlo-portfolio",
+      "title": "Monte Carlo Portfolio Sim",
+      "category": "devtool",
+      "tagline": "Simulate thousands of portfolio paths and see the odds.",
+      "priority": 86,
+      "effort": "M",
+      "status": "todo"
+    },
+    {
+      "id": "idea-106",
+      "slug": "candlestick-quiz",
+      "title": "Candlestick Pattern Quiz",
+      "category": "game",
+      "tagline": "Name the candlestick pattern against the clock.",
+      "priority": 85,
+      "effort": "S",
+      "status": "todo"
+    },
+    {
+      "id": "idea-107",
+      "slug": "sharpe-calculator",
+      "title": "Sharpe & Sortino Calculator",
+      "category": "devtool",
+      "tagline": "Risk-adjusted return ratios from a returns series.",
+      "priority": 84,
+      "effort": "S",
+      "status": "todo"
+    },
+    {
+      "id": "idea-108",
+      "slug": "position-size-calculator",
+      "title": "Position Size Calculator",
+      "category": "devtool",
+      "tagline": "Risk-percent position sizing with stop distance.",
+      "priority": 83,
+      "effort": "S",
+      "status": "todo"
+    },
+    {
+      "id": "idea-109",
+      "slug": "pairs-trading-lab",
+      "title": "Pairs Trading Lab",
+      "category": "devtool",
+      "tagline": "Cointegration and spread z-score explorer for pair trades.",
+      "priority": 82,
+      "effort": "L",
+      "status": "todo"
+    },
+    {
+      "id": "idea-110",
+      "slug": "orderbook-visualizer",
+      "title": "Order Book Visualizer",
+      "category": "devtool",
+      "tagline": "Animated limit order book depth chart simulator.",
+      "priority": 81,
+      "effort": "M",
+      "status": "todo"
+    },
+    {
+      "id": "idea-111",
+      "slug": "vwap-tracker",
+      "title": "VWAP Deviation Tracker",
+      "category": "devtool",
+      "tagline": "Intraday price deviation bands around VWAP.",
+      "priority": 80,
+      "effort": "M",
+      "status": "todo"
+    },
+    {
+      "id": "idea-112",
+      "slug": "ruin-simulator",
+      "title": "Risk of Ruin Simulator",
+      "category": "devtool",
+      "tagline": "How likely is blowup given your edge and bet size?",
+      "priority": 79,
+      "effort": "M",
+      "status": "todo"
+    },
+    {
+      "id": "idea-113",
+      "slug": "efficient-frontier",
+      "title": "Efficient Frontier Plotter",
+      "category": "devtool",
+      "tagline": "Markowitz frontier from expected returns and covariances.",
+      "priority": 78,
+      "effort": "M",
+      "status": "todo"
+    },
+    {
+      "id": "idea-114",
+      "slug": "trading-journal",
+      "title": "Trading Journal",
+      "category": "app",
+      "tagline": "Log trades; auto-computes win rate, profit factor, expectancy.",
+      "priority": 77,
+      "effort": "L",
+      "status": "todo"
+    },
+    {
+      "id": "idea-115",
+      "slug": "funding-arbitrage",
+      "title": "Funding Rate Arbitrage Calc",
+      "category": "devtool",
+      "tagline": "Perp funding rate math for cash-and-carry trades.",
+      "priority": 76,
+      "effort": "S",
+      "status": "todo"
+    },
+    {
+      "id": "idea-116",
+      "slug": "gas-tracker",
+      "title": "Gas Fee Dashboard",
+      "category": "app",
+      "tagline": "Gas price gauges across chains (demo data).",
+      "priority": 75,
+      "effort": "M",
+      "status": "todo"
+    },
+    {
+      "id": "idea-117",
+      "slug": "address-validator",
+      "title": "Wallet Address Validator",
+      "category": "devtool",
+      "tagline": "Checksum and format validation for EVM addresses.",
+      "priority": 74,
+      "effort": "S",
+      "status": "todo"
+    },
+    {
+      "id": "idea-118",
+      "slug": "vesting-visualizer",
+      "title": "Token Vesting Visualizer",
+      "category": "devtool",
+      "tagline": "Cliff and linear unlock schedules as timelines.",
+      "priority": 73,
+      "effort": "S",
+      "status": "todo"
+    },
+    {
+      "id": "idea-119",
+      "slug": "lp-simulator",
+      "title": "Uniswap v3 LP Simulator",
+      "category": "devtool",
+      "tagline": "Concentrated liquidity ranges and fee simulator.",
+      "priority": 72,
+      "effort": "L",
+      "status": "todo"
+    },
+    {
+      "id": "idea-120",
+      "slug": "nft-rarity",
+      "title": "NFT Rarity Calculator",
+      "category": "devtool",
+      "tagline": "Trait-based rarity scoring for a pasted collection.",
+      "priority": 71,
+      "effort": "M",
+      "status": "todo"
+    },
+    {
+      "id": "idea-121",
+      "slug": "seed-phrase-lab",
+      "title": "Seed Phrase Lab",
+      "category": "devtool",
+      "tagline": "Educational BIP39 mnemonic generator, client-side only.",
+      "priority": 70,
+      "effort": "M",
+      "status": "todo"
+    },
+    {
+      "id": "idea-122",
+      "slug": "eth-unit-converter",
+      "title": "Ethereum Unit Converter",
+      "category": "devtool",
+      "tagline": "Wei, gwei and ether conversions with live arithmetic.",
+      "priority": 69,
+      "effort": "S",
+      "status": "todo"
+    },
+    {
+      "id": "idea-123",
+      "slug": "event-decoder",
+      "title": "Contract Event Decoder",
+      "category": "devtool",
+      "tagline": "Decode EVM event logs with a pasted ABI.",
+      "priority": 68,
+      "effort": "M",
+      "status": "todo"
+    },
+    {
+      "id": "idea-124",
+      "slug": "dao-voting-viz",
+      "title": "DAO Voting Power Viz",
+      "category": "app",
+      "tagline": "Token-weighted governance power distribution charts.",
+      "priority": 67,
+      "effort": "M",
+      "status": "todo"
+    },
+    {
+      "id": "idea-125",
+      "slug": "depeg-monitor",
+      "title": "Stablecoin Depeg Monitor",
+      "category": "app",
+      "tagline": "Peg deviation dashboard with demo feed.",
+      "priority": 66,
+      "effort": "M",
+      "status": "todo"
+    },
+    {
+      "id": "idea-126",
+      "slug": "airdrop-checker",
+      "title": "Airdrop Checker Template",
+      "category": "app",
+      "tagline": "Eligibility-check UI template with rule builder.",
+      "priority": 65,
+      "effort": "M",
+      "status": "todo"
+    },
+    {
+      "id": "idea-127",
+      "slug": "bridge-fee-compare",
+      "title": "Bridge Fee Comparator",
+      "category": "devtool",
+      "tagline": "Side-by-side cross-chain bridge cost comparison.",
+      "priority": 64,
+      "effort": "S",
+      "status": "todo"
+    },
+    {
+      "id": "idea-128",
+      "slug": "wallet-pie",
+      "title": "Wallet Portfolio Pie",
+      "category": "app",
+      "tagline": "Manually entered holdings as allocation charts.",
+      "priority": 63,
+      "effort": "S",
+      "status": "todo"
+    },
+    {
+      "id": "idea-129",
+      "slug": "block-countdown",
+      "title": "Halving Countdown",
+      "category": "app",
+      "tagline": "Block-height countdown to the next Bitcoin halving.",
+      "priority": 62,
+      "effort": "S",
+      "status": "todo"
+    },
+    {
+      "id": "idea-130",
+      "slug": "web3-flashcards",
+      "title": "Web3 Glossary Flashcards",
+      "category": "game",
+      "tagline": "Flip-card game for crypto terminology.",
+      "priority": 61,
+      "effort": "S",
+      "status": "todo"
     }
   ]
 }
