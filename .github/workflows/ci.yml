@@ -1,0 +1,86 @@
+name: CI
+
+# push 到 main：先跑 SEO 检查，通过后自动发布到 Cloudflare Pages。
+# PR：只跑 SEO 检查，不发布。
+on:
+  push:
+    branches: [main]
+    paths-ignore: ['docs/**', '.github/**']
+  pull_request:
+
+permissions:
+  contents: write
+
+jobs:
+  seo:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: SEO hygiene checks
+        run: python3 scripts/seo-check.py
+
+  deploy:
+    needs: seo
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Regenerate sitemap
+        run: python3 scripts/generate-sitemap.py
+
+      - name: Prepare deploy dir
+        run: rm -rf docs .github .wrangler
+
+      - name: Fetch Web3Forms key from Cloudflare
+        env:
+          CF_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CF_ACCOUNT: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          python3 - <<'EOF'
+          import json, os, urllib.request
+          req = urllib.request.Request(
+              f"https://api.cloudflare.com/client/v4/accounts/{os.environ['CF_ACCOUNT']}/pages/projects/shipwright-studio",
+              headers={"Authorization": f"Bearer {os.environ['CF_TOKEN']}"})
+          data = json.load(urllib.request.urlopen(req, timeout=30))
+          key = data["result"]["deployment_configs"]["production"]["env_vars"]["WEB3FORMS_KEY"]["value"]
+          print(f"::add-mask::{key}")
+          open("/tmp/w3f_key", "w").write(key)
+          print("key fetched")
+          EOF
+
+      - name: Inject contact form key
+        run: |
+          python3 - <<'EOF'
+          key = open("/tmp/w3f_key").read().strip()
+          s = open("script.js").read()
+          assert "__WEB3FORMS_KEY__" in s, "placeholder missing in script.js!"
+          open("script.js", "w").write(s.replace("__WEB3FORMS_KEY__", key))
+          print("key injected")
+          EOF
+          rm -f /tmp/w3f_key
+
+      - name: Deploy to Cloudflare Pages
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: npx -y wrangler@4 pages deploy . --project-name=shipwright-studio --branch=main --commit-message="ci: deploy ${{ github.sha }}"
+
+      - name: Verify live site
+        run: |
+          for u in "https://shipwright-studio.pages.dev/" "https://shipwright-studio.pages.dev/sitemap.xml"; do
+            code=$(curl -s -o /dev/null -w "%{http_code}" --max-time 30 "$u")
+            echo "$u -> $code"
+            [ "$code" = "200" ] || exit 1
+          done
+
+      - name: Commit regenerated sitemap
+        run: |
+          git config user.name "ci-bot"
+          git config user.email "ci-bot@users.noreply.github.com"
+          git add sitemap.xml
+          git diff --cached --quiet || (git commit -m "ci: regenerate sitemap [skip ci]" && git push)
