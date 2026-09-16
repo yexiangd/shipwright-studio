@@ -16,7 +16,7 @@
 
 ## 1. 技术 SEO（Phase 1 — 待做）
 
-1. **Canonical URL**：每个页面加 `<link rel="canonical">`，防止 `pages.dev` 预览域名与主域名被判重复。
+1. **Canonical URL**：每个页面加 `<link rel="canonical">`，防止 `pages.dev` 预览域名与主域名被判重复。 ✅ 2026-09-16（6 个页面：首页 / Lab / Lumen / Forge / reaction-time / typing-test）
 2. **社交卡片**：生成一张 `og-image.png`（1200×630），全站统一 `og:` / `twitter:` 标签 —— 分享到 X / Slack / iMessage 时才有脸面。
 3. **404 页面**：做一个符合品牌风格的 404，带回首页和 Lab 的入口。
 4. **语义化复查**：每个页面只有一个 `h1`，层级不跳级；图片全部有 `alt`。
@@ -64,3 +64,7 @@ AI 搜索不看排名看"可引用性"。打法：
 | 每天 | Lab 构建自动带 SEO（标题/描述/JSON-LD/sitemap） |
 | 每月 | AI 引用抽查（2 分钟人工） |
 | 每季度 | Lighthouse + Search Console 数据复盘 |
+
+## 运行日志
+
+- **2026-09-16**：Phase 1 任务 ① Canonical URL —— 6 个页面全部加上（首页、Lab、Lumen、Forge、reaction-time、typing-test；lab 新页面由每日构建 checklist 自动带）。下一步候选：og 社交卡片图（Phase 1-②）。

@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Typing Speed Test · Shipwright Studio</title>
+  <meta name="description" content="Typing Speed Test is a free online WPM test. Type common English words against the clock and measure your words per minute and accuracy." />
+  <link rel="canonical" href="https://shipwright-studio.pages.dev/lab/typing-test/" />
+  <link rel="icon" type="image/svg+xml" href="../../favicon.svg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..700;1,9..144,300..700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "Typing Speed Test",
+    "description": "A free online typing speed test measuring words per minute and accuracy.",
+    "applicationCategory": "UtilitiesApplication",
+    "operatingSystem": "Web",
+    "offers": { "@type": "Offer", "price": "0" },
+    "author": { "@type": "Organization", "name": "Shipwright Studio", "url": "https://shipwright-studio.pages.dev/" }
+  }
+  </script>
+  <style>
+    :root {
+      --bg: #0a0c0f; --surface: #10141a; --text: #f2efe6; --muted: #a6abb4; --faint: #6d737c;
+      --accent: #d2a24c; --line: rgba(255,255,255,.09); --red: #e0655f; --dim: #4a4f57;
+      --font-display: "Fraunces", Georgia, serif;
+      --font-body: "Inter", -apple-system, "Segoe UI", sans-serif;
+      --font-mono: "JetBrains Mono", ui-monospace, monospace;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: var(--bg); color: var(--text); font-family: var(--font-body); min-height: 100vh; display: flex; flex-direction: column; }
+    .topbar { display: flex; justify-content: space-between; align-items: center; padding: 16px 22px; border-bottom: 1px solid var(--line); }
+    .topbar a { color: var(--muted); text-decoration: none; font-size: 14px; }
+    .topbar a:hover { color: var(--accent); }
+    .brand { font-family: var(--font-display); font-size: 17px; }
+    .brand em { color: var(--accent); font-style: italic; }
+    main { flex: 1; width: 100%; max-width: 860px; margin: 0 auto; padding: 44px 24px 60px; display: flex; flex-direction: column; gap: 26px; }
+    h1 { font-family: var(--font-display); font-weight: 500; font-size: clamp(30px, 5vw, 44px); letter-spacing: -.01em; }
+    h1 em { color: var(--accent); font-style: italic; }
+    .lede { color: var(--muted); max-width: 600px; }
+    .controls { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+    .pill {
+      font-family: var(--font-mono); font-size: 13px; padding: 8px 16px; border-radius: 999px;
+      border: 1px solid var(--line); background: transparent; color: var(--muted); cursor: pointer;
+    }
+    .pill.active { border-color: var(--accent); color: var(--accent); background: rgba(210,162,76,.1); }
+    .pill:disabled { opacity: .4; cursor: default; }
+    .stats { display: flex; gap: 38px; }
+    .stat b { display: block; font-family: var(--font-display); font-size: 38px; font-weight: 500; color: var(--accent); font-variant-numeric: tabular-nums; }
+    .stat span { font-family: var(--font-mono); font-size: 11px; letter-spacing: .18em; text-transform: uppercase; color: var(--muted); }
+    .words-wrap {
+      position: relative; background: var(--surface); border: 1px solid var(--line);
+      border-radius: 14px; padding: 26px 28px; cursor: text;
+    }
+    #words {
+      font-family: var(--font-mono); font-size: clamp(19px, 3.4vw, 24px); line-height: 2.1;
+      height: calc(2.1em * 3); overflow: hidden; color: var(--dim); position: relative;
+    }
+    #words .w { white-space: nowrap; }
+    #words .w .ok { color: var(--text); }
+    #words .w .bad { color: var(--red); }
+    #words .w.current { border-bottom: 2px solid var(--accent); }
+    #words .w.done-bad { text-decoration: underline; text-decoration-color: var(--red); text-underline-offset: 4px; }
+    #caret {
+      position: absolute; width: 2.5px; height: 1.35em; background: var(--accent);
+      transition: left .06s, top .12s; border-radius: 2px; pointer-events: none;
+      animation: blink 1.1s steps(1) infinite;
+    }
+    @keyframes blink { 50% { opacity: 0; } }
+    #hiddenInput { position: absolute; opacity: 0; font-size: 16px; top: 0; left: 0; width: 10px; height: 10px; border: 0; padding: 0; }
+    .hint { color: var(--faint); font-size: 13.5px; font-family: var(--font-mono); }
+    .hint kbd { border: 1px solid var(--line); border-radius: 6px; padding: 1px 7px; color: var(--muted); }
+    #results { display: none; background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 34px; text-align: center; }
+    #results.show { display: block; }
+    #results .wpm { font-family: var(--font-display); font-size: clamp(64px, 12vw, 110px); color: var(--accent); line-height: 1; }
+    #results .tier { font-family: var(--font-display); font-style: italic; font-size: 24px; margin-top: 8px; }
+    .rgrid { display: flex; gap: 30px; justify-content: center; margin: 24px 0; flex-wrap: wrap; }
+    .rgrid .stat b { font-size: 30px; }
+    .btn {
+      font-family: var(--font-body); font-size: 16px; font-weight: 600; padding: 13px 32px;
+      border-radius: 999px; border: 1px solid var(--accent); background: var(--accent);
+      color: #0a0c0f; cursor: pointer; margin-top: 6px;
+    }
+    .btn:hover { filter: brightness(1.08); }
+    .best { font-family: var(--font-mono); font-size: 12px; color: var(--faint); }
+    .foot { padding: 16px; text-align: center; border-top: 1px solid var(--line); font-size: 13px; color: var(--faint); }
+    .foot a { color: var(--muted); }
+    .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+  </style>
+</head>
+<body>
+  <div class="topbar">
+    <a href="../../ideas/">&larr; The Lab</a>
+    <span class="brand">Shipwright <em>Studio</em></span>
+    <span class="best" id="bestLine"></span>
+  </div>
+
+  <main>
+    <div>
+      <h1>Typing <em>speed</em> test</h1>
+      <p class="lede">A free online WPM test: type the words as fast and accurately as you can before the clock runs out.</p>
+    </div>
+
+    <div class="controls" id="durations">
+      <button class="pill" data-s="15">15s</button>
+      <button class="pill" data-s="30">30s</button>
+      <button class="pill active" data-s="60">60s</button>
+      <button class="pill" data-s="120">120s</button>
+      <span class="hint" style="margin-left:8px">pick a duration, then just start typing</span>
+    </div>
+
+    <div class="stats">
+      <div class="stat"><b id="wpm">0</b><span>wpm</span></div>
+      <div class="stat"><b id="acc">100</b><span>accuracy %</span></div>
+      <div class="stat"><b id="time">60</b><span>seconds</span></div>
+    </div>
+
+    <div class="words-wrap" id="wordsWrap">
+      <p class="sr">Typing Speed Test is a free online WPM test. Type the displayed words as quickly and accurately as possible.</p>
+      <div id="words" aria-hidden="true"></div>
+      <div id="caret" aria-hidden="true"></div>
+      <input id="hiddenInput" type="text" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" aria-label="Type the words here" />
+    </div>
+    <p class="hint" id="focusHint">Click the text above to focus, then type. <kbd>tab</kbd> + <kbd>enter</kbd> restarts.</p>
+
+    <div id="results" role="status">
+      <div class="wpm"><span id="rWpm">0</span><span style="font-size:.35em"> wpm</span></div>
+      <div class="tier" id="rTier"></div>
+      <div class="rgrid">
+        <div class="stat"><b id="rAcc">0%</b><span>accuracy</span></div>
+        <div class="stat"><b id="rChars">0</b><span>correct chars</span></div>
+        <div class="stat"><b id="rWords">0</b><span>words</span></div>
+      </div>
+      <button class="btn" id="again">Try again</button>
+    </div>
+  </main>
+
+  <div class="foot">Built by <a href="../../">Shipwright Studio</a> · Bests stay in this browser only.</div>
+
+  <script>
+    const WORDS = ("the be to of and a in that have I it for not on with he as you do at this but his by from they we say her she or an will my one all would there their what so up out if about who get which go me when make can like time no just him know take people into year your good some could them see other than then now look only come its over think also back after use two how our work first well way even new want because any these give day most us is are was were has had been will shall may might must can could should would do does did have has had having apple river stone light house water earth fire wind cloud mountain road star moon sun tree bird fish table chair book pen door window wall floor roof sky night morning evening spring summer autumn winter quick brown fox jumps lazy dog bright dark happy sad big small long short high low new old good bad happy smile laugh dream wish hope love heart mind soul free wild calm soft loud quiet fast slow").split(" ");
+
+    const wordsEl = document.getElementById('words');
+    const caret = document.getElementById('caret');
+    const input = document.getElementById('hiddenInput');
+    const wrap = document.getElementById('wordsWrap');
+    const wpmEl = document.getElementById('wpm'), accEl = document.getElementById('acc'), timeEl = document.getElementById('time');
+    const resultsEl = document.getElementById('results');
+    const pills = [...document.querySelectorAll('#durations .pill')];
+
+    let duration = 60, words = [], wi = 0, typed = [];
+    let started = false, finished = false, startT = 0, timerId = null, timeLeft = 60;
+    let correctChars = 0, typedChars = 0, correctWords = 0;
+
+    function bestKey() { return 'tt-best-' + duration; }
+    function renderBest() {
+      const b = +(localStorage.getItem(bestKey()) || 0);
+      document.getElementById('bestLine').textContent = b ? `Best ${duration}s: ${b} wpm` : '';
+    }
+
+    function shuffled(n) {
+      const pool = [...WORDS];
+      const out = [];
+      while (out.length < n) {
+        for (let i = pool.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [pool[i], pool[j]] = [pool[j], pool[i]];
+        }
+        out.push(...pool);
+      }
+      return out.slice(0, n);
+    }
+
+    function buildWords() {
+      words = shuffled(300);
+      wi = 0; typed = new Array(words.length).fill('');
+      wordsEl.innerHTML = words.map((w, i) =>
+        `<span class="w" data-i="${i}">${[...w].map(c => `<span>${c}</span>`).join('')}</span>`
+      ).join(' ');
+      wordsEl.scrollTop = 0;
+      markCurrent();
+    }
+
+    function wordEl(i) { return wordsEl.querySelector(`.w[data-i="${i}"]`); }
+
+    function markCurrent() {
+      wordsEl.querySelectorAll('.w.current').forEach(e => e.classList.remove('current'));
+      const el = wordEl(wi);
+      if (el) el.classList.add('current');
+      moveCaret();
+    }
+
+    function moveCaret() {
+      const el = wordEl(wi);
+      if (!el) return;
+      const t = typed[wi] || '';
+      const letters = el.children;
+      const target = letters[Math.min(t.length, letters.length - 1)] || el;
+      const wr = wrap.getBoundingClientRect(), r = target.getBoundingClientRect();
+      const isLast = t.length >= letters.length;
+      caret.style.left = (r.left - wr.left + (isLast ? r.width : 0)) + 'px';
+      caret.style.top = (r.top - wr.top) + 'px';
+      // keep active line visible
+      const lineH = r.height * 2.1;
+      const topEdge = el.offsetTop - wordsEl.offsetTop;
+      if (topEdge < wordsEl.scrollTop) wordsEl.scrollTop = topEdge;
+      else if (topEdge + lineH > wordsEl.scrollTop + wordsEl.clientHeight) {
+        wordsEl.scrollTop = topEdge + lineH - wordsEl.clientHeight;
+      }
+    }
+
+    function paintWord(i) {
+      const el = wordEl(i), t = typed[i] || '', w = words[i];
+      [...el.children].forEach((s, k) => {
+        s.className = k < t.length ? (t[k] === w[k] ? 'ok' : 'bad') : '';
+      });
+      const done = t.length >= w.length || (i < wi);
+      el.classList.toggle('done-bad', i < wi && typed[i] !== w);
+    }
+
+    function liveStats() {
+      const mins = Math.max((performance.now() - startT) / 60000, 1 / 3600);
+      wpmEl.textContent = Math.round((typedChars / 5) / mins) || 0;
+      accEl.textContent = typedChars ? Math.round((correctChars / typedChars) * 100) : 100;
+    }
+
+    function tick() {
+      timeLeft = Math.max(0, duration - (performance.now() - startT) / 1000);
+      timeEl.textContent = Math.ceil(timeLeft);
+      if (timeLeft <= 0) finish();
+    }
+
+    function start() {
+      started = true; finished = false; startT = performance.now();
+      pills.forEach(p => p.disabled = true);
+      timerId = setInterval(tick, 100);
+    }
+
+    function tier(w) {
+      if (w < 40) return 'Casual';
+      if (w < 60) return 'Proficient';
+      if (w < 80) return 'Swift';
+      return 'Blazing';
+    }
+
+    function finish() {
+      if (finished) return;
+      finished = true;
+      clearInterval(timerId);
+      input.blur();
+      const mins = duration / 60;
+      const wpm = Math.round((typedChars / 5) / mins);
+      const acc = typedChars ? Math.round((correctChars / typedChars) * 100) : 100;
+      const prev = +(localStorage.getItem(bestKey()) || 0);
+      if (wpm > prev) localStorage.setItem(bestKey(), String(wpm));
+      renderBest();
+      document.getElementById('rWpm').textContent = wpm;
+      document.getElementById('rTier').textContent = tier(wpm);
+      document.getElementById('rAcc').textContent = acc + '%';
+      document.getElementById('rChars').textContent = correctChars + '/' + typedChars;
+      document.getElementById('rWords').textContent = correctWords;
+      resultsEl.classList.add('show');
+      resultsEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      liveStats();
+    }
+
+    function reset() {
+      clearInterval(timerId);
+      started = false; finished = false;
+      correctChars = 0; typedChars = 0; correctWords = 0;
+      timeLeft = duration; timeEl.textContent = duration;
+      wpmEl.textContent = '0'; accEl.textContent = '100';
+      input.value = '';
+      resultsEl.classList.remove('show');
+      pills.forEach(p => p.disabled = false);
+      buildWords();
+      renderBest();
+    }
+
+    input.addEventListener('input', () => {
+      if (finished) return;
+      if (!started) start();
+      let v = input.value;
+      // commit word on space
+      if (v.endsWith(' ') || v.endsWith('　')) {
+        const t = v.slice(0, -1);
+        typed[wi] = t;
+        countWord(wi, t);
+        if (t === words[wi]) correctWords++;
+        wi++;
+        input.value = '';
+        if (wi >= words.length) { finish(); return; }
+        markCurrent();
+        liveStats();
+        return;
+      }
+      // count chars incrementally vs previous value is complex; recount current word
+      recountCurrent(v);
+      typed[wi] = v;
+      paintWord(wi);
+      moveCaret();
+      liveStats();
+    });
+
+    // char counting: recompute deltas simply — track per-word correct/typed at commit;
+    // for live counting, count current word chars each input
+    let curCounted = 0, curCorrect = 0;
+    function recountCurrent(v) {
+      const w = words[wi];
+      // remove previous live count for this word, add new
+      typedChars -= curCounted; correctChars -= curCorrect;
+      curCounted = v.length; curCorrect = 0;
+      for (let k = 0; k < v.length && k < w.length; k++) if (v[k] === w[k]) curCorrect++;
+      typedChars += curCounted; correctChars += curCorrect;
+    }
+    function countWord(i, t) {
+      // remove live count, add final
+      typedChars -= curCounted; correctChars -= curCorrect;
+      curCounted = 0; curCorrect = 0;
+      const w = words[i];
+      typedChars += t.length;
+      for (let k = 0; k < t.length && k < w.length; k++) if (t[k] === w[k]) correctChars++;
+      // extra chars beyond word length count as typed but incorrect
+      paintWord(i);
+    }
+
+    // backspace to previous word if it was wrong
+    input.addEventListener('keydown', e => {
+      if (e.key === 'Backspace' && input.value === '' && wi > 0 && typed[wi - 1] !== words[wi - 1]) {
+        e.preventDefault();
+        wi--;
+        const t = typed[wi];
+        input.value = t + ' ';
+        // remove the trailing space immediately so user continues typing the word
+        input.value = t;
+        // re-add its committed counts back as live counts
+        const w = words[wi];
+        let cc = 0;
+        for (let k = 0; k < t.length && k < w.length; k++) if (t[k] === w[k]) cc++;
+        typedChars -= t.length; correctChars -= cc;
+        if (t === w) correctWords--;
+        curCounted = 0; curCorrect = 0;
+        recountCurrent(t);
+        typed[wi] = t;
+        paintWord(wi);
+        wordEl(wi).classList.remove('done-bad');
+        markCurrent();
+        liveStats();
+      }
+      if (e.key === 'Tab') {
+        e.preventDefault();
+        reset(); input.focus();
+      }
+    });
+
+    wrap.addEventListener('click', () => input.focus());
+    document.getElementById('again').addEventListener('click', () => { reset(); input.focus(); });
+    pills.forEach(p => p.addEventListener('click', () => {
+      if (started && !finished) return;
+      pills.forEach(x => x.classList.remove('active'));
+      p.classList.add('active');
+      duration = +p.dataset.s;
+      reset();
+    }));
+    window.addEventListener('resize', moveCaret);
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Tab') { e.preventDefault(); reset(); input.focus(); }
+    });
+
+    reset();
+  </script>
+</body>
+</html>

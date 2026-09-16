@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Reaction Timer · Shipwright Studio</title>
+  <meta name="description" content="Reaction Timer is a free online reflex test. Click when the screen turns green across 5 rounds and see how your reaction time ranks." />
+  <link rel="canonical" href="https://shipwright-studio.pages.dev/lab/reaction-time/" />
+  <link rel="icon" type="image/svg+xml" href="../../favicon.svg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..700;1,9..144,300..700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "Reaction Timer",
+    "description": "A free online reflex test measuring reaction time in milliseconds across 5 rounds.",
+    "applicationCategory": "GameApplication",
+    "operatingSystem": "Web",
+    "offers": { "@type": "Offer", "price": "0" },
+    "author": { "@type": "Organization", "name": "Shipwright Studio", "url": "https://shipwright-studio.pages.dev/" }
+  }
+  </script>
+  <style>
+    :root {
+      --bg: #0a0c0f; --text: #f2efe6; --muted: #a6abb4; --faint: #6d737c;
+      --accent: #d2a24c; --line: rgba(255,255,255,.09);
+      --font-display: "Fraunces", Georgia, serif;
+      --font-body: "Inter", -apple-system, "Segoe UI", sans-serif;
+      --font-mono: "JetBrains Mono", ui-monospace, monospace;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+    html, body { height: 100%; }
+    body {
+      background: var(--bg); color: var(--text); font-family: var(--font-body);
+      display: flex; flex-direction: column; overflow: hidden;
+      touch-action: manipulation; user-select: none; -webkit-user-select: none;
+    }
+    .topbar {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 16px 22px; border-bottom: 1px solid var(--line); z-index: 2;
+      background: rgba(10,12,15,.85); backdrop-filter: blur(8px);
+    }
+    .topbar a { color: var(--muted); text-decoration: none; font-size: 14px; }
+    .topbar a:hover { color: var(--accent); }
+    .brand { font-family: var(--font-display); font-size: 17px; }
+    .brand em { color: var(--accent); font-style: italic; }
+    #stage {
+      flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
+      gap: 14px; cursor: pointer; text-align: center; padding: 24px;
+      transition: background-color .12s;
+    }
+    #stage[data-state="idle"], #stage[data-state="between"], #stage[data-state="result"] { background: var(--bg); }
+    #stage[data-state="waiting"] { background: #3d0f12; }
+    #stage[data-state="go"] { background: #1f9d55; }
+    #stage[data-state="early"] { background: #4a3208; }
+    #stage[data-state="result"] { cursor: default; }
+    .big { font-family: var(--font-display); font-size: clamp(40px, 9vw, 84px); font-weight: 500; line-height: 1.05; }
+    .sub { color: var(--muted); font-size: clamp(15px, 2.6vw, 19px); max-width: 520px; }
+    #stage[data-state="go"] .sub, #stage[data-state="go"] .big { color: #06130c; }
+    #stage[data-state="waiting"] .sub { color: #f3b8bc; }
+    .round { font-family: var(--font-mono); font-size: 13px; letter-spacing: .2em; text-transform: uppercase; color: var(--faint); min-height: 18px; }
+    #stage[data-state="go"] .round { color: #06130c; opacity: .7; }
+    .ms { font-family: var(--font-display); font-size: clamp(64px, 14vw, 130px); color: var(--accent); }
+    .results { display: flex; gap: 34px; flex-wrap: wrap; justify-content: center; margin-top: 6px; }
+    .stat b { display: block; font-family: var(--font-display); font-size: clamp(30px, 5.5vw, 46px); font-weight: 500; color: var(--accent); }
+    .stat span { font-family: var(--font-mono); font-size: 11.5px; letter-spacing: .18em; text-transform: uppercase; color: var(--muted); }
+    .tier { font-family: var(--font-display); font-style: italic; font-size: clamp(22px, 4vw, 30px); color: var(--text); }
+    .btn {
+      margin-top: 16px; font-family: var(--font-body); font-size: 16px; font-weight: 600;
+      padding: 14px 34px; border-radius: 999px; border: 1px solid var(--accent);
+      background: var(--accent); color: #0a0c0f; cursor: pointer;
+    }
+    .btn:hover { filter: brightness(1.08); }
+    .best { font-family: var(--font-mono); font-size: 12.5px; color: var(--faint); letter-spacing: .08em; }
+    .foot { padding: 14px; text-align: center; border-top: 1px solid var(--line); font-size: 13px; color: var(--faint); z-index: 2; }
+    .foot a { color: var(--muted); }
+    .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+  </style>
+</head>
+<body>
+  <div class="topbar">
+    <a href="../../ideas/">&larr; The Lab</a>
+    <span class="brand">Shipwright <em>Studio</em></span>
+    <span class="best" id="bestLine"></span>
+  </div>
+
+  <main id="stage" data-state="idle" role="button" aria-label="Reaction test area. Activate to start.">
+    <p class="sr">Reaction Timer is a free online reflex test. Click when the screen turns green.</p>
+    <div class="round" id="roundLabel"></div>
+    <div class="big" id="bigText">Reaction Timer</div>
+    <div class="sub" id="subText">Click anywhere to start. Wait for green, then click as fast as you can. Five rounds.</div>
+    <div id="extra"></div>
+  </main>
+
+  <div class="foot">Built by <a href="../../">Shipwright Studio</a> · Your best stays in this browser only.</div>
+
+  <script>
+    const stage = document.getElementById('stage');
+    const big = document.getElementById('bigText');
+    const sub = document.getElementById('subText');
+    const extra = document.getElementById('extra');
+    const roundLabel = document.getElementById('roundLabel');
+    const bestLine = document.getElementById('bestLine');
+
+    const ROUNDS = 5;
+    // states: idle -> waiting -> go -> between -> waiting ... -> result ; early = false start
+    let state = 'idle', timer = null, t0 = 0, round = 0;
+    let times = [];
+    let best = +(localStorage.getItem('rt-best') || 0);
+
+    function renderBest() { bestLine.textContent = best ? `Best avg ${Math.round(best)} ms` : ''; }
+    renderBest();
+
+    function tier(avg) {
+      if (avg < 180) return 'Lightning';
+      if (avg < 220) return 'Pro';
+      if (avg < 260) return 'Average';
+      if (avg < 320) return 'Casual';
+      return 'Sleepy';
+    }
+    function setState(s) { state = s; stage.dataset.state = s; }
+
+    function startRound(countIt = true) {
+      if (countIt) round++;
+      clearTimeout(timer);
+      setState('waiting');
+      roundLabel.textContent = `Round ${round} / ${ROUNDS}`;
+      big.textContent = 'Wait…';
+      sub.textContent = 'Click too early and the round restarts.';
+      extra.innerHTML = '';
+      timer = setTimeout(() => {
+        setState('go');
+        big.textContent = 'CLICK!';
+        sub.textContent = '';
+        t0 = performance.now();
+      }, 2000 + Math.random() * 3000);
+    }
+
+    function showResults() {
+      clearTimeout(timer);
+      setState('result');
+      const avg = times.reduce((a, b) => a + b, 0) / times.length;
+      const bestRound = Math.min(...times);
+      if (!best || avg < best) { best = avg; localStorage.setItem('rt-best', String(avg)); }
+      renderBest();
+      roundLabel.textContent = 'Done';
+      big.innerHTML = `<span class="ms">${Math.round(avg)} ms</span>`;
+      sub.innerHTML = `<span class="tier">${tier(avg)}</span> — average of ${ROUNDS} rounds`;
+      extra.innerHTML = `
+        <div class="results">
+          <div class="stat"><b>${Math.round(bestRound)} ms</b><span>Best round</span></div>
+          <div class="stat"><b>${times.map(t => Math.round(t)).join(' · ')}</b><span>All rounds</span></div>
+        </div>
+        <button class="btn" id="again">Play again</button>`;
+      const again = document.getElementById('again');
+      again.addEventListener('pointerdown', e => e.stopPropagation());
+      again.addEventListener('click', e => {
+        e.stopPropagation();
+        round = 0; times = []; startRound();
+      });
+    }
+
+    stage.addEventListener('pointerdown', () => {
+      if (state === 'idle') { round = 0; times = []; startRound(); }
+      else if (state === 'between') { startRound(); }
+      else if (state === 'waiting') {
+        clearTimeout(timer);
+        setState('early');
+        big.textContent = 'Too soon!';
+        sub.textContent = 'Click to retry this round.';
+        extra.innerHTML = '';
+      }
+      else if (state === 'early') { startRound(false); }
+      else if (state === 'go') {
+        const ms = performance.now() - t0;
+        times.push(ms);
+        if (round >= ROUNDS) { showResults(); return; }
+        setState('between');
+        roundLabel.textContent = `Round ${round} / ${ROUNDS} · done`;
+        big.innerHTML = `<span class="ms">${Math.round(ms)} ms</span>`;
+        sub.textContent = 'Click to continue.';
+        extra.innerHTML = '';
+      }
+    });
+
+    document.addEventListener('keydown', e => {
+      if (e.code === 'Space' || e.code === 'Enter') {
+        e.preventDefault();
+        stage.dispatchEvent(new PointerEvent('pointerdown'));
+      }
+    });
+  </script>
+</body>
+</html>

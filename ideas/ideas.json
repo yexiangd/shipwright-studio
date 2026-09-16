@@ -33,7 +33,9 @@
       "tagline": "How fast are your reflexes? Five tries, ranked.",
       "priority": 100,
       "effort": "S",
-      "status": "todo"
+      "status": "done",
+      "url": "/lab/reaction-time/",
+      "shipped": "2026-09-16"
     },
     {
       "id": "idea-002",
@@ -43,7 +45,9 @@
       "tagline": "WPM, accuracy, and a live leaderboard of one: you.",
       "priority": 99,
       "effort": "M",
-      "status": "todo"
+      "status": "done",
+      "url": "/lab/typing-test/",
+      "shipped": "2026-09-16"
     },
     {
       "id": "idea-003",
