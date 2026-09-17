@@ -33,5 +33,8 @@
   deploy). `ideas/ideas.json` is the idea bank.
 - Every page: canonical URL, unique title/description, exactly one `h1`,
   JSON-LD, `alt` on images.
-- Deploys go through the Direct Upload flow; after every deploy verify the
-  real URLs return HTTP 200. A successful task is not proof of delivery.
+- Deploys go through GitHub Actions (`.github/workflows/ci.yml`): SEO checks
+  first, then sitemap regen, Web3Forms key injected from the Cloudflare
+  environment, wrangler deploy, live URL verification. After every deploy
+  verify the real URLs return HTTP 200. A successful task is not proof of
+  delivery.
