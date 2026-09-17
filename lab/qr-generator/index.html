@@ -1,0 +1,672 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>QR Studio · Shipwright Studio</title>
+  <meta name="description" content="QR Studio is a free online QR code generator. Create scannable QR codes for URLs, Wi-Fi, and contacts in your browser — no uploads, no sign-up — and download them as PNG or SVG." />
+  <link rel="canonical" href="https://shipwright-studio.pages.dev/lab/qr-generator/" />
+  <link rel="icon" type="image/svg+xml" href="../../favicon.svg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..700;1,9..144,300..700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "QR Studio",
+    "description": "A free online QR code generator for URLs, Wi-Fi credentials, and contact cards, with PNG and SVG export.",
+    "applicationCategory": "UtilitiesApplication",
+    "operatingSystem": "Web",
+    "offers": { "@type": "Offer", "price": "0" },
+    "author": { "@type": "Organization", "name": "Shipwright Studio", "url": "https://shipwright-studio.pages.dev/" }
+  }
+  </script>
+  <style>
+    :root {
+      --bg: #0a0c0f; --text: #f2efe6; --muted: #a6abb4; --faint: #6d737c;
+      --accent: #d2a24c; --line: rgba(255,255,255,.09); --card: rgba(255,255,255,.04);
+      --font-display: "Fraunces", Georgia, serif;
+      --font-body: "Inter", -apple-system, "Segoe UI", sans-serif;
+      --font-mono: "JetBrains Mono", ui-monospace, monospace;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: var(--bg); color: var(--text); font-family: var(--font-body); min-height: 100vh; display: flex; flex-direction: column; }
+    .topbar { display: flex; justify-content: space-between; align-items: center; padding: 16px 22px; border-bottom: 1px solid var(--line); }
+    .topbar a { color: var(--muted); text-decoration: none; font-size: 14px; }
+    .topbar a:hover { color: var(--accent); }
+    .brand { font-family: var(--font-display); font-size: 17px; }
+    .brand em { color: var(--accent); font-style: italic; }
+    main { flex: 1; max-width: 1080px; width: 100%; margin: 0 auto; padding: 40px 22px 64px; }
+    h1 { font-family: var(--font-display); font-weight: 500; font-size: clamp(34px, 6vw, 54px); line-height: 1.05; margin-bottom: 12px; }
+    h1 em { color: var(--accent); font-style: italic; }
+    .lede { color: var(--muted); font-size: clamp(15px, 2.4vw, 18px); max-width: 640px; line-height: 1.6; margin-bottom: 34px; }
+    .grid { display: grid; grid-template-columns: 1fr 380px; gap: 22px; align-items: start; }
+    @media (max-width: 900px) { .grid { grid-template-columns: 1fr; } }
+    .card { background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 22px; }
+    .card h2 { font-family: var(--font-display); font-size: 20px; font-weight: 500; margin-bottom: 14px; }
+    .field { margin-bottom: 16px; }
+    .field label { display: block; font-family: var(--font-mono); font-size: 11.5px; letter-spacing: .14em; text-transform: uppercase; color: var(--faint); margin-bottom: 8px; }
+    textarea { width: 100%; min-height: 110px; resize: vertical; background: #06080a; border: 1px solid var(--line); border-radius: 10px; color: var(--text); font-family: var(--font-mono); font-size: 14px; padding: 12px; line-height: 1.55; }
+    textarea:focus { outline: none; border-color: var(--accent); }
+    .presets { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; }
+    .chip { font-family: var(--font-body); font-size: 13px; font-weight: 500; padding: 8px 14px; border-radius: 999px; border: 1px solid var(--line); background: transparent; color: var(--muted); cursor: pointer; }
+    .chip:hover { border-color: var(--accent); color: var(--accent); }
+    .chip.active { border-color: var(--accent); color: var(--accent); background: rgba(210,162,76,.08); }
+    .preset-form { display: none; gap: 10px; margin-bottom: 16px; }
+    .preset-form.show { display: grid; }
+    .preset-form.cols3 { grid-template-columns: 1fr 1fr 1fr; }
+    @media (max-width: 560px) { .preset-form.cols3 { grid-template-columns: 1fr; } }
+    .preset-form input, .preset-form select { background: #06080a; border: 1px solid var(--line); border-radius: 8px; color: var(--text); font-family: var(--font-body); font-size: 13.5px; padding: 10px 12px; width: 100%; }
+    .preset-form input:focus { outline: none; border-color: var(--accent); }
+    .row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    .colors { display: flex; gap: 14px; align-items: center; }
+    .colorpick { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--muted); }
+    input[type="color"] { width: 40px; height: 32px; border: 1px solid var(--line); border-radius: 8px; background: transparent; padding: 2px; cursor: pointer; }
+    select.ecc { background: #06080a; border: 1px solid var(--line); border-radius: 8px; color: var(--text); font-family: var(--font-body); font-size: 14px; padding: 10px 12px; width: 100%; }
+    input[type="range"] { width: 100%; accent-color: var(--accent); }
+    .rangeval { font-family: var(--font-mono); font-size: 12.5px; color: var(--muted); }
+    .preview-card { position: sticky; top: 20px; text-align: center; }
+    @media (max-width: 900px) { .preview-card { position: static; } }
+    .qr-tile { background: #f7f4ec; border-radius: 12px; padding: 22px; display: inline-block; margin: 6px 0 4px; min-width: 264px; min-height: 264px; display: inline-flex; align-items: center; justify-content: center; }
+    #qrCanvas { image-rendering: pixelated; border-radius: 4px; }
+    .empty-note { color: #8a8474; font-size: 14px; max-width: 200px; line-height: 1.5; }
+    .meta { font-family: var(--font-mono); font-size: 12px; color: var(--faint); margin: 10px 0 4px; letter-spacing: .04em; }
+    .warn { display: none; font-size: 13px; color: #e8b34b; background: rgba(232,179,75,.08); border: 1px solid rgba(232,179,75,.3); border-radius: 8px; padding: 9px 12px; margin-top: 10px; text-align: left; line-height: 1.5; }
+    .warn.show { display: block; }
+    .err { display: none; font-size: 13px; color: #f0858a; background: rgba(240,133,138,.08); border: 1px solid rgba(240,133,138,.3); border-radius: 8px; padding: 9px 12px; margin-top: 10px; text-align: left; line-height: 1.5; }
+    .err.show { display: block; }
+    .btnrow { display: flex; gap: 10px; margin-top: 14px; flex-wrap: wrap; justify-content: center; }
+    .btn { font-family: var(--font-body); font-size: 14px; font-weight: 600; padding: 11px 20px; border-radius: 999px; border: 1px solid var(--accent); background: var(--accent); color: #0a0c0f; cursor: pointer; }
+    .btn:hover { filter: brightness(1.08); }
+    .btn.ghost { background: transparent; color: var(--accent); }
+    .btn.ghost:hover { background: rgba(210,162,76,.08); filter: none; }
+    .tips { margin-top: 44px; }
+    .tips h2 { font-family: var(--font-display); font-size: 24px; font-weight: 500; margin-bottom: 16px; }
+    .tips ul { list-style: none; display: grid; gap: 12px; }
+    .tips li { color: var(--muted); font-size: 15px; line-height: 1.65; padding-left: 22px; position: relative; }
+    .tips li::before { content: "—"; position: absolute; left: 0; color: var(--accent); }
+    .tips code { font-family: var(--font-mono); font-size: 13px; color: var(--text); background: rgba(255,255,255,.06); padding: 2px 7px; border-radius: 6px; }
+    .foot { padding: 18px; text-align: center; border-top: 1px solid var(--line); font-size: 13px; color: var(--faint); }
+    .foot a { color: var(--muted); }
+    .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <a href="../../ideas/">← Lab</a>
+    <span class="brand">Shipwright <em>Studio</em></span>
+    <a href="../../">Home</a>
+  </header>
+  <main>
+    <h1>QR <em>Studio</em></h1>
+    <p class="lede"><strong>QR Studio is a free online QR code generator</strong> that turns text, URLs, Wi-Fi credentials, and contact cards into crisp, scannable QR codes — rendered entirely in your browser, so nothing you type ever leaves your device. Export as PNG or SVG.</p>
+
+    <div class="grid">
+      <section class="card" aria-label="QR options">
+        <h2>Content</h2>
+        <div class="presets" role="tablist" aria-label="Content presets">
+          <button class="chip active" data-preset="text" type="button">Text / URL</button>
+          <button class="chip" data-preset="wifi" type="button">Wi-Fi</button>
+          <button class="chip" data-preset="vcard" type="button">Contact</button>
+        </div>
+        <div class="preset-form cols3" id="wifiForm">
+          <input id="wifiSsid" type="text" placeholder="Network name (SSID)" autocomplete="off" />
+          <input id="wifiPass" type="text" placeholder="Password" autocomplete="off" />
+          <select id="wifiSec" aria-label="Security type">
+            <option value="WPA">WPA/WPA2</option>
+            <option value="WEP">WEP</option>
+            <option value="nopass">No password</option>
+          </select>
+        </div>
+        <div class="preset-form cols3" id="vcardForm">
+          <input id="vcName" type="text" placeholder="Full name" autocomplete="off" />
+          <input id="vcPhone" type="tel" placeholder="Phone" autocomplete="off" />
+          <input id="vcEmail" type="email" placeholder="Email" autocomplete="off" />
+        </div>
+        <div class="field" id="textField">
+          <label for="content">Text or URL</label>
+          <textarea id="content" placeholder="https://your-link.com — or any text" spellcheck="false">https://shipwright-studio.pages.dev/</textarea>
+        </div>
+
+        <h2 style="margin-top:22px">Style</h2>
+        <div class="row">
+          <div class="field">
+            <label for="ecc">Error correction</label>
+            <select class="ecc" id="ecc">
+              <option value="L">L — 7% (densest)</option>
+              <option value="M" selected>M — 15% (recommended)</option>
+              <option value="Q">Q — 25%</option>
+              <option value="H">H — 30% (most robust)</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Colors</label>
+            <div class="colors">
+              <span class="colorpick"><input type="color" id="fg" value="#0a0c0f" aria-label="Foreground color" /> Code</span>
+              <span class="colorpick"><input type="color" id="bg" value="#f7f4ec" aria-label="Background color" /> Background</span>
+            </div>
+          </div>
+        </div>
+        <div class="field">
+          <label for="size">Export size — <span class="rangeval" id="sizeVal">1024 px</span></label>
+          <input type="range" id="size" min="256" max="2048" step="128" value="1024" />
+        </div>
+      </section>
+
+      <section class="card preview-card" aria-label="QR preview">
+        <h2>Preview</h2>
+        <div class="qr-tile" id="tile">
+          <span class="empty-note" id="emptyNote">Type something on the left and your code appears here.</span>
+          <canvas id="qrCanvas" class="sr" width="256" height="256" role="img" aria-label="Generated QR code"></canvas>
+        </div>
+        <div class="meta" id="meta"></div>
+        <div class="warn" id="contrastWarn">Heads up: these colors are low-contrast and may scan poorly on some phones. Dark code on a light background works best.</div>
+        <div class="err" id="errBox"></div>
+        <div class="btnrow">
+          <button class="btn" id="dlPng" type="button">Download PNG</button>
+          <button class="btn ghost" id="dlSvg" type="button">SVG</button>
+          <button class="btn ghost" id="copySvg" type="button">Copy SVG</button>
+        </div>
+      </section>
+    </div>
+
+    <section class="tips">
+      <h2>Good to know</h2>
+      <ul>
+        <li><strong>Private by design.</strong> The QR code is generated by JavaScript running on this page — your text is never uploaded anywhere. View-source it if you like.</li>
+        <li><strong>Error correction</strong> lets a code still scan when partly obscured or dirty. <code>M</code> is the sweet spot; use <code>H</code> for codes printed small or on rough surfaces.</li>
+        <li>Keep a <strong>quiet zone</strong> (the blank margin) around the code — this tool adds one automatically on export.</li>
+        <li>Wi-Fi codes use the <code>WIFI:T:…;S:…;P:…;;</code> format that iOS and Android cameras recognize; contact codes use the <code>vCard</code> format.</li>
+      </ul>
+    </section>
+  </main>
+  <footer class="foot">Built by <a href="../../">Shipwright Studio</a> · Free tool, no sign-up.</footer>
+
+  <script>
+// Minimal QR encoder: byte mode, versions 1-10, ECC L/M/Q/H.
+// No browser APIs — testable in node. Exports encodeQR(text, ecLevel).
+
+// --- Galois field tables ---
+const EXP = new Array(512), LOG = new Array(256);
+(function initGF() {
+  let x = 1;
+  for (let i = 0; i < 255; i++) { EXP[i] = x; LOG[x] = i; x <<= 1; if (x & 0x100) x ^= 0x11d; }
+  for (let i = 255; i < 512; i++) EXP[i] = EXP[i - 255];
+})();
+function gfMul(a, b) { return (a === 0 || b === 0) ? 0 : EXP[LOG[a] + LOG[b]]; }
+
+// --- Version tables (index 0 = version 1) ---
+// total data codewords per ECC level [L, M, Q, H]
+const DATA_CW = [
+  [19,16,13,9],[34,28,22,16],[55,44,34,26],[80,64,48,36],[108,86,62,46],
+  [136,108,76,60],[156,124,88,66],[194,154,110,86],[232,182,132,100],[274,216,154,122]
+];
+// ec codewords per block [L, M, Q, H]
+const EC_CW = [
+  [7,10,13,17],[10,16,22,28],[15,26,18,22],[20,18,26,16],[26,24,18,22],
+  [18,16,24,28],[20,18,18,26],[24,22,22,26],[30,22,20,24],[18,26,24,28]
+];
+// number of blocks [L, M, Q, H]
+const BLOCKS = [
+  [1,1,1,1],[1,1,1,1],[1,1,2,2],[1,2,2,4],[1,2,4,4],
+  [2,4,4,4],[2,4,6,5],[2,4,6,6],[2,5,8,8],[4,5,8,8]
+];
+const ALIGN = [
+  [],[6,18],[6,22],[6,26],[6,30],[6,34],[6,22,38],[6,24,42],[6,26,46],[6,28,50]
+];
+const EC_BITS = { L: 0b01, M: 0b00, Q: 0b11, H: 0b10 };
+const EC_IDX = { L: 0, M: 1, Q: 2, H: 3 };
+
+function rsGenerator(degree) {
+  let poly = [1];
+  for (let i = 0; i < degree; i++) {
+    const next = new Array(poly.length + 1).fill(0);
+    for (let j = 0; j < poly.length; j++) {
+      next[j] ^= gfMul(poly[j], EXP[i]);
+      next[j + 1] ^= poly[j];
+    }
+    poly = next;
+  }
+  return poly;
+}
+function rsRemainder(data, gen) {
+  // gen is ascending-order [a0..an] with an=1; long division needs a_{n-1}..a_0
+  const n = gen.length - 1;
+  const res = new Array(n).fill(0);
+  for (const b of data) {
+    const factor = b ^ res.shift();
+    res.push(0);
+    for (let i = 0; i < n; i++) res[i] ^= gfMul(gen[n - 1 - i], factor);
+  }
+  return res;
+}
+
+function formatBits(ecLevel, mask) {
+  let data = (EC_BITS[ecLevel] << 3) | mask; // 5 bits
+  let bits = data << 10;
+  const g = 0b10100110111;
+  for (let i = 14; i >= 10; i--) if (bits & (1 << i)) bits ^= g << (i - 10);
+  return ((data << 10) | bits) ^ 0b101010000010010; // 15 bits
+}
+
+function versionBits(version) {
+  // 18-bit BCH version info (only used for versions >= 7)
+  const g18 = 0b1111100100101; // x^12+x^11+x^10+x^9+x^8+x^5+x^2+1
+  let d = version << 12;
+  const blen = (x) => x === 0 ? 0 : 32 - Math.clz32(x);
+  while (blen(d) - blen(g18) >= 0) d ^= g18 << (blen(d) - blen(g18));
+  return (version << 12) | d;
+}
+
+function buildMatrix(version, dataBits, ecLevel, mask) {
+  const size = 21 + 4 * (version - 1);
+  const m = Array.from({ length: size }, () => new Array(size).fill(null));
+  const isFunc = Array.from({ length: size }, () => new Array(size).fill(false));
+  function set(r, c, v, func) { m[r][c] = v ? 1 : 0; if (func) isFunc[r][c] = true; }
+
+  // Finder patterns + separators
+  function finder(r, c) {
+    for (let dr = -1; dr <= 7; dr++) for (let dc = -1; dc <= 7; dc++) {
+      const rr = r + dr, cc = c + dc;
+      if (rr < 0 || cc < 0 || rr >= size || cc >= size) continue;
+      const inPat = dr >= 0 && dr <= 6 && dc >= 0 && dc <= 6;
+      const v = inPat ? (Math.max(Math.abs(dr - 3), Math.abs(dc - 3)) !== 2 ? 1 : 0) : 0;
+      set(rr, cc, v, true);
+    }
+  }
+  finder(0, 0); finder(0, size - 7); finder(size - 7, 0);
+
+  // Timing patterns
+  for (let i = 8; i < size - 8; i++) {
+    set(6, i, i % 2 === 0, true); set(i, 6, i % 2 === 0, true);
+  }
+
+  // Alignment patterns (skip centers overlapping finder+separator zones; never overwrite other function modules)
+  const ap = ALIGN[version - 1];
+  const inFinderZone = (r, c) => (r < 9 && c < 9) || (r < 9 && c >= size - 8) || (r >= size - 8 && c < 9);
+  for (const r of ap) for (const c of ap) {
+    if (inFinderZone(r, c)) continue;
+    for (let dr = -2; dr <= 2; dr++) for (let dc = -2; dc <= 2; dc++) {
+      const rr = r + dr, cc = c + dc;
+      if (isFunc[rr][cc]) continue;
+      set(rr, cc, Math.max(Math.abs(dr), Math.abs(dc)) !== 1, true);
+    }
+  }
+
+  // Dark module
+  set(4 * version + 9, 8, 1, true);
+
+  // Version info areas (versions >= 7): 6x3 top-right, 3x6 bottom-left
+  if (version >= 7) {
+    for (let i = 0; i < 18; i++) {
+      set(Math.floor(i / 3), (i % 3) + size - 11, 0, true);   // rows 0..5, cols size-11..size-9
+      set((i % 3) + size - 11, Math.floor(i / 3), 0, true);    // rows size-11..size-9, cols 0..5
+    }
+  }
+
+  // Reserve format info areas (both copies)
+  function reserveFormat() {
+    for (let i = 0; i <= 5; i++) { set(8, i, 0, true); set(i, 8, 0, true); }
+    set(8, 7, 0, true); set(7, 8, 0, true); set(8, 8, 0, true);
+    for (let i = 0; i < 8; i++) set(8, size - 1 - i, 0, true);   // copy 2, row 8, cols size-1..size-8
+    for (let i = 0; i < 7; i++) set(size - 1 - i, 8, 0, true);    // copy 2, col 8, rows size-1..size-7
+  }
+  reserveFormat();
+
+  // Data placement: zigzag column pairs from bottom-right, skipping column 6.
+  // First (rightmost) pair goes upward, then the direction alternates.
+  let bit = 0;
+  const totalBits = dataBits.length;
+  let upward = true;
+  outer:
+  for (let col = size - 1; col > 0; col -= 2) {
+    if (col === 6) col = 5;
+    for (let row = 0; row < size; row++) {
+      const rr = upward ? size - 1 - row : row;
+      for (let c = 0; c < 2; c++) {
+        const cc = col - c;
+        if (m[rr][cc] !== null) continue;
+        const v = bit < totalBits ? dataBits[bit] : 0;
+        set(rr, cc, v, false);
+        bit++;
+      }
+    }
+    upward = !upward;
+  }
+
+  // Apply mask to data modules
+  const maskFns = [
+    (r, c) => (r + c) % 2 === 0,
+    (r, c) => r % 2 === 0,
+    (r, c) => c % 3 === 0,
+    (r, c) => (r + c) % 3 === 0,
+    (r, c) => (Math.floor(r / 2) + Math.floor(c / 3)) % 2 === 0,
+    (r, c) => ((r * c) % 2 + (r * c) % 3) === 0,
+    (r, c) => (((r * c) % 2) + ((r * c) % 3)) % 2 === 0,
+    (r, c) => (((r + c) % 2) + ((r * c) % 3)) % 2 === 0,
+  ];
+  const mf = maskFns[mask];
+  for (let r = 0; r < size; r++) for (let c = 0; c < size; c++)
+    if (!isFunc[r][c] && mf(r, c)) m[r][c] ^= 1;
+
+  // Write format info (bit 14 first). Copy 1: around top-left finder; copy 2: bottom-left + top-right.
+  const fb = formatBits(ecLevel, mask);
+  const c1 = [[8,0],[8,1],[8,2],[8,3],[8,4],[8,5],[8,7],[8,8],[7,8],[5,8],[4,8],[3,8],[2,8],[1,8],[0,8]];
+  const c2 = [];
+  for (let k = 0; k < 7; k++) c2.push([size - 1 - k, 8]);  // bits 14..8
+  for (let k = 0; k < 8; k++) c2.push([8, size - 8 + k]);  // bits 7..0
+  for (let i = 0; i < 15; i++) {
+    const v = (fb >> (14 - i)) & 1;
+    set(c1[i][0], c1[i][1], v, true);
+    set(c2[i][0], c2[i][1], v, true);
+  }
+
+  // Write version info (versions >= 7), LSB first
+  if (version >= 7) {
+    const vb = versionBits(version);
+    for (let i = 0; i < 18; i++) {
+      const v = (vb >> i) & 1;
+      set(Math.floor(i / 3), (i % 3) + size - 11, v, true);
+      set((i % 3) + size - 11, Math.floor(i / 3), v, true);
+    }
+  }
+  return m;
+}
+
+function penalty(mat) {
+  const n = mat.length;
+  let score = 0;
+  // Rule 1: runs in rows and cols
+  for (let r = 0; r < n; r++) {
+    let run = 1;
+    for (let c = 1; c < n; c++) {
+      if (mat[r][c] === mat[r][c - 1]) run++;
+      else { if (run >= 5) score += 3 + (run - 5); run = 1; }
+    }
+    if (run >= 5) score += 3 + (run - 5);
+  }
+  for (let c = 0; c < n; c++) {
+    let run = 1;
+    for (let r = 1; r < n; r++) {
+      if (mat[r][c] === mat[r - 1][c]) run++;
+      else { if (run >= 5) score += 3 + (run - 5); run = 1; }
+    }
+    if (run >= 5) score += 3 + (run - 5);
+  }
+  // Rule 2: 2x2 blocks
+  for (let r = 0; r < n - 1; r++) for (let c = 0; c < n - 1; c++) {
+    const v = mat[r][c];
+    if (mat[r][c + 1] === v && mat[r + 1][c] === v && mat[r + 1][c + 1] === v) score += 3;
+  }
+  // Rule 3: finder-like patterns
+  const p1 = [1,0,1,1,1,0,1,0,0,0,0], p2 = [0,0,0,0,1,0,1,1,1,0,1];
+  function checkLine(line) {
+    for (let i = 0; i <= line.length - 11; i++) {
+      let a = true, b = true;
+      for (let k = 0; k < 11; k++) {
+        if (line[i + k] !== p1[k]) a = false;
+        if (line[i + k] !== p2[k]) b = false;
+      }
+      if (a || b) score += 40;
+    }
+  }
+  for (let r = 0; r < n; r++) checkLine(mat[r]);
+  for (let c = 0; c < n; c++) checkLine(mat.map(row => row[c]));
+  // Rule 4: dark ratio
+  let dark = 0;
+  for (let r = 0; r < n; r++) for (let c = 0; c < n; c++) dark += mat[r][c];
+  const pct = (dark * 100) / (n * n);
+  score += Math.floor(Math.abs(pct - 50) / 5) * 10;
+  return score;
+}
+
+function buildBitStream(text, ecLevel) {
+  ecLevel = (ecLevel || "M").toUpperCase();
+  if (!EC_IDX.hasOwnProperty(ecLevel)) throw new Error("bad ecLevel");
+  const ei = EC_IDX[ecLevel];
+  const bytes = Array.from(new TextEncoder().encode(text)); // UTF-8 bytes
+
+  // Choose version (byte mode: 8-bit char count for versions 1-9, 16-bit for 10)
+  let version = -1, dataCwCount = 0, countBits = 8;
+  for (let v = 1; v <= 10; v++) {
+    const cb = v <= 9 ? 8 : 16;
+    const dc = DATA_CW[v - 1][ei];
+    if (4 + cb + bytes.length * 8 <= dc * 8) { version = v; dataCwCount = dc; countBits = cb; break; }
+  }
+  if (version < 0) throw new Error("TOO_LONG");
+
+  // Build bit stream: mode 0100, char count, data, terminator, pad
+  const bits = [];
+  const push = (val, len) => { for (let i = len - 1; i >= 0; i--) bits.push((val >> i) & 1); };
+  push(0b0100, 4);
+  push(bytes.length, countBits);
+  for (const b of bytes) push(b, 8);
+  const capBits = dataCwCount * 8;
+  const termLen = Math.min(4, capBits - bits.length);
+  push(0, termLen);
+  while (bits.length % 8) bits.push(0);
+  const dataCw = [];
+  for (let i = 0; i < bits.length; i += 8) {
+    let b = 0;
+    for (let k = 0; k < 8; k++) b = (b << 1) | bits[i + k];
+    dataCw.push(b);
+  }
+  for (let p = 0; dataCw.length < dataCwCount; p++) dataCw.push(p % 2 ? 0x11 : 0xec);
+
+  // Split into blocks, RS encode, interleave
+  const nb = BLOCKS[version - 1][ei];
+  const ecPerBlock = EC_CW[version - 1][ei];
+  const shortLen = Math.floor(dataCwCount / nb);
+  const longCount = dataCwCount % nb; // number of blocks with one extra data cw
+  const dataBlocks = [], ecBlocks = [];
+  let off = 0;
+  for (let i = 0; i < nb; i++) {
+    const len = shortLen + (i >= nb - longCount ? 1 : 0);
+    const blk = dataCw.slice(off, off + len); off += len;
+    dataBlocks.push(blk);
+    ecBlocks.push(rsRemainder(blk, rsGenerator(ecPerBlock)));
+  }
+  const finalBits = [];
+  const maxData = shortLen + (longCount ? 1 : 0);
+  for (let i = 0; i < maxData; i++)
+    for (const blk of dataBlocks) if (i < blk.length) { const b = blk[i]; for (let k = 7; k >= 0; k--) finalBits.push((b >> k) & 1); }
+  for (let i = 0; i < ecPerBlock; i++)
+    for (const blk of ecBlocks) { const b = blk[i]; for (let k = 7; k >= 0; k--) finalBits.push((b >> k) & 1); }
+
+  return { finalBits, version, ecLevel };
+}
+
+function encodeQR(text, ecLevel, mask) {
+  const { finalBits, version, ecLevel: ec } = buildBitStream(text, ecLevel);
+  if (mask === undefined) {
+    // Try all masks, pick best penalty
+    let best = null, bestScore = Infinity, bestMask = 0;
+    for (let m = 0; m < 8; m++) {
+      const mat = buildMatrix(version, finalBits, ec, m);
+      const s = penalty(mat);
+      if (s < bestScore) { bestScore = s; best = mat; bestMask = m; }
+    }
+    return { size: best.length, modules: best, version, ecLevel: ec, mask: bestMask, maskScore: bestScore };
+  }
+  const mat = buildMatrix(version, finalBits, ec, mask);
+  return { size: mat.length, modules: mat, version, ecLevel: ec, mask };
+}
+
+
+  </script>
+  <script>
+  (function () {
+    "use strict";
+    var content = document.getElementById("content"),
+        ecc = document.getElementById("ecc"),
+        fg = document.getElementById("fg"),
+        bg = document.getElementById("bg"),
+        size = document.getElementById("size"),
+        sizeVal = document.getElementById("sizeVal"),
+        canvas = document.getElementById("qrCanvas"),
+        emptyNote = document.getElementById("emptyNote"),
+        meta = document.getElementById("meta"),
+        warn = document.getElementById("contrastWarn"),
+        errBox = document.getElementById("errBox"),
+        tile = document.getElementById("tile");
+
+    var preset = "text", lastModules = null, lastSize = 0, timer = null;
+
+    function esc(s) {
+      return String(s).replace(/\\/g, "\\\\").replace(/;/g, "\\;").replace(/,/g, "\\,").replace(/:/g, "\\:");
+    }
+    function payload() {
+      if (preset === "wifi") {
+        var ssid = document.getElementById("wifiSsid").value.trim(),
+            pass = document.getElementById("wifiPass").value,
+            sec = document.getElementById("wifiSec").value;
+        if (!ssid) return "";
+        return "WIFI:T:" + sec + ";S:" + esc(ssid) + ";P:" + esc(pass) + ";;";
+      }
+      if (preset === "vcard") {
+        var n = document.getElementById("vcName").value.trim(),
+            p = document.getElementById("vcPhone").value.trim(),
+            e = document.getElementById("vcEmail").value.trim();
+        if (!n && !p && !e) return "";
+        return "BEGIN:VCARD\nVERSION:3.0\nFN:" + n + "\nTEL:" + p + "\nEMAIL:" + e + "\nEND:VCARD";
+      }
+      return content.value;
+    }
+
+    function luminance(hex) {
+      var r = parseInt(hex.slice(1, 3), 16) / 255,
+          g = parseInt(hex.slice(3, 5), 16) / 255,
+          b = parseInt(hex.slice(5, 7), 16) / 255;
+      function lin(c) { return c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4); }
+      return 0.2126 * lin(r) + 0.7152 * lin(g) + 0.0722 * lin(b);
+    }
+
+    function draw(modules, n, fgColor, bgColor, px) {
+      var quiet = 4, total = n + quiet * 2, s = px / total;
+      canvas.width = px; canvas.height = px;
+      var ctx = canvas.getContext("2d");
+      ctx.fillStyle = bgColor; ctx.fillRect(0, 0, px, px);
+      ctx.fillStyle = fgColor;
+      for (var r = 0; r < n; r++) for (var c = 0; c < n; c++) {
+        if (modules[r][c]) ctx.fillRect(Math.round((c + quiet) * s), Math.round((r + quiet) * s), Math.ceil(s), Math.ceil(s));
+      }
+    }
+
+    function render() {
+      var text = payload();
+      errBox.classList.remove("show");
+      if (!text) {
+        emptyNote.style.display = "";
+        canvas.classList.add("sr");
+        meta.textContent = "";
+        warn.classList.remove("show");
+        lastModules = null;
+        return;
+      }
+      var res;
+      try {
+        res = encodeQR(text, ecc.value);
+      } catch (e) {
+        emptyNote.style.display = "";
+        canvas.classList.add("sr");
+        meta.textContent = "";
+        lastModules = null;
+        errBox.textContent = e && e.message === "TOO_LONG"
+          ? "That’s too much data for a QR code at this error-correction level. Shorten the text or drop the error correction a notch."
+          : "Couldn’t generate a code from that input.";
+        errBox.classList.add("show");
+        return;
+      }
+      lastModules = res.modules; lastSize = res.size;
+      emptyNote.style.display = "none";
+      canvas.classList.remove("sr");
+      var previewPx = Math.min(232, tile.clientWidth - 44);
+      draw(res.modules, res.size, fg.value, bg.value, Math.max(200, previewPx));
+      tile.style.background = bg.value;
+      meta.textContent = "Version " + res.version + " · " + res.size + "×" + res.size + " modules · ECC " + res.ecLevel + " · " + text.length + " chars";
+      var l1 = luminance(fg.value), l2 = luminance(bg.value),
+          ratio = (Math.max(l1, l2) + 0.05) / (Math.min(l1, l2) + 0.05);
+      warn.classList.toggle("show", ratio < 2.5);
+    }
+
+    function schedule() { clearTimeout(timer); timer = setTimeout(render, 180); }
+
+    document.querySelectorAll(".chip").forEach(function (chip) {
+      chip.addEventListener("click", function () {
+        document.querySelectorAll(".chip").forEach(function (c) { c.classList.remove("active"); });
+        chip.classList.add("active");
+        preset = chip.dataset.preset;
+        document.getElementById("wifiForm").classList.toggle("show", preset === "wifi");
+        document.getElementById("vcardForm").classList.toggle("show", preset === "vcard");
+        document.getElementById("textField").style.display = preset === "text" ? "" : "none";
+        render();
+      });
+    });
+
+    ["wifiSsid", "wifiPass", "vcName", "vcPhone", "vcEmail"].forEach(function (id) {
+      document.getElementById(id).addEventListener("input", schedule);
+    });
+    document.getElementById("wifiSec").addEventListener("change", render);
+    content.addEventListener("input", schedule);
+    ecc.addEventListener("change", render);
+    fg.addEventListener("input", schedule);
+    bg.addEventListener("input", schedule);
+    size.addEventListener("input", function () { sizeVal.textContent = size.value + " px"; });
+
+    function exportSVG(px) {
+      var n = lastSize, quiet = 4, s = px / (n + quiet * 2), parts = [];
+      parts.push('<svg xmlns="http://www.w3.org/2000/svg" width="' + px + '" height="' + px + '" viewBox="0 0 ' + px + ' ' + px + '">');
+      parts.push('<rect width="' + px + '" height="' + px + '" fill="' + bg.value + '"/>');
+      parts.push('<path fill="' + fg.value + '" d="');
+      var d = [];
+      for (var r = 0; r < n; r++) for (var c = 0; c < n; c++) {
+        if (lastModules[r][c]) {
+          var x = Math.round((c + quiet) * s), y = Math.round((r + quiet) * s), w = Math.ceil(s);
+          d.push("M" + x + " " + y + "h" + w + "v" + w + "h-" + w + "z");
+        }
+      }
+      parts.push(d.join("") + '"/></svg>');
+      return parts.join("");
+    }
+
+    function download(name, url) {
+      var a = document.createElement("a");
+      a.href = url; a.download = name;
+      document.body.appendChild(a); a.click(); a.remove();
+    }
+
+    document.getElementById("dlPng").addEventListener("click", function () {
+      if (!lastModules) return;
+      var px = parseInt(size.value, 10), off = document.createElement("canvas");
+      var quiet = 4, total = lastSize + quiet * 2, s = px / total;
+      off.width = px; off.height = px;
+      var ctx = off.getContext("2d");
+      ctx.fillStyle = bg.value; ctx.fillRect(0, 0, px, px);
+      ctx.fillStyle = fg.value;
+      for (var r = 0; r < lastSize; r++) for (var c = 0; c < lastSize; c++) {
+        if (lastModules[r][c]) ctx.fillRect(Math.round((c + quiet) * s), Math.round((r + quiet) * s), Math.ceil(s), Math.ceil(s));
+      }
+      download("qr-studio.png", off.toDataURL("image/png"));
+    });
+    document.getElementById("dlSvg").addEventListener("click", function () {
+      if (!lastModules) return;
+      var blob = new Blob([exportSVG(parseInt(size.value, 10))], { type: "image/svg+xml" });
+      var url = URL.createObjectURL(blob);
+      download("qr-studio.svg", url);
+      setTimeout(function () { URL.revokeObjectURL(url); }, 4000);
+    });
+    document.getElementById("copySvg").addEventListener("click", function () {
+      if (!lastModules) return;
+      var btn = this;
+      navigator.clipboard.writeText(exportSVG(1024)).then(function () {
+        btn.textContent = "Copied ✓";
+        setTimeout(function () { btn.textContent = "Copy SVG"; }, 1600);
+      });
+    });
+
+    render();
+  })();
+  </script>
+</body>
+</html>

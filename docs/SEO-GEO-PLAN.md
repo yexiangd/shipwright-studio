@@ -18,7 +18,7 @@
 
 1. **Canonical URL**：每个页面加 `<link rel="canonical">`，防止 `pages.dev` 预览域名与主域名被判重复。 ✅ 2026-09-16（6 个页面：首页 / Lab / Lumen / Forge / reaction-time / typing-test）
 2. **社交卡片**：生成一张 `og-image.png`（1200×630），全站统一 `og:` / `twitter:` 标签 —— 分享到 X / Slack / iMessage 时才有脸面。
-3. **404 页面**：做一个符合品牌风格的 404，带回首页和 Lab 的入口。
+3. **404 页面**：做一个符合品牌风格的 404，带回首页和 Lab 的入口。 ✅ 2026-09-17（`404.html`：深色品牌风、"Off the chart." 文案、回首页/Lab 按钮 + 热门工具入口；`noindex`；Cloudflare Pages 自动用作 404 响应）
 4. **语义化复查**：每个页面只有一个 `h1`，层级不跳级；图片全部有 `alt`。
 5. **性能基线**：Lighthouse 四项 95+（静态站应无压力，每季度抽查一次）。
 6. **Google Search Console**：⚠️ 需要站长（用户）在 Search Console 里添加 `shipwright-studio.pages.dev` 并验证，提交 sitemap。这是唯一需要人工的一步。
@@ -67,4 +67,5 @@ AI 搜索不看排名看"可引用性"。打法：
 
 ## 运行日志
 
+- **2026-09-17**：Phase 1 任务 ③ 品牌 404 页面 —— 新建 `404.html`（Fraunces + brass 品牌风格、"Off the chart." 航海主题文案、回首页/Lab 双按钮、QR Studio / JSON Formatter / Forge / Lumen 热门入口；`noindex` + canonical + WebPage JSON-LD，通过 seo-check）。另：当日两个 lab 新页（qr-generator、json-formatter）均通过 seo-check；sitemap 经 `generate-sitemap.py` 重生成为 8 个 URL。下一步候选：og 社交卡片图（Phase 1-②，待用户拍板，见 §5）。
 - **2026-09-16**：Phase 1 任务 ① Canonical URL —— 6 个页面全部加上（首页、Lab、Lumen、Forge、reaction-time、typing-test；lab 新页面由每日构建 checklist 自动带）。下一步候选：og 社交卡片图（Phase 1-②）。

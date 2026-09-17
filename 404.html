@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Page not found · Shipwright Studio</title>
+  <meta name="description" content="This page drifted off the map. Find your way back to Shipwright Studio — an independent engineering studio in the Bay Area." />
+  <meta name="robots" content="noindex" />
+  <link rel="canonical" href="https://shipwright-studio.pages.dev/404.html" />
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..700;1,9..144,300..700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebPage",
+    "name": "Page not found",
+    "description": "Shipwright Studio 404 page.",
+    "author": { "@type": "Organization", "name": "Shipwright Studio", "url": "https://shipwright-studio.pages.dev/" }
+  }
+  </script>
+  <style>
+    :root {
+      --bg: #0a0c0f; --text: #f2efe6; --muted: #a6abb4; --faint: #6d737c;
+      --accent: #d2a24c; --line: rgba(255,255,255,.09);
+      --font-display: "Fraunces", Georgia, serif;
+      --font-body: "Inter", -apple-system, "Segoe UI", sans-serif;
+      --font-mono: "JetBrains Mono", ui-monospace, monospace;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: var(--bg); color: var(--text); font-family: var(--font-body); min-height: 100vh; display: flex; flex-direction: column; }
+    .topbar { display: flex; justify-content: space-between; align-items: center; padding: 16px 22px; border-bottom: 1px solid var(--line); }
+    .topbar a { color: var(--muted); text-decoration: none; font-size: 14px; }
+    .topbar a:hover { color: var(--accent); }
+    .brand { font-family: var(--font-display); font-size: 17px; }
+    .brand em { color: var(--accent); font-style: italic; }
+    main { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 48px 22px; gap: 14px; }
+    .code { font-family: var(--font-mono); font-size: 13px; letter-spacing: .3em; text-transform: uppercase; color: var(--faint); }
+    h1 { font-family: var(--font-display); font-weight: 500; font-size: clamp(40px, 8vw, 76px); line-height: 1.05; }
+    h1 em { color: var(--accent); font-style: italic; }
+    p { color: var(--muted); font-size: clamp(15px, 2.4vw, 18px); max-width: 460px; line-height: 1.65; }
+    .cta { display: flex; gap: 12px; margin-top: 14px; flex-wrap: wrap; justify-content: center; }
+    .btn { font-family: var(--font-body); font-size: 15px; font-weight: 600; padding: 13px 28px; border-radius: 999px; border: 1px solid var(--accent); background: var(--accent); color: #0a0c0f; text-decoration: none; }
+    .btn:hover { filter: brightness(1.08); }
+    .btn.ghost { background: transparent; color: var(--accent); }
+    .btn.ghost:hover { background: rgba(210,162,76,.08); filter: none; }
+    .popular { margin-top: 26px; font-size: 14px; color: var(--faint); }
+    .popular a { color: var(--muted); text-decoration: none; border-bottom: 1px solid var(--line); margin: 0 8px; }
+    .popular a:hover { color: var(--accent); border-color: var(--accent); }
+    .foot { padding: 18px; text-align: center; border-top: 1px solid var(--line); font-size: 13px; color: var(--faint); }
+    .foot a { color: var(--muted); }
+    .wave { width: 120px; height: 24px; margin-bottom: 6px; }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <a href="/ideas/">← Lab</a>
+    <span class="brand">Shipwright <em>Studio</em></span>
+    <a href="/">Home</a>
+  </header>
+  <main>
+    <svg class="wave" viewBox="0 0 120 24" fill="none" aria-hidden="true">
+      <path d="M2 12 Q 12 2, 22 12 T 42 12 T 62 12 T 82 12 T 102 12 T 122 12" stroke="#d2a24c" stroke-width="2" stroke-linecap="round"/>
+    </svg>
+    <div class="code">Error 404</div>
+    <h1>Off the <em>chart.</em></h1>
+    <p>This page drifted off the map — it may have moved, or the link ran aground. The studio itself is still very much afloat.</p>
+    <div class="cta">
+      <a class="btn" href="/">Back to shore</a>
+      <a class="btn ghost" href="/ideas/">Browse the Lab</a>
+    </div>
+    <div class="popular">
+      Popular tools:
+      <a href="/lab/qr-generator/">QR Studio</a>
+      <a href="/lab/json-formatter/">JSON Formatter</a>
+      <a href="/forge/">Forge</a>
+      <a href="/lumen/">Lumen</a>
+    </div>
+  </main>
+  <footer class="foot">Built by <a href="/">Shipwright Studio</a> · Free tools, no sign-up.</footer>
+</body>
+</html>

@@ -16,6 +16,16 @@
     <priority>0.9</priority>
   </url>
   <url>
+    <loc>https://shipwright-studio.pages.dev/lab/json-formatter/</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://shipwright-studio.pages.dev/lab/qr-generator/</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
     <loc>https://shipwright-studio.pages.dev/lab/reaction-time/</loc>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
