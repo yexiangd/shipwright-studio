@@ -37,29 +37,6 @@ jobs:
       - name: Prepare deploy dir
         run: rm -rf docs .github .wrangler
 
-      - name: Diagnose Cloudflare credentials (temporary)
-        env:
-          CF_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          CF_ACCOUNT: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-        run: |
-          python3 - <<'EOF'
-          import os, json, hashlib, urllib.request, urllib.error
-          token = os.environ["CF_TOKEN"].strip()
-          acct = os.environ["CF_ACCOUNT"].strip()
-          print("token length:", len(token))
-          print("account length:", len(acct))
-          print("account sha16:", hashlib.sha256(acct.encode()).hexdigest()[:16])
-          print("account is hex32:", len(acct) == 32 and all(c in "0123456789abcdef" for c in acct))
-          req = urllib.request.Request(
-              "https://api.cloudflare.com/client/v4/user/tokens/verify",
-              headers={"Authorization": f"Bearer {token}"})
-          try:
-              data = json.load(urllib.request.urlopen(req, timeout=30))
-              print("token verify success:", data.get("success"), "| status:", data.get("result", {}).get("status"))
-          except urllib.error.HTTPError as e:
-              print("token verify HTTP:", e.code)
-          EOF
-
       - name: Fetch Web3Forms key from Cloudflare
         env:
           CF_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
