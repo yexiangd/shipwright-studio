@@ -38,3 +38,10 @@
   environment, wrangler deploy, live URL verification. After every deploy
   verify the real URLs return HTTP 200. A successful task is not proof of
   delivery.
+- Project showcase is fully automatic: `.github/workflows/sync-showcase.yml`
+  runs daily 06:30 PT (and on demand via workflow_dispatch), finds public
+  repos tagged with the `showcase` topic, and rewrites `showcase.json`.
+  The site appends those as work cards via JS (`script.js`); the 6 curated
+  cards in `index.html` are never touched. The sync commit triggers the
+  normal CI -> deploy. Only public, non-archived, non-fork repos are picked
+  up; the repo's GitHub homepage URL becomes the card link when set.

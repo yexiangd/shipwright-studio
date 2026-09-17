@@ -1,0 +1,31 @@
+name: Sync showcase
+
+# Fully-automatic project showcase: any public repo tagged with the
+# `showcase` topic gets a card in the site's work section.
+# Runs daily 06:30 PT + on demand. Commits showcase.json, which triggers
+# the main CI (SEO check -> deploy).
+on:
+  schedule:
+    - cron: '30 13 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Sync showcase.json from GitHub topics
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: python3 scripts/sync-showcase.py
+
+      - name: Commit if changed
+        run: |
+          git config user.name "ci-bot"
+          git config user.email "ci-bot@users.noreply.github.com"
+          git add showcase.json
+          git diff --cached --quiet || (git commit -m "ci: sync showcase from GitHub topics" && git push)
