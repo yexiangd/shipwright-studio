@@ -1,1 +1,17 @@
-{"projects":[],"updated":null}
+{
+  "updated": "2026-09-17T03:34:28Z",
+  "projects": [
+    {
+      "name": "daily-pipeline",
+      "title": "Daily Pipeline",
+      "description": "定时数据收集管道：GitHub Actions 抓数据，Muse 做判断（freelance 线索等）",
+      "url": "https://github.com/yexiangd/daily-pipeline",
+      "repo_url": "https://github.com/yexiangd/daily-pipeline",
+      "tags": [
+        "Python"
+      ],
+      "stars": 0,
+      "pushed_at": "2026-09-16T23:30:16Z"
+    }
+  ]
+}
