@@ -12,7 +12,7 @@
 
 - **Lumen** (https://shipwright-studio.pages.dev/lumen/): An interactive photography lab that teaches the exposure triangle (aperture, shutter speed, ISO) with real-time canvas simulations of depth of field, motion blur, noise, and light metering.
 - **Forge** (https://shipwright-studio.pages.dev/forge/): An LLM inference cost estimator. Enter model size, quantization, GPU type, batch size, and traffic to estimate GPU count, latency, and monthly serving cost.
-- **The Lab** (https://shipwright-studio.pages.dev/ideas/): An open bank of 100 web experiments — games, developer tools, browser extension prototypes, and small apps. Two new experiments are designed, built, and shipped every day.
+- **The Lab** (https://shipwright-studio.pages.dev/ideas/): An open bank of 132 web experiments — games, developer tools, browser extension prototypes, and small apps. Two new experiments are designed, built, and shipped every day.
 
 ## Process
 
