@@ -38,11 +38,10 @@
   environment, wrangler deploy, live URL verification. After every deploy
   verify the real URLs return HTTP 200. A successful task is not proof of
   delivery.
-- Project showcase is fully automatic: `.github/workflows/sync-showcase.yml`
-  runs daily 06:30 PT (and on demand via workflow_dispatch), finds public
-  repos tagged with the `showcase` topic, and rewrites `showcase.json`.
-  The site appends those as work cards via JS (`script.js`); the 6 curated
-  cards in `index.html` are never touched. The sync commit triggers the
-  normal CI -> deploy (via an explicit workflow_dispatch, because a
-  GITHUB_TOKEN push does not trigger workflows on its own). Only public, non-archived, non-fork repos are picked
-  up; the repo's GitHub homepage URL becomes the card link when set.
+- The work section is fed by the idea bank: `ideas/ideas.json` is the single
+  source of truth. Any idea with `status: done` and a `url` automatically
+  becomes a work card on the homepage (`script.js` appends them; the 6
+  curated cards in `index.html` are never touched, and done ideas already
+  covered by a curated card are skipped). To ship a new project: build it,
+  flip its status to `done` with the live `url`, push — the normal CI
+  deploys it. No extra workflow needed.

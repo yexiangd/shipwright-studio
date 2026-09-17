@@ -77,27 +77,36 @@ document.getElementById('contactForm').addEventListener('submit', async e => {
 // Footer year
 document.getElementById('year').textContent = new Date().getFullYear();
 
-// Auto-synced showcase: repos tagged with the `showcase` topic on GitHub
-// appear here as extra work cards. Curated cards above are untouched.
+// Idea bank -> work section: every idea with status "done" and a url
+// automatically becomes a work card. The curated cards above are untouched;
+// done ideas already covered by a curated card (same url) are skipped.
 (function () {
   const grid = document.getElementById('workGrid');
   if (!grid) return;
   const esc = s => String(s == null ? '' : s)
     .replace(/&/g, '&amp;').replace(/</g, '&lt;')
     .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  const norm = u => (u || '').replace(/\/$/, '');
+  const seen = new Set(
+    [...grid.querySelectorAll('.work-link')].map(a => norm(a.getAttribute('href')))
+  );
   const visuals = ['work-visual-1', 'work-visual-2', 'work-visual-3',
                    'work-visual-4', 'work-visual-5'];
-  fetch('showcase.json', { cache: 'no-store' })
-    .then(r => { if (!r.ok) throw new Error('no showcase'); return r.json(); })
+  fetch('ideas/ideas.json', { cache: 'no-store' })
+    .then(r => { if (!r.ok) throw new Error('no ideas'); return r.json(); })
     .then(data => {
-      const projects = (data && data.projects) || [];
-      if (!projects.length) return;
+      const done = ((data && data.ideas) || [])
+        .filter(i => i.status === 'done' && i.url && !seen.has(norm(i.url)))
+        .sort((a, b) => (b.shipped || '').localeCompare(a.shipped || ''));
+      if (!done.length) return;
       const base = grid.querySelectorAll('.work-card').length;
-      projects.forEach((p, i) => {
+      done.forEach((p, i) => {
         const idx = String(base + i + 1).padStart(2, '0');
-        const isDemo = p.url && p.repo_url && p.url !== p.repo_url;
-        const tags = (p.tags || []).slice(0, 3)
+        const tags = [p.category, p.effort].filter(Boolean)
           .map(t => `<span>${esc(t)}</span>`).join('');
+        const note = p.shipped
+          ? `Self-initiated &middot; Shipped ${esc(p.shipped)}`
+          : 'Self-initiated &middot; From the idea bank';
         const card = document.createElement('article');
         card.className = 'work-card reveal';
         card.innerHTML =
@@ -105,11 +114,10 @@ document.getElementById('year').textContent = new Date().getFullYear();
           `<span class="work-index">${idx}</span></div>` +
           `<div class="work-body">` +
           (tags ? `<div class="work-tags">${tags}</div>` : '') +
-          `<h3>${esc(p.title || p.name)}</h3>` +
-          (p.description ? `<p>${esc(p.description)}</p>` : '') +
-          `<a class="work-link" href="${esc(p.url)}" target="_blank" rel="noopener">` +
-          `${isDemo ? 'Try the live demo' : 'View on GitHub'} &rarr;</a>` +
-          `<p class="work-note">Self-initiated &middot; Auto-synced from GitHub</p>` +
+          `<h3>${esc(p.title)}</h3>` +
+          (p.tagline ? `<p>${esc(p.tagline)}</p>` : '') +
+          `<a class="work-link" href="${esc(p.url)}">Try it live &rarr;</a>` +
+          `<p class="work-note">${note}</p>` +
           `</div>`;
         grid.appendChild(card);
         observer.observe(card);
