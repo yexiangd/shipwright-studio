@@ -104,9 +104,6 @@ document.getElementById('year').textContent = new Date().getFullYear();
         const idx = String(base + i + 1).padStart(2, '0');
         const tags = [p.category, p.effort].filter(Boolean)
           .map(t => `<span>${esc(t)}</span>`).join('');
-        const note = p.shipped
-          ? `Self-initiated &middot; Shipped ${esc(p.shipped)}`
-          : 'Self-initiated &middot; From the idea bank';
         const card = document.createElement('article');
         card.className = 'work-card reveal';
         card.innerHTML =
@@ -117,7 +114,6 @@ document.getElementById('year').textContent = new Date().getFullYear();
           `<h3>${esc(p.title)}</h3>` +
           (p.tagline ? `<p>${esc(p.tagline)}</p>` : '') +
           `<a class="work-link" href="${esc(p.url)}">Try it live &rarr;</a>` +
-          `<p class="work-note">${note}</p>` +
           `</div>`;
         grid.appendChild(card);
         observer.observe(card);
