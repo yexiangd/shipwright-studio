@@ -43,5 +43,6 @@
   repos tagged with the `showcase` topic, and rewrites `showcase.json`.
   The site appends those as work cards via JS (`script.js`); the 6 curated
   cards in `index.html` are never touched. The sync commit triggers the
-  normal CI -> deploy. Only public, non-archived, non-fork repos are picked
+  normal CI -> deploy (via an explicit workflow_dispatch, because a
+  GITHUB_TOKEN push does not trigger workflows on its own). Only public, non-archived, non-fork repos are picked
   up; the repo's GitHub homepage URL becomes the card link when set.
