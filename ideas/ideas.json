@@ -1,5 +1,5 @@
 {
-  "updated": "2026-09-17",
+  "updated": "2026-09-18",
   "ideas": [
     {
       "id": "idea-000a",
@@ -361,7 +361,9 @@
       "tagline": "Memorable or maximum-entropy passwords, strength meter.",
       "priority": 96,
       "effort": "S",
-      "status": "todo"
+      "status": "done",
+      "url": "/lab/password-generator/",
+      "shipped": "2026-09-18"
     },
     {
       "id": "idea-034",
@@ -791,7 +793,9 @@
       "tagline": "25 minutes on, 5 off. Your focus, weaponized.",
       "priority": 95,
       "effort": "S",
-      "status": "todo"
+      "status": "done",
+      "url": "/lab/pomodoro/",
+      "shipped": "2026-09-18"
     },
     {
       "id": "idea-077",

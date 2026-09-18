@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Focus Timer · Shipwright Studio</title>
+  <meta name="description" content="Focus Timer is a free online Pomodoro timer: 25 minutes of deep work, 5 minutes of rest, with auto-cycling long breaks, session tracking, and tab-friendly countdown — no sign-up." />
+  <link rel="canonical" href="https://shipwright-studio.pages.dev/lab/pomodoro/" />
+  <link rel="icon" type="image/svg+xml" href="../../favicon.svg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..700;1,9..144,300..700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "Focus Timer",
+    "description": "A free online Pomodoro timer: 25-minute focus sessions with 5-minute breaks, auto-cycling long breaks, session tracking, and a tab-friendly countdown.",
+    "applicationCategory": "ProductivityApplication",
+    "operatingSystem": "Web",
+    "offers": { "@type": "Offer", "price": "0" },
+    "author": { "@type": "Organization", "name": "Shipwright Studio", "url": "https://shipwright-studio.pages.dev/" }
+  }
+  </script>
+  <style>
+    :root {
+      --bg: #0a0c0f; --text: #f2efe6; --muted: #a6abb4; --faint: #6d737c;
+      --accent: #d2a24c; --calm: #7fb3c8; --line: rgba(255,255,255,.09); --card: rgba(255,255,255,.04);
+      --font-display: "Fraunces", Georgia, serif;
+      --font-body: "Inter", -apple-system, "Segoe UI", sans-serif;
+      --font-mono: "JetBrains Mono", ui-monospace, monospace;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: var(--bg); color: var(--text); font-family: var(--font-body); min-height: 100vh; display: flex; flex-direction: column; transition: background .6s; }
+    body.mode-break { background: #0a0e12; }
+    .topbar { display: flex; justify-content: space-between; align-items: center; padding: 16px 22px; border-bottom: 1px solid var(--line); }
+    .topbar a { color: var(--muted); text-decoration: none; font-size: 14px; }
+    .topbar a:hover { color: var(--accent); }
+    .brand { font-family: var(--font-display); font-size: 17px; }
+    .brand em { color: var(--accent); font-style: italic; }
+    main { flex: 1; max-width: 760px; width: 100%; margin: 0 auto; padding: 40px 22px 64px; }
+    h1 { font-family: var(--font-display); font-weight: 500; font-size: clamp(34px, 6vw, 54px); line-height: 1.05; margin-bottom: 12px; }
+    h1 em { color: var(--accent); font-style: italic; }
+    .lede { color: var(--muted); font-size: clamp(15px, 2.4vw, 18px); max-width: 640px; line-height: 1.6; margin-bottom: 34px; }
+    .lede strong { color: var(--text); }
+    .card { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 26px; margin-bottom: 20px; }
+    .modes { display: flex; gap: 8px; margin-bottom: 24px; }
+    .mode { flex: 1; padding: 10px; background: transparent; border: 1px solid var(--line); border-radius: 10px; color: var(--muted); font: 500 14px var(--font-body); cursor: pointer; transition: .15s; }
+    .mode.active { border-color: var(--accent); color: var(--accent); background: rgba(210,162,76,.07); }
+    body.mode-break .mode.active { border-color: var(--calm); color: var(--calm); background: rgba(127,179,200,.07); }
+    .timerwrap { display: flex; justify-content: center; margin: 8px 0 22px; }
+    .ringbox { position: relative; width: min(68vw, 300px); height: min(68vw, 300px); }
+    .ringbox svg { width: 100%; height: 100%; transform: rotate(-90deg); }
+    .ringbg { stroke: rgba(255,255,255,.08); }
+    .ringfg { stroke: var(--accent); stroke-linecap: round; transition: stroke-dashoffset .3s linear, stroke .6s; }
+    body.mode-break .ringfg { stroke: var(--calm); }
+    .timelabel { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+    .time { font-family: var(--font-mono); font-size: clamp(48px, 14vw, 72px); font-weight: 500; letter-spacing: .02em; }
+    .phaselabel { font-size: 12px; text-transform: uppercase; letter-spacing: .18em; color: var(--faint); margin-top: 6px; }
+    .controls { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-bottom: 20px; }
+    .btn { padding: 12px 26px; border-radius: 10px; border: 1px solid var(--line); background: transparent; color: var(--text); font: 600 15px var(--font-body); cursor: pointer; transition: .15s; }
+    .btn:hover { border-color: var(--accent); color: var(--accent); }
+    .btn.primary { background: var(--accent); border-color: var(--accent); color: #101214; min-width: 130px; }
+    .btn.primary:hover { color: #101214; filter: brightness(1.08); }
+    .dots { display: flex; gap: 10px; justify-content: center; margin-bottom: 6px; }
+    .dot { width: 12px; height: 12px; border-radius: 50%; border: 1px solid var(--line); transition: .3s; }
+    .dot.done { background: var(--accent); border-color: var(--accent); }
+    .dot.cur { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(210,162,76,.2); }
+    .cyclecap { text-align: center; font-size: 12px; color: var(--faint); margin-bottom: 4px; }
+    .settings { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-bottom: 18px; }
+    @media (max-width: 560px) { .settings { grid-template-columns: 1fr; } }
+    .set label { display: block; font-size: 12px; text-transform: uppercase; letter-spacing: .1em; color: var(--faint); margin-bottom: 8px; font-weight: 600; }
+    .set input { width: 100%; background: rgba(0,0,0,.35); border: 1px solid var(--line); border-radius: 8px; color: var(--text); font: 500 15px var(--font-mono); padding: 10px 12px; }
+    .set input:focus { outline: none; border-color: var(--accent); }
+    .toggles { display: flex; gap: 8px; flex-wrap: wrap; }
+    .chk { display: flex; align-items: center; gap: 8px; padding: 8px 12px; border: 1px solid var(--line); border-radius: 8px; font-size: 13px; color: var(--muted); cursor: pointer; user-select: none; }
+    .chk input { accent-color: var(--accent); }
+    .chk.on { border-color: var(--accent); color: var(--text); }
+    .stats { display: flex; gap: 30px; justify-content: center; flex-wrap: wrap; font-size: 13px; color: var(--muted); }
+    .stats b { color: var(--text); font-family: var(--font-mono); font-weight: 500; font-size: 16px; display: block; text-align: center; }
+    .stats button { background: none; border: none; color: var(--faint); font-size: 12px; cursor: pointer; text-decoration: underline; margin-top: 4px; }
+    .stats button:hover { color: var(--accent); }
+    .note { font-size: 13px; color: var(--faint); line-height: 1.7; margin-top: 6px; }
+    .note a { color: var(--accent); text-decoration: none; }
+    .foot { text-align: center; padding: 26px; border-top: 1px solid var(--line); color: var(--faint); font-size: 13px; }
+    .foot a { color: var(--accent); text-decoration: none; }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <a href="../../ideas/">← Lab</a>
+    <span class="brand">Shipwright <em>Studio</em></span>
+    <a href="../../">Home</a>
+  </header>
+  <main>
+    <h1>Focus <em>Timer</em></h1>
+    <p class="lede"><strong>Focus Timer is a free online Pomodoro timer</strong> that runs the classic 25-minute focus / 5-minute break rhythm, auto-serves a long break every four sessions, and tracks today's completed pomodoros. The countdown lives in your browser tab, so it keeps you honest while you work.</p>
+
+    <section class="card" aria-label="Timer">
+      <div class="modes" role="tablist" aria-label="Phase">
+        <button class="mode active" data-phase="focus" type="button" role="tab">Focus</button>
+        <button class="mode" data-phase="short" type="button" role="tab">Short break</button>
+        <button class="mode" data-phase="long" type="button" role="tab">Long break</button>
+      </div>
+      <div class="timerwrap">
+        <div class="ringbox">
+          <svg viewBox="0 0 200 200" aria-hidden="true">
+            <circle class="ringbg" cx="100" cy="100" r="90" fill="none" stroke-width="8" />
+            <circle class="ringfg" id="ring" cx="100" cy="100" r="90" fill="none" stroke-width="8"
+              stroke-dasharray="565.5" stroke-dashoffset="0" />
+          </svg>
+          <div class="timelabel">
+            <div class="time" id="time">25:00</div>
+            <div class="phaselabel" id="phaselabel">Focus</div>
+          </div>
+        </div>
+      </div>
+      <div class="controls">
+        <button class="btn primary" id="startPause" type="button">Start</button>
+        <button class="btn" id="reset" type="button">Reset</button>
+        <button class="btn" id="skip" type="button">Skip →</button>
+      </div>
+      <div class="dots" id="dots" aria-label="Cycle progress"></div>
+      <div class="cyclecap" id="cyclecap">Session 1 of 4</div>
+    </section>
+
+    <section class="card" aria-label="Settings">
+      <div class="settings">
+        <div class="set"><label for="dFocus">Focus (min)</label><input type="number" id="dFocus" min="5" max="60" value="25"></div>
+        <div class="set"><label for="dShort">Short break (min)</label><input type="number" id="dShort" min="1" max="30" value="5"></div>
+        <div class="set"><label for="dLong">Long break (min)</label><input type="number" id="dLong" min="5" max="45" value="15"></div>
+      </div>
+      <div class="toggles">
+        <label class="chk on"><input type="checkbox" id="autoNext" checked> Auto-start next phase</label>
+        <label class="chk on"><input type="checkbox" id="sound" checked> Sound on phase change</label>
+        <label class="chk"><input type="checkbox" id="notify"> Browser notifications</label>
+      </div>
+    </section>
+
+    <section class="card" aria-label="Today">
+      <div class="stats">
+        <span>Focus sessions<b id="statSessions">0</b></span>
+        <span>Focus minutes<b id="statMinutes">0</b></span>
+        <span><button id="resetStats" type="button">Reset today</button></span>
+      </div>
+    </section>
+
+    <p class="note">How it works: one <em>pomodoro</em> is 25 minutes of single-task focus followed by a 5-minute break; after four, take a 15–30 minute long break. The technique (named for a tomato-shaped kitchen timer) works because the short horizon makes starting cheap and the breaks make stopping mandatory. This page keeps everything in <code>localStorage</code> on your device — your session counts never leave it.</p>
+  </main>
+  <footer class="foot">Built by <a href="../../">Shipwright Studio</a> · Free tool, no sign-up.</footer>
+
+  <script>
+  (function () {
+    "use strict";
+
+    // ---------- core: pure logic, testable in node ----------
+    // done = completed focus sessions in the current set of 4 (0..4)
+    function nextPhase(phase, done) {
+      if (phase === "focus") {
+        var d = done + 1;
+        if (d >= 4) return { phase: "long", done: d };
+        return { phase: "short", done: d };
+      }
+      if (phase === "long") return { phase: "focus", done: 0 };
+      return { phase: "focus", done: done };
+    }
+    function fmt(sec) {
+      var m = Math.floor(sec / 60), s = sec % 60;
+      return (m < 10 ? "0" : "") + m + ":" + (s < 10 ? "0" : "") + s;
+    }
+    function clamp(v, lo, hi) { v = parseInt(v, 10); return isNaN(v) ? lo : Math.min(hi, Math.max(lo, v)); }
+    if (typeof module !== "undefined") module.exports = { nextPhase, fmt, clamp };
+
+    // ---------- UI ----------
+    if (typeof document === "undefined") return;
+    var RING = 2 * Math.PI * 90;
+    var state = { phase: "focus", done: 0, total: 0, left: 25 * 60, running: false, timer: null };
+    var el = function (id) { return document.getElementById(id); };
+    var ring = el("ring"), time = el("time"), phaseLabel = el("phaselabel"), startBtn = el("startPause");
+
+    function durations() {
+      return {
+        focus: clamp(el("dFocus").value, 5, 60) * 60,
+        short: clamp(el("dShort").value, 1, 30) * 60,
+        long: clamp(el("dLong").value, 5, 45) * 60
+      };
+    }
+    function phaseName(p) { return p === "focus" ? "Focus" : p === "short" ? "Short break" : "Long break"; }
+
+    function paint() {
+      time.textContent = fmt(state.left);
+      ring.style.strokeDashoffset = String(RING * (1 - state.left / state.total));
+      document.title = fmt(state.left) + " · " + phaseName(state.phase);
+      phaseLabel.textContent = phaseName(state.phase);
+      document.body.classList.toggle("mode-break", state.phase !== "focus");
+      document.querySelectorAll(".mode").forEach(function (m) {
+        m.classList.toggle("active", m.dataset.phase === state.phase);
+      });
+      // dots: completed focus sessions this cycle; "current" marks the next one
+      var dots = el("dots"); dots.innerHTML = "";
+      for (var i = 0; i < 4; i++) {
+        var d = document.createElement("div");
+        d.className = "dot";
+        if (i < state.done) d.className = "dot done";
+        else if (i === state.done && state.done < 4) d.className = "dot cur";
+        dots.appendChild(d);
+      }
+      el("cyclecap").textContent = state.phase === "focus"
+        ? "Session " + Math.min(state.done + 1, 4) + " of 4"
+        : phaseName(state.phase) + " — rest well";
+      startBtn.textContent = state.running ? "Pause" : (state.left < state.total ? "Resume" : "Start");
+    }
+
+    function setPhase(p) {
+      state.phase = p;
+      state.total = durations()[p];
+      state.left = state.total;
+      stopTick();
+      state.running = false;
+      paint();
+    }
+    function stopTick() { if (state.timer) { clearInterval(state.timer); state.timer = null; } }
+
+    function chime() {
+      if (!el("sound").checked) return;
+      try {
+        var AC = window.AudioContext || window.webkitAudioContext;
+        var ctx = new AC();
+        [523.25, 659.25, 783.99].forEach(function (f, i) {
+          var o = ctx.createOscillator(), g = ctx.createGain();
+          o.type = "sine"; o.frequency.value = f;
+          g.gain.setValueAtTime(0.0001, ctx.currentTime + i * 0.16);
+          g.gain.exponentialRampToValueAtTime(0.25, ctx.currentTime + i * 0.16 + 0.02);
+          g.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + i * 0.16 + 0.5);
+          o.connect(g); g.connect(ctx.destination);
+          o.start(ctx.currentTime + i * 0.16); o.stop(ctx.currentTime + i * 0.16 + 0.55);
+        });
+      } catch (e) { /* audio unavailable */ }
+    }
+    function notify(msg) {
+      if (!el("notify").checked || !("Notification" in window) || Notification.permission !== "granted") return;
+      try { new Notification("Focus Timer", { body: msg }); } catch (e) {}
+    }
+
+    // daily stats
+    var SKEY = "focus-timer-day";
+    function todayKey() { return new Date().toISOString().slice(0, 10); }
+    function stats() {
+      try {
+        var s = JSON.parse(localStorage.getItem(SKEY) || "null");
+        if (s && s.day === todayKey()) return s;
+      } catch (e) {}
+      return { day: todayKey(), sessions: 0, minutes: 0 };
+    }
+    function saveStats(s) { try { localStorage.setItem(SKEY, JSON.stringify(s)); } catch (e) {} }
+    function paintStats() {
+      var s = stats();
+      el("statSessions").textContent = s.sessions;
+      el("statMinutes").textContent = s.minutes;
+    }
+    function bumpStats(mins) {
+      var s = stats();
+      s.sessions += 1; s.minutes += mins; saveStats(s); paintStats();
+    }
+
+    function finish() {
+      stopTick(); state.running = false;
+      if (state.phase === "focus") bumpStats(Math.round(state.total / 60));
+      var nxt = nextPhase(state.phase, state.done);
+      state.done = nxt.done;
+      chime();
+      notify(state.phase === "focus" ? "Focus done — take a break." : "Break over — back to focus.");
+      setPhase(nxt.phase);
+      if (el("autoNext").checked) startTick();
+    }
+    function startTick() {
+      if (state.left <= 0) { setPhase(state.phase); }
+      state.running = true;
+      state.timer = setInterval(function () {
+        state.left -= 1;
+        if (state.left <= 0) { finish(); return; }
+        paint();
+      }, 1000);
+      paint();
+    }
+    function toggle() {
+      if (state.running) { stopTick(); state.running = false; paint(); }
+      else startTick();
+    }
+
+    startBtn.addEventListener("click", toggle);
+    el("reset").addEventListener("click", function () { setPhase(state.phase); });
+    el("skip").addEventListener("click", function () {
+      var nxt = nextPhase(state.phase, state.done);
+      state.done = nxt.done;
+      setPhase(nxt.phase);
+    });
+    document.querySelectorAll(".mode").forEach(function (m) {
+      m.addEventListener("click", function () { setPhase(m.dataset.phase); });
+    });
+    ["dFocus", "dShort", "dLong"].forEach(function (id) {
+      el(id).addEventListener("change", function () { setPhase(state.phase); });
+    });
+    document.querySelectorAll(".toggles .chk").forEach(function (c) {
+      c.classList.toggle("on", c.querySelector("input").checked);
+      c.querySelector("input").addEventListener("change", function () {
+        c.classList.toggle("on", this.checked);
+        if (this.id === "notify" && this.checked && "Notification" in window && Notification.permission === "default") {
+          Notification.requestPermission();
+        }
+      });
+    });
+    el("resetStats").addEventListener("click", function () {
+      saveStats({ day: todayKey(), sessions: 0, minutes: 0 }); paintStats();
+    });
+    document.addEventListener("keydown", function (e) {
+      if (e.code === "Space" && !/INPUT|SELECT|TEXTAREA|BUTTON/.test(document.activeElement.tagName)) {
+        e.preventDefault(); toggle();
+      }
+    });
+
+    // init
+    state.total = durations().focus; state.left = state.total;
+    paint(); paintStats();
+  })();
+  </script>
+</body>
+</html>

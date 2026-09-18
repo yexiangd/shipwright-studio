@@ -39,7 +39,7 @@
       padding: 4px 10px; border-radius: 999px; border: 1px solid var(--line); color: var(--muted);
     }
     .badge.done { color: var(--accent); border-color: var(--accent); background: var(--accent-soft); }
-    .idea-card h3 { font-size: 22px; }
+    .idea-card h2 { font-size: 22px; }
     .idea-card p { color: var(--muted); font-size: 15px; flex: 1; }
     .idea-meta { display: flex; gap: 12px; font-family: var(--font-mono); font-size: 11.5px; color: var(--faint); letter-spacing: .06em; }
     .idea-open { color: var(--accent); font-weight: 600; font-size: 15px; text-decoration: none; }
@@ -137,7 +137,7 @@
           ? `<a class="idea-open" href="${idea.url}">Open &rarr;</a>` : '';
         card.innerHTML = `
           <div class="idea-top"><span class="idea-num">${idea.id}</span>${top}</div>
-          <h3>${idea.title}</h3>
+          <h2>${idea.title}</h2>
           <p>${idea.tagline}</p>
           <div class="idea-meta"><span>${CATS[idea.category] || idea.category}</span><span>Effort ${idea.effort}</span></div>
           ${action}`;

@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Forge — LLM Inference Cost Estimator · Shipwright Studio</title>
   <link rel="canonical" href="https://shipwright-studio.pages.dev/forge/" />
-  <meta name="description" content="Forge estimates GPU count, latency and monthly cost for serving an LLM — model size, quantization, batch and traffic in, dollars out. An interactive demo by Shipwright Studio." />
+  <meta name="description" content="Forge estimates GPU count, latency and monthly cost for serving an LLM — model size, quantization, batch and traffic in, dollars out. A self-initiated demo by Shipwright Studio." />
   <meta property="og:title" content="Forge — LLM Inference Cost Estimator" />
   <meta property="og:description" content="How many GPUs does your LLM need? Slide the knobs, watch the math." />
   <meta property="og:type" content="website" />
@@ -80,7 +80,7 @@
     .stat.hero .v{color:var(--accent)}
 
     .mem{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:22px}
-    .mem h3,.notes h3{font-size:17px;margin-bottom:4px}
+    .mem h2,.notes h2{font-size:17px;margin-bottom:4px}
     .mem .sub{font-size:13px;color:var(--faint);font-family:var(--font-mono);margin-bottom:14px}
     .bar{display:flex;height:34px;border-radius:8px;overflow:hidden;border:1px solid var(--line)}
     .bar div{transition:width .25s}
@@ -124,7 +124,7 @@
 
   <main class="container">
     <section class="intro">
-      <p class="eyebrow">AI infrastructure</p>
+      <p class="eyebrow">Self-initiated &middot; AI infrastructure</p>
       <h1>Forge</h1>
       <p class="lede">An <strong>LLM inference cost estimator</strong>. Pick a model, a GPU, and your traffic — get GPU count, latency, and the monthly bill. The same back-of-envelope math used before any serious serving deployment.</p>
     </section>
@@ -177,7 +177,7 @@
         </div>
 
         <div class="mem">
-          <h3>Memory per replica</h3>
+          <h2>Memory per replica</h2>
           <p class="sub" id="memSub"></p>
           <div class="bar"><div class="w" id="barW"></div><div class="k" id="barK"></div><div class="f" id="barF"></div></div>
           <div class="legend">
@@ -188,7 +188,7 @@
         </div>
 
         <div class="notes">
-          <h3>How the estimate works</h3>
+          <h2>How the estimate works</h2>
           <ul>
             <li><b style="color:var(--text)">Decode is memory-bandwidth bound:</b> tokens/sec per GPU &asymp; <code>HBM bandwidth &times; 55% &divide; model bytes</code>. An H100 does ~24 tok/s on a 70B FP16 model — matching published vLLM numbers.</li>
             <li><b style="color:var(--text)">KV cache</b> per token &asymp; <code>2 &times; layers &times; hidden &times; bytes</code>, with depth/width scaled from parameter count. It usually dominates memory at large batch.</li>

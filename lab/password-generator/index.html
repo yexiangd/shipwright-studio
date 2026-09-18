@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Password Forge · Shipwright Studio</title>
+  <meta name="description" content="Password Forge is a free online password generator: create strong random passwords or memorable passphrases in your browser, with a live entropy and crack-time strength meter — no uploads, no sign-up." />
+  <link rel="canonical" href="https://shipwright-studio.pages.dev/lab/password-generator/" />
+  <link rel="icon" type="image/svg+xml" href="../../favicon.svg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..700;1,9..144,300..700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "Password Forge",
+    "description": "A free online password generator: strong random passwords or memorable passphrases with a live entropy and crack-time strength meter.",
+    "applicationCategory": "UtilitiesApplication",
+    "operatingSystem": "Web",
+    "offers": { "@type": "Offer", "price": "0" },
+    "author": { "@type": "Organization", "name": "Shipwright Studio", "url": "https://shipwright-studio.pages.dev/" }
+  }
+  </script>
+  <style>
+    :root {
+      --bg: #0a0c0f; --text: #f2efe6; --muted: #a6abb4; --faint: #6d737c;
+      --accent: #d2a24c; --line: rgba(255,255,255,.09); --card: rgba(255,255,255,.04);
+      --font-display: "Fraunces", Georgia, serif;
+      --font-body: "Inter", -apple-system, "Segoe UI", sans-serif;
+      --font-mono: "JetBrains Mono", ui-monospace, monospace;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: var(--bg); color: var(--text); font-family: var(--font-body); min-height: 100vh; display: flex; flex-direction: column; }
+    .topbar { display: flex; justify-content: space-between; align-items: center; padding: 16px 22px; border-bottom: 1px solid var(--line); }
+    .topbar a { color: var(--muted); text-decoration: none; font-size: 14px; }
+    .topbar a:hover { color: var(--accent); }
+    .brand { font-family: var(--font-display); font-size: 17px; }
+    .brand em { color: var(--accent); font-style: italic; }
+    main { flex: 1; max-width: 860px; width: 100%; margin: 0 auto; padding: 40px 22px 64px; }
+    h1 { font-family: var(--font-display); font-weight: 500; font-size: clamp(34px, 6vw, 54px); line-height: 1.05; margin-bottom: 12px; }
+    h1 em { color: var(--accent); font-style: italic; }
+    .lede { color: var(--muted); font-size: clamp(15px, 2.4vw, 18px); max-width: 640px; line-height: 1.6; margin-bottom: 34px; }
+    .lede strong { color: var(--text); }
+    .card { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 26px; margin-bottom: 20px; }
+    .tabs { display: flex; gap: 8px; margin-bottom: 22px; }
+    .tab { flex: 1; padding: 10px; background: transparent; border: 1px solid var(--line); border-radius: 10px; color: var(--muted); font: 500 14px var(--font-body); cursor: pointer; transition: .15s; }
+    .tab.active { border-color: var(--accent); color: var(--accent); background: rgba(210,162,76,.07); }
+    .outwrap { display: flex; gap: 10px; margin-bottom: 18px; }
+    .out { flex: 1; font-family: var(--font-mono); font-size: clamp(15px, 3vw, 20px); background: rgba(0,0,0,.35); border: 1px solid var(--line); border-radius: 10px; padding: 16px; word-break: break-all; min-height: 64px; line-height: 1.5; }
+    .btns { display: flex; flex-direction: column; gap: 8px; }
+    .btn { padding: 12px 18px; border-radius: 10px; border: 1px solid var(--line); background: transparent; color: var(--text); font: 600 14px var(--font-body); cursor: pointer; transition: .15s; white-space: nowrap; }
+    .btn:hover { border-color: var(--accent); color: var(--accent); }
+    .btn.primary { background: var(--accent); border-color: var(--accent); color: #101214; }
+    .btn.primary:hover { color: #101214; filter: brightness(1.08); }
+    .meter { margin-bottom: 20px; }
+    .meterbar { height: 8px; border-radius: 4px; background: rgba(255,255,255,.08); overflow: hidden; margin-bottom: 10px; }
+    .meterfill { height: 100%; width: 0; border-radius: 4px; background: var(--accent); transition: width .25s, background .25s; }
+    .meterstats { display: flex; gap: 22px; flex-wrap: wrap; font-size: 13px; color: var(--muted); }
+    .meterstats b { color: var(--text); font-family: var(--font-mono); font-weight: 500; }
+    .opts { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+    @media (max-width: 640px) { .opts { grid-template-columns: 1fr; } .outwrap { flex-direction: column; } .btns { flex-direction: row; } .btns .btn { flex: 1; } }
+    .opt h2 { font-size: 12px; text-transform: uppercase; letter-spacing: .12em; color: var(--faint); margin-bottom: 12px; font-weight: 600; }
+    .row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; gap: 12px; }
+    .row label { font-size: 14px; color: var(--muted); }
+    .row output { font-family: var(--font-mono); color: var(--accent); font-size: 14px; min-width: 2ch; text-align: right; }
+    input[type="range"] { flex: 1; accent-color: var(--accent); }
+    .checks { display: flex; flex-wrap: wrap; gap: 8px; }
+    .chk { display: flex; align-items: center; gap: 8px; padding: 8px 12px; border: 1px solid var(--line); border-radius: 8px; font-size: 13px; color: var(--muted); cursor: pointer; user-select: none; }
+    .chk input { accent-color: var(--accent); }
+    .chk.on { border-color: var(--accent); color: var(--text); }
+    .hist { font-size: 13px; color: var(--faint); margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
+    .hist button { background: none; border: none; color: var(--faint); font-size: 12px; cursor: pointer; text-decoration: underline; }
+    .hist button:hover { color: var(--accent); }
+    .histlist { display: flex; flex-direction: column; gap: 6px; }
+    .histitem { font-family: var(--font-mono); font-size: 12.5px; color: var(--muted); background: rgba(0,0,0,.25); border: 1px solid var(--line); border-radius: 8px; padding: 8px 12px; word-break: break-all; cursor: pointer; }
+    .histitem:hover { color: var(--text); border-color: var(--accent); }
+    .note { font-size: 13px; color: var(--faint); line-height: 1.7; margin-top: 6px; }
+    .note a { color: var(--accent); text-decoration: none; }
+    .foot { text-align: center; padding: 26px; border-top: 1px solid var(--line); color: var(--faint); font-size: 13px; }
+    .foot a { color: var(--accent); text-decoration: none; }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <a href="../../ideas/">← Lab</a>
+    <span class="brand">Shipwright <em>Studio</em></span>
+    <a href="../../">Home</a>
+  </header>
+  <main>
+    <h1>Password <em>Forge</em></h1>
+    <p class="lede"><strong>Password Forge is a free online password generator</strong> that creates maximum-entropy random passwords or memorable passphrases entirely in your browser. A live strength meter shows entropy and estimated crack time — nothing you generate ever leaves your device.</p>
+
+    <section class="card" aria-label="Generator">
+      <div class="tabs" role="tablist" aria-label="Generation mode">
+        <button class="tab active" data-mode="password" type="button" role="tab">Random password</button>
+        <button class="tab" data-mode="passphrase" type="button" role="tab">Memorable passphrase</button>
+      </div>
+      <div class="outwrap">
+        <div class="out" id="out" aria-live="polite">Press “Generate”.</div>
+        <div class="btns">
+          <button class="btn primary" id="gen" type="button">Generate</button>
+          <button class="btn" id="copy" type="button">Copy</button>
+        </div>
+      </div>
+      <div class="meter">
+        <div class="meterbar"><div class="meterfill" id="fill"></div></div>
+        <div class="meterstats">
+          <span>Entropy <b id="bits">–</b></span>
+          <span>Crack time <b id="crack">–</b></span>
+          <span>Strength <b id="verdict">–</b></span>
+        </div>
+      </div>
+      <div class="opts">
+        <div class="opt" id="optPassword">
+          <h2>Password options</h2>
+          <div class="row"><label for="len">Length</label><input type="range" id="len" min="8" max="64" value="20"><output id="lenOut">20</output></div>
+          <div class="checks" id="classes">
+            <label class="chk on"><input type="checkbox" data-c="upper" checked> A–Z</label>
+            <label class="chk on"><input type="checkbox" data-c="lower" checked> a–z</label>
+            <label class="chk on"><input type="checkbox" data-c="digits" checked> 0–9</label>
+            <label class="chk"><input type="checkbox" data-c="symbols"> !@#$…</label>
+          </div>
+          <div class="checks" style="margin-top:8px">
+            <label class="chk"><input type="checkbox" id="noAmbig"> Exclude ambiguous (0O1lI|)</label>
+          </div>
+        </div>
+        <div class="opt" id="optPassphrase" hidden>
+          <h2>Passphrase options</h2>
+          <div class="row"><label for="words">Words</label><input type="range" id="words" min="4" max="8" value="5"><output id="wordsOut">5</output></div>
+          <div class="row"><label for="sep">Separator</label>
+            <select id="sep" style="background:#0a0c0f;color:var(--text);border:1px solid var(--line);border-radius:8px;padding:8px;">
+              <option value="-">hyphen (-)</option><option value=" ">space</option><option value="_">underscore (_)</option><option value=".">dot (.)</option><option value="">none</option>
+            </select>
+          </div>
+          <div class="checks">
+            <label class="chk"><input type="checkbox" id="cap"> Capitalize words</label>
+            <label class="chk"><input type="checkbox" id="num"> Add number</label>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="card" aria-label="History">
+      <div class="hist"><span>Session history — kept only on this page, cleared when you leave</span><button id="clearHist" type="button">Clear</button></div>
+      <div class="histlist" id="hist"></div>
+    </section>
+
+    <p class="note">Why local generation matters: a password is only as private as the machine that creates it. Forge uses your browser's cryptographic random number generator (<code>crypto.getRandomValues</code>) and never transmits anything — you can even disconnect from the internet after this page loads. Rule of thumb: use random passwords for accounts (a password manager remembers them) and passphrases for the few secrets you must type yourself. 100+ bits of entropy is overkill for anything outside nation-state territory.</p>
+  </main>
+  <footer class="foot">Built by <a href="../../">Shipwright Studio</a> · Free tool, no sign-up.</footer>
+
+  <script>
+  (function () {
+    "use strict";
+
+    // ---------- core: no DOM, testable in node ----------
+    function randIndex(n) {
+      var buf = new Uint32Array(1);
+      var max = 0xFFFFFFFF - (0xFFFFFFFF % n);
+      do { window.crypto.getRandomValues(buf); } while (buf[0] >= max);
+      return buf[0] % n;
+    }
+    var CLASSES = {
+      upper: "ABCDEFGHIJKLMNOPQRSTUVWXYZ",
+      lower: "abcdefghijklmnopqrstuvwxyz",
+      digits: "0123456789",
+      symbols: "!@#$%^&*()-_=+[]{};:,.<>?/~"
+    };
+    var AMBIGUOUS = "0O1lI|";
+    function buildCharset(picks, noAmbig) {
+      var s = picks.map(function (c) { return CLASSES[c]; }).join("");
+      if (noAmbig) s = s.split("").filter(function (ch) { return AMBIGUOUS.indexOf(ch) < 0; }).join("");
+      return s;
+    }
+    function genPassword(len, charset) {
+      if (!charset.length) return "";
+      var out = "";
+      for (var i = 0; i < len; i++) out += charset[randIndex(charset.length)];
+      return out;
+    }
+    var WORDS = ("amber anchor apple arrow ash atlas autumn bacon badge bamboo banner basin beach beard berry birch blade blanket bliss bolt bonus boost breeze brick bridge bronze brook brush bubble cabin camel candle canyon cargo cedar chalk chalk cheer cherry chest chili cipher cinder citrus cliff cloak cloud cocoa comet compass coral cork cove crane crest cricket crisp crocus cumin cupid daisy dancer dawn drift drone drum dune dusk eagle ember ember echo edge elder elm ember fern fiber finch flame flint float flock flood floor flour flower frost frosty galaxy garden garlic ginger glacier glint globe goose grain granite grape gravel grove grove gust habit hammer harbor hazel hearth heron honey horizon husky ivory ivy jade jaguar jazz jelly jewel juniper karma kayak kiwi lagoon lantern lark laser leaf lemon lilac linen llama loft lotus lunar maple marble march meadow melon mint mist mocha monarch moose moss moth muffin nimbus north oak oasis ocean onion orbit otter oyster paint panda panel paper peach pearl pebble pepper petal phase phone piano pilot pitch pivot pixel plain plaza plum pond poppy porch prairie pride prism pulse quartz quill quilt raven ray reed ridge river robin robot rocket rocky roost rope ruler saber saddle sage salmon sand savanna scale scout season seed shade shadow shell shine ship shore silver singer sketch slate sleep slope snail snake snow solar spark spice spice spike spiral spoon sport spring spruce stable stag star steam stone storm straw sugar summit surf swan sweet syrup talon tango teal tempo tiger timber toast token topaz torch trace trail trench trout tulip twilight umber umpire uncle unity upper valley velvet verse vessel violet violin vivid volcano walnut wander wasp water wedge whale wheat wheel willow winter wish wizard wolf wood wren yacht yard yarn zebra zen").split(" ");
+    // de-duplicate (list intentionally rough; uniqueness guarded below)
+    var WL = [];
+    WORDS.forEach(function (w) { if (WL.indexOf(w) < 0) WL.push(w); });
+    function genPassphrase(nWords, sep, cap, addNum) {
+      var parts = [];
+      for (var i = 0; i < nWords; i++) {
+        var w = WL[randIndex(WL.length)];
+        if (cap) w = w.charAt(0).toUpperCase() + w.slice(1);
+        parts.push(w);
+      }
+      var s = parts.join(sep);
+      if (addNum) s += String(Math.floor(randIndex(90) + 10));
+      return s;
+    }
+    function entropyBitsPassword(len, charsetLen) { return len * Math.log2(charsetLen); }
+    function entropyBitsPassphrase(nWords) { return nWords * Math.log2(WL.length) + 0; } // +log2(90) folded into num option
+    function crackTime(bits) {
+      if (!isFinite(bits) || bits <= 0) return "–";
+      var guesses = Math.pow(2, bits - 1), perSec = 1e10, secs = guesses / perSec;
+      var units = [["second", 60], ["minute", 60], ["hour", 24], ["day", 365], ["year", 100], ["century", 10], ["millennium", 1e3]];
+      var v = secs, name = "seconds";
+      for (var i = 0; i < units.length; i++) {
+        if (v < units[i][1] || i === units.length - 1) { name = units[i][0] + (v >= 2 ? "s" : ""); break; }
+        v = v / units[i][1];
+      }
+      if (v > 1e15) return "heat death of the universe";
+      return (v >= 100 ? Math.round(v) : v.toFixed(v < 10 ? 1 : 0)) + " " + name;
+    }
+    function verdict(bits) {
+      if (bits < 40) return "Weak";
+      if (bits < 60) return "Fair";
+      if (bits < 80) return "Strong";
+      if (bits < 100) return "Excellent";
+      return "Overkill";
+    }
+    if (typeof module !== "undefined") module.exports = { genPassword, buildCharset, genPassphrase, entropyBitsPassword, entropyBitsPassphrase, crackTime, verdict, WL };
+
+    // ---------- UI ----------
+    if (typeof document === "undefined") return;
+    var mode = "password";
+    var out = document.getElementById("out");
+    var hist = [];
+
+    function currentCharset() {
+      var picks = Array.prototype.map.call(document.querySelectorAll("#classes input:checked"), function (el) { return el.dataset.c; });
+      return buildCharset(picks, document.getElementById("noAmbig").checked);
+    }
+    function currentBits() {
+      if (mode === "password") {
+        var cs = currentCharset();
+        return cs.length ? entropyBitsPassword(parseInt(document.getElementById("len").value, 10), cs.length) : 0;
+      }
+      var n = parseInt(document.getElementById("words").value, 10);
+      return n * Math.log2(WL.length) + (document.getElementById("num").checked ? Math.log2(90) : 0);
+    }
+    function updateMeter() {
+      var bits = currentBits();
+      document.getElementById("bits").textContent = bits > 0 ? bits.toFixed(0) + " bits" : "–";
+      document.getElementById("crack").textContent = bits > 0 ? crackTime(bits) : "–";
+      document.getElementById("verdict").textContent = bits > 0 ? verdict(bits) : "–";
+      var pct = Math.min(100, bits / 128 * 100);
+      var fill = document.getElementById("fill");
+      fill.style.width = pct + "%";
+      fill.style.background = bits < 40 ? "#e05c5c" : bits < 60 ? "#d2a24c" : "#6fc78f";
+    }
+    function renderHist() {
+      var el = document.getElementById("hist");
+      el.innerHTML = "";
+      hist.slice(0, 5).forEach(function (h) {
+        var d = document.createElement("div");
+        d.className = "histitem"; d.textContent = h; d.title = "Click to copy";
+        d.addEventListener("click", function () { copyText(h); });
+        el.appendChild(d);
+      });
+      if (!hist.length) el.innerHTML = '<div class="histitem" style="cursor:default">Nothing yet.</div>';
+    }
+    function copyText(t) {
+      var btn = document.getElementById("copy");
+      function done(ok) {
+        btn.textContent = ok ? "Copied ✓" : "Select & copy";
+        if (ok) { var r = document.createRange(); r.selectNodeContents(out); var s = getSelection(); s.removeAllRanges(); s.addRange(r); }
+        setTimeout(function () { btn.textContent = "Copy"; }, 1600);
+      }
+      if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(t).then(function () { done(true); }, function () { done(false); });
+      else done(false);
+    }
+    function generate() {
+      var v;
+      if (mode === "password") {
+        var cs = currentCharset();
+        v = cs.length ? genPassword(parseInt(document.getElementById("len").value, 10), cs) : "Select at least one character class.";
+      } else {
+        v = genPassphrase(
+          parseInt(document.getElementById("words").value, 10),
+          document.getElementById("sep").value,
+          document.getElementById("cap").checked,
+          document.getElementById("num").checked
+        );
+      }
+      out.textContent = v;
+      updateMeter();
+      if (v && v.indexOf("Select") !== 0) { hist.unshift(v); hist = hist.slice(0, 5); renderHist(); }
+    }
+
+    document.querySelectorAll(".tab").forEach(function (t) {
+      t.addEventListener("click", function () {
+        document.querySelectorAll(".tab").forEach(function (x) { x.classList.remove("active"); });
+        t.classList.add("active");
+        mode = t.dataset.mode;
+        document.getElementById("optPassword").hidden = mode !== "password";
+        document.getElementById("optPassphrase").hidden = mode !== "passphrase";
+        out.textContent = "Press “Generate”.";
+        updateMeter();
+      });
+    });
+    document.getElementById("gen").addEventListener("click", generate);
+    document.getElementById("copy").addEventListener("click", function () { copyText(out.textContent); });
+    document.getElementById("clearHist").addEventListener("click", function () { hist = []; renderHist(); });
+    ["len", "words"].forEach(function (id) {
+      document.getElementById(id).addEventListener("input", function () {
+        document.getElementById(id + "Out").textContent = this.value;
+        updateMeter();
+      });
+    });
+    document.querySelectorAll("#classes input, #noAmbig, #sep, #cap, #num").forEach(function (el) {
+      el.addEventListener("change", function () {
+        document.querySelectorAll("#classes .chk").forEach(function (c) {
+          c.classList.toggle("on", c.querySelector("input").checked);
+        });
+        updateMeter();
+      });
+    });
+    renderHist();
+    updateMeter();
+  })();
+  </script>
+</body>
+</html>

@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Lumen — Computational Photography Lab · Shipwright Studio</title>
   <link rel="canonical" href="https://shipwright-studio.pages.dev/lumen/" />
-  <meta name="description" content="Lumen is an interactive exposure-triangle simulator: aperture, shutter speed and ISO rendered live on real photographs. An interactive demo by Shipwright Studio." />
+  <meta name="description" content="Lumen is an interactive exposure-triangle simulator: aperture, shutter speed and ISO rendered live on real photographs. A self-initiated demo by Shipwright Studio." />
   <meta property="og:title" content="Lumen — Computational Photography Lab" />
   <meta property="og:description" content="Play with aperture, shutter speed and ISO — rendered live on real photographs, in your browser." />
   <meta property="og:type" content="website" />
@@ -55,7 +55,7 @@
     .hud .settings{color:var(--accent)}
 
     .panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:22px;display:flex;flex-direction:column;gap:22px}
-    .panel h3{font-size:15px;font-family:var(--font-body);font-weight:600;letter-spacing:.04em;margin-bottom:10px;color:var(--muted);text-transform:uppercase;font-size:12px}
+    .panel h2{font-size:15px;font-family:var(--font-body);font-weight:600;letter-spacing:.04em;margin-bottom:10px;color:var(--muted);text-transform:uppercase;font-size:12px}
     .scenes{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
     .scene{border:1px solid var(--line);border-radius:10px;overflow:hidden;cursor:pointer;background:none;padding:0;text-align:left;transition:border-color .2s,transform .2s}
     .scene img{display:block;width:100%;aspect-ratio:16/10;object-fit:cover}
@@ -137,7 +137,7 @@
 
   <main class="container">
     <section class="intro">
-      <p class="eyebrow">Computational photography</p>
+      <p class="eyebrow">Self-initiated &middot; Computational photography</p>
       <h1>Lumen</h1>
       <p class="lede">An <strong>exposure-triangle simulator</strong> rendered live on real photographs. Drag aperture, shutter speed and ISO — watch depth of field, motion blur, grain and exposure respond like a real camera.</p>
     </section>
@@ -155,7 +155,7 @@
 
       <aside class="panel">
         <div>
-          <h3>Scene</h3>
+          <h2>Scene</h2>
           <div class="scenes" id="scenes"></div>
         </div>
 
