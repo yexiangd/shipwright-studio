@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Snake · Shipwright Studio</title>
+  <meta name="description" content="Snake is a free online arcade game. Steer the snake, eat the pellets, and survive a speed curve that punishes greed — no install, keyboard or swipe." />
+  <link rel="canonical" href="https://shipwright-studio.pages.dev/lab/snake/" />
+  <link rel="icon" type="image/svg+xml" href="../../favicon.svg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..700;1,9..144,300..700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "Snake",
+    "description": "A free online Snake arcade game with a speed curve that accelerates as you eat. Play with keyboard or touch swipe.",
+    "applicationCategory": "GameApplication",
+    "operatingSystem": "Web",
+    "offers": { "@type": "Offer", "price": "0" },
+    "author": { "@type": "Organization", "name": "Shipwright Studio", "url": "https://shipwright-studio.pages.dev/" }
+  }
+  </script>
+  <style>
+    :root {
+      --bg: #0a0c0f; --surface: #10141a; --text: #f2efe6; --muted: #a6abb4; --faint: #6d737c;
+      --accent: #d2a24c; --line: rgba(255,255,255,.09); --red: #e0655f;
+      --font-display: "Fraunces", Georgia, serif;
+      --font-body: "Inter", -apple-system, "Segoe UI", sans-serif;
+      --font-mono: "JetBrains Mono", ui-monospace, monospace;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: var(--bg); color: var(--text); font-family: var(--font-body); min-height: 100vh; display: flex; flex-direction: column; }
+    .topbar { display: flex; justify-content: space-between; align-items: center; padding: 16px 22px; border-bottom: 1px solid var(--line); }
+    .topbar a { color: var(--muted); text-decoration: none; font-size: 14px; }
+    .topbar a:hover { color: var(--accent); }
+    .brand { font-family: var(--font-display); font-size: 17px; }
+    .brand em { color: var(--accent); font-style: italic; }
+    #bestLine { font-family: var(--font-mono); font-size: 12.5px; color: var(--faint); }
+    main { flex: 1; width: 100%; max-width: 860px; margin: 0 auto; padding: 44px 24px 60px; display: flex; flex-direction: column; gap: 26px; }
+    h1 { font-family: var(--font-display); font-weight: 500; font-size: clamp(30px, 5vw, 44px); letter-spacing: -.01em; }
+    h1 em { color: var(--accent); font-style: italic; }
+    .lede { color: var(--muted); max-width: 620px; line-height: 1.65; }
+    .stats { display: flex; gap: 38px; flex-wrap: wrap; }
+    .stat b { display: block; font-family: var(--font-display); font-size: 38px; font-weight: 500; color: var(--accent); font-variant-numeric: tabular-nums; }
+    .stat span { font-family: var(--font-mono); font-size: 11px; letter-spacing: .18em; text-transform: uppercase; color: var(--muted); }
+    .stage { position: relative; width: min(100%, 560px); margin: 0 auto; }
+    canvas {
+      display: block; width: 100%; height: auto; aspect-ratio: 1;
+      background: var(--surface); border: 1px solid var(--line); border-radius: 14px;
+      touch-action: none;
+    }
+    .overlay {
+      position: absolute; inset: 0; border-radius: 14px; display: none;
+      align-items: center; justify-content: center; background: rgba(10,12,15,.8);
+      text-align: center; padding: 24px;
+    }
+    .overlay.show { display: flex; }
+    .panel .big { font-family: var(--font-display); font-size: clamp(44px, 9vw, 72px); color: var(--accent); line-height: 1; font-weight: 500; }
+    .panel .tier { font-family: var(--font-display); font-style: italic; font-size: 22px; margin: 10px 0 4px; }
+    .panel .detail { font-family: var(--font-mono); font-size: 13px; color: var(--muted); margin: 12px 0 22px; }
+    .newbest { display: inline-block; font-family: var(--font-mono); font-size: 11px; letter-spacing: .16em; text-transform: uppercase; color: #0a0c0f; background: var(--accent); border-radius: 999px; padding: 5px 12px; margin-top: 10px; }
+    .btn {
+      font-family: var(--font-mono); font-size: 14px; padding: 12px 26px; border-radius: 999px;
+      border: 1px solid var(--accent); background: var(--accent); color: #0a0c0f; cursor: pointer; margin: 0 4px;
+    }
+    .btn:hover { filter: brightness(1.08); }
+    .btn.ghost { background: transparent; color: var(--accent); }
+    .controls { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; justify-content: center; }
+    .hint { color: var(--faint); font-size: 13.5px; font-family: var(--font-mono); text-align: center; }
+    .foot { color: var(--faint); font-size: 13px; max-width: 620px; line-height: 1.7; }
+  </style>
+</head>
+<body>
+  <div class="topbar">
+    <a href="../../ideas/">&larr; The Lab</a>
+    <span class="brand">Shipwright <em>Studio</em></span>
+    <span id="bestLine"></span>
+  </div>
+
+  <main>
+    <div>
+      <h1>The <em>classic</em> Snake</h1>
+      <p class="lede">Snake is a free online arcade game: steer the snake, eat the pellets, and survive a speed curve that punishes greed — every pellet makes you faster.</p>
+    </div>
+
+    <div class="stats">
+      <div class="stat"><b id="score">0</b><span>score</span></div>
+      <div class="stat"><b id="best">0</b><span>best</span></div>
+      <div class="stat"><b id="speed">8.0</b><span>ticks/sec</span></div>
+    </div>
+
+    <div class="stage">
+      <canvas id="cv" width="400" height="400" aria-label="Snake game board"></canvas>
+      <div class="overlay show" id="ov">
+        <div class="panel">
+          <div class="tier" id="ovTitle">Hungry?</div>
+          <div class="detail" id="ovDetail">arrows / WASD to steer · swipe on mobile</div>
+          <div><span class="newbest" id="newBest" style="display:none">new best</span></div>
+          <div style="margin-top:22px">
+            <button class="btn" id="startBtn">Start</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="controls">
+      <button class="btn ghost" id="pauseBtn">Pause</button>
+      <button class="btn ghost" id="restartBtn">Restart</button>
+    </div>
+    <p class="hint">arrows / WASD · <kbd>P</kbd> pause · swipe on mobile — every pellet speeds you up</p>
+    <p class="foot">Starts at 8 ticks per second, +0.25 per pellet, capped at 20. Best score lives on this device only.</p>
+  </main>
+
+  <script>
+    const N = 20, CELL = 400 / N, BASE = 8, STEP = 0.25, MAXT = 20;
+    const cv = document.getElementById("cv"), ctx = cv.getContext("2d");
+    const $ = id => document.getElementById(id);
+    const ov = $("ov"), ovTitle = $("ovTitle"), ovDetail = $("ovDetail");
+    let snake, dir, queue, food, score, tps, timer, state; // state: idle|run|pause|dead
+    let touchX = null, touchY = null;
+
+    function getBest() { try { return +(localStorage.getItem("snake-best") || 0); } catch { return 0; } }
+    function setBest(v) { try { localStorage.setItem("snake-best", v); } catch {} }
+    function renderBest() { $("best").textContent = getBest(); $("bestLine").textContent = getBest() ? "best: " + getBest() : ""; }
+
+    function placeFood() {
+      const free = [];
+      for (let x = 0; x < N; x++) for (let y = 0; y < N; y++)
+        if (!snake.some(s => s.x === x && s.y === y)) free.push({ x, y });
+      food = free.length ? free[Math.floor(Math.random() * free.length)] : null;
+    }
+
+    function reset() {
+      snake = [{ x: 10, y: 10 }, { x: 9, y: 10 }, { x: 8, y: 10 }];
+      dir = { x: 1, y: 0 }; queue = []; score = 0; tps = BASE;
+      placeFood(); state = "idle";
+      $("score").textContent = "0"; $("speed").textContent = BASE.toFixed(1);
+      $("newBest").style.display = "none";
+      ovTitle.textContent = "Hungry?";
+      ovDetail.textContent = "arrows / WASD to steer · swipe on mobile";
+      $("startBtn").textContent = "Start";
+      ov.classList.add("show");
+      renderBest(); draw(false);
+    }
+
+    function setDir(nx, ny) {
+      const last = queue.length ? queue[queue.length - 1] : dir;
+      if (last.x === -nx && last.y === -ny) return;          // no 180° turn
+      if (last.x === nx && last.y === ny) return;            // same dir
+      if (queue.length < 2) queue.push({ x: nx, y: ny });
+    }
+
+    function tick() {
+      if (state !== "run") return;
+      if (queue.length) dir = queue.shift();
+      const h = { x: snake[0].x + dir.x, y: snake[0].y + dir.y };
+      if (h.x < 0 || h.y < 0 || h.x >= N || h.y >= N || snake.some(s => s.x === h.x && s.y === h.y)) return die();
+      snake.unshift(h);
+      if (food && h.x === food.x && h.y === food.y) {
+        score++; tps = Math.min(MAXT, BASE + STEP * score);
+        $("score").textContent = score; $("speed").textContent = tps.toFixed(1);
+        placeFood();
+      } else snake.pop();
+      draw(false);
+    }
+
+    function loop() { clearTimeout(timer); timer = setTimeout(() => { tick(); loop(); }, 1000 / tps); }
+
+    function start() {
+      if (state === "run") return;
+      if (state === "dead" || state === "idle") { reset(); }
+      state = "run"; ov.classList.remove("show"); loop();
+    }
+
+    function togglePause() {
+      if (state === "run") {
+        state = "pause"; clearTimeout(timer);
+        ovTitle.textContent = "Paused"; ovDetail.textContent = "press P or Start to resume";
+        $("startBtn").textContent = "Resume"; ov.classList.add("show");
+      } else if (state === "pause") { state = "run"; ov.classList.remove("show"); loop(); }
+    }
+
+    function die() {
+      state = "dead"; clearTimeout(timer); draw(true);
+      const best = getBest();
+      if (score > best) { setBest(score); $("newBest").style.display = "inline-block"; }
+      setTimeout(() => {
+        ovTitle.textContent = "Game over";
+        ovDetail.textContent = score + " pellets · " + tps.toFixed(1) + " ticks/sec";
+        $("startBtn").textContent = "Restart";
+        ov.classList.add("show"); renderBest();
+      }, 450);
+    }
+
+    function draw(dead) {
+      ctx.fillStyle = "#10141a"; ctx.fillRect(0, 0, 400, 400);
+      ctx.strokeStyle = "rgba(255,255,255,.035)"; ctx.lineWidth = 1;
+      for (let i = 1; i < N; i++) {
+        ctx.beginPath(); ctx.moveTo(i * CELL + .5, 0); ctx.lineTo(i * CELL + .5, 400); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(0, i * CELL + .5); ctx.lineTo(400, i * CELL + .5); ctx.stroke();
+      }
+      if (food) {
+        ctx.fillStyle = "#e0655f";
+        const r = CELL * .32, cx = food.x * CELL + CELL / 2, cy = food.y * CELL + CELL / 2;
+        ctx.beginPath(); ctx.arc(cx, cy, r, 0, 7); ctx.fill();
+      }
+      snake.forEach((s, i) => {
+        ctx.fillStyle = dead ? "#e0655f" : (i === 0 ? "#a5822f" : "#d2a24c");
+        const p = 1.2;
+        ctx.fillRect(s.x * CELL + p, s.y * CELL + p, CELL - p * 2, CELL - p * 2);
+      });
+    }
+
+    const KEYS = { ArrowUp: [0,-1], KeyW: [0,-1], ArrowDown: [0,1], KeyS: [0,1], ArrowLeft: [-1,0], KeyA: [-1,0], ArrowRight: [1,0], KeyD: [1,0] };
+    document.addEventListener("keydown", e => {
+      if (KEYS[e.code]) {
+        e.preventDefault();
+        setDir(...KEYS[e.code]);
+        if (state === "idle" || state === "pause") start();
+      } else if (e.code === "KeyP" || e.code === "Space") { e.preventDefault(); state === "idle" ? start() : togglePause(); }
+      else if (e.code === "Enter" && state !== "run") start();
+    });
+    cv.addEventListener("touchstart", e => { const t = e.touches[0]; touchX = t.clientX; touchY = t.clientY; }, { passive: true });
+    cv.addEventListener("touchend", e => {
+      if (touchX === null) return;
+      const t = e.changedTouches[0], dx = t.clientX - touchX, dy = t.clientY - touchY;
+      if (Math.max(Math.abs(dx), Math.abs(dy)) < 24) return;
+      setDir(...(Math.abs(dx) > Math.abs(dy) ? [Math.sign(dx), 0] : [0, Math.sign(dy)]));
+      if (state === "idle" || state === "pause") start();
+      touchX = touchY = null; e.preventDefault();
+    }, { passive: false });
+    document.addEventListener("visibilitychange", () => { if (document.hidden && state === "run") togglePause(); });
+    $("startBtn").addEventListener("click", start);
+    $("pauseBtn").addEventListener("click", togglePause);
+    $("restartBtn").addEventListener("click", () => { reset(); start(); });
+
+    reset();
+  </script>
+</body>
+</html>

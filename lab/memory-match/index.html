@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Memory Match · Shipwright Studio</title>
+  <meta name="description" content="Memory Match is a free online concentration card game. Flip cards to find every pair — play 4×4 or 6×6 and chase your best score." />
+  <link rel="canonical" href="https://shipwright-studio.pages.dev/lab/memory-match/" />
+  <link rel="icon" type="image/svg+xml" href="../../favicon.svg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..700;1,9..144,300..700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "Memory Match",
+    "description": "A free online memory card game: flip cards to find every matching pair, in 4×4 or 6×6 difficulty.",
+    "applicationCategory": "GameApplication",
+    "operatingSystem": "Web",
+    "offers": { "@type": "Offer", "price": "0" },
+    "author": { "@type": "Organization", "name": "Shipwright Studio", "url": "https://shipwright-studio.pages.dev/" }
+  }
+  </script>
+  <style>
+    :root {
+      --bg: #0a0c0f; --surface: #10141a; --text: #f2efe6; --muted: #a6abb4; --faint: #6d737c;
+      --accent: #d2a24c; --line: rgba(255,255,255,.09); --red: #e0655f; --dim: #4a4f57;
+      --font-display: "Fraunces", Georgia, serif;
+      --font-body: "Inter", -apple-system, "Segoe UI", sans-serif;
+      --font-mono: "JetBrains Mono", ui-monospace, monospace;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: var(--bg); color: var(--text); font-family: var(--font-body); min-height: 100vh; display: flex; flex-direction: column; }
+    .topbar { display: flex; justify-content: space-between; align-items: center; padding: 16px 22px; border-bottom: 1px solid var(--line); }
+    .topbar a { color: var(--muted); text-decoration: none; font-size: 14px; }
+    .topbar a:hover { color: var(--accent); }
+    .brand { font-family: var(--font-display); font-size: 17px; }
+    .brand em { color: var(--accent); font-style: italic; }
+    #bestLine { font-family: var(--font-mono); font-size: 12.5px; color: var(--faint); }
+    main { flex: 1; width: 100%; max-width: 860px; margin: 0 auto; padding: 44px 24px 60px; display: flex; flex-direction: column; gap: 26px; }
+    h1 { font-family: var(--font-display); font-weight: 500; font-size: clamp(30px, 5vw, 44px); letter-spacing: -.01em; }
+    h1 em { color: var(--accent); font-style: italic; }
+    .lede { color: var(--muted); max-width: 620px; line-height: 1.65; }
+    .controls { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+    .pill {
+      font-family: var(--font-mono); font-size: 13px; padding: 8px 16px; border-radius: 999px;
+      border: 1px solid var(--line); background: transparent; color: var(--muted); cursor: pointer;
+    }
+    .pill.active { border-color: var(--accent); color: var(--accent); background: rgba(210,162,76,.1); }
+    .stats { display: flex; gap: 38px; flex-wrap: wrap; }
+    .stat b { display: block; font-family: var(--font-display); font-size: 38px; font-weight: 500; color: var(--accent); font-variant-numeric: tabular-nums; }
+    .stat span { font-family: var(--font-mono); font-size: 11px; letter-spacing: .18em; text-transform: uppercase; color: var(--muted); }
+    .board-wrap {
+      position: relative; background: var(--surface); border: 1px solid var(--line);
+      border-radius: 14px; padding: clamp(14px, 3vw, 26px);
+    }
+    .board { display: grid; gap: clamp(6px, 1.4vw, 12px); }
+    .board.c4 { grid-template-columns: repeat(4, 1fr); max-width: 520px; margin: 0 auto; }
+    .board.c6 { grid-template-columns: repeat(6, 1fr); }
+    .card { aspect-ratio: 1; perspective: 600px; background: none; border: 0; padding: 0; cursor: pointer; }
+    .card:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+    .card .inner {
+      position: relative; width: 100%; height: 100%; transform-style: preserve-3d;
+      transition: transform .38s cubic-bezier(.4,.15,.3,1.1);
+    }
+    .card.up .inner { transform: rotateY(180deg); }
+    .card .face {
+      position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+      border-radius: 10px; backface-visibility: hidden; -webkit-backface-visibility: hidden;
+    }
+    .card .back {
+      background: #141a21;
+      border: 1px solid var(--line);
+      background-image: linear-gradient(135deg, rgba(210,162,76,.16) 0%, transparent 46%, transparent 54%, rgba(210,162,76,.16) 100%);
+    }
+    .card .back::after { content: ""; width: 26%; height: 26%; border: 1.5px solid rgba(210,162,76,.55); transform: rotate(45deg); border-radius: 2px; }
+    .card .front {
+      background: #0d1116; border: 1px solid var(--line); transform: rotateY(180deg);
+      color: var(--accent); font-size: clamp(20px, 6vw, 34px); line-height: 1;
+    }
+    .card.matched .front { border-color: rgba(210,162,76,.65); background: rgba(210,162,76,.08); box-shadow: 0 0 14px rgba(210,162,76,.12); }
+    .card.matched { cursor: default; }
+    .hint { color: var(--faint); font-size: 13.5px; font-family: var(--font-mono); }
+    .overlay {
+      position: absolute; inset: 0; border-radius: 14px; display: none;
+      align-items: center; justify-content: center; background: rgba(10,12,15,.82);
+      backdrop-filter: blur(3px); text-align: center; padding: 24px;
+    }
+    .overlay.show { display: flex; }
+    .panel { max-width: 420px; }
+    .panel .big { font-family: var(--font-display); font-size: clamp(44px, 9vw, 72px); color: var(--accent); line-height: 1; font-weight: 500; }
+    .panel .tier { font-family: var(--font-display); font-style: italic; font-size: 22px; margin: 10px 0 4px; }
+    .panel .detail { font-family: var(--font-mono); font-size: 13px; color: var(--muted); margin: 14px 0 22px; }
+    .newbest { display: inline-block; font-family: var(--font-mono); font-size: 11px; letter-spacing: .16em; text-transform: uppercase; color: #0a0c0f; background: var(--accent); border-radius: 999px; padding: 5px 12px; margin-top: 10px; }
+    .btn {
+      font-family: var(--font-mono); font-size: 14px; padding: 12px 26px; border-radius: 999px;
+      border: 1px solid var(--accent); background: var(--accent); color: #0a0c0f; cursor: pointer;
+    }
+    .btn:hover { filter: brightness(1.08); }
+    .foot { color: var(--faint); font-size: 13px; max-width: 620px; line-height: 1.7; }
+  </style>
+</head>
+<body>
+  <div class="topbar">
+    <a href="../../ideas/">&larr; The Lab</a>
+    <span class="brand">Shipwright <em>Studio</em></span>
+    <span id="bestLine"></span>
+  </div>
+
+  <main>
+    <div>
+      <h1>Memory <em>match</em></h1>
+      <p class="lede">Memory Match is a free online concentration card game: flip two cards at a time to find every matching pair, then beat your best score.</p>
+    </div>
+
+    <div class="controls">
+      <button class="pill active" data-n="4">4 × 4 · easy</button>
+      <button class="pill" data-n="6">6 × 6 · hard</button>
+      <span class="hint" style="margin-left:8px">pick a grid, then flip any card to start the clock</span>
+    </div>
+
+    <div class="stats">
+      <div class="stat"><b id="time">0:00</b><span>time</span></div>
+      <div class="stat"><b id="moves">0</b><span>moves</span></div>
+      <div class="stat"><b id="pairs">0/8</b><span>pairs</span></div>
+    </div>
+
+    <div class="board-wrap">
+      <div class="board c4" id="board" role="grid" aria-label="Memory card grid"></div>
+      <div class="overlay" id="overlay">
+        <div class="panel">
+          <div class="big" id="winMoves">0</div>
+          <div class="tier" id="winTier">Sharp</div>
+          <div class="detail" id="winDetail"></div>
+          <button class="btn" id="again">Play again</button>
+          <div><span class="newbest" id="newBest" style="display:none">new best</span></div>
+        </div>
+      </div>
+    </div>
+
+    <p class="hint">tip: tap any card to flip it — mismatches flip back after a moment</p>
+    <p class="foot">A move is two flips. Best score is the fewest moves, kept on this device only — nothing leaves your browser.</p>
+  </main>
+
+  <script>
+    const GLYPHS = ["▲","●","◆","■","★","✚","✦","❖","◍","◈","◉","⬟","⬢","◐","◑","◒","◓","✖"];
+    const $ = id => document.getElementById(id);
+    const board = $("board"), overlay = $("overlay");
+    let size = 4, pairsTotal = 8, deck = [], first = null, lock = false;
+    let moves = 0, pairs = 0, started = false, startTs = 0, tickId = null;
+
+    const bestKey = () => "memory-match-best-" + size;
+    function getBest() { try { return JSON.parse(localStorage.getItem(bestKey())) || null; } catch { return null; } }
+    function setBest(v) { try { localStorage.setItem(bestKey(), JSON.stringify(v)); } catch {} }
+    function renderBest() { const b = getBest(); $("bestLine").textContent = b ? "best " + size + "×" + size + ": " + b + " moves" : ""; }
+
+    function shuffle(a) { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
+
+    function fmt(sec) { return Math.floor(sec / 60) + ":" + String(sec % 60).padStart(2, "0"); }
+
+    function reset() {
+      pairsTotal = size * size / 2;
+      deck = shuffle([...GLYPHS.slice(0, pairsTotal), ...GLYPHS.slice(0, pairsTotal)]);
+      first = null; lock = false; moves = 0; pairs = 0; started = false;
+      clearInterval(tickId); tickId = null;
+      board.className = "board c" + size;
+      board.innerHTML = "";
+      deck.forEach((g, i) => {
+        const b = document.createElement("button");
+        b.className = "card"; b.setAttribute("role", "gridcell");
+        b.setAttribute("aria-label", "card " + (i + 1) + " of " + deck.length);
+        b.innerHTML = '<span class="inner"><span class="face back"></span><span class="face front">' + g + "</span></span>";
+        b.addEventListener("click", () => flip(b, g));
+        board.appendChild(b);
+      });
+      $("time").textContent = "0:00"; $("moves").textContent = "0";
+      $("pairs").textContent = "0/" + pairsTotal;
+      overlay.classList.remove("show");
+      renderBest();
+    }
+
+    function startClock() {
+      started = true; startTs = Date.now();
+      tickId = setInterval(() => { $("time").textContent = fmt(Math.floor((Date.now() - startTs) / 1000)); }, 250);
+    }
+
+    function flip(btn, glyph) {
+      if (lock || btn.classList.contains("up") || btn.classList.contains("matched")) return;
+      if (!started) startClock();
+      btn.classList.add("up");
+      if (!first) { first = { btn, glyph }; return; }
+      moves++; $("moves").textContent = moves;
+      const a = first; first = null;
+      if (a.glyph === glyph) {
+        a.btn.classList.add("matched"); btn.classList.add("matched");
+        pairs++; $("pairs").textContent = pairs + "/" + pairsTotal;
+        if (pairs === pairsTotal) setTimeout(win, 420);
+      } else {
+        lock = true;
+        setTimeout(() => { a.btn.classList.remove("up"); btn.classList.remove("up"); lock = false; }, 650);
+      }
+    }
+
+    function win() {
+      clearInterval(tickId); tickId = null;
+      const secs = Math.floor((Date.now() - startTs) / 1000);
+      $("time").textContent = fmt(secs);
+      const tier = moves <= pairsTotal * 1.75 ? "Sharp" : moves <= pairsTotal * 2.5 ? "Steady" : "Warm-up";
+      $("winMoves").textContent = moves;
+      $("winTier").textContent = tier;
+      $("winDetail").textContent = fmt(secs) + " · " + pairsTotal + " pairs on " + size + "×" + size;
+      const prev = getBest();
+      if (prev === null || moves < prev) { setBest(moves); $("newBest").style.display = "inline-block"; }
+      else $("newBest").style.display = "none";
+      overlay.classList.add("show");
+      renderBest();
+    }
+
+    document.querySelectorAll(".controls .pill").forEach(p => p.addEventListener("click", () => {
+      document.querySelectorAll(".controls .pill").forEach(x => x.classList.remove("active"));
+      p.classList.add("active");
+      size = +p.dataset.n;
+      reset();
+    }));
+    $("again").addEventListener("click", reset);
+    document.addEventListener("keydown", e => { if (overlay.classList.contains("show") && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); reset(); } });
+
+    reset();
+  </script>
+</body>
+</html>

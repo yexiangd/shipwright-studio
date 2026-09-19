@@ -1,5 +1,5 @@
 {
-  "updated": "2026-09-18",
+  "updated": "2026-09-19",
   "ideas": [
     {
       "id": "idea-000a",
@@ -18,7 +18,7 @@
       "slug": "forge",
       "title": "Forge",
       "category": "devtool",
-      "tagline": "LLM inference cost estimator — GPUs, latency, monthly bill.",
+      "tagline": "LLM inference cost estimator \u2014 GPUs, latency, monthly bill.",
       "priority": 100,
       "effort": "L",
       "status": "done",
@@ -57,7 +57,9 @@
       "tagline": "Flip the cards, clear the board, beat your best time.",
       "priority": 94,
       "effort": "S",
-      "status": "todo"
+      "status": "done",
+      "url": "/lab/memory-match/",
+      "shipped": "2026-09-19"
     },
     {
       "id": "idea-004",
@@ -67,7 +69,9 @@
       "tagline": "The classic, with a speed curve that punishes greed.",
       "priority": 93,
       "effort": "S",
-      "status": "todo"
+      "status": "done",
+      "url": "/lab/snake/",
+      "shipped": "2026-09-19"
     },
     {
       "id": "idea-005",
@@ -84,7 +88,7 @@
       "slug": "minesweeper",
       "title": "Minesweeper",
       "category": "game",
-      "tagline": "Chord, flag, and pray — three difficulties.",
+      "tagline": "Chord, flag, and pray \u2014 three difficulties.",
       "priority": 90,
       "effort": "M",
       "status": "todo"
@@ -114,7 +118,7 @@
       "slug": "simon-says",
       "title": "Simon Says",
       "category": "game",
-      "tagline": "Watch, remember, repeat — until you can't.",
+      "tagline": "Watch, remember, repeat \u2014 until you can't.",
       "priority": 86,
       "effort": "S",
       "status": "todo"
@@ -410,7 +414,7 @@
       "slug": "jwt-decoder",
       "title": "JWT Decoder",
       "category": "devtool",
-      "tagline": "Decode headers and payloads, verify expiry — all local.",
+      "tagline": "Decode headers and payloads, verify expiry \u2014 all local.",
       "priority": 82,
       "effort": "S",
       "status": "todo"
@@ -558,7 +562,7 @@
     {
       "id": "idea-053",
       "slug": "px-rem",
-      "title": "PX ⇄ REM",
+      "title": "PX \u21c4 REM",
       "category": "devtool",
       "tagline": "Instant pixel/rem conversion at any base size.",
       "priority": 67,
@@ -640,7 +644,7 @@
       "slug": "tab-search",
       "title": "Tab Search",
       "category": "extension",
-      "tagline": "Find any open tab by title — prototype of the extension.",
+      "tagline": "Find any open tab by title \u2014 prototype of the extension.",
       "priority": 63,
       "effort": "M",
       "status": "todo"
@@ -650,7 +654,7 @@
       "slug": "reading-mode",
       "title": "Reading Mode",
       "category": "extension",
-      "tagline": "Strip any article to clean text — try it on a sample.",
+      "tagline": "Strip any article to clean text \u2014 try it on a sample.",
       "priority": 61,
       "effort": "M",
       "status": "todo"
@@ -680,7 +684,7 @@
       "slug": "json-viewer",
       "title": "JSON Viewer",
       "category": "extension",
-      "tagline": "Collapsible, searchable JSON tree — the extension preview.",
+      "tagline": "Collapsible, searchable JSON tree \u2014 the extension preview.",
       "priority": 55,
       "effort": "M",
       "status": "todo"
@@ -700,7 +704,7 @@
       "slug": "quick-notes",
       "title": "Quick Notes",
       "category": "extension",
-      "tagline": "Popup notes that persist — localStorage demo.",
+      "tagline": "Popup notes that persist \u2014 localStorage demo.",
       "priority": 50,
       "effort": "S",
       "status": "todo"
@@ -750,7 +754,7 @@
       "slug": "session-saver",
       "title": "Session Saver",
       "category": "extension",
-      "tagline": "Save and restore tab sessions — concept and demo.",
+      "tagline": "Save and restore tab sessions \u2014 concept and demo.",
       "priority": 40,
       "effort": "M",
       "status": "todo"
@@ -760,7 +764,7 @@
       "slug": "tab-tiling",
       "title": "Tab Tiling",
       "category": "extension",
-      "tagline": "Split-screen layouts for tab hoarders — concept page.",
+      "tagline": "Split-screen layouts for tab hoarders \u2014 concept page.",
       "priority": 38,
       "effort": "S",
       "status": "todo"
@@ -770,7 +774,7 @@
       "slug": "shot-cropper",
       "title": "Shot Cropper",
       "category": "extension",
-      "tagline": "Capture, crop, annotate — the extension concept.",
+      "tagline": "Capture, crop, annotate \u2014 the extension concept.",
       "priority": 36,
       "effort": "M",
       "status": "todo"
@@ -780,7 +784,7 @@
       "slug": "break-reminder",
       "title": "Break Reminder",
       "category": "extension",
-      "tagline": "Gentle nudges to stand up — concept and timer demo.",
+      "tagline": "Gentle nudges to stand up \u2014 concept and timer demo.",
       "priority": 34,
       "effort": "S",
       "status": "todo"
@@ -812,7 +816,7 @@
       "slug": "unit-converter",
       "title": "Unit Converter",
       "category": "app",
-      "tagline": "Length, mass, temp, data — every unit, instantly.",
+      "tagline": "Length, mass, temp, data \u2014 every unit, instantly.",
       "priority": 91,
       "effort": "M",
       "status": "todo"
@@ -912,7 +916,7 @@
       "slug": "name-picker",
       "title": "Name Picker",
       "category": "app",
-      "tagline": "Raffle names fairly — classrooms and giveaways love it.",
+      "tagline": "Raffle names fairly \u2014 classrooms and giveaways love it.",
       "priority": 70,
       "effort": "S",
       "status": "todo"

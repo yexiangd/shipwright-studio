@@ -67,6 +67,7 @@ AI 搜索不看排名看"可引用性"。打法：
 
 ## 运行日志
 
+- **2026-09-19**：Phase 3-① `llms.txt` 持续维护 —— 在 "The Lab" 条目下追加今日新上线的两个实验（Memory Match、Snake）含 URL 和一句话描述，保持 AI 爬虫看到的站点摘要最新。另：当日两个 lab 新页（memory-match、snake）均按构建 checklist 自带 canonical/title/description/quotable 定义段/JSON-LD；sitemap 由 CI 的 `generate-sitemap.py` 在 push 后自动重生成。跳过：og 社交卡片（待用户拍板）、GSC 验证（需人工）。下一步候选：性能基线 Lighthouse（Phase 1-⑤，按季度节奏）。
 - **2026-09-18**：Phase 1 任务 ④ 语义化复查 —— 全站 10 个页面扫描，发现并修复 4 处 h1→h3 跳级（Forge、ideas、Lumen、password-generator，改为 h2、样式不变）；每页恰 1 个 h1、图片全部有 alt。另：当日两个 lab 新页（password-generator、pomodoro）均按构建 checklist 自带 canonical/title/description/JSON-LD；sitemap 经 `generate-sitemap.py` 重生成为 10 个 URL。跳过：og 社交卡片（待用户拍板）、GSC 验证（需人工）。下一步候选：性能基线 Lighthouse 95+（Phase 1-⑤，按季度节奏）。
 - **2026-09-17**：Phase 1 任务 ③ 品牌 404 页面 —— 新建 `404.html`（Fraunces + brass 品牌风格、"Off the chart." 航海主题文案、回首页/Lab 双按钮、QR Studio / JSON Formatter / Forge / Lumen 热门入口；`noindex` + canonical + WebPage JSON-LD，通过 seo-check）。另：当日两个 lab 新页（qr-generator、json-formatter）均通过 seo-check；sitemap 经 `generate-sitemap.py` 重生成为 8 个 URL。下一步候选：og 社交卡片图（Phase 1-②，待用户拍板，见 §5）。
 - **2026-09-16**：Phase 1 任务 ① Canonical URL —— 6 个页面全部加上（首页、Lab、Lumen、Forge、reaction-time、typing-test；lab 新页面由每日构建 checklist 自动带）。下一步候选：og 社交卡片图（Phase 1-②）。
