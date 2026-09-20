@@ -12,7 +12,7 @@
 
 - **Lumen** (https://shipwright-studio.pages.dev/lumen/): An interactive photography lab that teaches the exposure triangle (aperture, shutter speed, ISO) with real-time canvas simulations of depth of field, motion blur, noise, and light metering.
 - **Forge** (https://shipwright-studio.pages.dev/forge/): An LLM inference cost estimator. Enter model size, quantization, GPU type, batch size, and traffic to estimate GPU count, latency, and monthly serving cost.
-- **The Lab** (https://shipwright-studio.pages.dev/ideas/): An open bank of 132 web experiments — games, developer tools, browser extension prototypes, and small apps. Two new experiments are designed, built, and shipped every day. Recent additions: **Memory Match** (https://shipwright-studio.pages.dev/lab/memory-match/), a concentration card game in 4×4 or 6×6 difficulty with persistent best scores, and **Snake** (https://shipwright-studio.pages.dev/lab/snake/), the arcade classic rebuilt with a speed curve that accelerates as you eat.
+- **The Lab** (https://shipwright-studio.pages.dev/ideas/): An open bank of 132 web experiments — games, developer tools, browser extension prototypes, and small apps. Two new experiments are designed, built, and shipped every day. Recent additions: **2048** (https://shipwright-studio.pages.dev/lab/game-2048/), the classic slide-and-merge number puzzle rebuilt with smooth animations, touch + keyboard play, a win-at-2048 overlay, and a persistent best score, and **Palette Lab** (https://shipwright-studio.pages.dev/lab/color-palette/), a color harmony generator with six harmony modes, a live WCAG contrast checker, and one-click export to CSS variables, Tailwind, or JSON design tokens.
 
 ## Process
 

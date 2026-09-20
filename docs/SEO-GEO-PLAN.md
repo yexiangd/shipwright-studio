@@ -38,7 +38,7 @@
 
 AI 搜索不看排名看"可引用性"。打法：
 
-1. **`llms.txt` 持续维护**：服务、作品、联系方式保持最新；这是 AI 了解站点的第一手材料。
+1. **`llms.txt` 持续维护** ✅ 2026-09-20（追加 2048 + Palette Lab）：服务、作品、联系方式保持最新；这是 AI 了解站点的第一手材料。
 2. **写作格式**：每个页面开头用 1–2 句说清"这是什么、给谁用、解决什么" —— 定义式句子最容易被 AI 原样引用。
 3. **问答式内容**：FAQ、"How it works" 段落直接回答用户会问 AI 的问题（"How much does it cost to hire a freelance web developer?"）。
 4. **品牌一致性**：全网统一表述 —— "Shipwright Studio — independent engineering studio, Bay Area, working worldwide"。GitHub、社交媒体、lab 页脚署名全部一致，AI 才能把碎片拼成一个实体。
@@ -71,3 +71,5 @@ AI 搜索不看排名看"可引用性"。打法：
 - **2026-09-18**：Phase 1 任务 ④ 语义化复查 —— 全站 10 个页面扫描，发现并修复 4 处 h1→h3 跳级（Forge、ideas、Lumen、password-generator，改为 h2、样式不变）；每页恰 1 个 h1、图片全部有 alt。另：当日两个 lab 新页（password-generator、pomodoro）均按构建 checklist 自带 canonical/title/description/JSON-LD；sitemap 经 `generate-sitemap.py` 重生成为 10 个 URL。跳过：og 社交卡片（待用户拍板）、GSC 验证（需人工）。下一步候选：性能基线 Lighthouse 95+（Phase 1-⑤，按季度节奏）。
 - **2026-09-17**：Phase 1 任务 ③ 品牌 404 页面 —— 新建 `404.html`（Fraunces + brass 品牌风格、"Off the chart." 航海主题文案、回首页/Lab 双按钮、QR Studio / JSON Formatter / Forge / Lumen 热门入口；`noindex` + canonical + WebPage JSON-LD，通过 seo-check）。另：当日两个 lab 新页（qr-generator、json-formatter）均通过 seo-check；sitemap 经 `generate-sitemap.py` 重生成为 8 个 URL。下一步候选：og 社交卡片图（Phase 1-②，待用户拍板，见 §5）。
 - **2026-09-16**：Phase 1 任务 ① Canonical URL —— 6 个页面全部加上（首页、Lab、Lumen、Forge、reaction-time、typing-test；lab 新页面由每日构建 checklist 自动带）。下一步候选：og 社交卡片图（Phase 1-②）。
+
+- **2026-09-20**：Phase 3-① `llms.txt` 持续维护 —— 在 "The Lab" 条目下把 "Recent additions" 更新为今日新上线的两个实验（2048：滑块合并经典数字谜题，含动画/触屏/2048 通关遮罩/最高分持久化；Palette Lab：六模式配色生成器 + WCAG 对比度检查 + CSS/Tailwind/JSON 导出），含 URL 和一句话描述。另：当日两个 lab 新页（game-2048、color-palette）均按构建 checklist 自带 canonical/title/description/quotable 定义段/WebApplication JSON-LD；sitemap 由 `generate-sitemap.py` 本地重生成为 14 个 URL（CI 在 push 后也会重生成）。跳过：og 社交卡片（待用户拍板，见 §5）、GSC 验证（需人工）。下一步候选：性能基线 Lighthouse（Phase 1-⑤，按季度节奏）或 og 社交卡片（等用户拍板）。
