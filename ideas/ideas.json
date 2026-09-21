@@ -1,5 +1,5 @@
 {
-  "updated": "2026-09-20",
+  "updated": "2026-09-21",
   "ideas": [
     {
       "id": "idea-000a",
@@ -93,7 +93,9 @@
       "tagline": "Chord, flag, and pray — three difficulties.",
       "priority": 90,
       "effort": "M",
-      "status": "todo"
+      "status": "done",
+      "url": "/lab/minesweeper/",
+      "shipped": "2026-09-21"
     },
     {
       "id": "idea-007",
@@ -823,7 +825,9 @@
       "tagline": "Length, mass, temp, data — every unit, instantly.",
       "priority": 91,
       "effort": "M",
-      "status": "todo"
+      "status": "done",
+      "url": "/lab/unit-converter/",
+      "shipped": "2026-09-21"
     },
     {
       "id": "idea-079",

@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Unit Converter · Shipwright Studio</title>
+  <meta name="description" content="Unit Converter is a free online tool that converts length, mass, temperature, data, area, volume, speed, and time between metric and imperial units instantly, with a full conversion table." />
+  <link rel="canonical" href="https://shipwright-studio.pages.dev/lab/unit-converter/" />
+  <link rel="icon" type="image/svg+xml" href="../../favicon.svg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..700;1,9..144,300..700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "Unit Converter",
+    "description": "A free online unit converter for length, mass, temperature, data, area, volume, speed, and time — instant metric/imperial conversion with a full unit table.",
+    "applicationCategory": "UtilitiesApplication",
+    "operatingSystem": "Web",
+    "offers": { "@type": "Offer", "price": "0" },
+    "author": { "@type": "Organization", "name": "Shipwright Studio", "url": "https://shipwright-studio.pages.dev/" }
+  }
+  </script>
+  <style>
+    :root {
+      --bg: #0a0c0f; --surface: #10141a; --text: #f2efe6; --muted: #a6abb4; --faint: #6d737c;
+      --accent: #d2a24c; --line: rgba(255,255,255,.09); --red: #e0655f;
+      --font-display: "Fraunces", Georgia, serif;
+      --font-body: "Inter", -apple-system, "Segoe UI", sans-serif;
+      --font-mono: "JetBrains Mono", ui-monospace, monospace;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: var(--bg); color: var(--text); font-family: var(--font-body); min-height: 100vh; display: flex; flex-direction: column; }
+    .topbar { display: flex; justify-content: space-between; align-items: center; padding: 16px 22px; border-bottom: 1px solid var(--line); }
+    .topbar a { color: var(--muted); text-decoration: none; font-size: 14px; }
+    .topbar a:hover { color: var(--accent); }
+    .brand { font-family: var(--font-display); font-size: 17px; }
+    .brand em { color: var(--accent); font-style: italic; }
+    main { flex: 1; width: 100%; max-width: 960px; margin: 0 auto; padding: 44px 24px 60px; display: flex; flex-direction: column; gap: 26px; }
+    h1 { font-family: var(--font-display); font-weight: 500; font-size: clamp(30px, 5vw, 44px); letter-spacing: -.01em; }
+    h1 em { color: var(--accent); font-style: italic; }
+    .lede { color: var(--muted); max-width: 680px; line-height: 1.65; }
+    .lede strong { color: var(--text); font-weight: 600; }
+    .card { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 22px; }
+    .pills { display: flex; gap: 8px; flex-wrap: wrap; }
+    .pills button { font-family: var(--font-mono); font-size: 12.5px; padding: 9px 15px; border-radius: 999px; border: 1px solid var(--line); background: transparent; color: var(--muted); cursor: pointer; }
+    .pills button.active { border-color: var(--accent); color: var(--accent); background: rgba(210,162,76,.08); }
+    .pills button:hover { color: var(--text); }
+    .convertrow { display: grid; grid-template-columns: 1fr auto 1fr; gap: 12px; align-items: stretch; margin-top: 18px; }
+    .field label { display: block; font-family: var(--font-mono); font-size: 11px; letter-spacing: .14em; text-transform: uppercase; color: var(--faint); margin-bottom: 8px; }
+    .field input, .field select { width: 100%; font-family: var(--font-mono); font-size: 17px; background: var(--bg); border: 1px solid var(--line); color: var(--text); border-radius: 10px; padding: 13px 14px; font-variant-numeric: tabular-nums; }
+    .field input:focus, .field select:focus { outline: none; border-color: var(--accent); }
+    .field input.err { border-color: var(--red); }
+    .field select { appearance: none; cursor: pointer; }
+    .swapwrap { display: flex; align-items: flex-end; padding-bottom: 4px; }
+    #swapBtn { width: 48px; height: 48px; border-radius: 50%; border: 1px solid var(--line); background: var(--bg); color: var(--accent); font-size: 19px; cursor: pointer; transition: transform .15s, border-color .15s; }
+    #swapBtn:hover { border-color: var(--accent); transform: rotate(180deg); }
+    .hero { margin-top: 18px; background: var(--bg); border: 1px solid var(--line); border-radius: 12px; padding: 24px; }
+    .hero .pair { font-family: var(--font-mono); font-size: 12px; letter-spacing: .1em; color: var(--faint); text-transform: uppercase; margin-bottom: 10px; }
+    .hero .value { font-family: var(--font-display); font-size: clamp(38px, 7vw, 58px); font-weight: 500; color: var(--accent); font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+    .hero .formula { font-family: var(--font-mono); font-size: 12.5px; color: var(--muted); margin-top: 10px; }
+    .hero .copyrow { margin-top: 14px; display: flex; gap: 10px; align-items: center; }
+    .btn { font-family: var(--font-mono); font-size: 13px; padding: 10px 20px; border-radius: 999px; border: 1px solid var(--accent); background: transparent; color: var(--accent); cursor: pointer; }
+    .btn:hover { background: rgba(210,162,76,.1); }
+    .hint { font-family: var(--font-mono); font-size: 12px; color: var(--faint); }
+    table.units { width: 100%; border-collapse: collapse; margin-top: 6px; }
+    table.units th { text-align: left; font-family: var(--font-mono); font-size: 11px; letter-spacing: .14em; text-transform: uppercase; color: var(--faint); padding: 8px 10px; border-bottom: 1px solid var(--line); }
+    table.units td { font-family: var(--font-mono); font-size: 14px; padding: 10px; border-bottom: 1px solid var(--line); font-variant-numeric: tabular-nums; }
+    table.units tbody tr { cursor: pointer; transition: background .12s; }
+    table.units tbody tr:hover { background: rgba(210,162,76,.05); }
+    table.units td.u { color: var(--muted); }
+    table.units tr.is-from td { color: var(--accent); }
+    .toast { position: fixed; left: 50%; bottom: 28px; transform: translateX(-50%) translateY(20px); background: var(--accent); color: #0a0c0f; font-family: var(--font-mono); font-size: 13px; padding: 10px 20px; border-radius: 999px; opacity: 0; pointer-events: none; transition: opacity .2s, transform .2s; z-index: 50; }
+    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+    .foot { color: var(--faint); font-size: 13px; line-height: 1.7; max-width: 680px; }
+    @media (max-width: 640px) {
+      .convertrow { grid-template-columns: 1fr; }
+      .swapwrap { justify-content: center; padding-bottom: 0; }
+      #swapBtn:hover { transform: rotate(90deg); }
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <a href="../../lab/">← Lab</a>
+    <span class="brand">Shipwright <em>Studio</em></span>
+  </header>
+  <main>
+    <h1>Unit <em>Converter</em></h1>
+    <p class="lede"><strong>Unit Converter is a free online tool</strong> that converts between metric and imperial units across length, mass, temperature, data, area, volume, speed, and time — type one number and see it in every unit of the category at once.</p>
+
+    <section class="card" aria-label="Converter">
+      <div class="pills" id="pills" role="tablist"></div>
+      <div class="convertrow">
+        <div class="field">
+          <label for="val">Value</label>
+          <input id="val" type="text" inputmode="decimal" value="1" autocomplete="off" spellcheck="false" />
+        </div>
+        <div class="swapwrap">
+          <button id="swapBtn" title="Swap units" aria-label="Swap units">⇄</button>
+        </div>
+        <div class="field">
+          <label for="fromUnit">From</label>
+          <select id="fromUnit"></select>
+        </div>
+      </div>
+      <div class="convertrow" style="margin-top: 12px; grid-template-columns: 1fr;">
+        <div class="field">
+          <label for="toUnit">To</label>
+          <select id="toUnit"></select>
+        </div>
+      </div>
+      <div class="hero">
+        <div class="pair" id="pairLbl"></div>
+        <div class="value" id="heroVal">—</div>
+        <div class="formula" id="formulaLbl"></div>
+        <div class="copyrow">
+          <button class="btn" id="copyBtn">Copy result</button>
+          <span class="hint" id="hintLbl"></span>
+        </div>
+      </div>
+    </section>
+
+    <section class="card" aria-label="All units">
+      <div class="pills" style="margin-bottom: 10px;"><span class="hint">Click any row to copy</span></div>
+      <table class="units">
+        <thead><tr><th>Unit</th><th>Value</th></tr></thead>
+        <tbody id="tableBody"></tbody>
+      </table>
+    </section>
+
+    <p class="foot">Data units are shown in both bases: SI (1 KB = 1000 bytes) and binary (1 KiB = 1024 bytes). Temperature conversions use the exact offset formulas, so 32 °F is precisely 0 °C.</p>
+  </main>
+  <div class="toast" id="toast"></div>
+  <script>
+  "use strict";
+  const CATS = {
+    length: { label: "Length", base: "m", units: [
+      ["mm","Millimeter",0.001],["cm","Centimeter",0.01],["m","Meter",1],["km","Kilometer",1000],
+      ["in","Inch",0.0254],["ft","Foot",0.3048],["yd","Yard",0.9144],["mi","Mile",1609.344],
+      ["nmi","Nautical mile",1852] ] },
+    mass: { label: "Mass", base: "g", units: [
+      ["mg","Milligram",0.001],["g","Gram",1],["kg","Kilogram",1000],["t","Tonne",1e6],
+      ["oz","Ounce",28.349523125],["lb","Pound",453.59237],["st","Stone",6350.29318] ] },
+    temperature: { label: "Temperature", base: null, units: [
+      ["C","Celsius"],["F","Fahrenheit"],["K","Kelvin"],["R","Rankine"] ] },
+    data: { label: "Data", base: "B", units: [
+      ["b","Bit",1/8],["B","Byte",1],["KB","Kilobyte",1e3],["MB","Megabyte",1e6],
+      ["GB","Gigabyte",1e9],["TB","Terabyte",1e12],["PB","Petabyte",1e15],
+      ["KiB","Kibibyte",1024],["MiB","Mebibyte",1024**2],["GiB","Gibibyte",1024**3],
+      ["TiB","Tebibyte",1024**4] ] },
+    area: { label: "Area", base: "m²", units: [
+      ["mm²","Sq. millimeter",1e-6],["cm²","Sq. centimeter",1e-4],["m²","Sq. meter",1],
+      ["ha","Hectare",1e4],["km²","Sq. kilometer",1e6],
+      ["in²","Sq. inch",0.00064516],["ft²","Sq. foot",0.09290304],["yd²","Sq. yard",0.83612736],
+      ["ac","Acre",4046.8564224],["mi²","Sq. mile",2589988.110336] ] },
+    volume: { label: "Volume", base: "L", units: [
+      ["mL","Milliliter",0.001],["L","Liter",1],["m³","Cubic meter",1000],
+      ["tsp","Teaspoon (US)",0.00492892159375],["tbsp","Tablespoon (US)",0.01478676478125],
+      ["fl oz","Fluid ounce (US)",0.0295735295625],["cup","Cup (US)",0.2365882365],
+      ["pt","Pint (US)",0.473176473],["qt","Quart (US)",0.946352946],
+      ["gal","Gallon (US)",3.785411784],["in³","Cubic inch",0.016387064],["ft³","Cubic foot",28.316846592] ] },
+    speed: { label: "Speed", base: "m/s", units: [
+      ["m/s","Meters/sec",1],["km/h","Kilometers/hour",1/3.6],["ft/s","Feet/sec",0.3048],
+      ["mph","Miles/hour",0.44704],["kn","Knots",0.514444444] ] },
+    time: { label: "Time", base: "s", units: [
+      ["ms","Millisecond",0.001],["s","Second",1],["min","Minute",60],["h","Hour",3600],
+      ["d","Day",86400],["wk","Week",604800],["yr","Year",31557600] ] }
+  };
+  const ORDER = ["length","mass","temperature","data","area","volume","speed","time"];
+  const DEFAULTS = { length:["km","mi"], mass:["kg","lb"], temperature:["C","F"], data:["GB","MiB"],
+                     area:["m²","ft²"], volume:["L","gal"], speed:["km/h","mph"], time:["h","min"] };
+
+  let cat = "length", fromU = DEFAULTS.length[0], toU = DEFAULTS.length[1];
+
+  const $ = id => document.getElementById(id);
+  let toastTimer;
+  function toast(msg) {
+    const t = $("toast"); t.textContent = msg; t.classList.add("show");
+    clearTimeout(toastTimer); toastTimer = setTimeout(() => t.classList.remove("show"), 1400);
+  }
+  function copyText(txt, msg) {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(txt).then(() => toast(msg)).catch(() => fallbackCopy(txt, msg));
+    } else fallbackCopy(txt, msg);
+  }
+  function fallbackCopy(txt, msg) {
+    const ta = document.createElement("textarea"); ta.value = txt; document.body.appendChild(ta);
+    ta.select(); try { document.execCommand("copy"); toast(msg); } catch (e) { toast("Copy failed"); }
+    ta.remove();
+  }
+
+  // --- conversion core ---
+  function toBase(v, u) {
+    if (cat === "temperature") return toCelsius(v, u);
+    const unit = CATS[cat].units.find(x => x[0] === u);
+    return v * unit[2];
+  }
+  function fromBase(v, u) {
+    if (cat === "temperature") return fromCelsius(v, u);
+    const unit = CATS[cat].units.find(x => x[0] === u);
+    return v / unit[2];
+  }
+  function toCelsius(v, u) {
+    if (u === "C") return v;
+    if (u === "F") return (v - 32) * 5/9;
+    if (u === "K") return v - 273.15;
+    return (v - 491.67) * 5/9; // Rankine
+  }
+  function fromCelsius(v, u) {
+    if (u === "C") return v;
+    if (u === "F") return v * 9/5 + 32;
+    if (u === "K") return v + 273.15;
+    return (v + 273.15) * 9/5; // Rankine
+  }
+  function fmt(n) {
+    if (!isFinite(n)) return "—";
+    if (n === 0) return "0";
+    const a = Math.abs(n);
+    if (a >= 1e15 || (a < 1e-6 && a > 0)) return n.toExponential(6).replace(/\.?0+e/, "e");
+    let s = String(parseFloat(n.toPrecision(12)));
+    return s;
+  }
+  function formulaText() {
+    if (cat === "temperature") {
+      const f = { C:"°C", F:"°F", K:"K", R:"°R" };
+      return `${f[fromU]} → ${f[toU]}: exact offset formula`;
+    }
+    const fu = CATS[cat].units.find(x => x[0] === fromU);
+    const tu = CATS[cat].units.find(x => x[0] === toU);
+    const ratio = toBase(1, fromU) / toBase(1, toU);
+    return `1 ${fu[1]} = ${fmt(ratio)} ${tu[1]}`;
+  }
+
+  function render() {
+    const raw = $("val").value.trim();
+    const v = Number(raw);
+    const valid = raw !== "" && isFinite(v);
+    $("val").classList.toggle("err", !valid);
+    if (!valid) {
+      $("heroVal").textContent = "—";
+      $("pairLbl").textContent = "Enter a valid number";
+      $("formulaLbl").textContent = "";
+      $("tableBody").innerHTML = "";
+      return;
+    }
+    const result = fromBase(toBase(v, fromU), toU);
+    $("pairLbl").textContent = `${fmt(v)} ${fromU} → ${toU}`;
+    $("heroVal").textContent = fmt(result);
+    $("formulaLbl").textContent = formulaText();
+    const rows = CATS[cat].units.map(([sym, name]) => {
+      const val = fmt(fromBase(toBase(v, sym), sym));
+      return `<tr data-sym="${sym}" data-val="${val.replace(/"/g, "&quot;")}"><td class="u">${name} <span style="color:var(--faint)">(${sym})</span></td><td>${val}</td></tr>`;
+    }).join("");
+    $("tableBody").innerHTML = rows;
+    $("tableBody").querySelectorAll("tr").forEach(tr =>
+      tr.classList.toggle("is-from", tr.dataset.sym === fromU));
+  }
+
+  function buildUI() {
+    $("pills").innerHTML = ORDER.map(k =>
+      `<button role="tab" data-cat="${k}" class="${k === cat ? "active" : ""}">${CATS[k].label}</button>`).join("");
+    $("pills").querySelectorAll("button").forEach(b => b.addEventListener("click", () => {
+      cat = b.dataset.cat; fromU = DEFAULTS[cat][0]; toU = DEFAULTS[cat][1];
+      document.querySelectorAll("#pills button").forEach(x => x.classList.toggle("active", x === b));
+      fillSelects(); render();
+    }));
+    fillSelects();
+  }
+  function fillSelects() {
+    const opts = CATS[cat].units.map(([sym, name]) => `<option value="${sym}">${name} (${sym})</option>`).join("");
+    $("fromUnit").innerHTML = opts; $("toUnit").innerHTML = opts;
+    $("fromUnit").value = fromU; $("toUnit").value = toU;
+  }
+
+  $("val").addEventListener("input", render);
+  $("fromUnit").addEventListener("change", e => { fromU = e.target.value; render(); });
+  $("toUnit").addEventListener("change", e => { toU = e.target.value; render(); });
+  $("swapBtn").addEventListener("click", () => {
+    [fromU, toU] = [toU, fromU];
+    $("fromUnit").value = fromU; $("toUnit").value = toU; render();
+  });
+  $("copyBtn").addEventListener("click", () => copyText($("heroVal").textContent, "Result copied"));
+  $("tableBody").addEventListener("click", e => {
+    const tr = e.target.closest("tr"); if (!tr) return;
+    copyText(tr.dataset.val, `Copied ${tr.dataset.sym}`);
+  });
+
+  buildUI(); render();
+  </script>
+</body>
+</html>
