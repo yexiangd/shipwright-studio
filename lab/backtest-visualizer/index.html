@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Backtest Visualizer · Shipwright Studio</title>
+  <meta name="description" content="Backtest Visualizer is a free online tool that turns a CSV of daily returns or prices into an equity curve, drawdown chart, monthly heatmap, and key risk stats — all computed in your browser." />
+  <link rel="canonical" href="https://shipwright-studio.pages.dev/lab/backtest-visualizer/" />
+  <link rel="icon" type="image/svg+xml" href="../../favicon.svg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..700;1,9..144,300..700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "Backtest Visualizer",
+    "description": "A free online backtest visualizer: upload or paste a CSV of daily returns or prices to see the equity curve, underwater drawdown chart, monthly returns heatmap, and risk stats like Sharpe and max drawdown — 100% client-side.",
+    "applicationCategory": "FinanceApplication",
+    "operatingSystem": "Web",
+    "offers": { "@type": "Offer", "price": "0" },
+    "author": { "@type": "Organization", "name": "Shipwright Studio", "url": "https://shipwright-studio.pages.dev/" }
+  }
+  </script>
+  <style>
+    :root {
+      --bg: #0a0c0f; --surface: #10141a; --text: #f2efe6; --muted: #a6abb4; --faint: #6d737c;
+      --accent: #d2a24c; --line: rgba(255,255,255,.09); --red: #e0655f; --green: #7fc98f;
+      --font-display: "Fraunces", Georgia, serif;
+      --font-body: "Inter", -apple-system, "Segoe UI", sans-serif;
+      --font-mono: "JetBrains Mono", ui-monospace, monospace;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: var(--bg); color: var(--text); font-family: var(--font-body); min-height: 100vh; display: flex; flex-direction: column; }
+    .topbar { display: flex; justify-content: space-between; align-items: center; padding: 16px 22px; border-bottom: 1px solid var(--line); }
+    .topbar a { color: var(--muted); text-decoration: none; font-size: 14px; }
+    .topbar a:hover { color: var(--accent); }
+    .brand { font-family: var(--font-display); font-size: 17px; }
+    .brand em { color: var(--accent); font-style: italic; }
+    main { flex: 1; width: 100%; max-width: 1080px; margin: 0 auto; padding: 44px 24px 60px; display: flex; flex-direction: column; gap: 22px; }
+    h1 { font-family: var(--font-display); font-weight: 500; font-size: clamp(30px, 5vw, 44px); letter-spacing: -.01em; }
+    h1 em { color: var(--accent); font-style: italic; }
+    .lede { color: var(--muted); max-width: 720px; line-height: 1.65; }
+    .lede strong { color: var(--text); font-weight: 600; }
+    .card { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 22px; }
+    .card h2 { font-family: var(--font-display); font-weight: 500; font-size: 21px; margin-bottom: 14px; }
+    .tabs { display: flex; gap: 8px; margin-bottom: 14px; flex-wrap: wrap; }
+    .tabs button { font-family: var(--font-mono); font-size: 13px; padding: 9px 18px; border-radius: 999px;
+      border: 1px solid var(--line); background: transparent; color: var(--muted); cursor: pointer; min-height: 40px; }
+    .tabs button.active { border-color: var(--accent); color: var(--accent); background: rgba(210,162,76,.08); }
+    #csvInput { width: 100%; min-height: 150px; background: var(--bg); border: 1px solid var(--line); border-radius: 10px;
+      color: var(--text); padding: 14px; font-family: var(--font-mono); font-size: 13px; resize: vertical; }
+    #csvInput:focus { outline: none; border-color: var(--accent); }
+    .dropzone { border: 1.5px dashed var(--line); border-radius: 10px; padding: 40px 20px; text-align: center;
+      color: var(--muted); font-size: 15px; cursor: pointer; transition: border-color .15s; }
+    .dropzone:hover, .dropzone.over { border-color: var(--accent); color: var(--text); }
+    .dropzone input { display: none; }
+    .dropzone .big { font-size: 28px; display: block; margin-bottom: 8px; }
+    .cta-row { display: flex; gap: 10px; margin-top: 14px; flex-wrap: wrap; }
+    .btn { font-size: 14.5px; padding: 11px 24px; border-radius: 10px; border: none; background: var(--accent);
+      color: #0a0c0f; font-weight: 600; cursor: pointer; min-height: 46px; }
+    .btn:hover { filter: brightness(1.08); }
+    .btn.ghost { background: transparent; border: 1px solid var(--line); color: var(--muted); font-weight: 500; }
+    .btn.ghost:hover { color: var(--text); border-color: var(--accent); }
+    .msg { margin-top: 12px; font-size: 14px; min-height: 22px; }
+    .msg.err { color: var(--red); }
+    .msg.ok { color: var(--muted); }
+    .stats { display: grid; grid-template-columns: repeat(6, 1fr); gap: 12px; }
+    .stat { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 14px 12px; text-align: center; }
+    .stat .k { color: var(--faint); font-size: 11px; text-transform: uppercase; letter-spacing: .1em; margin-bottom: 6px; }
+    .stat .v { font-family: var(--font-mono); font-size: 18px; font-variant-numeric: tabular-nums; }
+    .stat .v.pos { color: var(--green); } .stat .v.neg { color: var(--red); } .stat .v.acc { color: var(--accent); }
+    .chart-wrap { position: relative; }
+    canvas.chart { width: 100%; height: 300px; display: block; cursor: crosshair; }
+    .readout { position: absolute; top: 8px; right: 12px; font-family: var(--font-mono); font-size: 13px; color: var(--muted);
+      background: rgba(10,12,15,.85); border: 1px solid var(--line); border-radius: 8px; padding: 6px 10px; display: none; }
+    .heat { display: grid; grid-template-columns: 52px repeat(12, 1fr); gap: 4px; font-family: var(--font-mono); font-size: 11.5px; }
+    .heat .yh { color: var(--faint); display: flex; align-items: center; justify-content: flex-end; padding-right: 6px; }
+    .heat .mh { color: var(--faint); text-align: center; padding-bottom: 4px; }
+    .heat .cell { aspect-ratio: 1.35; border-radius: 5px; display: flex; align-items: center; justify-content: center;
+      font-size: 10.5px; color: rgba(242,239,230,.9); cursor: default; }
+    .heat .cell.empty { background: rgba(255,255,255,.03); }
+    .help { color: var(--muted); font-size: 14px; line-height: 1.7; }
+    .help code { font-family: var(--font-mono); font-size: 12.5px; background: rgba(255,255,255,.06); padding: 2px 6px; border-radius: 5px; }
+    .help pre { font-family: var(--font-mono); font-size: 12.5px; background: var(--bg); border: 1px solid var(--line);
+      border-radius: 8px; padding: 12px; margin: 10px 0; overflow-x: auto; }
+    .priv { color: var(--faint); font-size: 13px; margin-top: 10px; }
+    .hidden { display: none !important; }
+    footer { border-top: 1px solid var(--line); padding: 22px; text-align: center; color: var(--faint); font-size: 13px; }
+    footer a { color: var(--muted); text-decoration: none; }
+    footer a:hover { color: var(--accent); }
+    @media (max-width: 900px) { .stats { grid-template-columns: repeat(3, 1fr); } }
+    @media (max-width: 560px) { .stats { grid-template-columns: repeat(2, 1fr); } }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <a href="../../ideas/">← Lab</a>
+    <span class="brand">Shipwright <em>Studio</em></span>
+  </header>
+  <main>
+    <h1>Backtest <em>Visualizer</em></h1>
+    <p class="lede"><strong>Backtest Visualizer is a free online tool</strong> that turns a CSV of daily returns or prices into an equity curve, an underwater drawdown chart, a monthly returns heatmap, and the stats that matter — Sharpe, CAGR, max drawdown. Everything runs in your browser; no data ever leaves the machine.</p>
+
+    <section class="card" aria-label="Data input">
+      <h2>Your data</h2>
+      <div class="tabs" role="tablist">
+        <button id="tabPaste" class="active" role="tab">Paste CSV</button>
+        <button id="tabUpload" role="tab">Upload file</button>
+        <button id="tabSample" role="tab">Sample data</button>
+      </div>
+      <div id="panePaste">
+        <textarea id="csvInput" placeholder="date,return&#10;2024-01-02,0.0031&#10;2024-01-03,-0.0012&#10;…or date,price columns. Header row optional." aria-label="CSV input"></textarea>
+      </div>
+      <div id="paneUpload" class="hidden">
+        <label class="dropzone" id="dropzone">
+          <span class="big">⇪</span>
+          Drop a <code>.csv</code> file here or click to browse
+          <input type="file" id="fileInput" accept=".csv,text/csv" />
+        </label>
+      </div>
+      <div id="paneSample" class="hidden">
+        <p class="help">Loads a built-in 3-year synthetic series (~756 trading days, seeded so it's the same every time) — instant demo, no file needed.</p>
+      </div>
+      <div class="cta-row">
+        <button class="btn" id="analyzeBtn">Analyze</button>
+        <button class="btn ghost hidden" id="sampleBtn">Try sample data instead</button>
+      </div>
+      <p class="msg" id="msg" aria-live="polite"></p>
+    </section>
+
+    <div id="results" class="hidden" style="display:flex;flex-direction:column;gap:22px">
+      <section aria-label="Statistics">
+        <div class="stats" id="stats"></div>
+      </section>
+      <section class="card" aria-label="Equity curve">
+        <h2>Equity curve</h2>
+        <div class="chart-wrap"><canvas class="chart" id="equityChart"></canvas><div class="readout" id="equityReadout"></div></div>
+      </section>
+      <section class="card" aria-label="Drawdown">
+        <h2>Underwater chart</h2>
+        <div class="chart-wrap"><canvas class="chart" id="ddChart"></canvas><div class="readout" id="ddReadout"></div></div>
+      </section>
+      <section class="card" aria-label="Monthly heatmap">
+        <h2>Monthly returns</h2>
+        <div class="heat" id="heat"></div>
+      </section>
+    </div>
+
+    <section class="card" aria-label="Format help">
+      <h2>CSV format</h2>
+      <div class="help">
+        Two columns: a date and either a <strong>return</strong> (per-day, as a decimal like <code>0.0031</code> or a percent like <code>0.31%</code>) or a <strong>price</strong> (auto-detected). A header row is fine but optional.
+        <pre>date,return&#10;2024-01-02,0.0031&#10;2024-01-03,-0.0012</pre>
+        Rows sort by date automatically. Messy rows are skipped and counted — nothing fails silently.
+        <p class="priv">🔒 Privacy: parsing, stats, and charts all happen locally in your browser. Uploads never touch a server.</p>
+      </div>
+    </section>
+  </main>
+  <footer>Built by <a href="https://shipwright-studio.pages.dev/">Shipwright Studio</a> · runs entirely in your browser</footer>
+
+  <script>
+  (function () {
+    "use strict";
+    var MIN_ROWS = 20;
+
+    var msgEl = document.getElementById("msg");
+    var resultsEl = document.getElementById("results");
+    var sampleBtn = document.getElementById("sampleBtn");
+
+    function setMsg(text, cls) { msgEl.textContent = text; msgEl.className = "msg " + (cls || ""); }
+    function fmtPct(x) { return (x * 100 >= 0 ? "+" : "") + (x * 100).toFixed(2) + "%"; }
+    function fmtNum(x) { return (x >= 0 ? "+" : "") + x.toFixed(2); }
+
+    // ---------- seeded sample data ----------
+    function mulberry32(a) {
+      return function () {
+        a |= 0; a = a + 0x6D2B79F5 | 0;
+        var t = Math.imul(a ^ a >>> 15, 1 | a);
+        t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+        return ((t ^ t >>> 14) >>> 0) / 4294967296;
+      };
+    }
+    function sampleCSV() {
+      var rnd = mulberry32(20261005);
+      var end = new Date(2026, 9, 2); // last Friday before the page was built
+      var days = 756, rows = [];
+      for (var back = days - 1; back >= 0; back--) {
+        var d = new Date(end); d.setDate(d.getDate() - back);
+        var dow = d.getDay();
+        if (dow === 0 || dow === 6) continue;
+        var drift = 0.00045;
+        // bake in two rough patches for a realistic drawdown
+        var t = days - back;
+        if ((t > 180 && t < 260) || (t > 520 && t < 590)) drift -= 0.0035;
+        var r = drift + (rnd() - 0.5) * 0.024;
+        rows.push(d.toISOString().slice(0, 10) + "," + r.toFixed(6));
+      }
+      return "date,return\n" + rows.join("\n");
+    }
+
+    // ---------- parsing ----------
+    function parseCSV(text) {
+      var lines = text.split(/\r?\n/);
+      var rows = [], skipped = 0;
+      for (var i = 0; i < lines.length; i++) {
+        var line = lines[i].trim();
+        if (!line) continue;
+        var parts = line.split(/[,\t;]/).map(function (p) { return p.trim(); });
+        if (parts.length < 2) { skipped++; continue; }
+        var dstr = parts[0], vstr = parts[1];
+        if (/[a-zA-Z]/.test(vstr)) { continue; } // header row
+        var d = new Date(dstr);
+        if (isNaN(d.getTime())) { skipped++; continue; }
+        var isPct = /%$/.test(vstr);
+        var v = parseFloat(vstr.replace(/%$/, ""));
+        if (isNaN(v)) { skipped++; continue; }
+        if (isPct) v = v / 100;
+        rows.push({ date: d, value: v, dstr: dstr });
+      }
+      rows.sort(function (a, b) { return a.date - b.date; });
+      return { rows: rows, skipped: skipped };
+    }
+
+    function detectPrices(rows, headerLine) {
+      var hl = (headerLine || "").toLowerCase();
+      if (/(price|close|nav|value|adj)/.test(hl)) return true;
+      var vals = rows.map(function (r) { return r.value; });
+      function meanAbs(rs) { return rs.reduce(function (a, x) { return a + Math.abs(x); }, 0) / rs.length; }
+      function maxAbs(rs) { return Math.max.apply(null, rs.map(Math.abs)); }
+      // Plausibility as a return series: sane per-day magnitudes.
+      var retPlausible = vals.every(function (v) { return v > -1; }) && meanAbs(vals) < 0.3 && maxAbs(vals) < 5;
+      // Plausibility as a price series: implied one-day moves must be sane.
+      var implied = [];
+      var pricePlausible = vals.length > 1 && vals.every(function (v) { return v > 0; }) &&
+        (function () {
+          for (var i = 1; i < vals.length; i++) implied.push(vals[i] / vals[i - 1] - 1);
+          return maxAbs(implied) < 0.9;
+        })();
+      if (pricePlausible && !retPlausible) return true;
+      if (retPlausible && !pricePlausible) return false;
+      return pricePlausible; // both/neither plausible: trust a sane level series
+    }
+
+    function toReturns(parsed) {
+      var rows = parsed.rows;
+      if (!rows.length) return [];
+      var headerLine = "";
+      var first = parsed.rawFirstLine || "";
+      if (/[a-zA-Z]/.test(first)) headerLine = first;
+      if (detectPrices(rows, headerLine)) {
+        var out = [];
+        for (var i = 1; i < rows.length; i++) {
+          if (rows[i - 1].value <= 0) continue;
+          out.push({ date: rows[i].date, dstr: rows[i].dstr, r: rows[i].value / rows[i - 1].value - 1 });
+        }
+        return out;
+      }
+      return rows.map(function (r) { return { date: r.date, dstr: r.dstr, r: r.value }; });
+    }
+
+    // ---------- stats ----------
+    function compute(returns) {
+      var n = returns.length, equity = [1], eq = 1;
+      for (var i = 0; i < n; i++) { eq *= (1 + returns[i].r); equity.push(eq); }
+      var peak = 1, mdd = 0, dd = [0], peakIdx = 0, mddIdx = 0;
+      for (var j = 1; j < equity.length; j++) {
+        if (equity[j] > peak) { peak = equity[j]; peakIdx = j; }
+        var d = equity[j] / peak - 1;
+        dd.push(d);
+        if (d < mdd) { mdd = d; mddIdx = j; }
+      }
+      var mean = 0; for (var k = 0; k < n; k++) mean += returns[k].r; mean /= n;
+      var varr = 0; for (var m = 0; m < n; m++) varr += Math.pow(returns[m].r - mean, 2);
+      var sd = n > 1 ? Math.sqrt(varr / (n - 1)) : 0;
+      var sharpe = sd === 0 ? 0 : mean / sd * Math.sqrt(252);
+      var wins = returns.filter(function (x) { return x.r > 0; }).length;
+      var months = {};
+      for (var q = 0; q < n; q++) {
+        var mk = returns[q].dstr.slice(0, 7);
+        if (!months[mk]) months[mk] = [];
+        months[mk].push(returns[q].r);
+      }
+      var monthly = Object.keys(months).sort().map(function (mk) {
+        return { key: mk, r: months[mk].reduce(function (a, r) { return a * (1 + r); }, 1) - 1 };
+      });
+      var best = null, worst = null;
+      monthly.forEach(function (mo) {
+        if (!best || mo.r > best.r) best = mo;
+        if (!worst || mo.r < worst.r) worst = mo;
+      });
+      return {
+        n: n, equity: equity, dd: dd, dates: returns.map(function (x) { return x.dstr; }),
+        total: eq - 1, cagr: Math.pow(eq, 252 / n) - 1, mdd: mdd,
+        mddIdx: mddIdx, peakIdx: peakIdx, sharpe: sharpe,
+        winRate: wins / n, monthly: monthly, best: best, worst: worst
+      };
+    }
+
+    // ---------- canvas helpers ----------
+    function prepCanvas(cv) {
+      var dpr = window.devicePixelRatio || 1;
+      var w = cv.clientWidth, h = cv.clientHeight;
+      cv.width = w * dpr; cv.height = h * dpr;
+      var ctx = cv.getContext("2d");
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      return { ctx: ctx, w: w, h: h };
+    }
+    var PAD = { l: 46, r: 12, t: 12, b: 26 };
+
+    function drawLine(cv, st, hoverIdx) {
+      var p = prepCanvas(cv), ctx = p.ctx, W = p.w, H = p.h;
+      var E = st.equity, n = E.length;
+      var lo = Math.min.apply(null, E), hi = Math.max.apply(null, E);
+      var span = (hi - lo) || 1; lo -= span * 0.08; hi += span * 0.08;
+      function X(i) { return PAD.l + (W - PAD.l - PAD.r) * i / (n - 1); }
+      function Y(v) { return PAD.t + (H - PAD.t - PAD.b) * (1 - (v - lo) / (hi - lo)); }
+      // grid
+      ctx.strokeStyle = "rgba(255,255,255,.07)"; ctx.fillStyle = "#6d737c";
+      ctx.font = "11px 'JetBrains Mono', monospace"; ctx.textAlign = "right"; ctx.lineWidth = 1;
+      for (var g = 0; g <= 4; g++) {
+        var v = lo + (hi - lo) * g / 4, y = Y(v);
+        ctx.beginPath(); ctx.moveTo(PAD.l, y); ctx.lineTo(W - PAD.r, y); ctx.stroke();
+        ctx.fillText(v.toFixed(1), PAD.l - 6, y + 4);
+      }
+      // area + line
+      var grad = ctx.createLinearGradient(0, PAD.t, 0, H - PAD.b);
+      grad.addColorStop(0, "rgba(210,162,76,.28)"); grad.addColorStop(1, "rgba(210,162,76,0)");
+      ctx.beginPath(); ctx.moveTo(X(0), Y(E[0]));
+      for (var i = 1; i < n; i++) ctx.lineTo(X(i), Y(E[i]));
+      ctx.lineTo(X(n - 1), H - PAD.b); ctx.lineTo(X(0), H - PAD.b); ctx.closePath();
+      ctx.fillStyle = grad; ctx.fill();
+      ctx.beginPath(); ctx.moveTo(X(0), Y(E[0]));
+      for (var j = 1; j < n; j++) ctx.lineTo(X(j), Y(E[j]));
+      ctx.strokeStyle = "#d2a24c"; ctx.lineWidth = 2; ctx.stroke();
+      // hover
+      if (hoverIdx != null) {
+        var hx = X(hoverIdx), hy = Y(E[hoverIdx]);
+        ctx.strokeStyle = "rgba(255,255,255,.35)"; ctx.setLineDash([4, 4]);
+        ctx.beginPath(); ctx.moveTo(hx, PAD.t); ctx.lineTo(hx, H - PAD.b); ctx.stroke(); ctx.setLineDash([]);
+        ctx.beginPath(); ctx.arc(hx, hy, 4.5, 0, Math.PI * 2);
+        ctx.fillStyle = "#d2a24c"; ctx.fill();
+        ctx.strokeStyle = "#0a0c0f"; ctx.lineWidth = 2; ctx.stroke();
+      }
+      // date ticks
+      ctx.fillStyle = "#6d737c"; ctx.textAlign = "center";
+      var step = Math.max(1, Math.floor(n / 6));
+      for (var t = 0; t < n; t += step) ctx.fillText(st.dates[Math.min(t, n - 2)].slice(0, 7), X(t), H - 8);
+      return { X: X, Y: Y, n: n };
+    }
+
+    function drawDD(cv, st, hoverIdx) {
+      var p = prepCanvas(cv), ctx = p.ctx, W = p.w, H = p.h;
+      var D = st.dd, n = D.length;
+      function X(i) { return PAD.l + (W - PAD.l - PAD.r) * i / (n - 1); }
+      function Y(v) { return PAD.t + (H - PAD.t - PAD.b) * (1 - v); } // v in [-1..0]
+      var grad = ctx.createLinearGradient(0, PAD.t, 0, H - PAD.b);
+      grad.addColorStop(0, "rgba(224,101,95,.35)"); grad.addColorStop(1, "rgba(224,101,95,.05)");
+      ctx.beginPath(); ctx.moveTo(X(0), Y(0));
+      for (var i = 0; i < n; i++) ctx.lineTo(X(i), Y(D[i]));
+      ctx.lineTo(X(n - 1), Y(0)); ctx.closePath();
+      ctx.fillStyle = grad; ctx.fill();
+      ctx.beginPath(); ctx.moveTo(X(0), Y(D[0]));
+      for (var j = 1; j < n; j++) ctx.lineTo(X(j), Y(D[j]));
+      ctx.strokeStyle = "#e0655f"; ctx.lineWidth = 2; ctx.stroke();
+      ctx.strokeStyle = "rgba(255,255,255,.25)"; ctx.setLineDash([4, 4]);
+      ctx.beginPath(); ctx.moveTo(PAD.l, Y(0)); ctx.lineTo(W - PAD.r, Y(0)); ctx.stroke(); ctx.setLineDash([]);
+      // max dd marker
+      var mx = X(st.mddIdx), my = Y(st.mdd);
+      ctx.beginPath(); ctx.arc(mx, my, 4.5, 0, Math.PI * 2);
+      ctx.fillStyle = "#e0655f"; ctx.fill(); ctx.strokeStyle = "#0a0c0f"; ctx.lineWidth = 2; ctx.stroke();
+      ctx.fillStyle = "#e0655f"; ctx.font = "11px 'JetBrains Mono', monospace"; ctx.textAlign = "left";
+      ctx.fillText(fmtPct(st.mdd) + " max", Math.min(mx + 8, W - 90), Math.max(my - 8, PAD.t + 4));
+      ctx.fillStyle = "#6d737c";
+      for (var g = 0; g <= 4; g++) {
+        var v = -g / 4, y = Y(v);
+        ctx.textAlign = "right"; ctx.fillText((v * 100).toFixed(0) + "%", PAD.l - 6, y + 4);
+      }
+      if (hoverIdx != null) {
+        ctx.strokeStyle = "rgba(255,255,255,.35)"; ctx.setLineDash([4, 4]);
+        ctx.beginPath(); ctx.moveTo(X(hoverIdx), PAD.t); ctx.lineTo(X(hoverIdx), H - PAD.b); ctx.stroke(); ctx.setLineDash([]);
+      }
+      return { X: X, n: n };
+    }
+
+    function attachHover(cv, ro, st, drawFn, fmtFn) {
+      var geom = null;
+      cv.addEventListener("mousemove", function (e) {
+        if (!geom) return;
+        var rect = cv.getBoundingClientRect();
+        var px = e.clientX - rect.left;
+        var frac = (px - PAD.l) / (rect.width - PAD.l - PAD.r);
+        var idx = Math.round(frac * (geom.n - 1));
+        idx = Math.max(0, Math.min(geom.n - 1, idx));
+        geom = drawFn(cv, st, idx);
+        ro.style.display = "block";
+        ro.textContent = st.dates[Math.min(idx, st.dates.length - 1)] + " · " + fmtFn(idx);
+      });
+      cv.addEventListener("mouseleave", function () { ro.style.display = "none"; geom = drawFn(cv, st, null); });
+      geom = drawFn(cv, st, null);
+      return function redraw() { geom = drawFn(cv, st, null); };
+    }
+
+    // ---------- render ----------
+    var redrawFns = [];
+    function render(st, skipped) {
+      var cards = [
+        ["Total return", fmtPct(st.total), st.total >= 0 ? "pos" : "neg"],
+        ["CAGR", fmtPct(st.cagr), st.cagr >= 0 ? "pos" : "neg"],
+        ["Max drawdown", fmtPct(st.mdd), "neg"],
+        ["Sharpe (ann.)", fmtNum(st.sharpe), st.sharpe >= 1 ? "pos" : ""],
+        ["Win rate", (st.winRate * 100).toFixed(1) + "%", ""],
+        ["Best / worst mo", fmtPct(st.best.r) + " / " + fmtPct(st.worst.r), "acc"]
+      ];
+      document.getElementById("stats").innerHTML = cards.map(function (c) {
+        return '<div class="stat"><div class="k">' + c[0] + '</div><div class="v ' + c[2] + '">' + c[1] + "</div></div>";
+      }).join("");
+      resultsEl.classList.remove("hidden");
+      redrawFns = [
+        attachHover(document.getElementById("equityChart"), document.getElementById("equityReadout"), st, drawLine,
+          function (i) { return "equity " + st.equity[i].toFixed(2); }),
+        attachHover(document.getElementById("ddChart"), document.getElementById("ddReadout"), st, drawDD,
+          function (i) { return "drawdown " + fmtPct(st.dd[i]); })
+      ];
+      renderHeat(st.monthly);
+      var note = st.n + " daily points analyzed";
+      if (skipped > 0) note += " · " + skipped + " row" + (skipped > 1 ? "s" : "") + " skipped";
+      setMsg(note + ".", "ok");
+      window.scrollTo({ top: resultsEl.offsetTop - 20, behavior: "smooth" });
+    }
+
+    function renderHeat(monthly) {
+      var byYear = {}, years = [];
+      monthly.forEach(function (mo) {
+        var y = mo.key.slice(0, 4), m = parseInt(mo.key.slice(5, 7), 10) - 1;
+        if (!byYear[y]) { byYear[y] = new Array(12).fill(null); years.push(y); }
+        byYear[y][m] = mo.r;
+      });
+      var months = ["J", "F", "M", "A", "M", "J", "J", "A", "S", "O", "N", "D"];
+      var html = "<div></div>" + months.map(function (m) { return '<div class="mh">' + m + "</div>"; }).join("");
+      years.sort().forEach(function (y) {
+        html += '<div class="yh">' + y + "</div>";
+        for (var m = 0; m < 12; m++) {
+          var r = byYear[y][m];
+          if (r == null) { html += '<div class="cell empty"></div>'; continue; }
+          var a = Math.min(0.85, Math.abs(r) * 6 + 0.12);
+          var bg = r >= 0 ? "rgba(127,201,143," + a.toFixed(2) + ")" : "rgba(224,101,95," + a.toFixed(2) + ")";
+          html += '<div class="cell" style="background:' + bg + '" title="' + y + "-" + String(m + 1).padStart(2, "0") + ": " + fmtPct(r) + '">' + (r * 100).toFixed(1) + "</div>";
+        }
+      });
+      document.getElementById("heat").innerHTML = html;
+    }
+
+    // ---------- tabs + analyze ----------
+    var panes = { tabPaste: "panePaste", tabUpload: "paneUpload", tabSample: "paneSample" };
+    var currentTab = "tabPaste";
+    Object.keys(panes).forEach(function (id) {
+      document.getElementById(id).addEventListener("click", function () {
+        currentTab = id;
+        Object.keys(panes).forEach(function (k) {
+          document.getElementById(k).classList.toggle("active", k === id);
+          document.getElementById(panes[k]).classList.toggle("hidden", k !== id);
+        });
+      });
+    });
+
+    var dropzone = document.getElementById("dropzone");
+    var fileInput = document.getElementById("fileInput");
+    dropzone.addEventListener("dragover", function (e) { e.preventDefault(); dropzone.classList.add("over"); });
+    dropzone.addEventListener("dragleave", function () { dropzone.classList.remove("over"); });
+    dropzone.addEventListener("drop", function (e) {
+      e.preventDefault(); dropzone.classList.remove("over");
+      var f = e.dataTransfer.files[0]; if (f) readFile(f);
+    });
+    fileInput.addEventListener("change", function () { if (fileInput.files[0]) readFile(fileInput.files[0]); });
+    function readFile(f) {
+      var r = new FileReader();
+      r.onload = function () {
+        document.getElementById("csvInput").value = String(r.result).slice(0, 200000);
+        document.getElementById("tabPaste").click();
+        setMsg("Loaded " + f.name + " — hit Analyze.", "ok");
+      };
+      r.readAsText(f);
+    }
+
+    function analyzeText(text) {
+      if (!text.trim()) { setMsg("Paste some CSV first — or try the sample data.", "err"); sampleBtn.classList.remove("hidden"); return; }
+      var parsed = parseCSV(text);
+      parsed.rawFirstLine = text.split(/\r?\n/)[0];
+      var rets = toReturns(parsed);
+      if (rets.length < MIN_ROWS) {
+        setMsg("Only " + rets.length + " valid data points found — need at least " + MIN_ROWS + "." +
+          (parsed.skipped ? " (" + parsed.skipped + " rows skipped.)" : "") + " Check the format below, or try sample data.", "err");
+        sampleBtn.classList.remove("hidden");
+        return;
+      }
+      sampleBtn.classList.add("hidden");
+      render(compute(rets), parsed.skipped);
+    }
+
+    document.getElementById("analyzeBtn").addEventListener("click", function () {
+      var text = currentTab === "tabSample" ? sampleCSV() : document.getElementById("csvInput").value;
+      analyzeText(text);
+    });
+    sampleBtn.addEventListener("click", function () { document.getElementById("tabSample").click(); analyzeText(sampleCSV()); });
+
+    window.addEventListener("resize", function () { redrawFns.forEach(function (f) { f(); }); });
+  })();
+  </script>
+</body>
+</html>

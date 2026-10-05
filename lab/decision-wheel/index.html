@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Decision Wheel · Shipwright Studio</title>
+  <meta name="description" content="Decision Wheel is a free online tool that settles group decisions with a spin: add your options, spin the wheel, and let it pick the winner. No accounts, nothing stored online." />
+  <link rel="canonical" href="https://shipwright-studio.pages.dev/lab/decision-wheel/" />
+  <link rel="icon" type="image/svg+xml" href="../../favicon.svg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..700;1,9..144,300..700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "Decision Wheel",
+    "description": "A free online decision wheel: enter 2–12 options, spin the wheel, and get a fair random winner — options are saved in your browser for next time.",
+    "applicationCategory": "UtilitiesApplication",
+    "operatingSystem": "Web",
+    "offers": { "@type": "Offer", "price": "0" },
+    "author": { "@type": "Organization", "name": "Shipwright Studio", "url": "https://shipwright-studio.pages.dev/" }
+  }
+  </script>
+  <style>
+    :root {
+      --bg: #0a0c0f; --surface: #10141a; --text: #f2efe6; --muted: #a6abb4; --faint: #6d737c;
+      --accent: #d2a24c; --line: rgba(255,255,255,.09); --red: #e0655f;
+      --font-display: "Fraunces", Georgia, serif;
+      --font-body: "Inter", -apple-system, "Segoe UI", sans-serif;
+      --font-mono: "JetBrains Mono", ui-monospace, monospace;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: var(--bg); color: var(--text); font-family: var(--font-body); min-height: 100vh; display: flex; flex-direction: column; }
+    .topbar { display: flex; justify-content: space-between; align-items: center; padding: 16px 22px; border-bottom: 1px solid var(--line); }
+    .topbar a { color: var(--muted); text-decoration: none; font-size: 14px; }
+    .topbar a:hover { color: var(--accent); }
+    .brand { font-family: var(--font-display); font-size: 17px; }
+    .brand em { color: var(--accent); font-style: italic; }
+    main { flex: 1; width: 100%; max-width: 1080px; margin: 0 auto; padding: 44px 24px 60px; display: flex; flex-direction: column; gap: 26px; }
+    h1 { font-family: var(--font-display); font-weight: 500; font-size: clamp(30px, 5vw, 44px); letter-spacing: -.01em; }
+    h1 em { color: var(--accent); font-style: italic; }
+    .lede { color: var(--muted); max-width: 700px; line-height: 1.65; }
+    .lede strong { color: var(--text); font-weight: 600; }
+    .layout { display: grid; grid-template-columns: 1.05fr .95fr; gap: 22px; align-items: start; }
+    .card { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 22px; }
+    .wheel-wrap { display: flex; flex-direction: column; align-items: center; gap: 18px; }
+    .wheel-frame { position: relative; width: min(100%, 430px); aspect-ratio: 1; }
+    #wheel { width: 100%; height: 100%; display: block; }
+    .pointer { position: absolute; top: -6px; left: 50%; transform: translateX(-50%); width: 0; height: 0;
+      border-left: 13px solid transparent; border-right: 13px solid transparent; border-top: 22px solid var(--accent);
+      filter: drop-shadow(0 2px 6px rgba(210,162,76,.45)); }
+    .spin-btn { font-family: var(--font-display); font-size: 20px; padding: 14px 54px; border-radius: 999px;
+      border: 1px solid var(--accent); background: rgba(210,162,76,.1); color: var(--accent); cursor: pointer;
+      transition: transform .15s, background .15s; min-height: 56px; }
+    .spin-btn:hover:not(:disabled) { background: rgba(210,162,76,.2); transform: scale(1.03); }
+    .spin-btn:disabled { opacity: .38; cursor: not-allowed; }
+    .hint { color: var(--faint); font-size: 13.5px; text-align: center; }
+    .result { display: none; text-align: center; padding: 18px; border: 1px solid var(--accent); border-radius: 12px;
+      background: rgba(210,162,76,.07); width: 100%; }
+    .result.show { display: block; animation: pop .35s ease-out; }
+    @keyframes pop { from { transform: scale(.94); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+    .result .k { color: var(--faint); font-size: 12px; text-transform: uppercase; letter-spacing: .14em; }
+    .result .v { font-family: var(--font-display); font-size: clamp(26px, 4vw, 38px); color: var(--accent); margin: 6px 0 12px; word-break: break-word; }
+    .result .row { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+    .ghost-btn { font-size: 13.5px; padding: 9px 18px; border-radius: 999px; border: 1px solid var(--line);
+      background: transparent; color: var(--muted); cursor: pointer; min-height: 40px; }
+    .ghost-btn:hover { color: var(--text); border-color: var(--accent); }
+    .editor h2, .wheel-card h2 { font-family: var(--font-display); font-weight: 500; font-size: 21px; margin-bottom: 14px; }
+    .add-row { display: flex; gap: 10px; margin-bottom: 14px; }
+    #optInput { flex: 1; background: var(--bg); border: 1px solid var(--line); border-radius: 10px; color: var(--text);
+      padding: 12px 14px; font-size: 15px; font-family: var(--font-body); min-height: 48px; }
+    #optInput:focus { outline: none; border-color: var(--accent); }
+    .add-btn { padding: 12px 22px; border-radius: 10px; border: none; background: var(--accent); color: #0a0c0f;
+      font-weight: 600; font-size: 15px; cursor: pointer; min-height: 48px; }
+    .add-btn:hover { filter: brightness(1.08); }
+    .chips { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; min-height: 40px; }
+    .chip { display: inline-flex; align-items: center; gap: 8px; background: var(--bg); border: 1px solid var(--line);
+      border-radius: 999px; padding: 8px 8px 8px 16px; font-size: 14px; }
+    .chip button { border: none; background: rgba(255,255,255,.06); color: var(--muted); width: 26px; height: 26px;
+      border-radius: 50%; cursor: pointer; font-size: 14px; line-height: 1; display: flex; align-items: center; justify-content: center; }
+    .chip button:hover { color: var(--red); background: rgba(224,101,95,.15); }
+    .chip button:disabled { opacity: .35; cursor: not-allowed; }
+    .editor-foot { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; justify-content: space-between; }
+    .count { font-family: var(--font-mono); font-size: 13px; color: var(--faint); }
+    .notice { color: var(--red); font-size: 13.5px; min-height: 20px; margin-top: 8px; }
+    .howto { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+    .howto .step { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 16px; }
+    .howto .n { font-family: var(--font-mono); color: var(--accent); font-size: 13px; }
+    .howto p { color: var(--muted); font-size: 14px; line-height: 1.6; margin-top: 6px; }
+    footer { border-top: 1px solid var(--line); padding: 22px; text-align: center; color: var(--faint); font-size: 13px; }
+    footer a { color: var(--muted); text-decoration: none; }
+    footer a:hover { color: var(--accent); }
+    @media (max-width: 860px) {
+      .layout { grid-template-columns: 1fr; }
+      .howto { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <a href="../../ideas/">← Lab</a>
+    <span class="brand">Shipwright <em>Studio</em></span>
+  </header>
+  <main>
+    <h1>Decision <em>Wheel</em></h1>
+    <p class="lede"><strong>Decision Wheel is a free online tool</strong> that settles group decisions with a spin — add your options (dinner spots, movies, who's driving), spin the wheel, and let it pick the winner while everyone watches it slow down.</p>
+
+    <div class="layout">
+      <section class="card wheel-card" aria-label="The wheel">
+        <h2>The wheel</h2>
+        <div class="wheel-wrap">
+          <div class="wheel-frame">
+            <div class="pointer" aria-hidden="true"></div>
+            <canvas id="wheel" role="img" aria-label="Decision wheel with your options"></canvas>
+          </div>
+          <div class="result" id="result" aria-live="polite">
+            <div class="k">Winner</div>
+            <div class="v" id="winnerName"></div>
+            <div class="row">
+              <button class="ghost-btn" id="againBtn">Spin again</button>
+              <button class="ghost-btn" id="removeWinnerBtn">Remove winner</button>
+            </div>
+          </div>
+          <button class="spin-btn" id="spinBtn">Spin</button>
+          <p class="hint" id="spinHint">Add at least 2 options to spin.</p>
+        </div>
+      </section>
+
+      <section class="card editor" aria-label="Options">
+        <h2>Options</h2>
+        <div class="add-row">
+          <input id="optInput" type="text" maxlength="40" placeholder="Add an option…" aria-label="New option" autocomplete="off" />
+          <button class="add-btn" id="addBtn">Add</button>
+        </div>
+        <div class="chips" id="chips"></div>
+        <div class="editor-foot">
+          <span class="count" id="count"></span>
+          <div style="display:flex;gap:10px">
+            <button class="ghost-btn" id="shuffleBtn">Shuffle</button>
+            <button class="ghost-btn" id="clearBtn">Clear all</button>
+          </div>
+        </div>
+        <p class="notice" id="notice" aria-live="polite"></p>
+      </section>
+    </div>
+
+    <section class="howto" aria-label="How it works">
+      <div class="step"><div class="n">01</div><p>Add the candidates — restaurants, movies, chores, names. Your list is saved in this browser automatically.</p></div>
+      <div class="step"><div class="n">02</div><p>Spin the wheel. It eases out over several seconds so the slowdown is the whole drama.</p></div>
+      <div class="step"><div class="n">03</div><p>The pointer decides. Remove the winner to narrow the field, or shuffle and spin again.</p></div>
+    </section>
+  </main>
+  <footer>Built by <a href="https://shipwright-studio.pages.dev/">Shipwright Studio</a> · runs entirely in your browser</footer>
+
+  <script>
+  (function () {
+    "use strict";
+    var KEY = "decision-wheel-options";
+    var MAX = 12, MIN = 2;
+    var PALETTE = ["#d2a24c", "#2f6f73", "#a34e5e", "#4a5b3a", "#6b5b8e", "#2f5b8e", "#8e6a2f", "#5e4a3a", "#3a6b5e", "#7a3a5e", "#4e5e7a", "#8a8a4d"];
+    var DEFAULTS = ["Sushi", "Tacos", "Ramen", "Pizza"];
+    var reduced = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+    var options = load();
+    var rotation = 0, spinning = false, rafId = null;
+
+    function load() {
+      try {
+        var raw = localStorage.getItem(KEY);
+        if (raw) { var arr = JSON.parse(raw); if (Array.isArray(arr) && arr.length) return arr.slice(0, MAX); }
+      } catch (e) {}
+      return DEFAULTS.slice();
+    }
+    function save() { try { localStorage.setItem(KEY, JSON.stringify(options)); } catch (e) {} }
+
+    var canvas = document.getElementById("wheel");
+    var ctx = canvas.getContext("2d");
+    var chipsEl = document.getElementById("chips");
+    var inputEl = document.getElementById("optInput");
+    var spinBtn = document.getElementById("spinBtn");
+    var hintEl = document.getElementById("spinHint");
+    var noticeEl = document.getElementById("notice");
+    var resultEl = document.getElementById("result");
+    var winnerEl = document.getElementById("winnerName");
+
+    function notice(msg) { noticeEl.textContent = msg || ""; if (msg) setTimeout(function () { if (noticeEl.textContent === msg) noticeEl.textContent = ""; }, 2600); }
+
+    function segColor(i) { return PALETTE[i % PALETTE.length]; }
+
+    function sizeCanvas() {
+      var r = canvas.getBoundingClientRect();
+      var dpr = window.devicePixelRatio || 1;
+      var s = Math.max(240, Math.round(r.width));
+      canvas.width = s * dpr; canvas.height = s * dpr;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    }
+
+    function draw(highlight) {
+      var s = canvas.width / (window.devicePixelRatio || 1);
+      var cx = s / 2, cy = s / 2, R = s / 2 - 6;
+      ctx.clearRect(0, 0, s, s);
+      var n = Math.max(options.length, 2);
+      var arc = Math.PI * 2 / n;
+      // rim
+      ctx.beginPath(); ctx.arc(cx, cy, R + 2, 0, Math.PI * 2);
+      ctx.fillStyle = "#151b23"; ctx.fill();
+      for (var i = 0; i < n; i++) {
+        var a0 = rotation + i * arc, a1 = rotation + (i + 1) * arc;
+        ctx.beginPath(); ctx.moveTo(cx, cy); ctx.arc(cx, cy, R, a0, a1); ctx.closePath();
+        var label = options[i] || "";
+        ctx.fillStyle = options[i] ? segColor(i) : "#1b212b";
+        if (options[i] && highlight === i) ctx.fillStyle = "#e8c06a";
+        ctx.fill();
+        ctx.strokeStyle = "rgba(10,12,15,.7)"; ctx.lineWidth = 2; ctx.stroke();
+        if (options[i]) {
+          ctx.save(); ctx.translate(cx, cy); ctx.rotate(a0 + arc / 2);
+          ctx.textAlign = "right"; ctx.textBaseline = "middle";
+          ctx.fillStyle = "rgba(10,12,15,.92)";
+          ctx.font = "600 " + Math.max(12, s / 26) + "px Inter, sans-serif";
+          var t = label.length > 14 ? label.slice(0, 13) + "…" : label;
+          ctx.fillText(t, R - 14, 0);
+          ctx.restore();
+        }
+      }
+      // hub
+      ctx.beginPath(); ctx.arc(cx, cy, s / 16, 0, Math.PI * 2);
+      ctx.fillStyle = "#0a0c0f"; ctx.fill();
+      ctx.strokeStyle = "rgba(210,162,76,.6)"; ctx.lineWidth = 2; ctx.stroke();
+    }
+
+    function winnerIndex() {
+      var n = options.length, arc = Math.PI * 2 / n;
+      var rel = ((-Math.PI / 2 - rotation) % (Math.PI * 2) + Math.PI * 2) % (Math.PI * 2);
+      return Math.floor(rel / arc) % n;
+    }
+
+    function renderChips() {
+      chipsEl.innerHTML = "";
+      options.forEach(function (o, i) {
+        var c = document.createElement("span"); c.className = "chip";
+        var s = document.createElement("span"); s.textContent = o;
+        var b = document.createElement("button"); b.textContent = "×"; b.setAttribute("aria-label", "Remove " + o);
+        b.disabled = spinning;
+        b.addEventListener("click", function () { options.splice(i, 1); save(); sync(); });
+        c.appendChild(s); c.appendChild(b); chipsEl.appendChild(c);
+      });
+      document.getElementById("count").textContent = options.length + " / " + MAX + " options";
+      var ok = options.length >= MIN && !spinning;
+      spinBtn.disabled = !ok;
+      hintEl.textContent = spinning ? "Spinning…" :
+        options.length < MIN ? "Add at least " + (MIN - options.length) + " more option" + (MIN - options.length > 1 ? "s" : "") + " to spin." :
+        "Good to go — give it a spin.";
+    }
+
+    function addOption(raw) {
+      var v = (raw || "").trim();
+      if (!v) return;
+      if (options.length >= MAX) { notice("The wheel holds at most " + MAX + " options."); return; }
+      if (options.some(function (o) { return o.toLowerCase() === v.toLowerCase(); })) { notice("That's already on the wheel."); return; }
+      options.push(v); save(); sync();
+    }
+
+    function sync() { resultEl.classList.remove("show"); renderChips(); draw(-1); }
+
+    document.getElementById("addBtn").addEventListener("click", function () { addOption(inputEl.value); inputEl.value = ""; inputEl.focus(); });
+    inputEl.addEventListener("keydown", function (e) { if (e.key === "Enter") { addOption(inputEl.value); inputEl.value = ""; } });
+    document.getElementById("shuffleBtn").addEventListener("click", function () {
+      for (var i = options.length - 1; i > 0; i--) { var j = Math.floor(Math.random() * (i + 1)); var t = options[i]; options[i] = options[j]; options[j] = t; }
+      save(); sync();
+    });
+    document.getElementById("clearBtn").addEventListener("click", function () {
+      if (options.length && confirm("Remove all options?")) { options = []; save(); sync(); }
+    });
+
+    function spin() {
+      if (spinning || options.length < MIN) return;
+      spinning = true; resultEl.classList.remove("show"); renderChips();
+      var start = rotation;
+      var extraTurns = 4 + Math.floor(Math.random() * 3);
+      var target = start + extraTurns * Math.PI * 2 + Math.random() * Math.PI * 2;
+      var dur = reduced ? 250 : 4200 + Math.random() * 1800;
+      var t0 = null;
+      function frame(ts) {
+        if (!t0) t0 = ts;
+        var t = Math.min(1, (ts - t0) / dur);
+        var e = 1 - Math.pow(1 - t, 3);
+        rotation = start + (target - start) * e;
+        draw(-1);
+        if (t < 1) { rafId = requestAnimationFrame(frame); }
+        else { spinning = false; rotation = target % (Math.PI * 2); var w = winnerIndex(); draw(w); showWinner(w); renderChips(); }
+      }
+      rafId = requestAnimationFrame(frame);
+    }
+    spinBtn.addEventListener("click", spin);
+
+    function showWinner(i) {
+      winnerEl.textContent = options[i];
+      resultEl.classList.add("show");
+      resultEl.dataset.winner = i;
+    }
+    document.getElementById("againBtn").addEventListener("click", spin);
+    document.getElementById("removeWinnerBtn").addEventListener("click", function () {
+      var i = parseInt(resultEl.dataset.winner, 10);
+      if (!isNaN(i) && options[i]) { options.splice(i, 1); save(); }
+      sync();
+    });
+
+    window.addEventListener("resize", function () { sizeCanvas(); draw(-1); });
+    sizeCanvas(); sync();
+  })();
+  </script>
+</body>
+</html>
