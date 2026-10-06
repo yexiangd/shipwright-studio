@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Regex Tester · Shipwright Studio</title>
+<meta name="description" content="A free online regex tester: write a pattern, see live match highlighting, capture groups, and a built-in cheatsheet.">
+<link rel="canonical" href="https://shipwright-studio.pages.dev/lab/regex-tester/">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"WebApplication","name":"Regex Tester","url":"https://shipwright-studio.pages.dev/lab/regex-tester/","description":"A free online tool that tests regular expressions live: type a pattern and see matches highlighted in your test string, with capture groups and a built-in regex cheatsheet.","applicationCategory":"DeveloperApplication","operatingSystem":"Web","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"}}
+</script>
+<style>
+:root{--bg:#0a0c0f;--panel:#11141a;--line:#232a35;--txt:#e8e4da;--mut:#9aa3b2;--brass:#d2a24c;--red:#e0655f;--mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--txt);font-family:Inter,system-ui,sans-serif;line-height:1.6;padding:2.5rem 1.25rem 4rem;max-width:1180px;margin:0 auto}
+a{color:var(--brass)}
+.eyebrow{font-size:.75rem;letter-spacing:.22em;text-transform:uppercase;color:var(--mut)}
+h1{font-family:Fraunces,serif;font-weight:600;font-size:clamp(2rem,4.5vw,3rem);margin:.4rem 0 .6rem}
+.define{color:var(--mut);max-width:56rem;margin-bottom:1.6rem}
+.define strong{color:var(--txt)}
+.grid{display:grid;grid-template-columns:1.35fr 1fr;gap:1.25rem}
+@media(max-width:880px){.grid{grid-template-columns:1fr}}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:1.25rem;margin-bottom:1.25rem}
+.card h2{font-family:Fraunces,serif;font-size:1.05rem;font-weight:600;margin-bottom:.8rem}
+label{display:block;font-size:.8rem;color:var(--mut);margin-bottom:.35rem}
+#pattern{width:100%;font-family:var(--mono);font-size:1rem;background:#0d1015;border:1px solid var(--line);border-radius:8px;color:var(--txt);padding:.7rem .8rem;outline:none}
+#pattern.valid{border-color:var(--brass);box-shadow:0 0 0 1px var(--brass)}
+#pattern.invalid{border-color:var(--red);box-shadow:0 0 0 1px var(--red)}
+#error{color:var(--red);font-size:.85rem;margin-top:.4rem;min-height:1.3em;font-family:var(--mono)}
+.flags{display:flex;gap:.5rem;margin:.7rem 0 1rem}
+.flag{font-family:var(--mono);font-size:.85rem;border:1px solid var(--line);background:#0d1015;color:var(--mut);border-radius:999px;padding:.3rem .8rem;cursor:pointer;user-select:none}
+.flag.on{border-color:var(--brass);color:var(--brass);background:rgba(210,162,76,.08)}
+#sample{width:100%;min-height:170px;font-family:var(--mono);font-size:.92rem;background:#0d1015;border:1px solid var(--line);border-radius:8px;color:var(--txt);padding:.7rem .8rem;resize:vertical;outline:none}
+.presets{display:flex;flex-wrap:wrap;gap:.5rem;margin-top:.8rem}
+.preset{font-size:.8rem;border:1px solid var(--line);background:transparent;color:var(--mut);border-radius:999px;padding:.35rem .85rem;cursor:pointer}
+.preset:hover{color:var(--brass);border-color:var(--brass)}
+#hl{background:#0d1015;border:1px solid var(--line);border-radius:8px;padding:.7rem .8rem;font-family:var(--mono);font-size:.92rem;white-space:pre-wrap;word-break:break-word;min-height:170px;max-height:340px;overflow:auto}
+#hl .m{background:rgba(210,162,76,.32);border-bottom:2px solid var(--brass);border-radius:2px}
+#hl .m.alt{background:rgba(210,162,76,.16)}
+#badge{font-size:.8rem;color:var(--brass);margin-bottom:.5rem;font-weight:600}
+.match{border-bottom:1px solid var(--line);padding:.55rem 0;font-family:var(--mono);font-size:.85rem}
+.match:last-child{border-bottom:0}
+.match .idx{color:var(--brass);margin-right:.5rem}
+.match .grp{color:var(--mut);display:block;padding-left:2.2rem}
+.match .grp b{color:var(--txt);font-weight:600}
+.copy{background:transparent;border:1px solid var(--line);color:var(--mut);border-radius:6px;font-size:.72rem;padding:.15rem .5rem;cursor:pointer;margin-left:.6rem;float:right}
+.copy:hover{color:var(--brass);border-color:var(--brass)}
+.cheat{display:grid;grid-template-columns:1fr 1fr;gap:.3rem .8rem;font-size:.83rem}
+.cheat div{font-family:var(--mono)}
+.cheat code{color:var(--brass)}
+.cheat span{color:var(--mut)}
+.empty{color:var(--mut);font-size:.88rem}
+details.sheet{display:none}
+.back{display:inline-block;margin-top:2rem;font-size:.9rem}
+@media(max-width:880px){
+  .grid2{grid-template-columns:1fr!important}
+  details.sheet{display:block}
+  details.sheet summary{cursor:pointer;color:var(--brass);font-size:.95rem;margin-bottom:.6rem}
+  .cheat-desktop{display:none}
+}
+.grid2{display:grid;grid-template-columns:1fr;gap:1.25rem}
+</style>
+</head>
+<body>
+<p class="eyebrow">Shipwright Studio · Lab</p>
+<h1>Regex Tester</h1>
+<p class="define"><strong>Regex Tester is a free online tool that tests regular expressions live.</strong> Type a pattern and see every match highlighted in your test string, inspect capture groups match by match, and consult the built-in cheatsheet — all in the browser, nothing to install.</p>
+
+<div class="grid">
+  <div>
+    <div class="card">
+      <h2>Pattern</h2>
+      <input id="pattern" type="text" spellcheck="false" autocomplete="off" placeholder="\b\w+@\w+\.\w+\b">
+      <div id="error"></div>
+      <div class="flags" id="flags">
+        <span class="flag on" data-f="g">g</span>
+        <span class="flag" data-f="i">i</span>
+        <span class="flag" data-f="m">m</span>
+        <span class="flag" data-f="s">s</span>
+        <span class="flag" data-f="u">u</span>
+      </div>
+      <label for="sample">Test string</label>
+      <textarea id="sample" spellcheck="false" placeholder="Paste or type text to test against…">Contact support@example.com or sales@example.co.uk.
+Call +1-415-555-0132 by 2026-11-29. Hex: #d2a24c.</textarea>
+      <div class="presets" id="presets"></div>
+    </div>
+  </div>
+  <div>
+    <div class="card">
+      <h2>Highlighted matches</h2>
+      <div id="badge"></div>
+      <div id="hl"></div>
+    </div>
+    <div class="card">
+      <h2>Match details</h2>
+      <div id="matches" class="empty">Type a pattern to see matches listed here.</div>
+    </div>
+  </div>
+</div>
+
+<div class="grid2">
+  <div class="card cheat-desktop">
+    <h2>Cheatsheet</h2>
+    <div class="cheat">
+      <div><code>\d</code> <span>digit 0–9</span></div><div><code>\w</code> <span>word char</span></div>
+      <div><code>\s</code> <span>whitespace</span></div><div><code>.</code> <span>any char (exc. newline)</span></div>
+      <div><code>*</code> <span>0 or more</span></div><div><code>+</code> <span>1 or more</span></div>
+      <div><code>?</code> <span>0 or 1</span></div><div><code>{n,m}</code> <span>between n and m</span></div>
+      <div><code>[abc]</code> <span>char class</span></div><div><code>[^abc]</code> <span>negated class</span></div>
+      <div><code>(x)</code> <span>capture group</span></div><div><code>(?:x)</code> <span>non-capturing</span></div>
+      <div><code>(?&lt;n&gt;x)</code> <span>named group</span></div><div><code>x|y</code> <span>alternation</span></div>
+      <div><code>^</code> <span>start of line/string</span></div><div><code>$</code> <span>end of line/string</span></div>
+      <div><code>\b</code> <span>word boundary</span></div><div><code>(?=x)</code> <span>lookahead</span></div>
+    </div>
+  </div>
+  <details class="sheet card">
+    <summary>Cheatsheet</summary>
+    <div class="cheat">
+      <div><code>\d</code> <span>digit</span></div><div><code>\w</code> <span>word char</span></div>
+      <div><code>\s</code> <span>whitespace</span></div><div><code>.</code> <span>any char</span></div>
+      <div><code>*</code> <span>0 or more</span></div><div><code>+</code> <span>1 or more</span></div>
+      <div><code>?</code> <span>0 or 1</span></div><div><code>{n,m}</code> <span>n to m</span></div>
+      <div><code>[abc]</code> <span>char class</span></div><div><code>(x)</code> <span>group</span></div>
+      <div><code>x|y</code> <span>alternation</span></div><div><code>^ $</code> <span>anchors</span></div>
+      <div><code>\b</code> <span>word boundary</span></div><div><code>(?=x)</code> <span>lookahead</span></div>
+    </div>
+  </details>
+</div>
+
+<a class="back" href="/ideas/">← Back to the idea bank</a>
+
+<script>
+const $=id=>document.getElementById(id);
+const PRESETS={
+  "Email":["[\\w.+-]+@[\\w-]+\\.[\\w.]+","Contact support@example.com or sales@example.co.uk."],
+  "US phone":["\\+?1?[-.\\s]?\\(?\\d{3}\\)?[-.\\s]?\\d{3}[-.\\s]?\\d{4}","Call +1-415-555-0132 or (650) 555-0199."],
+  "Date (YYYY-MM-DD)":["\\d{4}-\\d{2}-\\d{2}","Party on 2026-11-29; deadline 2027-01-08."],
+  "Hex colour":["#[0-9a-fA-F]{6}\\b","Palette: #d2a24c, #0a0c0f, #e0655f."],
+  "URL":["https?://[^\\s/$.?#].[^\\s]*","Visit https://shipwright-studio.pages.dev/lab/ for demos."]
+};
+const pc=$("presets");
+Object.keys(PRESETS).forEach(k=>{
+  const b=document.createElement("button");b.className="preset";b.textContent=k;
+  b.onclick=()=>{$("pattern").value=PRESETS[k][0];$("sample").value=PRESETS[k][1];run();};
+  pc.appendChild(b);
+});
+$("flags").addEventListener("click",e=>{
+  if(e.target.classList.contains("flag")){e.target.classList.toggle("on");run();}
+});
+$("pattern").addEventListener("input",run);
+$("sample").addEventListener("input",run);
+
+function esc(s){return s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");}
+
+function run(){
+  const pat=$("pattern").value, txt=$("sample").value, err=$("error"), hl=$("hl"), ml=$("matches"), badge=$("badge");
+  const flags=[...document.querySelectorAll(".flag.on")].map(f=>f.dataset.f).join("");
+  if(!pat){$("pattern").className="";err.textContent="";hl.innerHTML=esc(txt||"");badge.textContent="";ml.innerHTML='<span class="empty">Type a pattern to see matches listed here.</span>';return;}
+  let re;
+  try{re=new RegExp(pat,flags);}
+  catch(e){$("pattern").className="invalid";err.textContent=e.message;hl.innerHTML=esc(txt);badge.textContent="";ml.innerHTML='<span class="empty">Fix the pattern to continue.</span>';return;}
+  $("pattern").className="valid";err.textContent="";
+  const matches=[...txt.matchAll(new RegExp(pat,flags.includes("g")?flags:flags+"g"))];
+  // Highlight
+  if(!matches.length){hl.innerHTML=esc(txt);badge.textContent="0 matches";}
+  else{
+    let out="",last=0,alt=0;
+    for(const m of matches){out+=esc(txt.slice(last,m.index));out+='<span class="m'+(alt++%2?" alt":"")+'">'+esc(m[0]||"(empty)")+"</span>";last=m.index+m[0].length;if(m[0].length===0)last++;}
+    out+=esc(txt.slice(last));hl.innerHTML=out;
+    badge.textContent=matches.length+" match"+(matches.length>1?"es":"");
+  }
+  // Details
+  if(!matches.length){ml.innerHTML='<span class="empty">No matches yet — adjust the pattern or flags.</span>';return;}
+  ml.innerHTML=matches.map((m,i)=>{
+    let g="";
+    m.slice(1).forEach((v,gi)=>{g+='<span class="grp">group '+(gi+1)+': <b>'+esc(String(v===undefined?"(did not participate)":v))+"</b></span>";});
+    if(m.groups)Object.entries(m.groups).forEach(([k,v])=>{g+='<span class="grp">name "'+esc(k)+'": <b>'+esc(String(v))+"</b></span>";});
+    return '<div class="match"><button class="copy" data-i="'+i+'">copy</button><span class="idx">#'+(i+1)+'</span>'+esc(m[0]||"(empty)")+g+"</div>";
+  }).join("");
+  ml.querySelectorAll(".copy").forEach(b=>b.onclick=()=>{navigator.clipboard.writeText(matches[+b.dataset.i][0]);b.textContent="copied";setTimeout(()=>b.textContent="copy",1200);});
+}
+run();
+</script>
+</body>
+</html>

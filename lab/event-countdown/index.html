@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Event Countdown · Shipwright Studio</title>
+<meta name="description" content="A free online countdown timer: name any event, watch flip digits tick down days, hours, minutes and seconds, and share it with a link.">
+<link rel="canonical" href="https://shipwright-studio.pages.dev/lab/event-countdown/">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"WebApplication","name":"Event Countdown","url":"https://shipwright-studio.pages.dev/lab/event-countdown/","description":"A free online tool that counts down to any event with flip-digit days, hours, minutes and seconds, and produces a shareable link for the countdown.","applicationCategory":"UtilitiesApplication","operatingSystem":"Web","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"}}
+</script>
+<style>
+:root{--bg:#0a0c0f;--panel:#11141a;--line:#232a35;--txt:#e8e4da;--mut:#9aa3b2;--brass:#d2a24c;--red:#e0655f}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--txt);font-family:Inter,system-ui,sans-serif;line-height:1.6;padding:2.5rem 1.25rem 4rem;max-width:980px;margin:0 auto;text-align:center}
+a{color:var(--brass)}
+.eyebrow{font-size:.75rem;letter-spacing:.22em;text-transform:uppercase;color:var(--mut)}
+h1{font-family:Fraunces,serif;font-weight:600;font-size:clamp(2rem,4.5vw,3rem);margin:.4rem 0 .6rem}
+.define{color:var(--mut);max-width:52rem;margin:0 auto 1.8rem}
+.define strong{color:var(--txt)}
+.setup{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:1.5rem;max-width:620px;margin:0 auto 2rem}
+.row{display:flex;gap:.75rem;margin-bottom:.9rem}
+.row input{flex:1;min-width:0;background:#0d1015;border:1px solid var(--line);border-radius:8px;color:var(--txt);padding:.7rem .9rem;font-size:1rem;outline:none;font-family:inherit}
+.row input:focus{border-color:var(--brass)}
+button.go{background:var(--brass);border:0;color:#14100a;font-weight:600;font-size:1rem;border-radius:8px;padding:.7rem 1.4rem;cursor:pointer;font-family:inherit}
+button.go:hover{filter:brightness(1.08)}
+button.ghost{background:transparent;border:1px solid var(--line);color:var(--mut);border-radius:8px;padding:.7rem 1.2rem;cursor:pointer;font-family:inherit;font-size:.95rem}
+button.ghost:hover{color:var(--brass);border-color:var(--brass)}
+.chips{display:flex;flex-wrap:wrap;gap:.5rem;justify-content:center;margin-top:1rem}
+.chip{font-size:.8rem;border:1px solid var(--line);background:transparent;color:var(--mut);border-radius:999px;padding:.35rem .85rem;cursor:pointer;font-family:inherit}
+.chip:hover{color:var(--brass);border-color:var(--brass)}
+.ferr{color:var(--red);font-size:.85rem;min-height:1.4em;margin-top:.4rem}
+#stage{display:none;margin-top:1rem}
+#evname{font-family:Fraunces,serif;font-size:clamp(1.5rem,3.5vw,2.2rem);margin-bottom:1.2rem}
+.cards{display:grid;grid-template-columns:repeat(4,1fr);gap:.9rem;max-width:640px;margin:0 auto}
+@media(max-width:560px){.cards{grid-template-columns:repeat(2,1fr);max-width:380px}}
+.flip{perspective:400px}
+.face{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:1.1rem .4rem;position:relative;overflow:hidden}
+.face .num{font-family:Fraunces,serif;font-size:clamp(2.4rem,8vw,3.6rem);font-weight:600;font-variant-numeric:tabular-nums;line-height:1}
+.face .lab{font-size:.72rem;letter-spacing:.18em;text-transform:uppercase;color:var(--mut);margin-top:.5rem}
+.face::after{content:"";position:absolute;left:0;right:0;top:50%;height:1px;background:#000;opacity:.6}
+.flip.anim .face{animation:flip .5s ease}
+@keyframes flip{0%{transform:rotateX(0)}45%{transform:rotateX(-88deg)}55%{transform:rotateX(-88deg)}100%{transform:rotateX(0)}}
+.bar{max-width:640px;margin:1.6rem auto 0;background:#141821;border-radius:999px;height:8px;overflow:hidden}
+.bar i{display:block;height:100%;background:var(--brass);width:0;border-radius:999px;transition:width .5s}
+.barlab{font-size:.82rem;color:var(--mut);margin-top:.5rem}
+#done{display:none;margin-top:1.4rem;font-family:Fraunces,serif;font-size:1.6rem;color:var(--brass)}
+.share{margin-top:1.6rem}
+.back{display:inline-block;margin-top:2.5rem;font-size:.9rem}
+</style>
+</head>
+<body>
+<p class="eyebrow">Shipwright Studio · Lab</p>
+<h1>Event Countdown</h1>
+<p class="define"><strong>Event Countdown is a free online tool that counts down to any event.</strong> Name it, pick a date, and watch flip digits tick through days, hours, minutes and seconds — then copy a link to share the countdown with anyone.</p>
+
+<div class="setup" id="setup">
+  <div class="row"><input id="name" type="text" placeholder="Event name — e.g. Product launch" maxlength="60"></div>
+  <div class="row"><input id="when" type="datetime-local"></div>
+  <div class="row" style="justify-content:center;gap:.6rem">
+    <button class="go" id="start">Start countdown</button>
+  </div>
+  <div class="ferr" id="ferr"></div>
+  <div class="chips" id="chips"></div>
+</div>
+
+<div id="stage">
+  <p class="eyebrow">Counting down to</p>
+  <h2 id="evname" style="font-weight:600"></h2>
+  <div class="cards">
+    <div class="flip" id="f-d"><div class="face"><div class="num" id="n-d">00</div><div class="lab">Days</div></div></div>
+    <div class="flip" id="f-h"><div class="face"><div class="num" id="n-h">00</div><div class="lab">Hours</div></div></div>
+    <div class="flip" id="f-m"><div class="face"><div class="num" id="n-m">00</div><div class="lab">Minutes</div></div></div>
+    <div class="flip" id="f-s"><div class="face"><div class="num" id="n-s">00</div><div class="lab">Seconds</div></div></div>
+  </div>
+  <div class="bar"><i id="barfill"></i></div>
+  <p class="barlab" id="barlab"></p>
+  <div id="done">It's time 🎉</div>
+  <div class="share">
+    <button class="ghost" id="copylink">Copy share link</button>
+    <button class="ghost" id="reset">New countdown</button>
+  </div>
+</div>
+
+<a class="back" href="/ideas/">← Back to the idea bank</a>
+
+<script>
+const $=id=>document.getElementById(id);
+let target=null, createdAt=null, timer=null;
+const prev={d:"",h:"",m:"",s:""};
+
+function nextOcc(month,day){
+  const n=new Date();let d=new Date(n.getFullYear(),month-1,day);
+  if(d<=n)d=new Date(n.getFullYear()+1,month-1,day);return d;
+}
+const PRESET_DEFS=[
+  ["New Year",()=>nextOcc(1,1)],
+  ["Christmas",()=>nextOcc(12,25)],
+  ["Halloween",()=>nextOcc(10,31)],
+  ["Valentine's Day",()=>nextOcc(2,14)]
+];
+const chips=$("chips");
+PRESET_DEFS.forEach(([label,fn])=>{
+  const b=document.createElement("button");b.className="chip";b.textContent=label;
+  b.onclick=()=>{const d=fn();start(label,d,d.getTime());};
+  chips.appendChild(b);
+});
+
+function fmt(n){return String(n).padStart(2,"0");}
+function setDigit(key,val,flipId,numId){
+  val=fmt(val);
+  if(prev[key]!==val){prev[key]=val;$(numId).textContent=val;
+    const f=$(flipId);f.classList.remove("anim");void f.offsetWidth;f.classList.add("anim");}
+}
+function tick(){
+  const diff=target-Date.now();
+  if(diff<=0){clearInterval(timer);
+    ["d","h","m","s"].forEach(k=>setDigit(k,0,"f-"+k,"n-"+k));
+    $("done").style.display="block";return;}
+  setDigit("d",Math.floor(diff/864e5),"f-d","n-d");
+  setDigit("h",Math.floor(diff/36e5)%24,"f-h","n-h");
+  setDigit("m",Math.floor(diff/6e4)%60,"f-m","n-m");
+  setDigit("s",Math.floor(diff/1e3)%60,"f-s","n-s");
+  if(createdAt&&target>createdAt){
+    const pct=Math.min(100,Math.max(0,(Date.now()-createdAt)/(target-createdAt)*100));
+    $("barfill").style.width=pct+"%";
+    $("barlab").textContent=Math.round(pct)+"% of the wait is behind you";
+  } else {$("barfill").style.width="0";$("barlab").textContent="";}
+}
+function shareUrl(){
+  const u=new URL(location.href);
+  u.searchParams.set("name",$("evname").textContent);
+  u.searchParams.set("date",new Date(target).toISOString());
+  return u.toString();
+}
+function start(name,dt,created){
+  target=dt.getTime();createdAt=created||Date.now();
+  if(timer)clearInterval(timer);
+  $("setup").style.display="none";$("stage").style.display="block";
+  $("evname").textContent=name;$("done").style.display="none";
+  ["d","h","m","s"].forEach(k=>{prev[k]="";});
+  tick();timer=setInterval(tick,250);
+  history.replaceState(null,"",shareUrl());
+}
+$("start").onclick=()=>{
+  const name=$("name").value.trim(), w=$("when").value;
+  $("ferr").textContent="";
+  if(!name){$("ferr").textContent="Give your event a name first.";return;}
+  if(!w){$("ferr").textContent="Pick a date and time.";return;}
+  const dt=new Date(w);
+  if(isNaN(dt)||dt<=new Date()){$("ferr").textContent="That date is in the past — pick a future moment.";return;}
+  start(name,dt,Date.now());
+};
+$("copylink").onclick=()=>{navigator.clipboard.writeText(shareUrl());$("copylink").textContent="Link copied ✓";setTimeout(()=>$("copylink").textContent="Copy share link",1500);};
+$("reset").onclick=()=>{clearInterval(timer);$("stage").style.display="none";$("setup").style.display="block";history.replaceState(null,"",location.pathname);};
+
+// Deep link
+(function(){
+  const q=new URLSearchParams(location.search);
+  const nm=q.get("name"), dt=q.get("date");
+  if(nm&&dt){const d=new Date(dt);if(!isNaN(d)&&d>new Date()){start(nm.slice(0,60),d,Date.now());return;}}
+  // Default: a live demo countdown so the page is never empty
+  start("New Year",nextOcc(1,1),Date.now());
+})();
+</script>
+</body>
+</html>

@@ -67,6 +67,8 @@ AI 搜索不看排名看"可引用性"。打法：
 
 ## 运行日志
 
+- **2026-10-06**：Phase 3-① `llms.txt` 持续维护 —— "Recent additions" 更新为今日新上线的两个实验（Regex Tester：实时正则测试工作台，输入即高亮、逐条查看捕获组、flag 开关、内置 cheatsheet；Event Countdown：翻牌式倒计时器，命名+选日期后翻牌显示天/时/分/秒、可生成分享链接），保留 Decision Wheel / Backtest Visualizer 条目。另：当日两个 lab 新页（regex-tester、event-countdown）均按构建 checklist 自带 canonical/title/description/quotable 定义段/WebApplication JSON-LD（每页恰 1 个 h1 已核验）；sitemap 经 `generate-sitemap.py` 重生成为 20 个 URL（16 个 lab；CI 在 push 后也会重生成）。跳过：Lighthouse 性能基线（Phase 1-⑤，运行环境无 Chrome/Chromium，顺延到季度节奏手动跑）、og 社交卡片（待用户拍板，见 §5）、GSC 验证（需人工）。下一步候选：Lighthouse 性能基线（Phase 1-⑤）。
+
 - **2026-10-05**：Phase 3-① `llms.txt` 持续维护 —— "Recent additions" 更新为今日新上线的两个实验（Decision Wheel：2–12 选项转盘决策器，真实减速动画、localStorage 持久化；Backtest Visualizer：CSV 收益率/价格 → 权益曲线、underwater 回撤图、月度收益热力图、Sharpe/CAGR/最大回撤统计，纯前端解析），保留此前 2048 / Palette Lab / Unit Converter 条目。另：当日两个 lab 新页（decision-wheel、backtest-visualizer）均按构建 checklist 自带 canonical/title/description/quotable 定义段/WebApplication JSON-LD；sitemap 经 `generate-sitemap.py` 重生成为 18 个 URL（CI 在 push 后也会重生成）。跳过：og 社交卡片（待用户拍板，见 §5）、GSC 验证（需人工）。下一步候选：性能基线 Lighthouse（Phase 1-⑤，按季度节奏）或 og 社交卡片（等用户拍板）。
 
 - **2026-09-19**：Phase 3-① `llms.txt` 持续维护 —— 在 "The Lab" 条目下追加今日新上线的两个实验（Memory Match、Snake）含 URL 和一句话描述，保持 AI 爬虫看到的站点摘要最新。另：当日两个 lab 新页（memory-match、snake）均按构建 checklist 自带 canonical/title/description/quotable 定义段/JSON-LD；sitemap 由 CI 的 `generate-sitemap.py` 在 push 后自动重生成。跳过：og 社交卡片（待用户拍板）、GSC 验证（需人工）。下一步候选：性能基线 Lighthouse（Phase 1-⑤，按季度节奏）。
