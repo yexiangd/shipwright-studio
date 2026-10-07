@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Options Payoff Lab · Shipwright Studio</title>
+  <meta name="description" content="Options Payoff Lab is a free online tool that draws profit-and-loss diagrams for multi-leg option strategies, with breakevens, max profit/loss and Greeks." />
+  <link rel="canonical" href="https://shipwright-studio.pages.dev/lab/options-payoff/" />
+  <link rel="icon" type="image/svg+xml" href="../../favicon.svg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..700;1,9..144,300..700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../../styles.css" />
+  <style>
+    :root { --bg:#0a0c0f; --surface:#11141a; --line:#232a36; --text:#e8e6df; --muted:#9aa1ad; --faint:#5b636f; --accent:#d2a24c; --profit:#4ade80; --loss:#f87171; }
+    * { box-sizing: border-box; }
+    body { background: var(--bg); color: var(--text); font-family: Inter, system-ui, sans-serif; margin: 0; }
+    .lab-nav { max-width: 1180px; margin: 0 auto; padding: 22px 24px 0; display: flex; justify-content: space-between; align-items: center; }
+    .lab-nav a { color: var(--muted); text-decoration: none; font-size: 14px; }
+    .lab-nav a:hover { color: var(--accent); }
+    .wrap { max-width: 1180px; margin: 0 auto; padding: 40px 24px 90px; }
+    h1 { font-family: Fraunces, serif; font-weight: 500; font-size: clamp(34px, 5vw, 54px); margin: 0 0 10px; }
+    .lede { color: var(--muted); font-size: 16px; max-width: 720px; margin: 0 0 34px; }
+    .def { border-left: 3px solid var(--accent); padding: 4px 0 4px 18px; color: var(--text); max-width: 720px; font-size: 16.5px; line-height: 1.65; margin-bottom: 38px; }
+    .grid { display: grid; grid-template-columns: 340px 1fr; gap: 22px; align-items: start; }
+    @media (max-width: 920px) { .grid { grid-template-columns: 1fr; } }
+    .card { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 22px; }
+    .card h2 { font-family: Fraunces, serif; font-weight: 500; font-size: 21px; margin: 0 0 14px; }
+    .presets { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 20px; }
+    .preset { background: transparent; border: 1px solid var(--line); color: var(--text); border-radius: 9px; padding: 9px 6px; font-size: 13px; cursor: pointer; transition: all .15s; }
+    .preset:hover { border-color: var(--accent); color: var(--accent); }
+    .field { margin-bottom: 12px; }
+    .field label { display: block; font-size: 12px; letter-spacing: .1em; text-transform: uppercase; color: var(--faint); margin-bottom: 6px; font-family: 'JetBrains Mono', monospace; }
+    .field input, .field select { width: 100%; background: var(--bg); border: 1px solid var(--line); color: var(--text); border-radius: 8px; padding: 10px 12px; font-size: 15px; font-family: inherit; }
+    .field input:focus, .field select:focus { outline: none; border-color: var(--accent); }
+    .field.invalid input, .field.invalid select { border-color: var(--loss); }
+    .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .leg { border: 1px solid var(--line); border-radius: 10px; padding: 12px; margin-bottom: 10px; position: relative; }
+    .leg .row2 { gap: 8px; }
+    .leg .field { margin-bottom: 8px; }
+    .leg-remove { position: absolute; top: 8px; right: 10px; background: none; border: none; color: var(--faint); font-size: 18px; cursor: pointer; line-height: 1; }
+    .leg-remove:hover { color: var(--loss); }
+    .btn { display: inline-block; background: var(--accent); color: #14100a; border: none; border-radius: 9px; padding: 11px 18px; font-size: 14.5px; font-weight: 600; cursor: pointer; font-family: inherit; }
+    .btn:hover { filter: brightness(1.08); }
+    .btn.ghost { background: transparent; color: var(--accent); border: 1px solid var(--accent); }
+    .btn-row { display: flex; gap: 10px; margin-top: 14px; flex-wrap: wrap; }
+    .chart-wrap { position: relative; }
+    #chart { width: 100%; height: 420px; display: block; cursor: crosshair; }
+    @media (max-width: 640px) { #chart { height: 320px; } }
+    .tooltip { position: absolute; pointer-events: none; background: #000000d9; border: 1px solid var(--line); border-radius: 8px; padding: 8px 12px; font-family: 'JetBrains Mono', monospace; font-size: 13px; display: none; white-space: nowrap; z-index: 5; }
+    .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; margin-top: 18px; }
+    .stat { background: var(--bg); border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; }
+    .stat .k { font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: var(--faint); font-family: 'JetBrains Mono', monospace; margin-bottom: 4px; }
+    .stat .v { font-family: Fraunces, serif; font-size: 22px; }
+    .stat .v.pos { color: var(--profit); } .stat .v.neg { color: var(--loss); }
+    table.greeks { width: 100%; border-collapse: collapse; margin-top: 6px; font-size: 14px; }
+    table.greeks th, table.greeks td { text-align: right; padding: 8px 10px; border-bottom: 1px solid var(--line); font-family: 'JetBrains Mono', monospace; }
+    table.greeks th:first-child, table.greeks td:first-child { text-align: left; font-family: Inter, sans-serif; }
+    table.greeks th { color: var(--faint); font-size: 11px; letter-spacing: .1em; text-transform: uppercase; font-family: 'JetBrains Mono', monospace; }
+    .empty-hint { color: var(--faint); font-size: 14px; text-align: center; padding: 18px 0 4px; }
+    .disclaimer { color: var(--faint); font-size: 12.5px; margin-top: 26px; max-width: 720px; line-height: 1.6; }
+    footer { border-top: 1px solid var(--line); padding: 26px 0; color: var(--faint); font-size: 13px; }
+    footer .wrap { padding-top: 0; padding-bottom: 0; }
+  </style>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "Options Payoff Lab",
+    "description": "A free online tool that draws profit-and-loss diagrams for multi-leg option strategies, with breakevens, max profit/loss and Black-Scholes Greeks.",
+    "applicationCategory": "FinanceApplication",
+    "operatingSystem": "Web",
+    "url": "https://shipwright-studio.pages.dev/lab/options-payoff/",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+  }
+  </script>
+</head>
+<body>
+  <nav class="lab-nav" aria-label="Lab navigation">
+    <a href="../../ideas/">← Back to the Lab</a>
+    <a href="../../">Shipwright Studio</a>
+  </nav>
+  <main class="wrap">
+    <h1>Options Payoff Lab</h1>
+    <p class="lede">Sketch an option structure, see its expiry payoff before you price it.</p>
+    <p class="def"><strong>Options Payoff Lab</strong> is a free online tool that draws profit-and-loss diagrams for multi-leg option strategies at expiry, marking breakevens, maximum profit and maximum loss, and estimating each leg's delta.</p>
+
+    <div class="grid">
+      <section class="card" aria-label="Strategy controls">
+        <h2>Strategy</h2>
+        <div class="presets" id="presets" role="group" aria-label="Strategy presets"></div>
+        <div class="row2">
+          <div class="field"><label for="underlying">Underlying</label><input id="underlying" type="number" value="100" step="1" min="0.01"></div>
+          <div class="field"><label for="iv">IV %</label><input id="iv" type="number" value="30" step="1" min="1" max="300"></div>
+        </div>
+        <div class="field"><label for="dte">Days to expiry</label><input id="dte" type="number" value="30" step="1" min="1" max="1825"></div>
+        <h2 style="margin-top:22px">Legs <span id="leg-count" style="font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--faint)"></span></h2>
+        <div id="legs"></div>
+        <div class="btn-row">
+          <button class="btn ghost" id="add-leg" type="button">+ Add leg</button>
+          <button class="btn ghost" id="clear" type="button">Clear</button>
+        </div>
+      </section>
+
+      <section>
+        <div class="card chart-wrap" aria-label="Payoff chart">
+          <h2>Payoff at expiry</h2>
+          <canvas id="chart" role="img" aria-label="Profit and loss chart of the option strategy at expiry"></canvas>
+          <div class="tooltip" id="tooltip"></div>
+          <div class="empty-hint" id="empty-hint">Add a leg or pick a preset to draw the payoff curve.</div>
+          <div class="stats" id="stats"></div>
+        </div>
+        <div class="card" style="margin-top:22px" aria-label="Greeks">
+          <h2>Greeks <span style="font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--faint)">(Black-Scholes delta per leg)</span></h2>
+          <table class="greeks" id="greeks-table">
+            <thead><tr><th>Leg</th><th>Δ delta</th><th>Qty</th><th>Net Δ</th></tr></thead>
+            <tbody id="greeks-body"></tbody>
+            <tfoot><tr><td style="font-weight:600">Total</td><td></td><td></td><td id="greeks-total" style="font-weight:600"></td></tr></tfoot>
+          </table>
+        </div>
+      </section>
+    </div>
+
+    <p class="disclaimer">Educational sketch tool only — not financial advice. Payoffs shown are at expiry and ignore commissions, dividends, early exercise, and bid/ask spreads. Greeks are Black-Scholes approximations for European-style options.</p>
+  </main>
+  <footer><div class="wrap">© Shipwright Studio — built in public, one experiment at a time.</div></footer>
+
+  <script>
+  'use strict';
+  /* ---------- pure math (DOM-free, testable) ---------- */
+  function legPayoff(leg, S) {
+    const intrinsic = leg.type === 'call' ? Math.max(0, S - leg.strike) : Math.max(0, leg.strike - S);
+    const signed = leg.side === 'long' ? 1 : -1;
+    return signed * (intrinsic - leg.premium) * leg.qty;
+  }
+  function netPayoff(legs, S) {
+    return legs.reduce((t, l) => t + legPayoff(l, S), 0);
+  }
+  function normCDF(x) {
+    const t = 1 / (1 + 0.2316419 * Math.abs(x));
+    const d = 0.3989422804014327 * Math.exp(-x * x / 2);
+    let p = d * t * (0.319381530 + t * (-0.356563782 + t * (1.781477937 + t * (-1.821255978 + t * 1.330274429))));
+    return x > 0 ? 1 - p : p;
+  }
+  function bsDelta(leg, S, iv, dteYears) {
+    if (dteYears <= 0 || iv <= 0) return leg.type === 'call' ? 1 : -1;
+    const d1 = (Math.log(S / leg.strike) + (0.5 * iv * iv) * dteYears) / (iv * Math.sqrt(dteYears));
+    const d = leg.type === 'call' ? normCDF(d1) : normCDF(d1) - 1;
+    return (leg.side === 'long' ? 1 : -1) * d;
+  }
+  function findBreakevens(legs, lo, hi) {
+    const N = 400, pts = [];
+    let prevS = lo, prevP = netPayoff(legs, lo);
+    for (let i = 1; i <= N; i++) {
+      const S = lo + (hi - lo) * i / N, P = netPayoff(legs, S);
+      if (prevP === 0) pts.push(prevS);
+      else if (P === 0) pts.push(S);
+      else if ((prevP < 0) !== (P < 0)) {
+        let a = prevS, b = S, fa = prevP;
+        for (let k = 0; k < 40; k++) {
+          const m = (a + b) / 2, fm = netPayoff(legs, m);
+          if ((fa < 0) !== (fm < 0)) { b = m; } else { a = m; fa = fm; }
+        }
+        pts.push((a + b) / 2);
+      }
+      prevS = S; prevP = P;
+    }
+    return pts.filter((p, i) => i === 0 || Math.abs(p - pts[i - 1]) > (hi - lo) / N * 0.6);
+  }
+
+  /* ---------- state ---------- */
+  const PRESETS = {
+    'Long Call':      [{side:'long', type:'call', strike:105, premium:4.2, qty:1}],
+    'Covered Call':   [{side:'long', type:'call', strike:100, premium:100, qty:1}, {side:'short', type:'call', strike:110, premium:3.1, qty:1}],
+    'Bull Call Spread':[{side:'long', type:'call', strike:100, premium:5.4, qty:1}, {side:'short', type:'call', strike:110, premium:2.2, qty:1}],
+    'Bear Put Spread':[{side:'long', type:'put', strike:100, premium:5.1, qty:1}, {side:'short', type:'put', strike:90, premium:2.0, qty:1}],
+    'Long Straddle':  [{side:'long', type:'call', strike:100, premium:5.0, qty:1}, {side:'long', type:'put', strike:100, premium:5.0, qty:1}],
+    'Long Strangle':  [{side:'long', type:'call', strike:105, premium:3.2, qty:1}, {side:'long', type:'put', strike:95, premium:3.4, qty:1}],
+    'Iron Condor':    [{side:'short', type:'put', strike:95, premium:2.4, qty:1}, {side:'long', type:'put', strike:90, premium:1.2, qty:1}, {side:'short', type:'call', strike:105, premium:2.4, qty:1}, {side:'long', type:'call', strike:110, premium:1.2, qty:1}],
+    'Butterfly':      [{side:'long', type:'call', strike:95, premium:7.8, qty:1}, {side:'short', type:'call', strike:100, premium:4.2, qty:2}, {side:'long', type:'call', strike:105, premium:1.9, qty:1}],
+  };
+  const blankLeg = () => ({ side:'long', type:'call', strike:100, premium:3.0, qty:1 });
+  let legs = JSON.parse(JSON.stringify(PRESETS['Iron Condor']));
+
+  const $ = id => document.getElementById(id);
+  const els = { legs: $('legs'), presets: $('presets'), chart: $('chart'), tooltip: $('tooltip'),
+                stats: $('stats'), emptyHint: $('empty-hint'), greeksBody: $('greeks-body'),
+                greeksTotal: $('greeks-total'), legCount: $('leg-count'),
+                underlying: $('underlying'), iv: $('iv'), dte: $('dte') };
+
+  /* ---------- inputs ---------- */
+  Object.keys(PRESETS).forEach(name => {
+    const b = document.createElement('button');
+    b.className = 'preset'; b.type = 'button'; b.textContent = name;
+    b.addEventListener('click', () => { legs = JSON.parse(JSON.stringify(PRESETS[name])); renderLegs(); update(); });
+    els.presets.appendChild(b);
+  });
+  $('add-leg').addEventListener('click', () => { if (legs.length < 8) { legs.push(blankLeg()); renderLegs(); update(); } });
+  $('clear').addEventListener('click', () => { legs = []; renderLegs(); update(); });
+  [els.underlying, els.iv, els.dte].forEach(el => el.addEventListener('input', () => { validateNumber(el); update(); }));
+
+  function validateNumber(el) {
+    const ok = el.value !== '' && isFinite(+el.value) && +el.value > 0;
+    el.closest('.field').classList.toggle('invalid', !ok);
+    return ok;
+  }
+
+  function renderLegs() {
+    els.legs.innerHTML = '';
+    els.legCount.textContent = legs.length ? `(${legs.length})` : '';
+    legs.forEach((leg, i) => {
+      const d = document.createElement('div');
+      d.className = 'leg';
+      d.innerHTML = `
+        <button class="leg-remove" aria-label="Remove leg ${i + 1}" title="Remove">×</button>
+        <div class="row2">
+          <div class="field"><label>Side</label><select data-f="side">
+            <option value="long"${leg.side==='long'?' selected':''}>Long</option>
+            <option value="short"${leg.side==='short'?' selected':''}>Short</option></select></div>
+          <div class="field"><label>Type</label><select data-f="type">
+            <option value="call"${leg.type==='call'?' selected':''}>Call</option>
+            <option value="put"${leg.type==='put'?' selected':''}>Put</option></select></div>
+        </div>
+        <div class="row2">
+          <div class="field"><label>Strike</label><input type="number" step="0.5" min="0.01" data-f="strike" value="${leg.strike}"></div>
+          <div class="field"><label>Premium</label><input type="number" step="0.1" min="0" data-f="premium" value="${leg.premium}"></div>
+        </div>
+        <div class="field"><label>Quantity</label><input type="number" step="1" min="1" max="100" data-f="qty" value="${leg.qty}"></div>`;
+      d.querySelector('.leg-remove').addEventListener('click', () => { legs.splice(i, 1); renderLegs(); update(); });
+      d.querySelectorAll('[data-f]').forEach(input => {
+        input.addEventListener('input', () => {
+          const f = input.dataset.f;
+          let v = input.value;
+          if (f === 'side' || f === 'type') leg[f] = v;
+          else { leg[f] = +v; input.closest('.field').classList.toggle('invalid', !(isFinite(+v) && +v > 0 && !(f === 'qty' && !Number.isInteger(+v)))); }
+          update();
+        });
+      });
+      els.legs.appendChild(d);
+    });
+  }
+
+  /* ---------- chart ---------- */
+  const ctx = els.chart.getContext('2d');
+  let hoverX = null, lastGeom = null;
+  const fmt = n => (n < 0 ? '−' : '') + '$' + Math.abs(n).toLocaleString('en-US', { maximumFractionDigits: 2 });
+
+  function chartRange(legs, S0) {
+    let strikes = legs.map(l => l.strike);
+    const lo0 = Math.min(S0, ...strikes), hi0 = Math.max(S0, ...strikes);
+    const pad = Math.max((hi0 - lo0) * 0.25, S0 * 0.05, 5);
+    return [Math.max(0.01, lo0 - pad), hi0 + pad];
+  }
+
+  function draw() {
+    const canvas = els.chart, dpr = window.devicePixelRatio || 1;
+    const W = canvas.clientWidth, H = canvas.clientHeight;
+    canvas.width = W * dpr; canvas.height = H * dpr;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.clearRect(0, 0, W, H);
+    if (!legs.length) { lastGeom = null; return; }
+    const S0 = +els.underlying.value || 100;
+    const [lo, hi] = chartRange(legs, S0);
+    const N = 240, pts = [];
+    let minP = Infinity, maxP = -Infinity;
+    for (let i = 0; i <= N; i++) {
+      const S = lo + (hi - lo) * i / N, P = netPayoff(legs, S);
+      pts.push([S, P]); minP = Math.min(minP, P); maxP = Math.max(maxP, P);
+    }
+    const padY = Math.max((maxP - minP) * 0.12, Math.abs(maxP) * 0.05, Math.abs(minP) * 0.05, 1);
+    minP -= padY; maxP += padY;
+    const padL = 64, padR = 16, padT = 14, padB = 30;
+    const X = S => padL + (S - lo) / (hi - lo) * (W - padL - padR);
+    const Y = P => padT + (1 - (P - minP) / (maxP - minP)) * (H - padT - padB);
+
+    // grid + y labels
+    ctx.font = '11px "JetBrains Mono", monospace'; ctx.fillStyle = '#5b636f';
+    ctx.strokeStyle = '#1c222c'; ctx.lineWidth = 1;
+    for (let g = 0; g <= 4; g++) {
+      const P = minP + (maxP - minP) * g / 4, y = Y(P);
+      ctx.beginPath(); ctx.moveTo(padL, y); ctx.lineTo(W - padR, y); ctx.stroke();
+      ctx.fillText(fmt(P), 6, y + 4);
+    }
+    // x labels
+    for (let g = 0; g <= 5; g++) {
+      const S = lo + (hi - lo) * g / 5;
+      ctx.fillText('$' + Math.round(S), X(S) - 12, H - 10);
+    }
+    // zero line
+    if (minP < 0 && maxP > 0) {
+      ctx.strokeStyle = '#3a4352'; ctx.setLineDash([5, 4]);
+      ctx.beginPath(); ctx.moveTo(padL, Y(0)); ctx.lineTo(W - padR, Y(0)); ctx.stroke();
+      ctx.setLineDash([]);
+    }
+    // area fill
+    ctx.beginPath(); ctx.moveTo(X(lo), Y(0));
+    pts.forEach(([S, P]) => ctx.lineTo(X(S), Y(P)));
+    ctx.lineTo(X(hi), Y(0)); ctx.closePath();
+    const grad = ctx.createLinearGradient(0, padT, 0, H - padB);
+    grad.addColorStop(0, 'rgba(210,162,76,0.22)'); grad.addColorStop(0.5, 'rgba(210,162,76,0.03)');
+    grad.addColorStop(0.5, 'rgba(248,113,113,0.03)'); grad.addColorStop(1, 'rgba(248,113,113,0.22)');
+    ctx.fillStyle = grad; ctx.fill();
+    // payoff curve
+    ctx.beginPath(); pts.forEach(([S, P], i) => i ? ctx.lineTo(X(S), Y(P)) : ctx.moveTo(X(S), Y(P)));
+    ctx.strokeStyle = '#d2a24c'; ctx.lineWidth = 2.5; ctx.stroke();
+    // breakevens
+    const bes = findBreakevens(legs, lo, hi);
+    bes.forEach(S => {
+      ctx.fillStyle = '#e8e6df';
+      ctx.beginPath(); ctx.arc(X(S), Y(0), 5, 0, 7); ctx.fill();
+      ctx.fillStyle = '#9aa1ad'; ctx.fillText('$' + S.toFixed(2), X(S) - 20, Y(0) - 10);
+    });
+    // current price line
+    ctx.strokeStyle = '#7dd3fc'; ctx.setLineDash([4, 4]);
+    ctx.beginPath(); ctx.moveTo(X(S0), padT); ctx.lineTo(X(S0), H - padB); ctx.stroke(); ctx.setLineDash([]);
+    ctx.fillStyle = '#7dd3fc'; ctx.fillText('now $' + S0, Math.min(X(S0) + 6, W - 70), padT + 12);
+
+    // hover crosshair
+    if (hoverX !== null) {
+      const S = lo + (hoverX - padL) / (W - padL - padR) * (hi - lo);
+      if (S >= lo && S <= hi) {
+        const P = netPayoff(legs, S);
+        ctx.strokeStyle = '#5b636f'; ctx.setLineDash([3, 3]);
+        ctx.beginPath(); ctx.moveTo(hoverX, padT); ctx.lineTo(hoverX, H - padB); ctx.stroke(); ctx.setLineDash([]);
+        ctx.fillStyle = P >= 0 ? '#4ade80' : '#f87171';
+        ctx.beginPath(); ctx.arc(X(S), Y(P), 5, 0, 7); ctx.fill();
+        const tip = els.tooltip;
+        tip.style.display = 'block';
+        tip.innerHTML = `$${S.toFixed(2)} · <span style="color:${P >= 0 ? '#4ade80' : '#f87171'}">${fmt(P)}</span>`;
+        tip.style.left = Math.min(Math.max(hoverX + 14, 4), W - 170) + 'px';
+        tip.style.top = Math.max(Y(P) - 46, 4) + 'px';
+      }
+    }
+    lastGeom = { lo, hi, padL, padR, W };
+  }
+
+  els.chart.addEventListener('mousemove', e => {
+    const r = els.chart.getBoundingClientRect();
+    hoverX = e.clientX - r.left; draw();
+  });
+  els.chart.addEventListener('mouseleave', () => { hoverX = null; els.tooltip.style.display = 'none'; draw(); });
+  new ResizeObserver(draw).observe(els.chart);
+
+  /* ---------- stats + greeks ---------- */
+  function update() {
+    const S0 = +els.underlying.value || 100;
+    const iv = (+els.iv.value || 30) / 100, dteY = (+els.dte.value || 30) / 365;
+    const has = legs.length > 0;
+    els.emptyHint.style.display = has ? 'none' : 'block';
+    draw();
+    if (!has) { els.stats.innerHTML = ''; els.greeksBody.innerHTML = ''; els.greeksTotal.textContent = ''; return; }
+    const [lo, hi] = chartRange(legs, S0);
+    const bes = findBreakevens(legs, lo, hi);
+    let minP = Infinity, maxP = -Infinity;
+    for (let i = 0; i <= 400; i++) {
+      const P = netPayoff(legs, lo + (hi - lo) * i / 400);
+      minP = Math.min(minP, P); maxP = Math.max(maxP, P);
+    }
+    const netPrem = legs.reduce((t, l) => t + (l.side === 'long' ? 1 : -1) * l.premium * l.qty, 0);
+    const atNow = netPayoff(legs, S0);
+    const stat = (k, v, cls) => `<div class="stat"><div class="k">${k}</div><div class="v${cls ? ' ' + cls : ''}">${v}</div></div>`;
+    els.stats.innerHTML =
+      stat('Net premium', fmt(netPrem), netPrem > 0 ? 'neg' : 'pos') +
+      stat('Max profit', fmt(maxP), 'pos') +
+      stat('Max loss', fmt(minP), 'neg') +
+      stat('Breakeven' + (bes.length === 1 ? '' : 's'), bes.length ? bes.map(b => '$' + b.toFixed(2)).join('<br>') : '—') +
+      stat('P/L at now', fmt(atNow), atNow >= 0 ? 'pos' : 'neg');
+
+    let totalD = 0, rows = '';
+    legs.forEach((l, i) => {
+      const d = bsDelta(l, S0, iv, dteY), nd = d * l.qty;
+      totalD += nd;
+      const name = `${l.side === 'long' ? 'Long' : 'Short'} ${l.type} ${l.strike}`;
+      rows += `<tr><td>${name}</td><td>${d.toFixed(3)}</td><td>${l.qty}</td><td>${nd.toFixed(3)}</td></tr>`;
+    });
+    els.greeksBody.innerHTML = rows;
+    els.greeksTotal.textContent = totalD.toFixed(3);
+  }
+
+  renderLegs();
+  update();
+  </script>
+</body>
+</html>

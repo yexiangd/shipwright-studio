@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Tetris · Shipwright Studio</title>
+  <meta name="description" content="Tetris is a free online falling-block puzzle game with 7-bag randomizer, ghost piece, hold queue, levels and a persistent best score — no signup needed." />
+  <link rel="canonical" href="https://shipwright-studio.pages.dev/lab/tetris/" />
+  <link rel="icon" type="image/svg+xml" href="../../favicon.svg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..700;1,9..144,300..700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../../styles.css" />
+  <style>
+    :root { --bg:#0a0c0f; --surface:#11141a; --line:#232a36; --text:#e8e6df; --muted:#9aa1ad; --faint:#5b636f; --accent:#d2a24c; }
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    body { background: var(--bg); color: var(--text); font-family: Inter, system-ui, sans-serif; margin: 0; }
+    .lab-nav { max-width: 1180px; margin: 0 auto; padding: 22px 24px 0; display: flex; justify-content: space-between; align-items: center; }
+    .lab-nav a { color: var(--muted); text-decoration: none; font-size: 14px; }
+    .lab-nav a:hover { color: var(--accent); }
+    .wrap { max-width: 1180px; margin: 0 auto; padding: 40px 24px 90px; }
+    h1 { font-family: Fraunces, serif; font-weight: 500; font-size: clamp(34px, 5vw, 54px); margin: 0 0 10px; }
+    .lede { color: var(--muted); font-size: 16px; max-width: 720px; margin: 0 0 26px; }
+    .def { border-left: 3px solid var(--accent); padding: 4px 0 4px 18px; color: var(--text); max-width: 720px; font-size: 16.5px; line-height: 1.65; margin-bottom: 36px; }
+    .game { display: flex; gap: 22px; justify-content: center; align-items: flex-start; flex-wrap: wrap; }
+    .panel { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 18px; width: 190px; }
+    .panel h2 { font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: .16em; text-transform: uppercase; color: var(--faint); margin: 0 0 10px; }
+    .panel + .panel { margin-top: 0; }
+    .panels { display: flex; flex-direction: column; gap: 22px; }
+    .stat-num { font-family: Fraunces, serif; font-size: 30px; color: var(--accent); margin-bottom: 14px; }
+    .stat-num small { display: block; font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: .14em; color: var(--faint); margin-top: 2px; }
+    .well-wrap { position: relative; background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 14px; touch-action: none; }
+    #well { display: block; background: #080a0d; border-radius: 8px; }
+    .mini { display: block; background: #080a0d; border-radius: 8px; }
+    .overlay { position: absolute; inset: 14px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; background: rgba(8,10,13,.82); border-radius: 8px; text-align: center; padding: 20px; }
+    .overlay.hidden { display: none; }
+    .overlay h2 { font-family: Fraunces, serif; font-size: 34px; margin: 0; font-weight: 500; }
+    .overlay p { color: var(--muted); margin: 0; font-size: 15px; }
+    .overlay .final { font-family: Fraunces, serif; font-size: 26px; color: var(--accent); }
+    .btn { background: var(--accent); color: #14100a; border: none; border-radius: 9px; padding: 12px 26px; font-size: 15px; font-weight: 600; cursor: pointer; font-family: inherit; }
+    .btn:hover { filter: brightness(1.08); }
+    .btn.ghost { background: transparent; color: var(--accent); border: 1px solid var(--accent); padding: 9px 16px; font-size: 13.5px; }
+    .btn-row { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 12px; }
+    .keys { font-size: 12.5px; color: var(--muted); line-height: 2; }
+    .keys kbd { font-family: 'JetBrains Mono', monospace; background: var(--bg); border: 1px solid var(--line); border-radius: 5px; padding: 1px 7px; font-size: 11.5px; color: var(--text); }
+    .touch { display: none; gap: 10px; justify-content: center; margin-top: 16px; flex-wrap: wrap; max-width: 420px; }
+    .touch button { width: 62px; height: 56px; border-radius: 12px; background: var(--surface); border: 1px solid var(--line); color: var(--text); font-size: 20px; touch-action: manipulation; }
+    .touch button:active { border-color: var(--accent); color: var(--accent); }
+    @media (max-width: 760px) {
+      .game { gap: 14px; }
+      .panels { flex-direction: row; width: 100%; justify-content: center; }
+      .panels .panel { width: auto; flex: 1; max-width: 200px; padding: 12px; }
+      .keys { display: none; }
+      .touch { display: flex; }
+      .stat-num { font-size: 22px; margin-bottom: 8px; }
+    }
+    footer { border-top: 1px solid var(--line); padding: 26px 0; color: var(--faint); font-size: 13px; margin-top: 60px; }
+    footer .wrap { padding-top: 0; padding-bottom: 0; }
+  </style>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "Tetris",
+    "description": "A free online falling-block puzzle game: seven tetrominoes, ghost piece, hold queue, levels and persistent best score, playable on desktop and mobile.",
+    "applicationCategory": "GameApplication",
+    "operatingSystem": "Web",
+    "url": "https://shipwright-studio.pages.dev/lab/tetris/",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+  }
+  </script>
+</head>
+<body>
+  <nav class="lab-nav" aria-label="Lab navigation">
+    <a href="../../ideas/">← Back to the Lab</a>
+    <a href="../../">Shipwright Studio</a>
+  </nav>
+  <main class="wrap">
+    <h1>Tetris</h1>
+    <p class="lede">Seven tetrominoes, one well, zero mercy.</p>
+    <p class="def"><strong>Tetris</strong> is a free online falling-block puzzle game where you rotate and stack seven tetrominoes to clear lines, climb levels, and chase a persistent best score.</p>
+
+    <div class="game">
+      <div class="panels">
+        <div class="panel">
+          <h2>Hold</h2>
+          <canvas class="mini" id="hold" width="120" height="80" role="img" aria-label="Held piece"></canvas>
+        </div>
+        <div class="panel">
+          <h2>Score</h2>
+          <div class="stat-num"><span id="score">0</span><small>Best <span id="best">0</span></small></div>
+          <div class="stat-num"><span id="level">1</span><small>Level</small></div>
+          <div class="stat-num"><span id="lines">0</span><small>Lines</small></div>
+          <div class="btn-row">
+            <button class="btn ghost" id="pause-btn" type="button">Pause</button>
+            <button class="btn ghost" id="restart-btn" type="button">Restart</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="well-wrap">
+        <canvas id="well" role="img" aria-label="Tetris playfield"></canvas>
+        <div class="overlay" id="overlay">
+          <h2 id="overlay-title">Ready?</h2>
+          <p id="overlay-sub">Stack the blocks. Clear lines. Don't top out.</p>
+          <div class="final" id="overlay-final" style="display:none"></div>
+          <button class="btn" id="start-btn" type="button">Start</button>
+        </div>
+      </div>
+
+      <div class="panels">
+        <div class="panel">
+          <h2>Next</h2>
+          <canvas class="mini" id="next" width="120" height="220" role="img" aria-label="Next pieces"></canvas>
+        </div>
+        <div class="panel keys">
+          <h2>Controls</h2>
+          <kbd>←</kbd><kbd>→</kbd> move<br>
+          <kbd>↓</kbd> soft drop<br>
+          <kbd>↑</kbd>/<kbd>X</kbd> rotate<br>
+          <kbd>Z</kbd> rotate ccw<br>
+          <kbd>Space</kbd> hard drop<br>
+          <kbd>C</kbd> hold<br>
+          <kbd>P</kbd> pause
+        </div>
+      </div>
+    </div>
+
+    <div class="touch" aria-label="Touch controls">
+      <button type="button" data-k="left" aria-label="Move left">←</button>
+      <button type="button" data-k="right" aria-label="Move right">→</button>
+      <button type="button" data-k="down" aria-label="Soft drop">↓</button>
+      <button type="button" data-k="rot" aria-label="Rotate">⟳</button>
+      <button type="button" data-k="drop" aria-label="Hard drop">⤓</button>
+      <button type="button" data-k="hold" aria-label="Hold">H</button>
+    </div>
+  </main>
+  <footer><div class="wrap">© Shipwright Studio — built in public, one experiment at a time.</div></footer>
+
+  <script>
+  'use strict';
+  /* ---------- constants & pure logic (DOM-free where noted) ---------- */
+  const COLS = 10, ROWS = 20, CELL = 30;
+  const SHAPES = {
+    I: { cells: [[0,1],[1,1],[2,1],[3,1]], color: '#67e8f9' },
+    O: { cells: [[1,0],[2,0],[1,1],[2,1]], color: '#fde047' },
+    T: { cells: [[1,0],[0,1],[1,1],[2,1]], color: '#c084fc' },
+    S: { cells: [[1,0],[2,0],[0,1],[1,1]], color: '#4ade80' },
+    Z: { cells: [[0,0],[1,0],[1,1],[2,1]], color: '#f87171' },
+    J: { cells: [[0,0],[0,1],[1,1],[2,1]], color: '#60a5fa' },
+    L: { cells: [[2,0],[0,1],[1,1],[2,1]], color: '#fb923c' },
+  };
+  const KICKS = [[0,0],[-1,0],[1,0],[0,-1],[-2,0],[2,0],[-1,-1],[1,-1]];
+  const LINE_SCORE = [0, 100, 300, 500, 800];
+
+  function rotateCells(cells, dir) { // dir: 1 cw, -1 ccw; pure
+    return cells.map(([x, y]) => dir === 1 ? [3 - y, x] : [y, 3 - x]);
+  }
+  function collides(grid, cells, px, py) { // pure
+    for (const [x, y] of cells) {
+      const gx = px + x, gy = py + y;
+      if (gx < 0 || gx >= COLS || gy >= ROWS) return true;
+      if (gy >= 0 && grid[gy][gx]) return true;
+    }
+    return false;
+  }
+  function clearLines(grid) { // pure; returns count
+    let n = 0;
+    for (let y = ROWS - 1; y >= 0; y--) {
+      if (grid[y].every(c => c)) {
+        grid.splice(y, 1);
+        grid.unshift(new Array(COLS).fill(0));
+        n++; y++;
+      }
+    }
+    return n;
+  }
+
+  /* ---------- state ---------- */
+  let grid, bag, queue, cur, hold, canHold, score, level, lines, combo;
+  let dropTimer = 0, lastTime = 0, state = 'idle'; // idle | playing | paused | over
+  let flashRows = [];
+
+  const well = document.getElementById('well');
+  const wctx = well.getContext('2d');
+  const holdC = document.getElementById('hold'), holdCtx = holdC.getContext('2d');
+  const nextC = document.getElementById('next'), nextCtx = nextC.getContext('2d');
+  const overlay = document.getElementById('overlay');
+  const BEST_KEY = 'shipwright-tetris-best';
+
+  function sizeWell() {
+    const maxH = Math.min(window.innerHeight - 320, 620);
+    const cell = Math.max(18, Math.min(CELL, Math.floor(maxH / ROWS)));
+    well.width = COLS * cell; well.height = ROWS * cell;
+    well.dataset.cell = cell;
+    draw();
+  }
+
+  function newBag() {
+    const b = Object.keys(SHAPES);
+    for (let i = b.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [b[i], b[j]] = [b[j], b[i]];
+    }
+    return b;
+  }
+  function refill() { while (queue.length < 7) queue.push(...newBag()); }
+  function spawn() {
+    refill();
+    const name = queue.shift();
+    cur = { name, cells: SHAPES[name].cells.map(c => c.slice()), x: 3, y: -2 };
+    canHold = true;
+    if (collides(grid, cur.cells, cur.x, cur.y)) gameOver();
+  }
+  function ghostY() {
+    let y = cur.y;
+    while (!collides(grid, cur.cells, cur.x, y + 1)) y++;
+    return y;
+  }
+  function lockPiece() {
+    for (const [x, y] of cur.cells) {
+      const gy = cur.y + y;
+      if (gy >= 0) grid[gy][cur.x + x] = cur.name;
+    }
+    const n = clearLines(grid);
+    if (n > 0) {
+      lines += n;
+      combo++;
+      score += (LINE_SCORE[n] * level) + (combo > 1 ? 50 * combo * level : 0);
+      if (Math.floor(lines / 10) + 1 > level) level = Math.floor(lines / 10) + 1;
+      document.getElementById('lines').textContent = lines;
+      document.getElementById('level').textContent = level;
+    } else combo = 0;
+    document.getElementById('score').textContent = score.toLocaleString('en-US');
+    spawn();
+  }
+  function gravityMs() { return Math.max(50, 800 * Math.pow(0.85, level - 1)); }
+
+  function tryRotate(dir) {
+    const cells = rotateCells(cur.cells, dir);
+    for (const [kx, ky] of KICKS) {
+      if (!collides(grid, cells, cur.x + kx, cur.y + ky)) {
+        cur.cells = cells; cur.x += kx; cur.y += ky; return true;
+      }
+    }
+    return false;
+  }
+  function doHold() {
+    if (!canHold || state !== 'playing') return;
+    const name = cur.name;
+    if (hold) { const h = hold; hold = name; cur = { name: h, cells: SHAPES[h].cells.map(c => c.slice()), x: 3, y: -2 }; }
+    else { hold = name; spawn(); }
+    canHold = false;
+    if (collides(grid, cur.cells, cur.x, cur.y)) gameOver();
+  }
+
+  /* ---------- actions ---------- */
+  const actions = {
+    left()  { if (state === 'playing' && !collides(grid, cur.cells, cur.x - 1, cur.y)) cur.x--; },
+    right() { if (state === 'playing' && !collides(grid, cur.cells, cur.x + 1, cur.y)) cur.x++; },
+    down()  { if (state === 'playing') { if (!collides(grid, cur.cells, cur.x, cur.y + 1)) { cur.y++; score += 1; document.getElementById('score').textContent = score.toLocaleString('en-US'); } else lockPiece(); } },
+    rot()   { if (state === 'playing') tryRotate(1); },
+    rotccw(){ if (state === 'playing') tryRotate(-1); },
+    drop()  { if (state === 'playing') { const dist = ghostY() - cur.y; cur.y = ghostY(); score += dist * 2; document.getElementById('score').textContent = score.toLocaleString('en-US'); lockPiece(); } },
+    hold()  { doHold(); },
+  };
+
+  function startGame() {
+    grid = Array.from({ length: ROWS }, () => new Array(COLS).fill(0));
+    bag = []; queue = []; hold = null; canHold = true;
+    score = 0; level = 1; lines = 0; combo = 0; flashRows = [];
+    ['score','level','lines'].forEach(id => document.getElementById(id).textContent = '0');
+    document.getElementById('level').textContent = '1';
+    state = 'playing';
+    overlay.classList.add('hidden');
+    document.getElementById('pause-btn').textContent = 'Pause';
+    spawn();
+    lastTime = performance.now(); dropTimer = 0;
+    requestAnimationFrame(loop);
+  }
+  function gameOver() {
+    state = 'over';
+    const best = Math.max(score, +(localStorage.getItem(BEST_KEY) || 0));
+    localStorage.setItem(BEST_KEY, best);
+    document.getElementById('best').textContent = best.toLocaleString('en-US');
+    document.getElementById('overlay-title').textContent = 'Game over';
+    document.getElementById('overlay-sub').textContent = `${lines} lines · level ${level}`;
+    const f = document.getElementById('overlay-final');
+    f.style.display = 'block'; f.textContent = score.toLocaleString('en-US') + ' pts';
+    document.getElementById('start-btn').textContent = 'Play again';
+    overlay.classList.remove('hidden');
+  }
+  function togglePause() {
+    if (state === 'playing') { state = 'paused'; document.getElementById('pause-btn').textContent = 'Resume';
+      document.getElementById('overlay-title').textContent = 'Paused';
+      document.getElementById('overlay-sub').textContent = 'Take a breath.';
+      document.getElementById('overlay-final').style.display = 'none';
+      document.getElementById('start-btn').textContent = 'Resume';
+      overlay.classList.remove('hidden');
+    } else if (state === 'paused') { state = 'playing'; overlay.classList.add('hidden');
+      document.getElementById('pause-btn').textContent = 'Pause'; lastTime = performance.now(); requestAnimationFrame(loop); }
+  }
+
+  /* ---------- render ---------- */
+  function drawCell(g, x, y, color, cell, ghost) {
+    const px = x * cell, py = y * cell;
+    g.fillStyle = ghost ? 'rgba(255,255,255,0.06)' : color;
+    g.fillRect(px + 1, py + 1, cell - 2, cell - 2);
+    if (!ghost) {
+      g.fillStyle = 'rgba(255,255,255,0.22)';
+      g.fillRect(px + 1, py + 1, cell - 2, 3);
+    } else {
+      g.strokeStyle = color; g.globalAlpha = 0.5; g.lineWidth = 1.5;
+      g.strokeRect(px + 1.5, py + 1.5, cell - 3, cell - 3); g.globalAlpha = 1;
+    }
+  }
+  function drawMini(g, name, cw, ch) {
+    g.clearRect(0, 0, cw, ch);
+    if (!name) return;
+    const { cells, color } = SHAPES[name];
+    const cell = 16;
+    const xs = cells.map(c => c[0]), ys = cells.map(c => c[1]);
+    const ox = (cw - (Math.max(...xs) - Math.min(...xs) + 1) * cell) / 2 - Math.min(...xs) * cell;
+    const oy = (ch - (Math.max(...ys) - Math.min(...ys) + 1) * cell) / 2 - Math.min(...ys) * cell;
+    cells.forEach(([x, y]) => {
+      g.fillStyle = color; g.fillRect(ox + x * cell + 1, oy + y * cell + 1, cell - 2, cell - 2);
+    });
+  }
+  function draw() {
+    if (!grid) return;
+    const cell = +well.dataset.cell || CELL;
+    wctx.clearRect(0, 0, well.width, well.height);
+    wctx.strokeStyle = 'rgba(35,42,54,0.5)'; wctx.lineWidth = 1;
+    for (let x = 1; x < COLS; x++) { wctx.beginPath(); wctx.moveTo(x * cell, 0); wctx.lineTo(x * cell, well.height); wctx.stroke(); }
+    for (let y = 1; y < ROWS; y++) { wctx.beginPath(); wctx.moveTo(0, y * cell); wctx.lineTo(well.width, y * cell); wctx.stroke(); }
+    for (let y = 0; y < ROWS; y++) for (let x = 0; x < COLS; x++) {
+      if (grid[y][x]) drawCell(wctx, x, y, SHAPES[grid[y][x]].color, cell, false);
+    }
+    if (state === 'playing' && cur) {
+      const gy = ghostY(), color = SHAPES[cur.name].color;
+      cur.cells.forEach(([x, y]) => { if (cur.y + y + (gy - cur.y) >= 0) drawCell(wctx, cur.x + x, gy + y, color, cell, true); });
+      cur.cells.forEach(([x, y]) => { if (cur.y + y >= 0) drawCell(wctx, cur.x + x, cur.y + y, color, cell, false); });
+    }
+    drawMini(holdCtx, hold, holdC.width, holdC.height);
+    nextCtx.clearRect(0, 0, nextC.width, nextC.height);
+    queue.slice(0, 3).forEach((name, i) => {
+      nextCtx.save(); nextCtx.translate(0, i * 72);
+      const { cells, color } = SHAPES[name];
+      const cellS = 16;
+      const xs = cells.map(c => c[0]), ys = cells.map(c => c[1]);
+      const ox = (nextC.width - (Math.max(...xs) - Math.min(...xs) + 1) * cellS) / 2 - Math.min(...xs) * cellS;
+      const oy = (72 - (Math.max(...ys) - Math.min(...ys) + 1) * cellS) / 2 - Math.min(...ys) * cellS;
+      cells.forEach(([x, y]) => { nextCtx.fillStyle = color; nextCtx.fillRect(ox + x * cellS + 1, oy + y * cellS + 1, cellS - 2, cellS - 2); });
+      nextCtx.restore();
+    });
+  }
+
+  function loop(t) {
+    if (state !== 'playing') return;
+    const dt = t - lastTime; lastTime = t;
+    dropTimer += dt;
+    const g = gravityMs();
+    while (dropTimer >= g) {
+      dropTimer -= g;
+      if (!collides(grid, cur.cells, cur.x, cur.y + 1)) cur.y++;
+      else { lockPiece(); if (state !== 'playing') return; }
+    }
+    draw();
+    requestAnimationFrame(loop);
+  }
+
+  /* ---------- input ---------- */
+  document.addEventListener('keydown', e => {
+    if (['ArrowLeft','ArrowRight','ArrowDown','ArrowUp',' '].includes(e.key)) e.preventDefault();
+    if (state === 'idle' && (e.key === 'Enter' || e.key === ' ')) { startGame(); return; }
+    if (state === 'over' && e.key === 'Enter') { startGame(); return; }
+    switch (e.key) {
+      case 'ArrowLeft': actions.left(); break;
+      case 'ArrowRight': actions.right(); break;
+      case 'ArrowDown': actions.down(); dropTimer = 0; break;
+      case 'ArrowUp': case 'x': case 'X': actions.rot(); break;
+      case 'z': case 'Z': actions.rotccw(); break;
+      case ' ': actions.drop(); break;
+      case 'c': case 'C': actions.hold(); break;
+      case 'p': case 'P': togglePause(); break;
+    }
+    draw();
+  });
+  document.querySelectorAll('.touch button').forEach(b => {
+    const k = b.dataset.k;
+    const fire = e => { e.preventDefault(); if (state === 'idle') { startGame(); return; } actions[k](); draw(); };
+    b.addEventListener('pointerdown', fire);
+  });
+  document.getElementById('start-btn').addEventListener('click', () => {
+    if (state === 'paused') togglePause(); else startGame();
+  });
+  document.getElementById('pause-btn').addEventListener('click', togglePause);
+  document.getElementById('restart-btn').addEventListener('click', startGame);
+  window.addEventListener('resize', sizeWell);
+
+  document.getElementById('best').textContent = (+(localStorage.getItem(BEST_KEY) || 0)).toLocaleString('en-US');
+  grid = Array.from({ length: ROWS }, () => new Array(COLS).fill(0));
+  sizeWell();
+  </script>
+</body>
+</html>
