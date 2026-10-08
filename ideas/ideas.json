@@ -1,5 +1,5 @@
 {
- "updated": "2026-10-07",
+ "updated": "2026-10-08",
  "ideas": [
   {
    "id": "idea-000a",
@@ -407,7 +407,9 @@
    "tagline": "Split-pane markdown with GitHub-flavored rendering.",
    "priority": 88,
    "effort": "S",
-   "status": "todo"
+   "status": "done",
+   "url": "/lab/markdown-preview/",
+   "shipped": "2026-10-08"
   },
   {
    "id": "idea-037",
@@ -1089,7 +1091,9 @@
    "tagline": "Optimal position sizing from win rate and payoff ratio.",
    "priority": 88,
    "effort": "S",
-   "status": "todo"
+   "status": "done",
+   "url": "/lab/kelly-calculator/",
+   "shipped": "2026-10-08"
   },
   {
    "id": "idea-104",

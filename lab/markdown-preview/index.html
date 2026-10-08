@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Markdown Live · Shipwright Studio</title>
+<meta name="description" content="A free online markdown editor with instant split-pane preview — headings, tables, code blocks and task lists, all rendered in your browser.">
+<link rel="canonical" href="https://shipwright-studio.pages.dev/lab/markdown-preview/">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"WebApplication","name":"Markdown Live","url":"https://shipwright-studio.pages.dev/lab/markdown-preview/","description":"Markdown Live is a free online tool that renders markdown instantly in a split-pane preview, with toolbar formatting, HTML export and draft autosave.","applicationCategory":"UtilitiesApplication","operatingSystem":"Web","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"}}
+</script>
+<style>
+:root{--bg:#0a0c0f;--panel:#11141a;--code:#0d1015;--line:#232a35;--txt:#e8e4da;--mut:#9aa3b2;--brass:#d2a24c;--red:#e0655f}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--txt);font-family:Inter,system-ui,sans-serif;line-height:1.6;padding:2.5rem 1.25rem 4rem;max-width:1100px;margin:0 auto}
+a{color:var(--brass)}
+.eyebrow{font-size:.75rem;letter-spacing:.22em;text-transform:uppercase;color:var(--mut);text-align:center}
+h1{font-family:Fraunces,serif;font-weight:600;font-size:clamp(2rem,4.5vw,3rem);margin:.4rem 0 .6rem;text-align:center}
+.define{color:var(--mut);max-width:52rem;margin:0 auto 1.8rem;text-align:center}
+.define strong{color:var(--txt)}
+.toolbar{display:flex;flex-wrap:wrap;gap:.45rem;justify-content:center;margin-bottom:1rem}
+.toolbar button{background:var(--panel);border:1px solid var(--line);color:var(--mut);border-radius:8px;padding:.5rem .8rem;font-size:.85rem;cursor:pointer;font-family:inherit}
+.toolbar button:hover{color:var(--brass);border-color:var(--brass)}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem;align-items:stretch}
+@media(max-width:760px){.grid{grid-template-columns:1fr}}
+.pane{background:var(--panel);border:1px solid var(--line);border-radius:14px;overflow:hidden;display:flex;flex-direction:column;min-height:420px}
+.pane .plab{font-size:.72rem;letter-spacing:.18em;text-transform:uppercase;color:var(--mut);padding:.7rem 1rem;border-bottom:1px solid var(--line)}
+#src{flex:1;background:var(--code);border:0;color:var(--txt);padding:1rem;font-family:"JetBrains Mono",ui-monospace,monospace;font-size:.9rem;line-height:1.7;resize:vertical;min-height:380px;outline:none}
+#src:focus{border-color:var(--brass)}
+#out{flex:1;padding:1.2rem 1.4rem;overflow:auto;min-height:380px;text-align:left}
+#out h1,#out h2,#out h3,#out h4,#out h5,#out h6{font-family:Fraunces,serif;margin:1em 0 .4em;line-height:1.25}
+#out h1{font-size:1.7rem}#out h2{font-size:1.4rem}#out h3{font-size:1.2rem}#out h4{font-size:1.05rem}#out h5,#out h6{font-size:1rem}
+#out p{margin:.6em 0}
+#out a{color:var(--brass)}
+#out code{font-family:"JetBrains Mono",ui-monospace,monospace;background:var(--code);border:1px solid var(--line);border-radius:5px;padding:.1em .35em;font-size:.88em}
+#out pre{background:var(--code);border:1px solid var(--line);border-radius:10px;padding:1rem;overflow:auto;margin:.8em 0}
+#out pre code{background:none;border:0;padding:0}
+#out blockquote{border-left:3px solid var(--brass);padding:.2rem 0 .2rem 1rem;margin:.8em 0;color:var(--mut)}
+#out ul,#out ol{margin:.6em 0 .6em 1.4em}
+#out li{margin:.25em 0}
+#out hr{border:0;border-top:1px solid var(--line);margin:1.4em 0}
+#out table{border-collapse:collapse;margin:.9em 0;width:100%;font-size:.9rem}
+#out th,#out td{border:1px solid var(--line);padding:.5rem .75rem}
+#out th{background:var(--code);text-align:left}
+#out img{max-width:100%;border-radius:8px}
+#out del{color:var(--mut)}
+#out .task{list-style:none;margin-left:0}
+#out .task input{margin-right:.5em;accent-color:var(--brass)}
+#out .empty{color:var(--mut);font-style:italic}
+.stats{display:flex;gap:1.4rem;justify-content:center;color:var(--mut);font-size:.85rem;margin:1.1rem 0}
+.stats b{color:var(--txt);font-weight:600}
+.exports{display:flex;gap:.6rem;justify-content:center;margin-bottom:1rem;flex-wrap:wrap}
+button.go{background:var(--brass);border:0;color:#14100a;font-weight:600;border-radius:8px;padding:.65rem 1.3rem;cursor:pointer;font-family:inherit;font-size:.95rem}
+button.go:hover{filter:brightness(1.08)}
+button.ghost{background:transparent;border:1px solid var(--line);color:var(--mut);border-radius:8px;padding:.65rem 1.3rem;cursor:pointer;font-family:inherit;font-size:.95rem}
+button.ghost:hover{color:var(--brass);border-color:var(--brass)}
+.copied{position:fixed;bottom:1.5rem;left:50%;transform:translateX(-50%);background:var(--panel);border:1px solid var(--brass);color:var(--brass);border-radius:8px;padding:.5rem 1.1rem;font-size:.9rem;display:none}
+.seg{display:none;justify-content:center;gap:.4rem;margin-bottom:.8rem}
+@media(max-width:760px){.seg{display:flex}.grid{display:block}#pane-src.hide,#pane-out.hide{display:none}}
+.seg button{background:var(--panel);border:1px solid var(--line);color:var(--mut);border-radius:999px;padding:.45rem 1.2rem;font-size:.85rem;cursor:pointer;font-family:inherit}
+.seg button.on{background:var(--brass);border-color:var(--brass);color:#14100a;font-weight:600}
+.back{display:block;text-align:center;margin-top:2.5rem;font-size:.9rem}
+</style>
+</head>
+<body>
+<p class="eyebrow">Shipwright Studio · Lab</p>
+<h1>Markdown Live</h1>
+<p class="define"><strong>Markdown Live is a free online tool that renders markdown instantly in a split-pane preview.</strong> Write on the left, see formatted output on the right — then copy the HTML or download your file. Nothing leaves your browser.</p>
+
+<div class="toolbar" id="toolbar" aria-label="Formatting toolbar"></div>
+
+<div class="seg">
+  <button id="seg-src" class="on">Edit</button>
+  <button id="seg-out">Preview</button>
+</div>
+
+<div class="grid">
+  <div class="pane" id="pane-src">
+    <div class="plab">Markdown source</div>
+    <textarea id="src" spellcheck="false" aria-label="Markdown source"></textarea>
+  </div>
+  <div class="pane" id="pane-out">
+    <div class="plab">Preview</div>
+    <div id="out" aria-live="polite"></div>
+  </div>
+</div>
+
+<div class="stats">
+  <span><b id="st-w">0</b> words</span>
+  <span><b id="st-c">0</b> characters</span>
+  <span><b id="st-r">0</b> min read</span>
+</div>
+
+<div class="exports">
+  <button class="go" id="copy-html">Copy HTML</button>
+  <button class="ghost" id="dl-md">Download .md</button>
+  <button class="ghost" id="clear">Clear draft</button>
+</div>
+
+<div class="copied" id="copied">Copied ✓</div>
+
+<a class="back" href="/ideas/">← Back to the idea bank</a>
+
+<script>
+/* ---------- tiny dependency-free markdown renderer ---------- */
+function esc(s){return s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")}
+function safeUrl(u){
+  u=(u||"").trim();
+  if(/^javascript:/i.test(u)||/^data:(?!image\/(png|jpe?g|gif|webp|svg\+xml))/i.test(u)) return "#";
+  return esc(u);
+}
+function inline(s){
+  s=esc(s);
+  // code spans first (protect inner markers)
+  var codes=[];
+  s=s.replace(/`([^`]+)`/g,function(m,c){codes.push("<code>"+c+"</code>");return "\u0000"+(codes.length-1)+"\u0000";});
+  // images
+  s=s.replace(/!\[([^\]]*)\]\(([^)]+)\)/g,function(m,alt,url){return '<img alt="'+alt+'" src="'+safeUrl(url)+'">';});
+  // links
+  s=s.replace(/\[([^\]]+)\]\(([^)\s]+)(?:\s+"[^"]*")?\)/g,function(m,t,url){return '<a href="'+safeUrl(url)+'">'+t+'</a>';});
+  // autolinks
+  s=s.replace(/<(https?:\/\/[^>]+)>/g,function(m,u){var e=safeUrl(u);return '<a href="'+e+'">'+e+'</a>';});
+  // bold + italic + strike
+  s=s.replace(/\*\*([^*]+)\*\*/g,"<strong>$1</strong>").replace(/__([^_]+)__/g,"<strong>$1</strong>");
+  s=s.replace(/(^|[^*\w])\*([^*\s][^*]*)\*/g,"$1<em>$2</em>").replace(/(^|[^_\w])_([^_\s][^_]*)_/g,"$1<em>$2</em>");
+  s=s.replace(/~~([^~]+)~~/g,"<del>$1</del>");
+  // restore code spans
+  s=s.replace(/\u0000(\d+)\u0000/g,function(m,i){return codes[+i];});
+  return s;
+}
+function isTableDelim(line){return /^\s*\|?[\s:|-]+\|?[\s:|-]*\s*$/.test(line)&&line.indexOf("-")>=0;}
+function splitRow(line){line=line.trim().replace(/^\||\|$/g,"");return line.split("|").map(function(c){return c.trim();});}
+function render(src){
+  var lines=src.replace(/\r\n?/g,"\n").split("\n"),out=[],i=0,n=lines.length;
+  function blank(l){return /^\s*$/.test(l);}
+  while(i<n){
+    var line=lines[i];
+    // fenced code block
+    var fm=/^\s*```(\w*)\s*$/.exec(line);
+    if(fm){var lang=fm[1],buf=[];i++;
+      while(i<n&&!/^\s*```\s*$/.test(lines[i])){buf.push(lines[i]);i++;}
+      i++;out.push('<pre><code'+(lang?' class="lang-'+esc(lang)+'"':"")+'>'+esc(buf.join("\n"))+'</code></pre>');continue;}
+    // headings
+    var hm=/^(#{1,6})\s+(.*)$/.exec(line);
+    if(hm){out.push("<h"+hm[1].length+">"+inline(hm[2].replace(/\s+#+\s*$/,""))+"</h"+hm[1].length+">");i++;continue;}
+    // hr
+    if(/^\s*([-*_])(\s*\1){2,}\s*$/.test(line)){out.push("<hr>");i++;continue;}
+    // blockquote
+    if(/^\s*>/.test(line)){var bq=[];while(i<n&&/^\s*>/.test(lines[i])){bq.push(lines[i].replace(/^\s*>\s?/,""));i++;}
+      out.push("<blockquote>"+render(bq.join("\n"))+"</blockquote>");continue;}
+    // table
+    if(line.indexOf("|")>=0&&i+1<n&&isTableDelim(lines[i+1])){
+      var head=splitRow(line),del=splitRow(lines[i+1]);
+      var aligns=del.map(function(d){var l=/^:/.test(d),r=/:$/.test(d);return l&&r?"center":(r?"right":"left");});
+      var h="<table><thead><tr>"+head.map(function(c,k){return '<th style="text-align:'+aligns[k]+'">'+inline(c)+"</th>";}).join("")+"</tr></thead><tbody>";
+      i+=2;
+      while(i<n&&lines[i].indexOf("|")>=0&&!blank(lines[i])&&!isTableDelim(lines[i])){
+        var row=splitRow(lines[i]);
+        h+="<tr>"+head.map(function(_,k){return '<td style="text-align:'+aligns[k]+'">'+inline(row[k]||"")+"</td>";}).join("")+"</tr>";i++;}
+      out.push(h+"</tbody></table>");continue;}
+    // lists
+    var lm=/^(\s*)([-*+]|\d+[.)])\s+(.*)$/.exec(line);
+    if(lm){
+      var html="",stack=[];
+      while(i<n){
+        var m=/^(\s*)([-*+]|\d+[.)])\s+(.*)$/.exec(lines[i]);
+        if(!m)break;
+        var ind=m[1].replace(/\t/g,"    ").length,lvl=Math.floor(ind/2);
+        var ordered=/^\d/.test(m[2]);
+        while(stack.length>lvl){html+="</"+stack.pop()+">";}
+        if(stack.length<lvl+1){stack.push(ordered?"ol":"ul");html+="<"+stack[stack.length-1]+">";}
+        var content=m[3];
+        var task=/^\[([ xX])\]\s+(.*)$/.exec(content);
+        if(task){html+='<li class="task"><input type="checkbox" disabled'+(task[1].toLowerCase()==="x"?" checked":"")+'> '+inline(task[2])+"</li>";}
+        else{html+="<li>"+inline(content)+"</li>";}
+        i++;
+        if(i<n&&blank(lines[i])){i++;break;}
+      }
+      while(stack.length){html+="</"+stack.pop()+">";}
+      out.push(html);continue;}
+    // paragraph (collect until blank)
+    if(!blank(line)){var para=[];while(i<n&&!blank(lines[i])&&!/^\s*(```|#{1,6}\s|>)/.test(lines[i])){para.push(lines[i]);i++;}
+      out.push("<p>"+para.map(inline).join("<br>")+"</p>");continue;}
+    i++;
+  }
+  return out.join("\n");
+}
+/* ---------- app wiring ---------- */
+var $=function(id){return document.getElementById(id);};
+var SAMPLE=[
+"# Markdown Live",
+"",
+"Type on the left — the preview updates **instantly**.",
+"",
+"## What renders",
+"",
+"- Headings, *italic*, ~~struck~~ and `inline code`",
+"- [ ] task lists",
+"- [x] like this one",
+"",
+"> Blockquotes get the brass treatment.",
+"",
+"| Feature | Status |",
+"|:--------|:------:|",
+"| Tables | ✅ |",
+"| Alignment | centered |",
+"",
+"```js",
+"const live = true; // fenced code blocks too",
+"```",
+"",
+"Raw `<b>HTML</b>` is escaped, never executed. [Links](https://example.com) work."
+].join("\n");
+var KEY="md-live-draft-v1";
+var ta=$("src");
+try{ta.value=localStorage.getItem(KEY)||SAMPLE;}catch(e){ta.value=SAMPLE;}
+var timer=null;
+function update(){
+  var v=ta.value;
+  $("out").innerHTML=v.trim()?"":'<p class="empty">Start typing markdown on the left…</p>';
+  if(v.trim())$("out").innerHTML=render(v);
+  var words=(v.match(/\S+/g)||[]).length;
+  $("st-w").textContent=words;
+  $("st-c").textContent=v.length;
+  $("st-r").textContent=Math.max(1,Math.ceil(words/200));
+  try{localStorage.setItem(KEY,v);}catch(e){}
+}
+ta.addEventListener("input",function(){clearTimeout(timer);timer=setTimeout(update,120);});
+/* toolbar */
+var TOOLS=[
+ ["B","**","**","Bold","strong text"],["I","*","*","Italic","emphasis"],
+ ["H","## ","","","Heading 2","heading"],["</>","`","`","Code","code"],
+ ["```","```\n"," \n```","Code block","code block"],
+ ["❝","> ","","","Quote","quote"],["• ","- ","","","Bullet list","item"],
+ ["1.","1. ","","","Numbered list","item"],["☑","- [ ] ","","","Task list","task"],
+ ["🔗","[","]()","Link","link text"],["🖼","![","]()","Image","alt text"],
+ ["▦","| Col 1 | Col 2 |\n|---|---|\n| "," | |\n","","Table","a | b"]
+];
+TOOLS.forEach(function(t){
+  var b=document.createElement("button");b.type="button";b.textContent=t[0];b.title=t[3];
+  b.addEventListener("click",function(){insert(t[1],t[2],t[4]);});
+  $("toolbar").appendChild(b);
+});
+function insert(before,after,ph){
+  var s=ta.selectionStart,e=ta.selectionEnd,v=ta.value;
+  var sel=v.slice(s,e)||ph;
+  ta.value=v.slice(0,s)+before+sel+after+v.slice(e);
+  ta.focus();ta.selectionStart=s+before.length;ta.selectionEnd=s+before.length+sel.length;
+  update();
+}
+/* exports */
+function toast(){var t=$("copied");t.style.display="block";setTimeout(function(){t.style.display="none";},1400);}
+$("copy-html").addEventListener("click",function(){
+  var html=render(ta.value);
+  if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(html).then(toast,toast);}
+  else{var d=document.createElement("div");d.innerHTML=html;var r=document.createRange();r.selectNode(d);var sel=getSelection();sel.removeAllRanges();sel.addRange(r);document.execCommand("copy");toast();}
+});
+$("dl-md").addEventListener("click",function(){
+  var a=document.createElement("a");
+  a.href=URL.createObjectURL(new Blob([ta.value],{type:"text/markdown"}));
+  a.download="markdown-live.md";document.body.appendChild(a);a.click();
+  setTimeout(function(){URL.revokeObjectURL(a.href);a.remove();},500);toast();
+});
+$("clear").addEventListener("click",function(){ta.value="";try{localStorage.removeItem(KEY);}catch(e){}update();});
+/* mobile segmented view */
+$("seg-src").addEventListener("click",function(){$("seg-src").classList.add("on");$("seg-out").classList.remove("on");$("pane-src").classList.remove("hide");$("pane-out").classList.add("hide");});
+$("seg-out").addEventListener("click",function(){$("seg-out").classList.add("on");$("seg-src").classList.remove("on");$("pane-out").classList.remove("hide");$("pane-src").classList.add("hide");});
+update();
+</script>
+</body>
+</html>
