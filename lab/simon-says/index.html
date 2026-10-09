@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Simon Says · Shipwright Studio</title>
+  <meta name="description" content="Simon Says is a free online memory game. Watch the pads light and repeat the sequence — each round adds one more step until you can't." />
+  <link rel="canonical" href="https://shipwright-studio.pages.dev/lab/simon-says/" />
+  <link rel="icon" type="image/svg+xml" href="../../favicon.svg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..700;1,9..144,300..700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "Simon Says",
+    "description": "A free online Simon Says memory game. Watch the colored pads play a sequence, then repeat it — each round adds one step, strict rules, synthesized tones.",
+    "applicationCategory": "GameApplication",
+    "operatingSystem": "Web",
+    "offers": { "@type": "Offer", "price": "0" },
+    "author": { "@type": "Organization", "name": "Shipwright Studio", "url": "https://shipwright-studio.pages.dev/" }
+  }
+  </script>
+  <style>
+    :root {
+      --bg: #0a0c0f; --surface: #10141a; --text: #f2efe6; --muted: #a6abb4; --faint: #6d737c;
+      --accent: #d2a24c; --line: rgba(255,255,255,.09);
+      --font-display: "Fraunces", Georgia, serif;
+      --font-body: "Inter", -apple-system, "Segoe UI", sans-serif;
+      --font-mono: "JetBrains Mono", ui-monospace, monospace;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: var(--bg); color: var(--text); font-family: var(--font-body); min-height: 100vh; display: flex; flex-direction: column; }
+    .topbar { display: flex; justify-content: space-between; align-items: center; padding: 16px 22px; border-bottom: 1px solid var(--line); }
+    .topbar a { color: var(--muted); text-decoration: none; font-size: 14px; }
+    .topbar a:hover { color: var(--accent); }
+    .brand { font-family: var(--font-display); font-size: 17px; }
+    .brand em { color: var(--accent); font-style: italic; }
+    main { flex: 1; width: 100%; max-width: 860px; margin: 0 auto; padding: 44px 24px 60px; display: flex; flex-direction: column; gap: 26px; }
+    h1 { font-family: var(--font-display); font-weight: 500; font-size: clamp(30px, 5vw, 44px); letter-spacing: -.01em; }
+    h1 em { color: var(--accent); font-style: italic; }
+    .lede { color: var(--muted); max-width: 620px; line-height: 1.65; }
+    .stats { display: flex; gap: 38px; flex-wrap: wrap; }
+    .stat b { display: block; font-family: var(--font-display); font-size: 38px; font-weight: 500; color: var(--accent); font-variant-numeric: tabular-nums; }
+    .stat span { font-family: var(--font-mono); font-size: 11px; letter-spacing: .18em; text-transform: uppercase; color: var(--muted); }
+    .stage { position: relative; width: min(100%, 480px); margin: 0 auto; }
+    .pads { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; aspect-ratio: 1; }
+    .pad {
+      border-radius: 18px; border: 1px solid var(--line); cursor: pointer; position: relative;
+      display: flex; align-items: flex-end; justify-content: flex-end; padding: 14px;
+      transition: filter .12s ease, box-shadow .12s ease; user-select: none; -webkit-tap-highlight-color: transparent;
+    }
+    .pad .key { font-family: var(--font-mono); font-size: 12px; color: rgba(255,255,255,.45); }
+    .pad[data-p="0"] { background: #5c2b28; } .pad[data-p="0"].lit { background: #e0655f; box-shadow: 0 0 42px rgba(224,101,95,.55); }
+    .pad[data-p="1"] { background: #5c4a26; } .pad[data-p="1"].lit { background: #d2a24c; box-shadow: 0 0 42px rgba(210,162,76,.55); }
+    .pad[data-p="2"] { background: #3a4a2a; } .pad[data-p="2"].lit { background: #8fb573; box-shadow: 0 0 42px rgba(143,181,115,.55); }
+    .pad[data-p="3"] { background: #2c3c52; } .pad[data-p="3"].lit { background: #7aa2d8; box-shadow: 0 0 42px rgba(122,162,216,.55); }
+    .pad.locked { cursor: default; }
+    .overlay { position: absolute; inset: 0; border-radius: 18px; display: none; align-items: center; justify-content: center; background: rgba(10,12,15,.82); text-align: center; padding: 24px; }
+    .overlay.show { display: flex; }
+    .panel .big { font-family: var(--font-display); font-size: clamp(44px, 9vw, 72px); color: var(--accent); line-height: 1; font-weight: 500; }
+    .panel .tier { font-family: var(--font-display); font-style: italic; font-size: 22px; margin: 10px 0 4px; }
+    .panel .detail { font-family: var(--font-mono); font-size: 13px; color: var(--muted); margin: 12px 0 22px; line-height: 1.8; }
+    .newbest { display: inline-block; font-family: var(--font-mono); font-size: 11px; letter-spacing: .16em; text-transform: uppercase; color: #0a0c0f; background: var(--accent); border-radius: 999px; padding: 5px 12px; margin-top: 10px; }
+    .btn { font-family: var(--font-mono); font-size: 14px; padding: 12px 26px; border-radius: 999px; border: 1px solid var(--accent); background: var(--accent); color: #0a0c0f; cursor: pointer; margin: 0 4px; }
+    .btn:hover { filter: brightness(1.08); }
+    .btn.ghost { background: transparent; color: var(--accent); }
+    .status { text-align: center; font-family: var(--font-mono); font-size: 13px; color: var(--muted); letter-spacing: .06em; min-height: 22px; }
+    .strict { text-align: center; font-family: var(--font-mono); font-size: 12px; color: var(--faint); letter-spacing: .1em; text-transform: uppercase; }
+    .hint { color: var(--faint); font-size: 13.5px; font-family: var(--font-mono); text-align: center; }
+    .foot { color: var(--faint); font-size: 13px; max-width: 620px; line-height: 1.7; }
+    .foot a { color: var(--muted); }
+  </style>
+</head>
+<body>
+  <div class="topbar">
+    <a href="../../ideas/">&larr; The Lab</a>
+    <span class="brand">Shipwright <em>Studio</em></span>
+    <span></span>
+  </div>
+
+  <main>
+    <div>
+      <h1>Watch. <em>Remember.</em> Repeat.</h1>
+      <p class="lede">Simon Says is a free online memory game: four pads play a growing sequence of lights and tones, and you repeat it back — one wrong pad ends the run, every round adds one more step until you can't.</p>
+    </div>
+
+    <div class="stats">
+      <div class="stat"><b id="round">–</b><span>round</span></div>
+      <div class="stat"><b id="best">0</b><span>best streak</span></div>
+      <div class="stat"><b id="progress">0/0</b><span>steps</span></div>
+    </div>
+
+    <div class="status" id="status">press start when ready</div>
+
+    <div class="stage">
+      <div class="pads">
+        <div class="pad locked" data-p="0" role="button" tabindex="0" aria-label="red pad"><span class="key">1</span></div>
+        <div class="pad locked" data-p="1" role="button" tabindex="0" aria-label="brass pad"><span class="key">2</span></div>
+        <div class="pad locked" data-p="2" role="button" tabindex="0" aria-label="green pad"><span class="key">3</span></div>
+        <div class="pad locked" data-p="3" role="button" tabindex="0" aria-label="blue pad"><span class="key">4</span></div>
+      </div>
+      <div class="overlay show" id="ov">
+        <div class="panel">
+          <div class="tier" id="ovTitle">Watch, then repeat</div>
+          <div class="detail" id="ovDetail">click / tap the pads, or press 1–4<br>strict rules — one mistake ends the run</div>
+          <div><span class="newbest" id="newBest" style="display:none">new best</span></div>
+          <div style="margin-top:22px">
+            <button class="btn" id="startBtn">Start</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <p class="strict">strict mode · one mistake ends the run</p>
+    <p class="hint">click / tap, or keys <kbd>1</kbd>–<kbd>4</kbd> — playback speeds up as you survive</p>
+    <p class="foot">The sequence grows by one step every round, and the playback gap shrinks from ~450ms to ~220ms as rounds climb. Best streak lives on this device only. Tones are synthesized live with the Web Audio API — no audio files.<br>Built by <a href="https://shipwright-studio.pages.dev/">Shipwright Studio</a>.</p>
+  </main>
+
+  <script>
+    "use strict";
+    var FREQS = [164.81, 220, 277.18, 329.63]; // E4 A4 C#5 E5
+    var $ = function (id) { return document.getElementById(id); };
+    var pads = Array.prototype.slice.call(document.querySelectorAll(".pad"));
+    var ov = $("ov"), ovTitle = $("ovTitle"), ovDetail = $("ovDetail"), newBestEl = $("newBest"), statusEl = $("status");
+
+    var best = +(localStorage.getItem("sw_simon_best") || 0);
+    $("best").textContent = best;
+
+    var S = { mode: "idle", seq: [], entered: 0, round: 0, lock: true, audio: null };
+
+    // playback tempo: gap shrinks 450ms -> 220ms with rounds
+    function playbackGap(round) {
+      return Math.max(220, 450 - round * 12);
+    }
+    function lightDur(round) {
+      return Math.max(120, Math.min(300, playbackGap(round) * 0.55));
+    }
+
+    function ensureAudio() {
+      if (!S.audio) {
+        var AC = window.AudioContext || window.webkitAudioContext;
+        if (AC) S.audio = new AC();
+      }
+      if (S.audio && S.audio.state === "suspended") S.audio.resume();
+    }
+
+    function tone(idx, dur) {
+      ensureAudio();
+      if (!S.audio) return;
+      var t = S.audio.currentTime;
+      var o = S.audio.createOscillator(), g = S.audio.createGain();
+      o.type = "sine"; o.frequency.value = FREQS[idx];
+      g.gain.setValueAtTime(0.0001, t);
+      g.gain.exponentialRampToValueAtTime(0.32, t + 0.02);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + dur / 1000);
+      o.connect(g); g.connect(S.audio.destination);
+      o.start(t); o.stop(t + dur / 1000 + 0.05);
+    }
+
+    function flash(idx, dur) {
+      pads[idx].classList.add("lit");
+      tone(idx, dur);
+      setTimeout(function () { pads[idx].classList.remove("lit"); }, dur);
+    }
+
+    function setLock(locked) {
+      S.lock = locked;
+      pads.forEach(function (p) { p.classList.toggle("locked", locked); });
+    }
+
+    function startGame() {
+      ensureAudio();
+      S.seq = [Math.floor(Math.random() * 4)];
+      S.round = 1; S.entered = 0;
+      newBestEl.style.display = "none";
+      ov.classList.remove("show");
+      playSequence();
+    }
+
+    function playSequence() {
+      setLock(true);
+      S.mode = "watching";
+      statusEl.textContent = "watch…";
+      $("round").textContent = S.round;
+      $("progress").textContent = "0/" + S.seq.length;
+      var gap = playbackGap(S.round), dur = lightDur(S.round), i = 0;
+      function next() {
+        if (i >= S.seq.length) {
+          S.mode = "yourTurn"; S.entered = 0; setLock(false);
+          statusEl.textContent = "your move — repeat it";
+          return;
+        }
+        flash(S.seq[i], dur);
+        i++;
+        setTimeout(next, gap + dur * 0.25);
+      }
+      setTimeout(next, 650);
+    }
+
+    function press(idx) {
+      ensureAudio();
+      if (S.mode !== "yourTurn" || S.lock) return;
+      flash(idx, 140);
+      if (idx === S.seq[S.entered]) {
+        S.entered++;
+        $("progress").textContent = S.entered + "/" + S.seq.length;
+        if (S.entered === S.seq.length) {
+          S.mode = "watching"; setLock(true);
+          S.round++;
+          S.seq.push(Math.floor(Math.random() * 4));
+          statusEl.textContent = "well done — round " + S.round + " incoming";
+          setTimeout(playSequence, 900);
+        }
+      } else {
+        gameOver();
+      }
+    }
+
+    function gameOver() {
+      S.mode = "over"; setLock(true);
+      var reached = S.round;
+      var isBest = reached > best;
+      if (isBest) { best = reached; localStorage.setItem("sw_simon_best", best); $("best").textContent = best; }
+      newBestEl.style.display = isBest && reached > 1 ? "inline-block" : "none";
+      ovTitle.textContent = "Wrong pad";
+      ovDetail.innerHTML = "reached round " + reached + " · best streak " + best + "<br>one mistake ends the run";
+      $("startBtn").textContent = "Try again";
+      ov.classList.add("show");
+      statusEl.textContent = "run over at round " + reached;
+    }
+
+    pads.forEach(function (p, i) {
+      p.addEventListener("click", function () { press(i); });
+      p.addEventListener("keydown", function (e) {
+        if (e.key === "Enter" || e.key === " ") { e.preventDefault(); press(i); }
+      });
+    });
+    document.addEventListener("keydown", function (e) {
+      var map = { "1": 0, "2": 1, "3": 2, "4": 3, "a": 0, "s": 1, "d": 2, "f": 3, "A": 0, "S": 1, "D": 2, "F": 3 };
+      if (e.key in map) press(map[e.key]);
+      if (e.key === "Enter" && S.mode === "idle") startGame();
+    });
+    $("startBtn").addEventListener("click", startGame);
+  </script>
+</body>
+</html>

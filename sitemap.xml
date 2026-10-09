@@ -21,6 +21,11 @@
     <priority>0.7</priority>
   </url>
   <url>
+    <loc>https://shipwright-studio.pages.dev/lab/breakout/</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
     <loc>https://shipwright-studio.pages.dev/lab/color-palette/</loc>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
@@ -92,6 +97,11 @@
   </url>
   <url>
     <loc>https://shipwright-studio.pages.dev/lab/regex-tester/</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://shipwright-studio.pages.dev/lab/simon-says/</loc>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>

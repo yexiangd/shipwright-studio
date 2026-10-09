@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Breakout · Shipwright Studio</title>
+  <meta name="description" content="Breakout is a free online brick-breaker game. One paddle, ninety bricks, classic row scoring — smash them all with mouse, keyboard, or touch." />
+  <link rel="canonical" href="https://shipwright-studio.pages.dev/lab/breakout/" />
+  <link rel="icon" type="image/svg+xml" href="../../favicon.svg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..700;1,9..144,300..700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "Breakout",
+    "description": "A free online Breakout brick-breaker game. Smash ninety bricks with one paddle — classic row scoring, levels, and mouse/keyboard/touch controls.",
+    "applicationCategory": "GameApplication",
+    "operatingSystem": "Web",
+    "offers": { "@type": "Offer", "price": "0" },
+    "author": { "@type": "Organization", "name": "Shipwright Studio", "url": "https://shipwright-studio.pages.dev/" }
+  }
+  </script>
+  <style>
+    :root {
+      --bg: #0a0c0f; --surface: #10141a; --text: #f2efe6; --muted: #a6abb4; --faint: #6d737c;
+      --accent: #d2a24c; --line: rgba(255,255,255,.09);
+      --font-display: "Fraunces", Georgia, serif;
+      --font-body: "Inter", -apple-system, "Segoe UI", sans-serif;
+      --font-mono: "JetBrains Mono", ui-monospace, monospace;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: var(--bg); color: var(--text); font-family: var(--font-body); min-height: 100vh; display: flex; flex-direction: column; }
+    .topbar { display: flex; justify-content: space-between; align-items: center; padding: 16px 22px; border-bottom: 1px solid var(--line); }
+    .topbar a { color: var(--muted); text-decoration: none; font-size: 14px; }
+    .topbar a:hover { color: var(--accent); }
+    .brand { font-family: var(--font-display); font-size: 17px; }
+    .brand em { color: var(--accent); font-style: italic; }
+    main { flex: 1; width: 100%; max-width: 860px; margin: 0 auto; padding: 44px 24px 60px; display: flex; flex-direction: column; gap: 26px; }
+    h1 { font-family: var(--font-display); font-weight: 500; font-size: clamp(30px, 5vw, 44px); letter-spacing: -.01em; }
+    h1 em { color: var(--accent); font-style: italic; }
+    .lede { color: var(--muted); max-width: 620px; line-height: 1.65; }
+    .stats { display: flex; gap: 38px; flex-wrap: wrap; }
+    .stat b { display: block; font-family: var(--font-display); font-size: 38px; font-weight: 500; color: var(--accent); font-variant-numeric: tabular-nums; }
+    .stat span { font-family: var(--font-mono); font-size: 11px; letter-spacing: .18em; text-transform: uppercase; color: var(--muted); }
+    .stage { position: relative; width: min(100%, 640px); margin: 0 auto; }
+    canvas { display: block; width: 100%; height: auto; aspect-ratio: 4/3; background: var(--surface); border: 1px solid var(--line); border-radius: 14px; touch-action: none; }
+    .overlay { position: absolute; inset: 0; border-radius: 14px; display: none; align-items: center; justify-content: center; background: rgba(10,12,15,.82); text-align: center; padding: 24px; }
+    .overlay.show { display: flex; }
+    .panel .big { font-family: var(--font-display); font-size: clamp(44px, 9vw, 72px); color: var(--accent); line-height: 1; font-weight: 500; }
+    .panel .tier { font-family: var(--font-display); font-style: italic; font-size: 22px; margin: 10px 0 4px; }
+    .panel .detail { font-family: var(--font-mono); font-size: 13px; color: var(--muted); margin: 12px 0 22px; }
+    .newbest { display: inline-block; font-family: var(--font-mono); font-size: 11px; letter-spacing: .16em; text-transform: uppercase; color: #0a0c0f; background: var(--accent); border-radius: 999px; padding: 5px 12px; margin-top: 10px; }
+    .btn { font-family: var(--font-mono); font-size: 14px; padding: 12px 26px; border-radius: 999px; border: 1px solid var(--accent); background: var(--accent); color: #0a0c0f; cursor: pointer; margin: 0 4px; }
+    .btn:hover { filter: brightness(1.08); }
+    .btn.ghost { background: transparent; color: var(--accent); }
+    .controls { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; justify-content: center; }
+    .hint { color: var(--faint); font-size: 13.5px; font-family: var(--font-mono); text-align: center; }
+    .foot { color: var(--faint); font-size: 13px; max-width: 620px; line-height: 1.7; }
+    .foot a { color: var(--muted); }
+    .banner { position: absolute; top: 14px; left: 50%; transform: translateX(-50%); font-family: var(--font-mono); font-size: 12px; letter-spacing: .14em; text-transform: uppercase; color: #0a0c0f; background: var(--accent); border-radius: 999px; padding: 6px 16px; display: none; }
+    .banner.show { display: block; }
+  </style>
+</head>
+<body>
+  <div class="topbar">
+    <a href="../../ideas/">&larr; The Lab</a>
+    <span class="brand">Shipwright <em>Studio</em></span>
+    <span></span>
+  </div>
+
+  <main>
+    <div>
+      <h1>Ninety bricks, <em>one</em> paddle</h1>
+      <p class="lede">Breakout is a free online brick-breaker game: steer the paddle, bounce the ball, and smash ninety bricks for classic row-scored points — the top row pays most, and every cleared level makes the ball faster.</p>
+    </div>
+
+    <div class="stats">
+      <div class="stat"><b id="score">0</b><span>score</span></div>
+      <div class="stat"><b id="best">0</b><span>best</span></div>
+      <div class="stat"><b id="level">1</b><span>level</span></div>
+      <div class="stat"><b id="lives">3</b><span>lives</span></div>
+    </div>
+
+    <div class="stage">
+      <canvas id="cv" width="480" height="360" aria-label="Breakout game board"></canvas>
+      <div class="banner" id="banner"></div>
+      <div class="overlay show" id="ov">
+        <div class="panel">
+          <div class="tier" id="ovTitle">Ready to break?</div>
+          <div class="detail" id="ovDetail">mouse · arrows / A-D · touch drag — Space launches the ball</div>
+          <div><span class="newbest" id="newBest" style="display:none">new best</span></div>
+          <div style="margin-top:22px">
+            <button class="btn" id="startBtn">Start</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="controls">
+      <button class="btn ghost" id="pauseBtn">Pause</button>
+      <button class="btn ghost" id="restartBtn">Restart</button>
+    </div>
+    <p class="hint">mouse / arrows / A-D / touch — <kbd>P</kbd> pause · top rows pay 8·5·3·2·1</p>
+    <p class="foot">Classic scoring: the top row is worth 8 points per brick, then 5, 3, 2, 1. Clear all ninety to advance — each level adds 8% ball speed, and from level 3 the paddle gets a little narrower. Best score lives on this device only.<br>Built by <a href="https://shipwright-studio.pages.dev/">Shipwright Studio</a>.</p>
+  </main>
+
+  <script>
+    "use strict";
+    var W = 480, H = 360;
+    var COLS = 18, ROWS = 5, BRICK_W = W / COLS, BRICK_H = 18, BRICK_TOP = 44, BRICK_GAP = 3;
+    var ROW_PTS = [8, 5, 3, 2, 1];
+    var ROW_COLORS = ["#e8c76a", "#d2a24c", "#b08a44", "#8a6c3a", "#6d5a35"];
+    var BALL_R = 5, BASE_SPEED = 262, PADDLE_H = 10, PADDLE_Y = H - 26;
+    var cv = document.getElementById("cv"), ctx = cv.getContext("2d");
+    var $ = function (id) { return document.getElementById(id); };
+    var ov = $("ov"), ovTitle = $("ovTitle"), ovDetail = $("ovDetail"), newBestEl = $("newBest"), banner = $("banner");
+
+    var best = +(localStorage.getItem("sw_breakout_best") || 0);
+    $("best").textContent = best;
+
+    var S; // state
+
+    function newState() {
+      return {
+        mode: "start", // start | serve | play | pause | over | levelclear
+        score: 0, lives: 3, level: 1, speed: BASE_SPEED,
+        paddle: { x: W / 2 - 36, w: 72, target: null, kb: 0 },
+        ball: { x: W / 2, y: PADDLE_Y - BALL_R - 1, vx: 0, vy: 0 },
+        bricks: [], bannerTimer: 0
+      };
+    }
+
+    function buildBricks() {
+      var b = [];
+      for (var r = 0; r < ROWS; r++)
+        for (var c = 0; c < COLS; c++)
+          b.push({ r: r, c: c, alive: true });
+      return b;
+    }
+
+    // angle of paddle rebound: offset -1..1 -> launch angle 150°..30° (up-left..up-right)
+    function paddleBounce(ball, paddle) {
+      var off = (ball.x - (paddle.x + paddle.w / 2)) / (paddle.w / 2);
+      off = Math.max(-1, Math.min(1, off));
+      var ang = Math.PI / 2 - off * (Math.PI / 3); // 90° -/+ 60°; left edge -> up-left
+      var sp = Math.hypot(ball.vx, ball.vy) || S.speed;
+      ball.vx = sp * Math.cos(ang);
+      ball.vy = -Math.abs(sp * Math.sin(ang));
+      ball.y = PADDLE_Y - BALL_R - 0.5;
+    }
+
+    function serveBall() {
+      S.ball.x = S.paddle.x + S.paddle.w / 2;
+      S.ball.y = PADDLE_Y - BALL_R - 1;
+      S.ball.vx = 0; S.ball.vy = 0;
+    }
+
+    function launch() {
+      var sp = S.speed;
+      var a = Math.PI / 2 + (Math.random() * 0.6 - 0.3);
+      S.ball.vx = sp * Math.cos(a);
+      S.ball.vy = -Math.abs(sp * Math.sin(a));
+      S.mode = "play";
+      hideOv();
+    }
+
+    function step(dt) {
+      var b = S.ball, p = S.paddle;
+      // paddle keyboard
+      if (p.kb !== 0) p.x += p.kb * 400 * dt;
+      if (p.target !== null) {
+        var d = p.target - (p.x + p.w / 2);
+        p.x += d * Math.min(1, dt * 18);
+        if (Math.abs(d) < 1) p.target = null;
+      }
+      p.x = Math.max(0, Math.min(W - p.w, p.x));
+
+      if (S.mode === "serve") { serveBall(); return; }
+      if (S.mode !== "play") return;
+
+      var sp = Math.hypot(b.vx, b.vy);
+      var stepLen = sp * dt;
+      var sub = Math.max(1, Math.ceil(stepLen / 4));
+      for (var i = 0; i < sub; i++) {
+        b.x += b.vx * dt / sub; b.y += b.vy * dt / sub;
+        if (b.x - BALL_R < 0) { b.x = BALL_R; b.vx = Math.abs(b.vx); }
+        if (b.x + BALL_R > W) { b.x = W - BALL_R; b.vx = -Math.abs(b.vx); }
+        if (b.y - BALL_R < 0) { b.y = BALL_R; b.vy = Math.abs(b.vy); }
+        // paddle
+        if (b.vy > 0 && b.y + BALL_R >= PADDLE_Y && b.y + BALL_R <= PADDLE_Y + PADDLE_H + 4 &&
+            b.x >= p.x - BALL_R && b.x <= p.x + p.w + BALL_R) paddleBounce(b, p);
+        // bricks
+        var r = brickHit(b);
+        if (r) { hitBrick(r); break; }
+        // missed
+        if (b.y - BALL_R > H) { loseLife(); return; }
+      }
+    }
+
+    function brickRect(r, c) {
+      return { x: c * BRICK_W + BRICK_GAP / 2, y: BRICK_TOP + r * (BRICK_H + BRICK_GAP), w: BRICK_W - BRICK_GAP, h: BRICK_H };
+    }
+
+    function brickHit(b) {
+      var minR = Math.max(0, Math.floor((b.y - BALL_R - BRICK_TOP) / (BRICK_H + BRICK_GAP)));
+      var maxR = Math.min(ROWS - 1, Math.ceil((b.y + BALL_R - BRICK_TOP) / (BRICK_H + BRICK_GAP)));
+      for (var r = minR; r <= maxR; r++) {
+        for (var c = 0; c < COLS; c++) {
+          var idx = r * COLS + c;
+          if (!S.bricks[idx].alive) continue;
+          var q = brickRect(r, c);
+          if (b.x + BALL_R > q.x && b.x - BALL_R < q.x + q.w &&
+              b.y + BALL_R > q.y && b.y - BALL_R < q.y + q.h)
+            return { idx: idx, r: r, q: q };
+        }
+      }
+      return null;
+    }
+
+    function hitBrick(h) {
+      var b = S.ball;
+      h.idx = h.idx; S.bricks[h.idx].alive = false;
+      S.score += ROW_PTS[h.r];
+      $("score").textContent = S.score;
+      // side of impact from smallest penetration
+      var q = h.q;
+      var penL = (b.x + BALL_R) - q.x, penR = (q.x + q.w) - (b.x - BALL_R);
+      var penT = (b.y + BALL_R) - q.y, penB = (q.y + q.h) - (b.y - BALL_R);
+      var m = Math.min(penL, penR, penT, penB);
+      if (m === penT) { b.vy = -Math.abs(b.vy); b.y = q.y - BALL_R - 0.5; }
+      else if (m === penB) { b.vy = Math.abs(b.vy); b.y = q.y + q.h + BALL_R + 0.5; }
+      else if (m === penL) { b.vx = -Math.abs(b.vx); b.x = q.x - BALL_R - 0.5; }
+      else { b.vx = Math.abs(b.vx); b.x = q.x + q.w + BALL_R + 0.5; }
+      if (S.bricks.every(function (x) { return !x.alive; })) levelClear();
+    }
+
+    function loseLife() {
+      S.lives--;
+      $("lives").textContent = S.lives;
+      if (S.lives <= 0) gameOver();
+      else { S.mode = "serve"; serveBall(); }
+    }
+
+    function levelClear() {
+      S.level++;
+      S.speed = Math.round(S.speed * 1.08);
+      S.bricks = buildBricks();
+      S.paddle.w = S.level >= 3 ? 58 : 72;
+      S.mode = "serve";
+      serveBall();
+      $("level").textContent = S.level;
+      showBanner("Level " + S.level + " — faster ball");
+      S.bannerTimer = 2.2;
+    }
+
+    function gameOver() {
+      S.mode = "over";
+      var isBest = S.score > best;
+      if (isBest) { best = S.score; localStorage.setItem("sw_breakout_best", best); $("best").textContent = best; }
+      newBestEl.style.display = isBest && S.score > 0 ? "inline-block" : "none";
+      ovTitle.textContent = "Game over";
+      ovDetail.textContent = "score " + S.score + " · level " + S.level + " · best " + best;
+      $("startBtn").textContent = "Play again";
+      ov.classList.add("show");
+    }
+
+    function showBanner(t) { banner.textContent = t; banner.classList.add("show"); }
+    function hideOv() { ov.classList.remove("show"); }
+
+    function startGame() {
+      S = newState(); S.bricks = buildBricks();
+      S.mode = "serve"; serveBall();
+      $("score").textContent = "0"; $("level").textContent = "1"; $("lives").textContent = "3";
+      hideOv(); newBestEl.style.display = "none";
+    }
+
+    function togglePause() {
+      if (S.mode === "play" || S.mode === "serve") {
+        S.pausedFrom = S.mode; S.mode = "pause";
+        ovTitle.textContent = "Paused"; ovDetail.textContent = "P or Space to resume";
+        $("startBtn").textContent = "Resume"; ov.classList.add("show");
+      } else if (S.mode === "pause") {
+        S.mode = S.pausedFrom || "play"; hideOv();
+      }
+    }
+
+    function draw() {
+      ctx.clearRect(0, 0, W, H);
+      var i, q;
+      for (i = 0; i < S.bricks.length; i++) {
+        if (!S.bricks[i].alive) continue;
+        q = brickRect(S.bricks[i].r, S.bricks[i].c);
+        ctx.fillStyle = ROW_COLORS[S.bricks[i].r];
+        ctx.beginPath();
+        if (ctx.roundRect) ctx.roundRect(q.x, q.y, q.w, q.h, 3); else ctx.rect(q.x, q.y, q.w, q.h);
+        ctx.fill();
+      }
+      ctx.fillStyle = "#f2efe6";
+      ctx.fillRect(S.paddle.x, PADDLE_Y, S.paddle.w, PADDLE_H);
+      ctx.fillStyle = "#d2a24c";
+      ctx.beginPath(); ctx.arc(S.ball.x, S.ball.y, BALL_R, 0, Math.PI * 2); ctx.fill();
+    }
+
+    // fixed timestep loop
+    var last = 0, acc = 0, DT = 1 / 120;
+    function loop(t) {
+      requestAnimationFrame(loop);
+      if (!last) last = t;
+      var frame = Math.min(0.1, (t - last) / 1000); last = t;
+      if (S.mode !== "pause") { acc += frame; while (acc >= DT) { step(DT); acc -= DT; } }
+      if (S.bannerTimer > 0) { S.bannerTimer -= frame; if (S.bannerTimer <= 0) banner.classList.remove("show"); }
+      draw();
+    }
+
+    // input
+    var keys = {};
+    function canvasX(ev) {
+      var r = cv.getBoundingClientRect();
+      var cx = (ev.touches && ev.touches.length ? ev.touches[0].clientX : ev.clientX);
+      return (cx - r.left) / r.width * W;
+    }
+    cv.addEventListener("mousemove", function (e) { S.paddle.target = canvasX(e); });
+    cv.addEventListener("touchstart", function (e) { e.preventDefault(); S.paddle.target = canvasX(e); act(); }, { passive: false });
+    cv.addEventListener("touchmove", function (e) { e.preventDefault(); S.paddle.target = canvasX(e); }, { passive: false });
+    cv.addEventListener("mousedown", function (e) { S.paddle.target = canvasX(e); act(); });
+
+    function act() {
+      if (S.mode === "start" || S.mode === "over") startGame();
+      else if (S.mode === "serve") launch();
+    }
+
+    document.addEventListener("keydown", function (e) {
+      var k = e.key;
+      if (k === "ArrowLeft" || k === "a" || k === "A") S.paddle.kb = -1;
+      if (k === "ArrowRight" || k === "d" || k === "D") S.paddle.kb = 1;
+      if (k === " ") { e.preventDefault(); act(); }
+      if (k === "p" || k === "P") { if (S.mode === "play" || S.mode === "serve" || S.mode === "pause") togglePause(); }
+    });
+    document.addEventListener("keyup", function (e) {
+      var k = e.key;
+      if ((k === "ArrowLeft" || k === "a" || k === "A") && S.paddle.kb === -1) S.paddle.kb = 0;
+      if ((k === "ArrowRight" || k === "d" || k === "D") && S.paddle.kb === 1) S.paddle.kb = 0;
+    });
+    document.addEventListener("visibilitychange", function () {
+      if (document.hidden && (S.mode === "play" || S.mode === "serve")) togglePause();
+    });
+
+    $("startBtn").addEventListener("click", function () {
+      if (S.mode === "start" || S.mode === "over") startGame();
+      else if (S.mode === "pause") togglePause();
+      else if (S.mode === "serve") launch();
+    });
+    $("pauseBtn").addEventListener("click", togglePause);
+    $("restartBtn").addEventListener("click", startGame);
+
+    S = newState(); S.bricks = buildBricks();
+    requestAnimationFrame(loop);
+  </script>
+</body>
+</html>

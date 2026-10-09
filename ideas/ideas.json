@@ -1,5 +1,5 @@
 {
- "updated": "2026-10-08",
+ "updated": "2026-10-09",
  "ideas": [
   {
    "id": "idea-000a",
@@ -117,7 +117,9 @@
    "tagline": "One paddle, ninety bricks, endless satisfaction.",
    "priority": 87,
    "effort": "S",
-   "status": "todo"
+   "status": "done",
+   "url": "/lab/breakout/",
+   "shipped": "2026-10-09"
   },
   {
    "id": "idea-009",
@@ -127,7 +129,9 @@
    "tagline": "Watch, remember, repeat — until you can't.",
    "priority": 86,
    "effort": "S",
-   "status": "todo"
+   "status": "done",
+   "url": "/lab/simon-says/",
+   "shipped": "2026-10-09"
   },
   {
    "id": "idea-010",
