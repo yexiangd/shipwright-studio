@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Correlation Heatmap · Shipwright Studio</title>
+  <meta name="description" content="Correlation Heatmap is a free online tool that turns pasted asset price data into a correlation heatmap. See which assets move together — in your browser, nothing uploaded." />
+  <link rel="canonical" href="https://shipwright-studio.pages.dev/lab/correlation-heatmap/" />
+  <link rel="icon" type="image/svg+xml" href="../../favicon.svg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..700;1,9..144,300..700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "Correlation Heatmap",
+    "description": "A free online tool that computes the Pearson correlation matrix of pasted asset price or return data and renders it as an interactive heatmap.",
+    "applicationCategory": "FinanceApplication",
+    "operatingSystem": "Web",
+    "offers": { "@type": "Offer", "price": "0" },
+    "author": { "@type": "Organization", "name": "Shipwright Studio", "url": "https://shipwright-studio.pages.dev/" }
+  }
+  </script>
+  <style>
+    :root {
+      --bg: #0a0c0f; --surface: #10141a; --text: #f2efe6; --muted: #a6abb4; --faint: #6d737c;
+      --accent: #d2a24c; --line: rgba(255,255,255,.09);
+      --font-display: "Fraunces", Georgia, serif;
+      --font-body: "Inter", -apple-system, "Segoe UI", sans-serif;
+      --font-mono: "JetBrains Mono", ui-monospace, monospace;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: var(--bg); color: var(--text); font-family: var(--font-body); min-height: 100vh; display: flex; flex-direction: column; }
+    .topbar { display: flex; justify-content: space-between; align-items: center; padding: 16px 22px; border-bottom: 1px solid var(--line); }
+    .topbar a { color: var(--muted); text-decoration: none; font-size: 14px; }
+    .topbar a:hover { color: var(--accent); }
+    .brand { font-family: var(--font-display); font-size: 17px; }
+    .brand em { color: var(--accent); font-style: italic; }
+    main { flex: 1; width: 100%; max-width: 960px; margin: 0 auto; padding: 44px 24px 60px; display: flex; flex-direction: column; gap: 26px; }
+    h1 { font-family: var(--font-display); font-weight: 500; font-size: clamp(30px, 5vw, 44px); letter-spacing: -.01em; }
+    h1 em { color: var(--accent); font-style: italic; }
+    .lede { color: var(--muted); max-width: 680px; line-height: 1.65; }
+    .card { background: var(--surface); border: 1px solid var(--line); border-radius: 20px; padding: 24px; }
+    .modes { display: flex; gap: 8px; margin-bottom: 16px; }
+    .mode { font-family: var(--font-mono); font-size: 13px; padding: 9px 18px; border-radius: 999px; border: 1px solid var(--line); background: transparent; color: var(--muted); cursor: pointer; }
+    .mode.on { border-color: var(--accent); color: var(--accent); background: rgba(210,162,76,.08); }
+    textarea { width: 100%; min-height: 170px; background: #0c0f14; border: 1px solid var(--line); border-radius: 12px; color: var(--text); font-family: var(--font-mono); font-size: 13px; line-height: 1.7; padding: 14px 16px; resize: vertical; }
+    textarea:focus { outline: none; border-color: var(--accent); }
+    .row { display: flex; gap: 12px; margin-top: 16px; flex-wrap: wrap; align-items: center; }
+    .btn { font-family: var(--font-mono); font-size: 14px; padding: 12px 26px; border-radius: 999px; border: 1px solid var(--accent); background: var(--accent); color: #0a0c0f; cursor: pointer; }
+    .btn:hover { filter: brightness(1.08); }
+    .btn.ghost { background: transparent; color: var(--accent); }
+    .btn.subtle { background: transparent; color: var(--muted); border-color: var(--line); }
+    .hint { color: var(--faint); font-size: 13px; font-family: var(--font-mono); }
+    .error { display: none; border: 1px solid #e0655f; background: rgba(224,101,95,.08); color: #f0a9a4; border-radius: 12px; padding: 14px 18px; font-family: var(--font-mono); font-size: 13.5px; line-height: 1.7; }
+    .error.show { display: block; }
+    .result { display: none; }
+    .result.show { display: block; }
+    .summary { font-family: var(--font-mono); font-size: 13.5px; color: var(--muted); line-height: 2; margin-bottom: 18px; }
+    .summary b { color: var(--accent); font-weight: 500; }
+    .summary .neg { color: #7aa2d8; }
+    .scroll { overflow-x: auto; border: 1px solid var(--line); border-radius: 12px; }
+    table.matrix { border-collapse: collapse; font-family: var(--font-mono); font-size: 12.5px; font-variant-numeric: tabular-nums; min-width: 100%; }
+    table.matrix th, table.matrix td { padding: 0; }
+    table.matrix th.label, table.matrix td.label { position: sticky; left: 0; background: var(--surface); color: var(--muted); font-weight: 500; padding: 10px 14px; white-space: nowrap; z-index: 1; border-right: 1px solid var(--line); }
+    table.matrix thead th { padding: 10px 8px; color: var(--muted); font-weight: 500; white-space: nowrap; max-width: 110px; overflow: hidden; text-overflow: ellipsis; }
+    table.matrix td.cell { width: 76px; height: 52px; text-align: center; cursor: pointer; border: 1px solid rgba(10,12,15,.5); transition: transform .08s ease; }
+    table.matrix td.cell:hover { transform: scale(1.06); }
+    table.matrix td.cell.sel { outline: 2px solid #f2efe6; outline-offset: -2px; }
+    .legend { display: flex; align-items: center; gap: 12px; margin-top: 18px; font-family: var(--font-mono); font-size: 12px; color: var(--faint); }
+    .legend .bar { flex: 1; max-width: 320px; height: 12px; border-radius: 6px; background: linear-gradient(90deg, #7aa2d8, #232a35 50%, #d2a24c); }
+    .detail { margin-top: 14px; font-family: var(--font-mono); font-size: 14px; color: var(--text); min-height: 24px; }
+    .detail .pair { color: var(--accent); }
+    .foot { color: var(--faint); font-size: 13px; max-width: 680px; line-height: 1.7; }
+    .foot a { color: var(--muted); }
+  </style>
+</head>
+<body>
+  <div class="topbar">
+    <a href="../../ideas/">&larr; The Lab</a>
+    <span class="brand">Shipwright <em>Studio</em></span>
+    <span></span>
+  </div>
+
+  <main>
+    <div>
+      <h1>What moves <em>together?</em></h1>
+      <p class="lede">Correlation Heatmap is a free online tool that computes the asset-by-asset Pearson correlation matrix of your data and draws it as a heatmap. Paste prices from a spreadsheet, and see at a glance which assets actually diversify each other — everything runs locally, nothing is uploaded.</p>
+    </div>
+
+    <div class="card">
+      <div class="modes" role="group" aria-label="Input mode">
+        <button class="mode on" id="modePrices" type="button">Prices → log returns</button>
+        <button class="mode" id="modeReturns" type="button">Already returns</button>
+      </div>
+      <textarea id="data" placeholder="asset, TECH, BONDS, GOLD&#10;2026-09-01, 412.5, 98.2, 2650&#10;2026-09-02, 418.1, 98.4, 2648&#10;…  (paste from Excel / Google Sheets)" aria-label="Paste price or return data"></textarea>
+      <div class="row">
+        <button class="btn" id="compute">Compute</button>
+        <button class="btn ghost" id="sample">Sample data</button>
+        <button class="btn subtle" id="clear">Clear</button>
+        <span class="hint">CSV · TSV · spaces — first row = names</span>
+      </div>
+    </div>
+
+    <div class="error" id="error" role="alert"></div>
+
+    <div class="card result" id="result">
+      <div class="summary" id="summary"></div>
+      <div class="scroll"><table class="matrix" id="matrix" aria-label="Correlation matrix heatmap"></table></div>
+      <div class="legend"><span>−1</span><span class="bar"></span><span>+1</span><span>negative · neutral · positive</span></div>
+      <div class="detail" id="detail">click any cell for the exact value</div>
+    </div>
+
+    <p class="foot">Correlations are computed on log returns (or your pasted returns directly) with pairwise-complete observations. A correlation of 1 means lockstep, −1 means perfect opposition, 0 means no linear relationship — and correlation is not causation. Your data never leaves this browser.<br>Built by <a href="https://shipwright-studio.pages.dev/">Shipwright Studio</a>.</p>
+  </main>
+
+  <script>
+  /* ---- pure logic: top-level so it can be extracted and unit-tested ---- */
+
+  function mulberry32(seed) {
+    return function () {
+      seed |= 0; seed = (seed + 0x6D2B79F5) | 0;
+      var t = Math.imul(seed ^ (seed >>> 15), 1 | seed);
+      t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+  }
+
+  // Parse pasted text into {names:[], series: number[][]} (columns of observations).
+  // Throws Error with a specific message on invalid input.
+  function parseTable(text) {
+    var lines = text.split(/\r?\n/).map(function (l) { return l.trim(); }).filter(function (l) { return l.length > 0; });
+    if (lines.length < 2) throw new Error("Need at least a header row and one data row — paste more data.");
+    var first = lines[0];
+    var delim = first.indexOf("\t") >= 0 ? "\t" : (first.indexOf(",") >= 0 ? "," : (first.indexOf(";") >= 0 ? ";" : /\s+/));
+    function split(line) {
+      if (delim instanceof RegExp) return line.split(delim);
+      return line.split(delim).map(function (c) { return c.trim(); });
+    }
+    var header = split(lines[0]);
+    var dataRows = lines.slice(1).map(split);
+    var ncol = header.length;
+    dataRows.forEach(function (r, i) {
+      if (r.length !== ncol) throw new Error("Row " + (i + 2) + " has " + r.length + " cells, but the header has " + ncol + " — fix the ragged row.");
+    });
+    var isNum = function (v) { return v !== "" && !isNaN(Number(v)); };
+    // Label column: first column of every data row non-numeric → drop it.
+    var labelCol = dataRows.every(function (r) { return !isNum(r[0]); });
+    var nameOffset = labelCol ? 1 : 0;
+    var hasHeader = header.slice(nameOffset).some(function (c) { return !isNum(c); });
+    var names;
+    if (hasHeader) {
+      names = header.slice(nameOffset);
+    } else {
+      // No header: first row is data too.
+      names = [];
+      for (var k = 0; k < ncol - nameOffset; k++) names.push("Asset " + (k + 1));
+      dataRows = [header].concat(dataRows);
+    }
+    var series = names.map(function () { return []; });
+    dataRows.forEach(function (r, i) {
+      r.slice(nameOffset).forEach(function (c, j) {
+        if (!isNum(c)) throw new Error("Row " + (i + (hasHeader ? 2 : 1)) + ', column "' + names[j] + '" is not a number: "' + c + '"');
+        series[j].push(Number(c));
+      });
+    });
+    if (names.length < 2) throw new Error("Need at least 2 numeric columns — only found " + names.length + ".");
+    if (names.length > 30) throw new Error("Too many columns (" + names.length + ") — this demo renders up to 30.");
+    if (series[0].length < 3) throw new Error("Need at least 3 rows of data — only found " + series[0].length + ".");
+    return { names: names, series: series };
+  }
+
+  // Log returns from a price series: ln(p_t / p_{t-1}).
+  function toLogReturns(prices) {
+    var out = [];
+    for (var i = 1; i < prices.length; i++) {
+      if (prices[i - 1] <= 0 || prices[i] <= 0) throw new Error("Log returns need positive prices — found a zero or negative value.");
+      out.push(Math.log(prices[i] / prices[i - 1]));
+    }
+    return out;
+  }
+
+  function mean(xs) { return xs.reduce(function (a, b) { return a + b; }, 0) / xs.length; }
+
+  // Pearson correlation of two equal-length series; NaN if a series is constant.
+  function pearson(xs, ys) {
+    var n = xs.length, mx = mean(xs), my = mean(ys);
+    var c = 0, vx = 0, vy = 0;
+    for (var i = 0; i < n; i++) {
+      var dx = xs[i] - mx, dy = ys[i] - my;
+      c += dx * dy; vx += dx * dx; vy += dy * dy;
+    }
+    if (vx === 0 || vy === 0) return NaN;
+    return c / Math.sqrt(vx * vy);
+  }
+
+  function corrMatrix(series) {
+    return series.map(function (a, i) {
+      return series.map(function (b, j) {
+        if (i === j) return 1;
+        var r = pearson(a, b);
+        return isNaN(r) ? NaN : r;
+      });
+    });
+  }
+
+  function mix(hex1, hex2, t) {
+    function ch(h, i) { return parseInt(h.slice(1 + i * 2, 3 + i * 2), 16); }
+    var r = Math.round(ch(hex1, 0) + (ch(hex2, 0) - ch(hex1, 0)) * t);
+    var g = Math.round(ch(hex1, 1) + (ch(hex2, 1) - ch(hex1, 1)) * t);
+    var b = Math.round(ch(hex1, 2) + (ch(hex2, 2) - ch(hex1, 2)) * t);
+    return "rgb(" + r + "," + g + "," + b + ")";
+  }
+
+  // Diverging: -1 blue → 0 neutral → +1 brass.
+  function heatStyle(r) {
+    if (isNaN(r)) return { bg: "#1a2029", fg: "#6d737c" };
+    var t = Math.min(1, Math.abs(r));
+    var bg = r >= 0 ? mix("#232a35", "#d2a24c", t) : mix("#232a35", "#7aa2d8", t);
+    return { bg: bg, fg: t > 0.55 ? "#0a0c0f" : "#f2efe6" };
+  }
+
+  function strengthLabel(r) {
+    var a = Math.abs(r);
+    if (a >= 0.9995) return "perfect " + (r > 0 ? "positive" : "negative");
+    var w = a >= 0.7 ? "strong" : (a >= 0.4 ? "moderate" : (a >= 0.2 ? "weak" : "negligible"));
+    return w + " " + (r >= 0 ? "positive" : "negative");
+  }
+
+  // Deterministic synthetic sample: 6 assets, 60 daily closes.
+  function makeSample() {
+    var rnd = mulberry32(42);
+    function gauss() { return (rnd() + rnd() + rnd() + rnd() - 2) / 1.4; }
+    var names = ["TECH", "CLOUD", "CRYPTO", "ENERGY", "GOLD", "BONDS"];
+    var n = 60, px = names.map(function () { return [100]; });
+    for (var d = 1; d <= n; d++) {
+      var f = gauss();                    // common risk factor
+      var rets = [
+        0.0011 + 0.90 * f * 0.012 + gauss() * 0.0045,  // TECH
+        0.0010 + 0.85 * f * 0.012 + gauss() * 0.0050,  // CLOUD
+        0.0016 + 0.40 * f * 0.020 + gauss() * 0.030,   // CRYPTO
+        0.0006 + 0.50 * f * 0.010 + gauss() * 0.011,   // ENERGY
+        0.0002 + gauss() * 0.006,                       // GOLD ~ independent
+        0.0003 - 0.30 * f * 0.004 + gauss() * 0.003    // BONDS mildly negative
+      ];
+      rets.forEach(function (r, i) { px[i].push(px[i][d - 1] * Math.exp(r)); });
+    }
+    var rows = ["date," + names.join(",")];
+    for (var d = 1; d <= n; d++) {
+      rows.push("D" + d + "," + px.map(function (p) { return p[d].toFixed(2); }).join(","));
+    }
+    return rows.join("\n");
+  }
+
+  /* ---- DOM wiring ---- */
+
+  (function () {
+    "use strict";
+    var $ = function (id) { return document.getElementById(id); };
+    var data = $("data"), errorBox = $("error"), result = $("result"),
+        matrixEl = $("matrix"), summaryEl = $("summary"), detailEl = $("detail");
+    var mode = "prices";
+    var modePrices = $("modePrices"), modeReturns = $("modeReturns");
+
+    function setMode(m) {
+      mode = m;
+      modePrices.classList.toggle("on", m === "prices");
+      modeReturns.classList.toggle("on", m === "returns");
+    }
+    modePrices.addEventListener("click", function () { setMode("prices"); });
+    modeReturns.addEventListener("click", function () { setMode("returns"); });
+
+    function fail(msg) {
+      errorBox.textContent = msg;
+      errorBox.classList.add("show");
+      result.classList.remove("show");
+    }
+
+    function compute() {
+      errorBox.classList.remove("show");
+      var parsed;
+      try {
+        parsed = parseTable(data.value);
+      } catch (e) { fail(e.message); return; }
+      var names = parsed.names, series = parsed.series;
+      var work = series;
+      try {
+        if (mode === "prices") work = series.map(toLogReturns);
+      } catch (e) { fail(e.message); return; }
+      var M = corrMatrix(work);
+      render(names, M, work[0].length);
+    }
+
+    function render(names, M, nObs) {
+      var n = names.length, html = "<thead><tr><th class='label'></th>";
+      names.forEach(function (nm) { html += "<th title='" + nm + "'>" + nm + "</th>"; });
+      html += "</tr></thead><tbody>";
+      names.forEach(function (rn, i) {
+        html += "<tr><td class='label'>" + rn + "</td>";
+        names.forEach(function (cn, j) {
+          var r = M[i][j], st = heatStyle(r);
+          var txt = isNaN(r) ? "n/a" : r.toFixed(2);
+          html += "<td class='cell' data-i='" + i + "' data-j='" + j + "' style='background:" + st.bg + ";color:" + st.fg + "' title='" + rn + " × " + cn + "'>" + txt + "</td>";
+        });
+        html += "</tr>";
+      });
+      html += "</tbody>";
+      matrixEl.innerHTML = html;
+      // summary: strongest positive / most negative off-diagonal pair
+      var best = { r: -2 }, worst = { r: 2 };
+      for (var i = 0; i < n; i++) for (var j = i + 1; j < n; j++) {
+        var r = M[i][j];
+        if (isNaN(r)) continue;
+        if (r > best.r) best = { r: r, a: names[i], b: names[j] };
+        if (r < worst.r) worst = { r: r, a: names[i], b: names[j] };
+      }
+      var s = nObs + " observations";
+      if (best.r > -2) s += " · strongest: <b>" + best.a + " × " + best.b + " = " + best.r.toFixed(2) + "</b>";
+      if (worst.r < 2) s += " · most negative: <span class='neg'>" + worst.a + " × " + worst.b + " = " + worst.r.toFixed(2) + "</span>";
+      summaryEl.innerHTML = s;
+      detailEl.textContent = "click any cell for the exact value";
+      result.classList.add("show");
+      matrixEl.querySelectorAll("td.cell").forEach(function (cell) {
+        cell.addEventListener("click", function () {
+          matrixEl.querySelectorAll("td.cell.sel").forEach(function (c) { c.classList.remove("sel"); });
+          cell.classList.add("sel");
+          var i = +cell.dataset.i, j = +cell.dataset.j, r = M[i][j];
+          detailEl.innerHTML = isNaN(r)
+            ? "<span class='pair'>" + names[i] + " × " + names[j] + "</span> · correlation undefined (constant series)"
+            : "<span class='pair'>" + names[i] + " × " + names[j] + "</span> · r = " + r.toFixed(4) + " · " + strengthLabel(r);
+        });
+      });
+    }
+
+    $("compute").addEventListener("click", compute);
+    $("sample").addEventListener("click", function () {
+      data.value = makeSample();
+      setMode("prices");
+      compute();
+    });
+    $("clear").addEventListener("click", function () {
+      data.value = "";
+      errorBox.classList.remove("show");
+      result.classList.remove("show");
+    });
+  })();
+  </script>
+</body>
+</html>

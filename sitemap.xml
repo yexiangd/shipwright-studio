@@ -31,6 +31,11 @@
     <priority>0.7</priority>
   </url>
   <url>
+    <loc>https://shipwright-studio.pages.dev/lab/correlation-heatmap/</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
     <loc>https://shipwright-studio.pages.dev/lab/decision-wheel/</loc>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
@@ -107,6 +112,11 @@
   </url>
   <url>
     <loc>https://shipwright-studio.pages.dev/lab/snake/</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://shipwright-studio.pages.dev/lab/stopwatch/</loc>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>

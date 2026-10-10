@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Stopwatch · Shipwright Studio</title>
+  <meta name="description" content="Stopwatch is a free online stopwatch with millisecond precision. Start, pause, lap, and compare splits — all in your browser, nothing to install." />
+  <link rel="canonical" href="https://shipwright-studio.pages.dev/lab/stopwatch/" />
+  <link rel="icon" type="image/svg+xml" href="../../favicon.svg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..700;1,9..144,300..700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "Stopwatch",
+    "description": "A free online stopwatch with millisecond precision. Time anything with start, pause, and lap splits; keyboard shortcuts included, all computed locally.",
+    "applicationCategory": "UtilitiesApplication",
+    "operatingSystem": "Web",
+    "offers": { "@type": "Offer", "price": "0" },
+    "author": { "@type": "Organization", "name": "Shipwright Studio", "url": "https://shipwright-studio.pages.dev/" }
+  }
+  </script>
+  <style>
+    :root {
+      --bg: #0a0c0f; --surface: #10141a; --text: #f2efe6; --muted: #a6abb4; --faint: #6d737c;
+      --accent: #d2a24c; --line: rgba(255,255,255,.09);
+      --font-display: "Fraunces", Georgia, serif;
+      --font-body: "Inter", -apple-system, "Segoe UI", sans-serif;
+      --font-mono: "JetBrains Mono", ui-monospace, monospace;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: var(--bg); color: var(--text); font-family: var(--font-body); min-height: 100vh; display: flex; flex-direction: column; }
+    .topbar { display: flex; justify-content: space-between; align-items: center; padding: 16px 22px; border-bottom: 1px solid var(--line); }
+    .topbar a { color: var(--muted); text-decoration: none; font-size: 14px; }
+    .topbar a:hover { color: var(--accent); }
+    .brand { font-family: var(--font-display); font-size: 17px; }
+    .brand em { color: var(--accent); font-style: italic; }
+    main { flex: 1; width: 100%; max-width: 720px; margin: 0 auto; padding: 44px 24px 60px; display: flex; flex-direction: column; gap: 26px; }
+    h1 { font-family: var(--font-display); font-weight: 500; font-size: clamp(30px, 5vw, 44px); letter-spacing: -.01em; }
+    h1 em { color: var(--accent); font-style: italic; }
+    .lede { color: var(--muted); max-width: 620px; line-height: 1.65; }
+    .stats { display: flex; gap: 38px; flex-wrap: wrap; }
+    .stat b { display: block; font-family: var(--font-mono); font-size: 26px; font-weight: 500; color: var(--accent); font-variant-numeric: tabular-nums; }
+    .stat span { font-family: var(--font-mono); font-size: 11px; letter-spacing: .18em; text-transform: uppercase; color: var(--muted); }
+    .stage { background: var(--surface); border: 1px solid var(--line); border-radius: 20px; padding: 40px 24px 32px; text-align: center; position: relative; overflow: hidden; }
+    .stage::before { content: ""; position: absolute; top: 0; left: 10%; right: 10%; height: 1px; background: linear-gradient(90deg, transparent, var(--accent), transparent); opacity: .7; }
+    .badge { display: inline-block; font-family: var(--font-mono); font-size: 11px; letter-spacing: .22em; text-transform: uppercase; color: var(--faint); border: 1px solid var(--line); border-radius: 999px; padding: 6px 14px; margin-bottom: 18px; }
+    .badge.running { color: #0a0c0f; background: var(--accent); border-color: var(--accent); animation: pulse 1.6s ease-in-out infinite; }
+    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: .55; } }
+    .display { font-family: var(--font-mono); font-weight: 500; font-size: clamp(52px, 13vw, 96px); letter-spacing: .01em; font-variant-numeric: tabular-nums; line-height: 1; }
+    .display small { font-size: .42em; color: var(--muted); }
+    .controls { display: flex; gap: 12px; justify-content: center; margin-top: 30px; flex-wrap: wrap; }
+    .btn { font-family: var(--font-mono); font-size: 14px; padding: 13px 30px; border-radius: 999px; border: 1px solid var(--accent); background: var(--accent); color: #0a0c0f; cursor: pointer; min-height: 48px; min-width: 120px; }
+    .btn:hover { filter: brightness(1.08); }
+    .btn.ghost { background: transparent; color: var(--accent); }
+    .btn.danger { background: transparent; color: #e0655f; border-color: #e0655f; }
+    .btn:disabled { opacity: .32; cursor: not-allowed; filter: none; }
+    .keys { margin-top: 18px; font-family: var(--font-mono); font-size: 12px; color: var(--faint); letter-spacing: .04em; }
+    .keys kbd { border: 1px solid var(--line); border-radius: 5px; padding: 2px 7px; color: var(--muted); }
+    .laps { background: var(--surface); border: 1px solid var(--line); border-radius: 20px; overflow: hidden; }
+    .laps header { padding: 16px 22px; font-family: var(--font-mono); font-size: 11px; letter-spacing: .18em; text-transform: uppercase; color: var(--muted); border-bottom: 1px solid var(--line); display: flex; justify-content: space-between; }
+    .laps .empty { padding: 28px; text-align: center; color: var(--faint); font-family: var(--font-mono); font-size: 13px; }
+    table { width: 100%; border-collapse: collapse; font-family: var(--font-mono); font-size: 14px; font-variant-numeric: tabular-nums; }
+    th { text-align: left; padding: 12px 22px; font-size: 11px; letter-spacing: .16em; text-transform: uppercase; color: var(--faint); font-weight: 500; border-bottom: 1px solid var(--line); }
+    td { padding: 11px 22px; border-bottom: 1px solid rgba(255,255,255,.045); color: var(--text); }
+    tr:last-child td { border-bottom: none; }
+    tr.best td.lap { color: var(--accent); font-weight: 600; }
+    tr.worst td.lap { color: #e0655f; }
+    .tag { display: inline-block; font-size: 10px; letter-spacing: .14em; text-transform: uppercase; border: 1px solid; border-radius: 999px; padding: 2px 9px; margin-left: 10px; vertical-align: 2px; }
+    tr.best .tag { color: var(--accent); border-color: var(--accent); }
+    tr.worst .tag { color: #e0655f; border-color: #e0655f; }
+    .delta.up { color: #e0655f; } .delta.down { color: #8fb573; } .delta.flat { color: var(--faint); }
+    .foot { color: var(--faint); font-size: 13px; max-width: 620px; line-height: 1.7; }
+    .foot a { color: var(--muted); }
+    @media (max-width: 520px) { th, td { padding-left: 14px; padding-right: 14px; } .controls { gap: 10px; } .btn { min-width: 104px; padding: 13px 20px; } }
+  </style>
+</head>
+<body>
+  <div class="topbar">
+    <a href="../../ideas/">&larr; The Lab</a>
+    <span class="brand">Shipwright <em>Studio</em></span>
+    <span></span>
+  </div>
+
+  <main>
+    <div>
+      <h1>Lap-perfect <em>timing.</em></h1>
+      <p class="lede">Stopwatch is a free online stopwatch with millisecond precision: start, pause, and tap Lap to record splits with deltas against your previous lap. Timing runs on a wall clock, so it never drifts — even in a background tab.</p>
+    </div>
+
+    <div class="stats">
+      <div class="stat"><b id="statTotal">00:00.000</b><span>total</span></div>
+      <div class="stat"><b id="statLaps">0</b><span>laps</span></div>
+      <div class="stat"><b id="statFast">–</b><span>fastest lap</span></div>
+      <div class="stat"><b id="statSlow">–</b><span>slowest lap</span></div>
+    </div>
+
+    <div class="stage">
+      <div class="badge" id="badge">ready</div>
+      <div class="display" id="display" aria-live="off">00<small>:</small>00<small>.</small>000</div>
+      <div class="controls">
+        <button class="btn" id="startBtn">Start</button>
+        <button class="btn ghost" id="lapBtn" disabled>Lap</button>
+        <button class="btn danger" id="resetBtn" disabled>Reset</button>
+      </div>
+      <p class="keys"><kbd>Space</kbd> start / pause &nbsp;·&nbsp; <kbd>L</kbd> lap &nbsp;·&nbsp; <kbd>R</kbd> reset</p>
+    </div>
+
+    <div class="laps">
+      <header><span>Laps</span><span id="lapCount">0</span></header>
+      <div class="empty" id="lapEmpty">No laps yet — press <kbd style="border:1px solid var(--line);border-radius:5px;padding:2px 7px">L</kbd> while running</div>
+      <div style="max-height: 340px; overflow-y: auto;" id="lapWrap" hidden>
+        <table aria-label="Lap times">
+          <thead><tr><th>#</th><th>Lap</th><th>Total</th><th>Δ prev</th></tr></thead>
+          <tbody id="lapBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <p class="foot">Elapsed time is derived from <span style="font-family:var(--font-mono)">performance.now()</span> on every animation frame — the display refreshes smoothly, but the time itself comes from the system clock, so backgrounding the tab never loses a millisecond. Laps live in this session only.<br>Built by <a href="https://shipwright-studio.pages.dev/">Shipwright Studio</a>.</p>
+  </main>
+
+  <script>
+  (function () {
+    "use strict";
+    var accumulated = 0;      // ms banked from finished run segments
+    var startAt = 0;          // performance.now() when the current segment started
+    var running = false;
+    var laps = [];            // [{lap: ms, total: ms}]
+    var raf = null;
+
+    var $ = function (id) { return document.getElementById(id); };
+    var display = $("display"), badge = $("badge"),
+        startBtn = $("startBtn"), lapBtn = $("lapBtn"), resetBtn = $("resetBtn");
+
+    function elapsed() {
+      return accumulated + (running ? performance.now() - startAt : 0);
+    }
+
+    function fmt(ms) {
+      ms = Math.max(0, Math.floor(ms));
+      var h = Math.floor(ms / 3600000), m = Math.floor(ms / 60000) % 60,
+          s = Math.floor(ms / 1000) % 60, x = ms % 1000;
+      function p(n, l) { return String(n).padStart(l, "0"); }
+      var core = p(m, 2) + ":" + p(s, 2) + "." + p(x, 3);
+      if (h > 0) core = h + ":" + core;
+      return core;
+    }
+
+    function renderClock() {
+      var parts = fmt(elapsed()).split(/(:|\.)/);
+      display.innerHTML = parts.map(function (t) {
+        return (t === ":" || t === ".") ? "<small>" + t + "</small>" : t;
+      }).join("");
+    }
+
+    function tick() {
+      renderClock();
+      if (running) raf = requestAnimationFrame(tick);
+    }
+
+    function refreshButtons() {
+      startBtn.textContent = running ? "Pause" : (accumulated > 0 || laps.length ? "Resume" : "Start");
+      lapBtn.disabled = !running;
+      resetBtn.disabled = !running && accumulated === 0 && laps.length === 0;
+      badge.textContent = running ? "running" : (accumulated > 0 ? "paused" : "ready");
+      badge.classList.toggle("running", running);
+    }
+
+    function start() {
+      if (running) { // pause
+        accumulated = elapsed();
+        running = false;
+        cancelAnimationFrame(raf);
+      } else {
+        startAt = performance.now();
+        running = true;
+        tick();
+      }
+      refreshButtons();
+    }
+
+    function lap() {
+      if (!running) return;
+      var total = elapsed();
+      var prevTotal = laps.length ? laps[laps.length - 1].total : 0;
+      laps.push({ lap: total - prevTotal, total: total });
+      renderLaps();
+    }
+
+    function reset() {
+      running = false;
+      cancelAnimationFrame(raf);
+      accumulated = 0; laps = [];
+      renderClock(); renderLaps(); refreshButtons();
+    }
+
+    function renderLaps() {
+      var body = $("lapBody"), empty = $("lapEmpty"), wrap = $("lapWrap");
+      $("lapCount").textContent = laps.length;
+      $("statLaps").textContent = laps.length;
+      if (!laps.length) {
+        empty.hidden = false; wrap.hidden = true;
+        $("statTotal").textContent = "00:00.000";
+        $("statFast").textContent = "–"; $("statSlow").textContent = "–";
+        return;
+      }
+      empty.hidden = true; wrap.hidden = false;
+      var times = laps.map(function (l) { return l.lap; });
+      var best = Math.min.apply(null, times), worst = Math.max.apply(null, times);
+      var rows = "";
+      for (var i = laps.length - 1; i >= 0; i--) {
+        var l = laps[i], prev = i > 0 ? laps[i - 1].lap : null;
+        var d = prev === null ? null : l.lap - prev;
+        var dCls = d === null ? "flat" : (d > 0 ? "up" : (d < 0 ? "down" : "flat"));
+        var dFmt = d === null ? "–" : (d > 0 ? "+" : d < 0 ? "−" : "") + fmt(Math.abs(d));
+        var cls = (laps.length > 1 && l.lap === best) ? "best" : (laps.length > 1 && l.lap === worst) ? "worst" : "";
+        var tag = cls === "best" ? '<span class="tag">best</span>' : (cls === "worst" ? '<span class="tag">slow</span>' : "");
+        rows += '<tr class="' + cls + '"><td>' + (i + 1) + '</td><td class="lap">' +
+          fmt(l.lap) + tag + '</td><td>' + fmt(l.total) + '</td><td class="delta ' + dCls + '">' + dFmt + "</td></tr>";
+      }
+      body.innerHTML = rows;
+      $("statTotal").textContent = fmt(laps[laps.length - 1].total);
+      $("statFast").textContent = fmt(best);
+      $("statSlow").textContent = fmt(worst);
+    }
+
+    startBtn.addEventListener("click", start);
+    lapBtn.addEventListener("click", lap);
+    resetBtn.addEventListener("click", reset);
+
+    document.addEventListener("keydown", function (e) {
+      var t = e.target;
+      if (t && (t.tagName === "INPUT" || t.tagName === "TEXTAREA" || t.isContentEditable)) return;
+      if (e.code === "Space") { e.preventDefault(); start(); }
+      else if (e.key === "l" || e.key === "L") { lap(); }
+      else if (e.key === "r" || e.key === "R") { reset(); }
+    });
+
+    renderClock(); renderLaps(); refreshButtons();
+  })();
+  </script>
+</body>
+</html>
