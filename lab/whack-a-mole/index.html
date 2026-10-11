@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Whack-a-Mole · Shipwright Studio</title>
+  <meta name="description" content="Whack-a-Mole is a free online reaction game: bonk moles for 60 seconds, chain combo multipliers, and catch golden moles worth five points." />
+  <link rel="canonical" href="https://shipwright-studio.pages.dev/lab/whack-a-mole/" />
+  <link rel="icon" type="image/svg+xml" href="../../favicon.svg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..700;1,9..144,300..700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "Whack-a-Mole",
+    "description": "A free online reaction game: bonk moles popping out of a 3x3 grid for 60 seconds, chain consecutive hits for a combo multiplier, and catch the rare golden mole worth five points.",
+    "applicationCategory": "GameApplication",
+    "operatingSystem": "Web",
+    "offers": { "@type": "Offer", "price": "0" },
+    "author": { "@type": "Organization", "name": "Shipwright Studio", "url": "https://shipwright-studio.pages.dev/" }
+  }
+  </script>
+  <style>
+    :root {
+      --bg: #0a0c0f; --surface: #10141a; --text: #f2efe6; --muted: #a6abb4; --faint: #6d737c;
+      --accent: #d2a24c; --line: rgba(255,255,255,.09);
+      --font-display: "Fraunces", Georgia, serif;
+      --font-body: "Inter", -apple-system, "Segoe UI", sans-serif;
+      --font-mono: "JetBrains Mono", ui-monospace, monospace;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: var(--bg); color: var(--text); font-family: var(--font-body); min-height: 100vh; display: flex; flex-direction: column; }
+    .topbar { display: flex; justify-content: space-between; align-items: center; padding: 16px 22px; border-bottom: 1px solid var(--line); }
+    .topbar a { color: var(--muted); text-decoration: none; font-size: 14px; }
+    .topbar a:hover { color: var(--accent); }
+    .brand { font-family: var(--font-display); font-size: 17px; }
+    .brand em { color: var(--accent); font-style: italic; }
+    main { flex: 1; width: 100%; max-width: 720px; margin: 0 auto; padding: 44px 24px 60px; display: flex; flex-direction: column; gap: 26px; }
+    h1 { font-family: var(--font-display); font-weight: 500; font-size: clamp(30px, 5vw, 44px); letter-spacing: -.01em; }
+    h1 em { color: var(--accent); font-style: italic; }
+    .lede { color: var(--muted); max-width: 620px; line-height: 1.65; }
+    .stats { display: flex; gap: 38px; flex-wrap: wrap; align-items: center; }
+    .stat b { display: block; font-family: var(--font-mono); font-size: 26px; font-weight: 500; color: var(--accent); font-variant-numeric: tabular-nums; }
+    .stat span { font-family: var(--font-mono); font-size: 11px; letter-spacing: .18em; text-transform: uppercase; color: var(--muted); }
+    .timerbar { height: 3px; background: rgba(255,255,255,.07); border-radius: 999px; overflow: hidden; }
+    .timerbar i { display: block; height: 100%; width: 100%; background: var(--accent); transition: width .2s linear; }
+    .boardwrap { background: var(--surface); border: 1px solid var(--line); border-radius: 20px; padding: 34px 24px 30px; position: relative; overflow: hidden; user-select: none; -webkit-user-select: none; }
+    .boardwrap::before { content: ""; position: absolute; top: 0; left: 10%; right: 10%; height: 1px; background: linear-gradient(90deg, transparent, var(--accent), transparent); opacity: .7; }
+    .combo { text-align: center; margin-bottom: 14px; min-height: 30px; }
+    .combo b { font-family: var(--font-mono); font-size: 15px; font-weight: 600; letter-spacing: .12em; color: var(--faint); border: 1px solid var(--line); border-radius: 999px; padding: 6px 16px; }
+    .combo b.hot { color: #0a0c0f; background: var(--accent); border-color: var(--accent); }
+    .board { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; max-width: 560px; margin: 0 auto; touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
+    .cell { position: relative; aspect-ratio: 1; }
+    .hole { position: absolute; left: 8%; right: 8%; bottom: 4%; height: 32%; background: #04060a; border-radius: 50%; box-shadow: inset 0 8px 16px rgba(0,0,0,.9), 0 1px 0 rgba(255,255,255,.06); }
+    .mole { position: absolute; left: 50%; bottom: 12%; width: 58%; aspect-ratio: .88; transform: translate(-50%, 130%); transition: transform .16s ease-out; cursor: pointer; }
+    .mole.up { transform: translate(-50%, 0); }
+    .mole.bonked { transform: translate(-50%, 6%) scale(1.18, .72) rotate(-10deg); transition: transform .09s ease-in; }
+    .mole .body { position: absolute; inset: 0; border-radius: 48% 48% 42% 42%; background: radial-gradient(circle at 35% 30%, #c99a63 0%, #9c6f42 55%, #6e4a2b 100%); box-shadow: inset 0 -8px 14px rgba(0,0,0,.35); }
+    .mole .body::before, .mole .body::after { content: ""; position: absolute; top: -9%; width: 24%; aspect-ratio: 1; border-radius: 50%; background: #6e4a2b; }
+    .mole .body::before { left: 4%; } .mole .body::after { right: 4%; }
+    .mole.golden .body { background: radial-gradient(circle at 35% 30%, #f3d98a 0%, #d2a24c 55%, #9a6f22 100%); box-shadow: inset 0 -8px 14px rgba(0,0,0,.25), 0 0 22px rgba(210,162,76,.55); }
+    .mole.golden .body::before, .mole.golden .body::after { background: #9a6f22; }
+    .mole .eye { position: absolute; top: 30%; width: 12%; aspect-ratio: .72; border-radius: 50%; background: #1c1208; }
+    .mole .eye.l { left: 26%; } .mole .eye.r { right: 26%; }
+    .mole .snout { position: absolute; left: 50%; top: 52%; width: 44%; aspect-ratio: 1.4; transform: translateX(-50%); border-radius: 50%; background: #d9b78c; }
+    .mole.golden .snout { background: #f6e3ac; }
+    .mole .nose { position: absolute; left: 50%; top: 26%; width: 34%; aspect-ratio: 1.1; transform: translateX(-50%); border-radius: 50%; background: var(--accent); box-shadow: 0 0 6px rgba(210,162,76,.7); }
+    .pop { position: absolute; left: 50%; top: 8%; transform: translateX(-50%); font-family: var(--font-mono); font-weight: 600; font-size: 20px; color: var(--text); pointer-events: none; animation: float .6s ease-out forwards; }
+    .pop.gold { color: var(--accent); }
+    @keyframes float { to { transform: translate(-50%, -34px); opacity: 0; } }
+    .overlay { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px; background: rgba(10,12,15,.88); backdrop-filter: blur(3px); text-align: center; padding: 24px; z-index: 5; }
+    .overlay[hidden] { display: none; }
+    .overlay h2 { font-family: var(--font-display); font-weight: 500; font-size: clamp(26px, 5vw, 38px); }
+    .overlay h2 em { color: var(--accent); font-style: italic; }
+    .overlay p { color: var(--muted); font-size: 14px; line-height: 1.7; max-width: 420px; }
+    .overlay .big { font-family: var(--font-display); font-size: clamp(64px, 16vw, 110px); color: var(--accent); line-height: 1; }
+    .score-final { font-family: var(--font-mono); font-size: 22px; color: var(--text); }
+    .score-final b { color: var(--accent); font-size: 34px; }
+    .newbest { font-family: var(--font-mono); font-size: 13px; letter-spacing: .2em; text-transform: uppercase; color: #0a0c0f; background: var(--accent); border-radius: 999px; padding: 7px 18px; animation: pulse 1.2s ease-in-out infinite; }
+    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: .55; } }
+    .btn { font-family: var(--font-mono); font-size: 14px; padding: 13px 34px; border-radius: 999px; border: 1px solid var(--accent); background: var(--accent); color: #0a0c0f; cursor: pointer; min-height: 48px; min-width: 140px; }
+    .btn:hover { filter: brightness(1.08); }
+    .btn.ghost { background: transparent; color: var(--accent); }
+    .toolbar { display: flex; justify-content: space-between; align-items: center; }
+    .mutebtn { font-family: var(--font-mono); font-size: 12px; letter-spacing: .08em; color: var(--muted); background: transparent; border: 1px solid var(--line); border-radius: 999px; padding: 8px 16px; cursor: pointer; }
+    .mutebtn:hover { color: var(--accent); border-color: var(--accent); }
+    .foot { color: var(--faint); font-size: 13px; max-width: 620px; line-height: 1.7; }
+    .foot a { color: var(--muted); }
+    #hammer { position: fixed; left: 0; top: 0; width: 64px; height: 64px; margin: -14px 0 0 -14px; pointer-events: none; z-index: 50; display: none; transform-origin: 20% 80%; }
+    #hammer.swing { animation: swing .14s ease-in; }
+    @keyframes swing { 0% { transform: rotate(0); } 45% { transform: rotate(-52deg); } 100% { transform: rotate(0); } }
+    @media (pointer: fine) {
+      .board.active, .board.active .mole { cursor: none; }
+    }
+    @media (max-width: 520px) { .board { gap: 10px; } .boardwrap { padding: 24px 14px 20px; } .stats { gap: 24px; } }
+  </style>
+</head>
+<body>
+  <div class="topbar">
+    <a href="../../ideas/">&larr; The Lab</a>
+    <span class="brand">Shipwright <em>Studio</em></span>
+    <span></span>
+  </div>
+
+  <main>
+    <div>
+      <h1>Bonk <em>everything.</em></h1>
+      <p class="lede">Whack-a-Mole is a free online game that tests your reaction speed: moles pop out of a 3&times;3 grid for sixty seconds and you bonk them with a hammer cursor. Chain consecutive hits for a combo multiplier, and keep an eye out for the rare golden mole worth five points.</p>
+    </div>
+
+    <div>
+      <div class="stats">
+        <div class="stat"><b id="statScore">0</b><span>score</span></div>
+        <div class="stat"><b id="statTime">1:00</b><span>time</span></div>
+        <div class="stat"><b id="statBest">0</b><span>best</span></div>
+      </div>
+      <div class="timerbar" style="margin-top:12px"><i id="timerFill"></i></div>
+    </div>
+
+    <div class="toolbar">
+      <span style="font-family:var(--font-mono);font-size:12px;color:var(--faint);letter-spacing:.08em">60-SECOND ROUND</span>
+      <button class="mutebtn" id="muteBtn" aria-label="Toggle sound">sound: on</button>
+    </div>
+
+    <div class="boardwrap">
+      <div class="combo"><b id="comboBadge">&times;1</b></div>
+      <div class="board" id="board" role="application" aria-label="Whack-a-Mole board"></div>
+
+      <div class="overlay" id="startOverlay">
+        <h2>Sixty seconds. <em>Nine holes.</em></h2>
+        <p>Bonk every mole you can &mdash; misses reset your combo. Three straight hits unlocks &times;2, six straight unlocks &times;3. A golden mole is worth five base points.</p>
+        <button class="btn" id="playBtn">Play</button>
+      </div>
+
+      <div class="overlay" id="countOverlay" hidden>
+        <div class="big" id="countNum">3</div>
+      </div>
+
+      <div class="overlay" id="pauseOverlay" hidden>
+        <h2><em>Paused.</em></h2>
+        <p>The timer is frozen. Tap resume to keep bonking.</p>
+        <button class="btn" id="resumeBtn">Resume</button>
+      </div>
+
+      <div class="overlay" id="overOverlay" hidden>
+        <div class="newbest" id="newBest" hidden>New best!</div>
+        <h2>Time&rsquo;s <em>up.</em></h2>
+        <div class="score-final">You scored <b id="finalScore">0</b></div>
+        <p>Best score: <span id="finalBest" style="font-family:var(--font-mono);color:var(--accent)">0</span></p>
+        <button class="btn" id="againBtn">Play again</button>
+      </div>
+    </div>
+
+    <p class="foot">Combos reward clean streaks: every third and sixth consecutive hit raises your multiplier to &times;2 and &times;3, and any miss drops it back to &times;1. Your best score is saved on this device only.<br>Built by <a href="https://shipwright-studio.pages.dev/">Shipwright Studio</a> &middot; <a href="../../ideas/">back to the Lab</a></p>
+  </main>
+
+  <div id="hammer" aria-hidden="true">
+    <svg viewBox="0 0 64 64" width="64" height="64">
+      <rect x="27" y="18" width="9" height="40" rx="4" transform="rotate(38 31 38)" fill="#8a5f3c" />
+      <rect x="8" y="2" width="40" height="20" rx="6" transform="rotate(38 28 12)" fill="#d2a24c" />
+      <rect x="8" y="2" width="40" height="7" rx="3.5" transform="rotate(38 28 12)" fill="#e8c578" opacity=".55" />
+    </svg>
+  </div>
+
+  <script>
+  (function () {
+    "use strict";
+
+    // ==PURE-LOGIC-START==
+    var WAM = {
+      spawnIntervalMs: function (elapsedSec) {
+        // 1050ms at t=0, shrinking 11ms per second; strictly decreasing over the round
+        return Math.max(380, 1050 - 11 * elapsedSec);
+      },
+      moleUpMs: function (elapsedSec) {
+        // how long a mole stays visible; shortens as the round heats up
+        return Math.max(450, 800 - 5 * elapsedSec);
+      },
+      multiplierForStreak: function (streak) {
+        // consecutive hits so far: 1-2 -> x1, 3-5 -> x2, 6+ -> x3
+        return streak >= 6 ? 3 : streak >= 3 ? 2 : 1;
+      },
+      basePoints: function (isGolden) { return isGolden ? 5 : 1; },
+      pointsForHit: function (isGolden, streakAfterHit) {
+        return WAM.basePoints(isGolden) * WAM.multiplierForStreak(streakAfterHit);
+      },
+      isGoldenSpawn: function (roll) { return roll < 1 / 12; },
+      createRound: function () {
+        var s = { streak: 0, score: 0, hits: 0, misses: 0 };
+        return {
+          state: s,
+          hit: function (isGolden) {
+            s.streak += 1; s.hits += 1;
+            s.score += WAM.pointsForHit(isGolden, s.streak);
+            return s.score;
+          },
+          miss: function () { s.streak = 0; s.misses += 1; },
+          multiplier: function () { return WAM.multiplierForStreak(s.streak); }
+        };
+      }
+    };
+    // ==PURE-LOGIC-END==
+
+    var ROUND_MS = 60000;
+    var HOLES = 9;
+    var BEST_KEY = "whack-a-mole-best";
+    var SOUND_KEY = "whack-a-mole-sound";
+
+    var $ = function (id) { return document.getElementById(id); };
+    var board = $("board"), statScore = $("statScore"), statTime = $("statTime"),
+        statBest = $("statBest"), timerFill = $("timerFill"), comboBadge = $("comboBadge"),
+        startOverlay = $("startOverlay"), countOverlay = $("countOverlay"),
+        pauseOverlay = $("pauseOverlay"), overOverlay = $("overOverlay"),
+        hammer = $("hammer"), muteBtn = $("muteBtn");
+
+    var mode = "idle";        // idle | count | play | pause | over
+    var round = null;
+    var endAt = 0, raf = null, spawnTimer = null;
+    var moleTimers = [];
+    var finePointer = window.matchMedia("(pointer: fine)").matches;
+
+    // ---- sound (WebAudio blips, no files) ----
+    var actx = null;
+    var soundOn = (function () {
+      try { return localStorage.getItem(SOUND_KEY) !== "off"; } catch (e) { return true; }
+    })();
+    function tone(f0, f1, dur, type, when) {
+      if (!soundOn) return;
+      try {
+        actx = actx || new (window.AudioContext || window.webkitAudioContext)();
+        if (actx.state === "suspended") actx.resume();
+        var t = actx.currentTime + (when || 0);
+        var o = actx.createOscillator(), g = actx.createGain();
+        o.type = type || "sine";
+        o.frequency.setValueAtTime(f0, t);
+        o.frequency.exponentialRampToValueAtTime(Math.max(1, f1), t + dur);
+        g.gain.setValueAtTime(0.16, t);
+        g.gain.exponentialRampToValueAtTime(0.001, t + dur);
+        o.connect(g); g.connect(actx.destination);
+        o.start(t); o.stop(t + dur + 0.02);
+      } catch (e) { /* audio unavailable: stay silent */ }
+    }
+    function sfx(name) {
+      if (name === "pop") tone(480, 720, 0.07, "sine");
+      else if (name === "bonk") tone(220, 80, 0.09, "triangle");
+      else if (name === "gold") { tone(880, 880, 0.08, "sine"); tone(1320, 1320, 0.12, "sine", 0.08); }
+      else if (name === "count") tone(660, 660, 0.08, "sine");
+      else if (name === "go") tone(990, 990, 0.16, "sine");
+      else if (name === "miss") tone(160, 110, 0.06, "square");
+    }
+    function refreshMute() { muteBtn.textContent = "sound: " + (soundOn ? "on" : "off"); }
+    muteBtn.addEventListener("click", function () {
+      soundOn = !soundOn;
+      try { localStorage.setItem(SOUND_KEY, soundOn ? "on" : "off"); } catch (e) {}
+      refreshMute();
+      if (soundOn) sfx("pop");
+    });
+    refreshMute();
+
+    // ---- board construction (CSS moles, no images) ----
+    var cells = [];
+    for (var i = 0; i < HOLES; i++) {
+      (function () {
+        var cell = document.createElement("div");
+        cell.className = "cell";
+        cell.innerHTML = '<div class="hole"></div><div class="mole" aria-hidden="true">' +
+          '<div class="body"><span class="eye l"></span><span class="eye r"></span>' +
+          '<span class="snout"><span class="nose"></span></span></div></div>';
+        var mole = cell.firstChild.nextSibling;
+        cell.addEventListener("pointerdown", function (ev) { bonkAttempt(cell, mole, ev); });
+        board.appendChild(cell);
+        cells.push({ cell: cell, mole: mole, up: false, bonked: false, golden: false });
+      })();
+    }
+
+    function showOverlay(which) {
+      startOverlay.hidden = which !== "start";
+      countOverlay.hidden = which !== "count";
+      pauseOverlay.hidden = which !== "pause";
+      overOverlay.hidden = which !== "over";
+      board.classList.toggle("active", which === "count" || mode === "play");
+    }
+
+    function best() {
+      try { return parseInt(localStorage.getItem(BEST_KEY) || "0", 10) || 0; } catch (e) { return 0; }
+    }
+    function saveBest(v) {
+      try { localStorage.setItem(BEST_KEY, String(v)); } catch (e) {}
+    }
+
+    function renderHud(remainingMs) {
+      statScore.textContent = round ? round.state.score : 0;
+      var s = Math.max(0, Math.ceil(remainingMs / 1000));
+      statTime.textContent = Math.floor(s / 60) + ":" + String(s % 60).padStart(2, "0");
+      statBest.textContent = best();
+      timerFill.style.width = (100 * remainingMs / ROUND_MS) + "%";
+      var m = round ? round.multiplier() : 1;
+      comboBadge.textContent = "\u00D7" + m;
+      comboBadge.classList.toggle("hot", m >= 2);
+    }
+
+    // ---- countdown ----
+    function startRound() {
+      round = WAM.createRound();
+      mode = "count";
+      showOverlay("count");
+      renderHud(ROUND_MS);
+      var steps = ["3", "2", "1", "GO!"], n = 0;
+      $("countNum").textContent = steps[0];
+      sfx("count");
+      var iv = setInterval(function () {
+        n++;
+        if (n >= steps.length) {
+          clearInterval(iv);
+          beginPlay();
+          return;
+        }
+        $("countNum").textContent = steps[n];
+        sfx(n === 3 ? "go" : "count");
+      }, 650);
+    }
+
+    // ---- gameplay ----
+    function beginPlay() {
+      mode = "play";
+      showOverlay(null);
+      endAt = performance.now() + ROUND_MS;
+      scheduleSpawn(0);
+      (function tick() {
+        if (mode !== "play") return;
+        var remaining = endAt - performance.now();
+        if (remaining <= 0) { endRound(); return; }
+        renderHud(remaining);
+        raf = requestAnimationFrame(tick);
+      })();
+    }
+
+    function elapsedSec() {
+      return Math.min(60, Math.max(0, (ROUND_MS - (endAt - performance.now())) / 1000));
+    }
+
+    function scheduleSpawn(delayMs) {
+      clearTimeout(spawnTimer);
+      spawnTimer = setTimeout(function () {
+        if (mode !== "play") return;
+        spawnMole();
+        scheduleSpawn(WAM.spawnIntervalMs(elapsedSec()));
+      }, delayMs);
+    }
+
+    function spawnMole() {
+      var free = cells.filter(function (c) { return !c.up; });
+      if (!free.length) return;
+      var c = free[Math.floor(Math.random() * free.length)];
+      c.up = true; c.bonked = false;
+      c.golden = WAM.isGoldenSpawn(Math.random());
+      c.mole.classList.toggle("golden", c.golden);
+      c.mole.classList.remove("bonked");
+      // force reflow so the pop transition replays
+      void c.mole.offsetWidth;
+      c.mole.classList.add("up");
+      sfx("pop");
+      var t = setTimeout(function () { retractMole(c); }, WAM.moleUpMs(elapsedSec()));
+      moleTimers.push(t);
+    }
+
+    function retractMole(c) {
+      c.up = false;
+      c.mole.classList.remove("up");
+    }
+
+    function bonkAttempt(cell, mole, ev) {
+      if (mode !== "play") return;
+      hammerSwing(ev);
+      if (cell._c.up && !cell._c.bonked) {
+        cell._c.bonked = true;
+        var gained = round.hit(cell._c.golden);
+        mole.classList.add("bonked");
+        sfx(cell._c.golden ? "gold" : "bonk");
+        floatText(cell, "+" + WAM.pointsForHit(cell._c.golden, round.state.streak), cell._c.golden);
+        setTimeout(function () { retractMole(cell._c); }, 170);
+      } else {
+        round.miss();
+        sfx("miss");
+      }
+      renderHud(endAt - performance.now());
+    }
+
+    function floatText(cell, text, gold) {
+      var el = document.createElement("div");
+      el.className = "pop" + (gold ? " gold" : "");
+      el.textContent = text;
+      cell.appendChild(el);
+      setTimeout(function () { el.remove(); }, 620);
+    }
+
+    // link DOM cells to their state objects
+    cells.forEach(function (c) { c.cell._c = c; });
+
+    function endRound() {
+      mode = "over";
+      clearTimeout(spawnTimer);
+      cancelAnimationFrame(raf);
+      moleTimers.forEach(clearTimeout);
+      moleTimers = [];
+      cells.forEach(retractMole);
+      var score = round.state.score, b = best(), isBest = score > b;
+      if (isBest) saveBest(score);
+      $("finalScore").textContent = score;
+      $("finalBest").textContent = Math.max(score, b);
+      $("newBest").hidden = !isBest;
+      showOverlay("over");
+      renderHud(0);
+    }
+
+    // ---- auto-pause on tab blur ----
+    document.addEventListener("visibilitychange", function () {
+      if (document.hidden && mode === "play") {
+        var remaining = Math.max(0, endAt - performance.now());
+        clearTimeout(spawnTimer);
+        cancelAnimationFrame(raf);
+        moleTimers.forEach(clearTimeout);
+        moleTimers = [];
+        cells.forEach(retractMole);
+        mode = "pause";
+        window._pausedRemaining = remaining;
+        showOverlay("pause");
+      }
+    });
+    function resume() {
+      if (mode !== "pause") return;
+      mode = "play";
+      endAt = performance.now() + window._pausedRemaining;
+      showOverlay(null);
+      scheduleSpawn(300);
+      (function tick() {
+        if (mode !== "play") return;
+        var remaining = endAt - performance.now();
+        if (remaining <= 0) { endRound(); return; }
+        renderHud(remaining);
+        raf = requestAnimationFrame(tick);
+      })();
+    }
+
+    // ---- hammer cursor (desktop) / tap mallet (touch) ----
+    function hammerSwing(ev) {
+      if (finePointer && ev && ev.pointerType !== "touch") {
+        hammer.classList.remove("swing");
+        void hammer.offsetWidth;
+        hammer.classList.add("swing");
+      } else if (ev && ev.clientX != null) {
+        hammer.style.display = "block";
+        hammer.style.left = ev.clientX + "px";
+        hammer.style.top = ev.clientY + "px";
+        hammer.classList.remove("swing");
+        void hammer.offsetWidth;
+        hammer.classList.add("swing");
+        clearTimeout(hammer._hide);
+        hammer._hide = setTimeout(function () { hammer.style.display = "none"; }, 320);
+      }
+    }
+    if (finePointer) {
+      document.addEventListener("pointermove", function (ev) {
+        if (mode !== "play") { hammer.style.display = "none"; return; }
+        hammer.style.display = "block";
+        hammer.style.left = ev.clientX + "px";
+        hammer.style.top = ev.clientY + "px";
+      }, { passive: true });
+    }
+
+    $("playBtn").addEventListener("click", startRound);
+    $("againBtn").addEventListener("click", startRound);
+    $("resumeBtn").addEventListener("click", resume);
+
+    renderHud(ROUND_MS);
+    showOverlay("start");
+  })();
+  </script>
+</body>
+</html>
