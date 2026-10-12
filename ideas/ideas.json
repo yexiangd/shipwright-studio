@@ -1,5 +1,5 @@
 {
-  "updated": "2026-10-11",
+  "updated": "2026-10-12",
   "ideas": [
     {
       "id": "idea-000a",
@@ -153,7 +153,9 @@
       "tagline": "Click the targets, track your precision over time.",
       "priority": 84,
       "effort": "S",
-      "status": "todo"
+      "status": "done",
+      "url": "/lab/aim-trainer/",
+      "shipped": "2026-10-12"
     },
     {
       "id": "idea-012",
@@ -425,7 +427,9 @@
       "tagline": "Paste a cron expression, read it in plain English.",
       "priority": 84,
       "effort": "S",
-      "status": "todo"
+      "status": "done",
+      "url": "/lab/cron-parser/",
+      "shipped": "2026-10-12"
     },
     {
       "id": "idea-038",

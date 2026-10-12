@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Aim Trainer · Shipwright Studio</title>
+  <meta name="description" content="Aim Trainer is a free online reflex trainer: click targets for 30 seconds and get your hits, accuracy, and average reaction time, with a precision-over-time chart." />
+  <link rel="canonical" href="https://shipwright-studio.pages.dev/lab/aim-trainer/" />
+  <link rel="icon" type="image/svg+xml" href="../../favicon.svg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..700;1,9..144,300..700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "Aim Trainer",
+    "description": "Aim Trainer is a free online reflex and precision trainer: click randomly spawning targets for 30 seconds, then review hits, accuracy, average reaction time, and a precision-over-time chart.",
+    "applicationCategory": "GameApplication",
+    "operatingSystem": "Web",
+    "offers": { "@type": "Offer", "price": "0" },
+    "author": { "@type": "Organization", "name": "Shipwright Studio", "url": "https://shipwright-studio.pages.dev/" }
+  }
+  </script>
+  <style>
+    :root {
+      --bg: #0a0c0f; --surface: #10141a; --text: #f2efe6; --muted: #a6abb4; --faint: #6d737c;
+      --accent: #d2a24c; --line: rgba(255,255,255,.09);
+      --font-display: "Fraunces", Georgia, serif;
+      --font-body: "Inter", -apple-system, "Segoe UI", sans-serif;
+      --font-mono: "JetBrains Mono", ui-monospace, monospace;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: var(--bg); color: var(--text); font-family: var(--font-body); min-height: 100vh; display: flex; flex-direction: column; }
+    .topbar { display: flex; justify-content: space-between; align-items: center; padding: 16px 22px; border-bottom: 1px solid var(--line); }
+    .topbar a { color: var(--muted); text-decoration: none; font-size: 14px; }
+    .topbar a:hover { color: var(--accent); }
+    .brand { font-family: var(--font-display); font-size: 17px; }
+    .brand em { color: var(--accent); font-style: italic; }
+    main { flex: 1; width: 100%; max-width: 720px; margin: 0 auto; padding: 44px 24px 60px; display: flex; flex-direction: column; gap: 24px; }
+    h1 { font-family: var(--font-display); font-weight: 500; font-size: clamp(30px, 5vw, 44px); letter-spacing: -.01em; }
+    h1 em { color: var(--accent); font-style: italic; }
+    .lede { color: var(--muted); max-width: 620px; line-height: 1.65; }
+    .lede strong { color: var(--text); font-weight: 600; }
+    .stats { display: flex; gap: 38px; flex-wrap: wrap; }
+    .stat b { display: block; font-family: var(--font-mono); font-size: 26px; font-weight: 500; color: var(--accent); font-variant-numeric: tabular-nums; }
+    .stat span { font-family: var(--font-mono); font-size: 11px; letter-spacing: .18em; text-transform: uppercase; color: var(--muted); }
+    .timerbar { height: 3px; background: rgba(255,255,255,.07); border-radius: 999px; overflow: hidden; }
+    .timerbar i { display: block; height: 100%; width: 100%; background: var(--accent); transition: width .1s linear; }
+    .arenawrap { background: var(--surface); border: 1px solid var(--line); border-radius: 20px; position: relative; overflow: hidden; user-select: none; -webkit-user-select: none; }
+    .arenawrap::before { content: ""; position: absolute; top: 0; left: 10%; right: 10%; height: 1px; background: linear-gradient(90deg, transparent, var(--accent), transparent); opacity: .7; }
+    #arena { position: relative; height: 420px; cursor: crosshair; touch-action: manipulation; -webkit-tap-highlight-color: transparent; overflow: hidden; }
+    @media (max-width: 560px) { #arena { height: 340px; } }
+    .target { position: absolute; border-radius: 50%; cursor: crosshair;
+      background: radial-gradient(circle at 35% 30%, #f0d18b 0%, var(--accent) 55%, #8a6220 100%);
+      box-shadow: 0 0 0 4px rgba(210,162,76,.18), 0 0 18px rgba(210,162,76,.35);
+      animation: pop .14s ease-out; }
+    .target::after { content: ""; position: absolute; inset: 28%; border-radius: 50%; background: rgba(10,12,15,.35); }
+    @keyframes pop { from { transform: scale(.4); } to { transform: scale(1); } }
+    .ripple { position: absolute; border-radius: 50%; border: 2px solid rgba(255,90,90,.7); animation: rip .4s ease-out forwards; pointer-events: none; }
+    @keyframes rip { to { transform: scale(2.4); opacity: 0; } }
+    .overlay { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px; background: rgba(10,12,15,.9); backdrop-filter: blur(3px); text-align: center; padding: 24px; z-index: 5; }
+    .overlay[hidden] { display: none; }
+    .overlay h2 { font-family: var(--font-display); font-weight: 500; font-size: clamp(26px, 5vw, 36px); }
+    .overlay h2 em { color: var(--accent); font-style: italic; }
+    .overlay p { color: var(--muted); line-height: 1.6; max-width: 380px; }
+    .btn { font-family: var(--font-body); font-size: 15px; font-weight: 600; color: #0a0c0f; background: var(--accent); border: none; border-radius: 999px; padding: 13px 34px; cursor: pointer; }
+    .btn:hover { filter: brightness(1.08); }
+    .bestline { font-family: var(--font-mono); font-size: 12px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
+    .bestline b { color: var(--accent); }
+    .newbest { font-family: var(--font-mono); font-size: 13px; letter-spacing: .14em; color: #0a0c0f; background: var(--accent); border-radius: 999px; padding: 5px 16px; text-transform: uppercase; }
+    .report { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; width: 100%; max-width: 440px; text-align: left; }
+    .report .card { background: var(--bg); border: 1px solid var(--line); border-radius: 12px; padding: 12px 16px; }
+    .report .card b { display: block; font-family: var(--font-mono); font-size: 20px; color: var(--accent); font-variant-numeric: tabular-nums; }
+    .report .card span { font-size: 12px; color: var(--muted); }
+    .chartcard { background: var(--surface); border: 1px solid var(--line); border-radius: 20px; padding: 24px; }
+    .chartcard h3 { font-family: var(--font-display); font-weight: 500; font-size: 20px; margin-bottom: 6px; }
+    .chartcard p { color: var(--muted); font-size: 13px; margin-bottom: 14px; }
+    #chart { width: 100%; height: 180px; display: block; }
+    .legend { display: flex; gap: 18px; margin-top: 10px; font-size: 12px; color: var(--muted); }
+    .legend i { display: inline-block; width: 18px; height: 3px; border-radius: 2px; vertical-align: middle; margin-right: 6px; }
+    .note { color: var(--faint); font-size: 13px; line-height: 1.7; }
+  </style>
+</head>
+<body>
+  <div class="topbar">
+    <a href="../../">← Shipwright Studio</a>
+    <a href="../../ideas/">Lab ideas</a>
+  </div>
+  <main>
+    <h1>Aim <em>Trainer</em></h1>
+    <p class="lede"><strong>Aim Trainer is a free online reflex trainer.</strong> Click the targets as fast as you can for 30 seconds, then review your hits, accuracy, and average reaction time on a precision-over-time chart. Every run happens right in your browser — no account, no download.</p>
+
+    <div class="stats">
+      <div class="stat"><b id="stTime">30.0</b><span>seconds</span></div>
+      <div class="stat"><b id="stHits">0</b><span>hits</span></div>
+      <div class="stat"><b id="stAcc">—</b><span>accuracy</span></div>
+      <div class="stat"><b id="stAvg">—</b><span>avg reaction</span></div>
+    </div>
+    <div class="timerbar"><i id="tbar"></i></div>
+
+    <div class="arenawrap">
+      <div id="arena" aria-label="Target arena"></div>
+      <div class="overlay" id="ovStart">
+        <h2>Test your <em>reflexes</em></h2>
+        <p>Thirty seconds. One target at a time. Misses count against you, and targets shrink as you warm up.</p>
+        <div class="bestline">Personal best: <b id="bestLine">—</b></div>
+        <button class="btn" id="btnStart">Start round</button>
+      </div>
+      <div class="overlay" id="ovEnd" hidden>
+        <h2>Time's <em>up</em></h2>
+        <div class="newbest" id="newBest" hidden>New best!</div>
+        <div class="report">
+          <div class="card"><b id="rHits">0</b><span>hits</span></div>
+          <div class="card"><b id="rAcc">0%</b><span>accuracy</span></div>
+          <div class="card"><b id="rAvg">0 ms</b><span>avg reaction</span></div>
+          <div class="card"><b id="rFast">0 ms</b><span>fastest hit</span></div>
+        </div>
+        <button class="btn" id="btnAgain">Play again</button>
+      </div>
+    </div>
+
+    <div class="chartcard" id="chartCard" hidden>
+      <h3>Precision over time</h3>
+      <p>Each dot is one hit's reaction time. The line tracks your rolling 5-hit average — trending down means you're warming up.</p>
+      <canvas id="chart"></canvas>
+      <div class="legend">
+        <span><i style="background:#d2a24c"></i>hit reaction (ms)</span>
+        <span><i style="background:#f2efe6"></i>rolling average</span>
+      </div>
+    </div>
+
+    <p class="note">Tip: your score is a function of speed <em>and</em> discipline — wild clicking tanks your accuracy. Best scores are stored on this device only.</p>
+  </main>
+
+  <script>
+  (function () {
+    "use strict";
+    var ROUND_MS = 30000;
+    var arena = document.getElementById('arena');
+    var ovStart = document.getElementById('ovStart');
+    var ovEnd = document.getElementById('ovEnd');
+    var stTime = document.getElementById('stTime'), stHits = document.getElementById('stHits'),
+        stAcc = document.getElementById('stAcc'), stAvg = document.getElementById('stAvg'),
+        tbar = document.getElementById('tbar');
+    var best = 0;
+    try { best = parseInt(localStorage.getItem('aim-trainer-best') || '0', 10) || 0; } catch (e) {}
+    var bestLine = document.getElementById('bestLine');
+    bestLine.textContent = best > 0 ? best + ' hits' : '—';
+
+    var playing = false, timerId = null, rafId = null;
+    var startAt = 0, hits = 0, misses = 0, reactions = [], born = 0, targetEl = null;
+
+    function avg(a) { return a.length ? a.reduce(function (s, x) { return s + x; }, 0) / a.length : 0; }
+
+    function sizeFor() {
+      var s = 52 - Math.floor(hits / 5) * 4;
+      return Math.max(26, s);
+    }
+
+    function spawn() {
+      if (targetEl) targetEl.remove();
+      var s = sizeFor();
+      var w = arena.clientWidth - s - 12, h = arena.clientHeight - s - 12;
+      var x = 6 + Math.random() * Math.max(1, w), y = 6 + Math.random() * Math.max(1, h);
+      var t = document.createElement('div');
+      t.className = 'target';
+      t.style.width = s + 'px'; t.style.height = s + 'px';
+      t.style.left = x + 'px'; t.style.top = y + 'px';
+      born = performance.now();
+      t.addEventListener('pointerdown', function (e) {
+        e.stopPropagation();
+        e.preventDefault();
+        if (!playing) return;
+        var r = Math.round(performance.now() - born);
+        reactions.push(r); hits++;
+        stHits.textContent = hits;
+        updateDerived();
+        spawn();
+      });
+      arena.appendChild(t);
+      targetEl = t;
+    }
+
+    function updateDerived() {
+      var total = hits + misses;
+      stAcc.textContent = total ? Math.round(hits / total * 100) + '%' : '—';
+      stAvg.textContent = reactions.length ? Math.round(avg(reactions)) + ' ms' : '—';
+    }
+
+    function missAt(x, y) {
+      var r = document.createElement('div');
+      r.className = 'ripple';
+      r.style.width = '26px'; r.style.height = '26px';
+      r.style.left = (x - 13) + 'px'; r.style.top = (y - 13) + 'px';
+      arena.appendChild(r);
+      setTimeout(function () { r.remove(); }, 420);
+    }
+
+    arena.addEventListener('pointerdown', function (e) {
+      if (!playing) return;
+      misses++;
+      var rect = arena.getBoundingClientRect();
+      missAt(e.clientX - rect.left, e.clientY - rect.top);
+      updateDerived();
+    });
+
+    function tick() {
+      var elapsed = performance.now() - startAt;
+      var left = Math.max(0, ROUND_MS - elapsed);
+      stTime.textContent = (left / 1000).toFixed(1);
+      tbar.style.width = (left / ROUND_MS * 100) + '%';
+      if (left <= 0) { end(); return; }
+      rafId = requestAnimationFrame(tick);
+    }
+
+    function start() {
+      playing = true; hits = 0; misses = 0; reactions = [];
+      stHits.textContent = '0'; stAcc.textContent = '—'; stAvg.textContent = '—';
+      document.getElementById('chartCard').hidden = true;
+      ovStart.hidden = true; ovEnd.hidden = true;
+      startAt = performance.now();
+      spawn();
+      rafId = requestAnimationFrame(tick);
+    }
+
+    function end() {
+      playing = false;
+      cancelAnimationFrame(rafId);
+      if (targetEl) { targetEl.remove(); targetEl = null; }
+      document.getElementById('rHits').textContent = hits;
+      var total = hits + misses;
+      document.getElementById('rAcc').textContent = total ? Math.round(hits / total * 100) + '%' : '—';
+      document.getElementById('rAvg').textContent = reactions.length ? Math.round(avg(reactions)) + ' ms' : '—';
+      document.getElementById('rFast').textContent = reactions.length ? Math.min.apply(null, reactions) + ' ms' : '—';
+      var nb = document.getElementById('newBest');
+      if (hits > best) {
+        best = hits;
+        try { localStorage.setItem('aim-trainer-best', String(best)); } catch (e) {}
+        bestLine.textContent = best + ' hits';
+        nb.hidden = false;
+      } else { nb.hidden = true; }
+      drawChart();
+      document.getElementById('chartCard').hidden = false;
+      ovEnd.hidden = false;
+    }
+
+    function drawChart() {
+      var c = document.getElementById('chart');
+      var dpr = window.devicePixelRatio || 1;
+      var w = c.clientWidth, h = 180;
+      c.width = w * dpr; c.height = h * dpr;
+      var g = c.getContext('2d');
+      g.scale(dpr, dpr);
+      g.clearRect(0, 0, w, h);
+      if (!reactions.length) return;
+      var max = Math.max.apply(null, reactions) * 1.15 || 1;
+      var pad = 14;
+      function X(i) { return pad + (w - pad * 2) * (reactions.length === 1 ? .5 : i / (reactions.length - 1)); }
+      function Y(v) { return h - pad - (h - pad * 2) * (v / max); }
+      // rolling 5-hit average
+      var roll = reactions.map(function (_, i) {
+        var s = reactions.slice(Math.max(0, i - 4), i + 1);
+        return avg(s);
+      });
+      g.strokeStyle = 'rgba(242,239,230,.85)'; g.lineWidth = 1.5; g.beginPath();
+      roll.forEach(function (v, i) { i ? g.lineTo(X(i), Y(v)) : g.moveTo(X(i), Y(v)); });
+      g.stroke();
+      // dots
+      g.fillStyle = '#d2a24c';
+      reactions.forEach(function (v, i) { g.beginPath(); g.arc(X(i), Y(v), 3, 0, 7); g.fill(); });
+      // max label
+      g.fillStyle = '#6d737c'; g.font = '10px "JetBrains Mono", monospace';
+      g.fillText(Math.round(max / 1.15) + ' ms', 4, Y(max / 1.15) - 4);
+    }
+
+    document.getElementById('btnStart').addEventListener('click', start);
+    document.getElementById('btnAgain').addEventListener('click', start);
+  })();
+  </script>
+</body>
+</html>
