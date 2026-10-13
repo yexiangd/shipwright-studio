@@ -1,5 +1,5 @@
 {
-  "updated": "2026-10-12",
+  "updated": "2026-10-13",
   "ideas": [
     {
       "id": "idea-000a",
@@ -1139,7 +1139,9 @@
       "tagline": "Name the candlestick pattern against the clock.",
       "priority": 85,
       "effort": "S",
-      "status": "todo"
+      "status": "done",
+      "url": "/lab/candlestick-quiz/",
+      "shipped": "2026-10-13"
     },
     {
       "id": "idea-107",
@@ -1149,7 +1151,9 @@
       "tagline": "Risk-adjusted return ratios from a returns series.",
       "priority": 84,
       "effort": "S",
-      "status": "todo"
+      "status": "done",
+      "url": "/lab/sharpe-calculator/",
+      "shipped": "2026-10-13"
     },
     {
       "id": "idea-108",

@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sharpe Calculator · Shipwright Studio</title>
+<meta name="description" content="Free online Sharpe ratio calculator: paste monthly returns or prices and get Sharpe, Sortino, max drawdown, volatility, CAGR and win rate with an equity-curve chart.">
+<link rel="canonical" href="https://shipwright-studio.pages.dev/lab/sharpe-calculator/">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"WebApplication","name":"Sharpe Calculator","url":"https://shipwright-studio.pages.dev/lab/sharpe-calculator/","description":"Sharpe Calculator is a free online tool that computes Sharpe and Sortino ratios, max drawdown, annualised volatility, CAGR and win rate from a pasted monthly returns or price series, with an equity-curve chart.","applicationCategory":"FinanceApplication","operatingSystem":"Web","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"}}
+</script>
+<style>
+:root{--bg:#0a0c0f;--panel:#11141a;--line:#232a35;--txt:#e8e4da;--mut:#9aa3b2;--brass:#d2a24c;--red:#e0655f;--green:#7dc98a}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--txt);font-family:Inter,system-ui,sans-serif;line-height:1.6;padding:2.5rem 1.25rem 4rem;max-width:940px;margin:0 auto;text-align:center}
+a{color:var(--brass)}
+.crumb{display:block;text-align:left;font-size:.85rem;color:var(--mut);margin-bottom:1.2rem;text-decoration:none}
+.crumb:hover{color:var(--brass)}
+.eyebrow{font-size:.75rem;letter-spacing:.22em;text-transform:uppercase;color:var(--mut)}
+h1{font-family:Fraunces,serif;font-weight:600;font-size:clamp(2rem,4.5vw,3rem);margin:.4rem 0 .6rem}
+.define{color:var(--mut);max-width:52rem;margin:0 auto 1.8rem}
+.define strong{color:var(--txt)}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:1.5rem;margin-bottom:1.2rem;text-align:left}
+.card h2{font-family:Fraunces,serif;font-size:1.2rem;margin-bottom:1rem;text-align:center}
+label.lbl{display:block;font-size:.85rem;color:var(--mut);margin-bottom:.5rem}
+textarea{width:100%;min-height:110px;background:#0d1015;border:1px solid var(--line);border-radius:8px;color:var(--txt);padding:.8rem .9rem;font-size:.95rem;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;outline:none;resize:vertical}
+textarea:focus{border-color:var(--brass)}
+textarea.bad{border-color:var(--red)}
+.preview{font-size:.82rem;color:var(--mut);margin-top:.5rem;min-height:1.4em;font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
+.preview b{color:var(--brass);font-weight:500}
+.ferr{color:var(--red);font-size:.85rem;min-height:1.4em;text-align:center;margin-top:.6rem}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:1.2rem;margin-top:1rem}
+@media(max-width:640px){.row{grid-template-columns:1fr}}
+.num{width:100%;background:#0d1015;border:1px solid var(--line);border-radius:8px;color:var(--txt);padding:.7rem .9rem;font-size:1.05rem;font-family:inherit;outline:none}
+.num:focus{border-color:var(--brass)}
+.hint{font-size:.78rem;color:var(--mut);margin-top:.4rem}
+.seg{display:flex;border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.seg button{flex:1;background:transparent;border:0;color:var(--mut);padding:.7rem;font-size:.9rem;font-family:inherit;cursor:pointer}
+.seg button.on{background:#1b2029;color:var(--brass)}
+.btns{display:flex;gap:.7rem;justify-content:center;margin-top:1.2rem;flex-wrap:wrap}
+.btn{font-size:.9rem;border:1px solid var(--brass);background:transparent;color:var(--brass);border-radius:999px;padding:.55rem 1.4rem;cursor:pointer;font-family:inherit}
+.btn:hover{background:rgba(210,162,76,.12)}
+.btn.ghost{border-color:var(--line);color:var(--mut)}
+.btn.ghost:hover{color:var(--txt);border-color:var(--mut)}
+.metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem}
+@media(max-width:640px){.metrics{grid-template-columns:1fr 1fr}}
+.metric{background:#0d1015;border:1px solid var(--line);border-radius:12px;padding:1.1rem;text-align:center}
+.metric.hero{border-color:var(--brass)}
+.metric .v{font-family:Fraunces,serif;font-size:clamp(1.7rem,4vw,2.2rem);font-weight:600;color:var(--brass)}
+.metric .v.dim{color:var(--mut)}
+.metric .l{font-size:.78rem;letter-spacing:.12em;text-transform:uppercase;color:var(--mut);margin-top:.3rem}
+.metric .s{font-size:.82rem;color:var(--mut);margin-top:.45rem;line-height:1.45}
+#chartwrap{position:relative}
+#chart{width:100%;height:300px;display:block;cursor:crosshair}
+#hover{position:absolute;pointer-events:none;background:#0d1015;border:1px solid var(--line);border-radius:8px;padding:.4rem .7rem;font-size:.8rem;display:none;white-space:nowrap;color:var(--txt);z-index:2}
+.legend{display:flex;gap:1.2rem;justify-content:center;font-size:.8rem;color:var(--mut);margin-top:.7rem;flex-wrap:wrap}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:.35rem;vertical-align:baseline}
+.notes{max-width:44rem;margin:1.8rem auto 0;color:var(--mut);font-size:.92rem;text-align:left}
+.notes li{margin:.5rem 0 .5rem 1.2rem}
+.disc{font-size:.8rem;color:var(--mut);opacity:.75;margin-top:1rem;text-align:center}
+.empty{text-align:center;color:var(--mut);padding:3rem 1rem;font-size:.95rem}
+.empty button{margin-top:1rem}
+footer{margin-top:2.5rem;font-size:.85rem;color:var(--mut)}
+footer .back{display:block;margin-top:.6rem}
+</style>
+</head>
+<body>
+<a class="crumb" href="/ideas/">← Back to the idea bank</a>
+<p class="eyebrow">Shipwright Studio · Lab</p>
+<h1>Sharpe Calculator</h1>
+<p class="define"><strong>Sharpe Calculator is a free online tool that computes risk-adjusted return ratios from a pasted series of monthly returns or prices</strong> — annualised Sharpe and Sortino, max drawdown, volatility, CAGR and win rate — and charts the equity curve with drawdowns shaded. Everything runs locally in your browser; nothing is uploaded.</p>
+
+<div class="card">
+  <h2>Your returns series</h2>
+  <label class="lbl" for="series">Monthly returns or prices — comma, space or newline separated</label>
+  <textarea id="series" placeholder="e.g. 2, -1, 3, 1.5, -0.5  (or decimals: 0.02, -0.01, 0.03)" spellcheck="false"></textarea>
+  <div class="preview" id="preview"></div>
+  <div class="ferr" id="err"></div>
+  <div class="row">
+    <div>
+      <label class="lbl">Input type</label>
+      <div class="seg" role="tablist" aria-label="Input type">
+        <button id="mode-ret" class="on" type="button">Monthly returns</button>
+        <button id="mode-prx" type="button">Prices</button>
+      </div>
+      <div class="hint" id="mode-hint">Numbers with |x| ≥ 1 are read as %; the rest as decimals.</div>
+    </div>
+    <div>
+      <label class="lbl" for="rf">Annual risk-free rate (%)</label>
+      <input class="num" id="rf" type="number" step="0.1" min="0" max="50" value="4" inputmode="decimal">
+      <div class="hint">Used as the benchmark for Sharpe &amp; Sortino (monthly = annual ÷ 12).</div>
+    </div>
+  </div>
+  <div class="btns">
+    <button class="btn" id="sample" type="button">Load sample data</button>
+    <button class="btn ghost" id="clear" type="button">Clear</button>
+  </div>
+</div>
+
+<div class="card">
+  <h2>Risk-adjusted metrics</h2>
+  <div id="m-empty" class="empty">Paste a returns series above, or load the sample data, to compute the metrics.</div>
+  <div class="metrics" id="m-grid" style="display:none">
+    <div class="metric hero"><div class="v" id="m-sharpe">—</div><div class="l">Sharpe (ann.)</div><div class="s">Excess return per unit of total volatility. &gt;1 is good, &gt;2 is excellent.</div></div>
+    <div class="metric"><div class="v" id="m-sortino">—</div><div class="l">Sortino (ann.)</div><div class="s">Like Sharpe but only downside volatility counts — upside swings aren't punished.</div></div>
+    <div class="metric"><div class="v" id="m-dd">—</div><div class="l">Max drawdown</div><div class="s">Largest peak-to-trough fall of the equity curve. The worst ride you'd have sat through.</div></div>
+    <div class="metric"><div class="v" id="m-vol">—</div><div class="l">Volatility (ann.)</div><div class="s">Annualised standard deviation of monthly returns — how bumpy the ride was.</div></div>
+    <div class="metric"><div class="v" id="m-cagr">—</div><div class="l">CAGR</div><div class="s">Compound annual growth rate from the monthly series. Return you actually kept.</div></div>
+    <div class="metric"><div class="v" id="m-win">—</div><div class="l">Win rate</div><div class="s">Share of months with a positive return. Frequency, not magnitude.</div></div>
+  </div>
+</div>
+
+<div class="card">
+  <h2>Equity curve</h2>
+  <div id="c-empty" class="empty">The chart appears once your series is computed — drawdowns shaded in red.</div>
+  <div id="chartwrap" style="display:none">
+    <canvas id="chart"></canvas>
+    <div id="hover"></div>
+    <div class="legend">
+      <span><i style="background:#d2a24c"></i>Equity (rebased to 100)</span>
+      <span><i style="background:rgba(224,101,95,.55)"></i>Underwater drawdown</span>
+      <span><i style="background:#9aa3b2"></i>Max drawdown span</span>
+    </div>
+  </div>
+</div>
+
+<ul class="notes">
+  <li><strong>Convention:</strong> the series is assumed monthly — returns annualise ×12, volatility ×√12. Std dev is the sample (n−1) figure; Sortino's downside deviation is taken over all months.</li>
+  <li>Sharpe punishes upside volatility too. If the strategy occasionally moons, Sortino is the fairer read.</li>
+  <li>Ratios are estimates from the past, not promises about the future.</li>
+</ul>
+<p class="disc">Educational tool only — not financial advice.</p>
+
+<footer>
+  Built by <a href="https://shipwright-studio.pages.dev/">Shipwright Studio</a>
+  <a class="back" href="/ideas/">← Back to the idea bank</a>
+</footer>
+
+<script>
+"use strict";
+/* ---- pure logic (kept dependency-free so it can be unit-tested in node) ---- */
+function parseSeries(text, isPrices) {
+  var tokens = text.split(/[\s,;]+/).filter(function (t) { return t.length > 0; });
+  var vals = [], bad = [];
+  for (var i = 0; i < tokens.length; i++) {
+    var n = Number(tokens[i]);
+    if (!isFinite(n)) { bad.push(tokens[i]); continue; }
+    vals.push(n);
+  }
+  var rets = vals;
+  if (isPrices) {
+    rets = [];
+    for (var j = 1; j < vals.length; j++) {
+      if (vals[j - 1] <= 0) { bad.push(tokens[j - 1]); continue; }
+      rets.push(vals[j] / vals[j - 1] - 1);
+    }
+  } else {
+    rets = vals.map(function (v) { return Math.abs(v) >= 1 ? v / 100 : v; });
+  }
+  return { returns: rets, bad: bad, nTokens: tokens.length };
+}
+function mean(a) { var s = 0; for (var i = 0; i < a.length; i++) s += a[i]; return s / a.length; }
+function sampleStd(a) {
+  var m = mean(a), s = 0;
+  for (var i = 0; i < a.length; i++) { var d = a[i] - m; s += d * d; }
+  return Math.sqrt(s / (a.length - 1));
+}
+function equityCurve(returns) {
+  var e = [100], v = 100;
+  for (var i = 0; i < returns.length; i++) { v *= (1 + returns[i]); e.push(v); }
+  return e;
+}
+function maxDrawdown(equity) {
+  var peak = equity[0], peakI = 0, maxDD = 0, tPeak = 0, tTrough = 0;
+  for (var i = 1; i < equity.length; i++) {
+    if (equity[i] > peak) { peak = equity[i]; peakI = i; }
+    var dd = equity[i] / peak - 1;
+    if (dd < maxDD) { maxDD = dd; tPeak = peakI; tTrough = i; }
+  }
+  return { dd: -maxDD, peakIdx: tPeak, troughIdx: tTrough };
+}
+/* returns: decimals, monthly. rfAnnual: e.g. 4 for 4%. */
+function computeMetrics(returns, rfAnnual) {
+  var n = returns.length;
+  if (n < 2) return null;
+  var rf = rfAnnual / 100 / 12;
+  var excess = returns.map(function (r) { return r - rf; });
+  var sd = sampleStd(excess);
+  var sharpe = sd > 0 ? mean(excess) / sd * Math.sqrt(12) : NaN;
+  var down = excess.map(function (x) { return Math.min(0, x); });
+  var downDev = Math.sqrt(mean(down.map(function (x) { return x * x; })));
+  var sortino = downDev > 0 ? mean(excess) / downDev * Math.sqrt(12) : NaN;
+  var vol = sampleStd(returns) * Math.sqrt(12);
+  var cagr = Math.pow(1 + mean(returns), 12) - 1;
+  var eq = equityCurve(returns);
+  var md = maxDrawdown(eq);
+  var wins = returns.filter(function (r) { return r > 0; }).length;
+  return { sharpe: sharpe, sortino: sortino, maxDD: md.dd, vol: vol, cagr: cagr,
+           winRate: wins / n, n: n, equity: eq, ddSpan: md };
+}
+
+/* ---- UI ---- */
+var $ = function (id) { return document.getElementById(id); };
+var mode = "returns";
+var lastGood = null;
+
+var SAMPLE = "3.2, 1.1, -2.4, 0.9, 4.5, -1.8, 0.015, 2.7, -0.8, 3.9, -4.2, 1.5, 2.2, -0.9, 0.04, 1.8, -3.1, 2.5, 0.7, -1.2, 3.3, -2.9, 1.9, 2.6";
+
+function fmt2(x) { return (x * 100).toFixed(2) + "%"; }
+function fmtRatio(x) { return isNaN(x) || !isFinite(x) ? "—" : (x >= 0 ? "+" : "") + x.toFixed(2); }
+
+function setMode(m) {
+  mode = m;
+  $("mode-ret").classList.toggle("on", m === "returns");
+  $("mode-prx").classList.toggle("on", m === "prices");
+  $("mode-hint").innerHTML = m === "returns"
+    ? "Numbers with |x| ≥ 1 are read as %; the rest as decimals."
+    : "Converts to simple monthly returns: r<sub>t</sub> = P<sub>t</sub>/P<sub>t-1</sub> − 1.";
+  render();
+}
+
+function render() {
+  var text = $("series").value;
+  var rf = parseFloat($("rf").value);
+  var errBox = $("err"), ta = $("series");
+  errBox.textContent = ""; ta.classList.remove("bad");
+
+  if (!text.trim()) { showEmpty(); return; }
+  if (!(rf >= 0) || rf > 50) {
+    errBox.textContent = "Enter a risk-free rate between 0 and 50 (annual %).";
+    return;
+  }
+  var p = parseSeries(text, mode === "prices");
+  var pv = $("preview");
+  if (p.returns.length > 0) {
+    var head = p.returns.slice(0, 5).map(fmt2).join(", ");
+    pv.innerHTML = "Parsed <b>" + p.returns.length + "</b> values: " + head + (p.returns.length > 5 ? ", …" : "");
+  } else { pv.textContent = ""; }
+
+  if (p.bad.length > 0) {
+    ta.classList.add("bad");
+    errBox.textContent = "Couldn't parse " + p.bad.length + " token(s): " +
+      p.bad.slice(0, 5).join(", ") + (p.bad.length > 5 ? " …" : "") + ". Fix or remove them.";
+    return;
+  }
+  if (p.returns.length < 2) {
+    ta.classList.add("bad");
+    errBox.textContent = "Need at least 2 " + (mode === "prices" ? "prices" : "returns") + " to compute anything.";
+    return;
+  }
+  var m = computeMetrics(p.returns, rf);
+  if (!m) { showEmpty(); return; }
+  lastGood = m;
+  showMetrics(m);
+  drawChart(m);
+}
+
+function showEmpty() {
+  $("m-empty").style.display = "block"; $("m-grid").style.display = "none";
+  $("c-empty").style.display = "block"; $("chartwrap").style.display = "none";
+  $("preview").textContent = "";
+}
+function showMetrics(m) {
+  $("m-empty").style.display = "none"; $("m-grid").style.display = "grid";
+  $("c-empty").style.display = "none"; $("chartwrap").style.display = "block";
+  function set(id, v, dimIf) {
+    var el = $(id);
+    el.textContent = v;
+    el.classList.toggle("dim", !!dimIf);
+  }
+  set("m-sharpe", fmtRatio(m.sharpe));
+  set("m-sortino", fmtRatio(m.sortino));
+  set("m-dd", m.maxDD === 0 ? "0.00%" : "−" + (m.maxDD * 100).toFixed(2) + "%");
+  set("m-vol", fmt2(m.vol));
+  set("m-cagr", fmt2(m.cagr));
+  set("m-win", (m.winRate * 100).toFixed(0) + "%");
+}
+
+function drawChart(m) {
+  var cv = $("chart"), wrap = $("chartwrap");
+  var W = wrap.clientWidth, H = 300, dpr = window.devicePixelRatio || 1;
+  cv.width = W * dpr; cv.height = H * dpr; cv.style.height = H + "px";
+  var c = cv.getContext("2d"); c.scale(dpr, dpr); c.clearRect(0, 0, W, H);
+  var eq = m.equity, n = eq.length;
+  var padL = 52, padR = 14, padT = 18, padB = 30;
+  var ymin = Math.min.apply(null, eq), ymax = Math.max.apply(null, eq);
+  if (ymax === ymin) { ymax = ymin * 1.01 + 1; }
+  var pad = (ymax - ymin) * 0.06; ymin -= pad; ymax += pad;
+  function X(i) { return padL + (W - padL - padR) * i / (n - 1); }
+  function Y(v) { return padT + (H - padT - padB) * (1 - (v - ymin) / (ymax - ymin)); }
+  // underwater shading: running peak to equity
+  c.beginPath();
+  var peak = eq[0], started = false;
+  for (var i = 0; i < n; i++) {
+    if (eq[i] > peak) peak = eq[i];
+    if (eq[i] < peak) {
+      if (!started) { c.moveTo(X(i), Y(peak)); started = true; }
+      c.lineTo(X(i), Y(peak)); c.lineTo(X(i), Y(eq[i]));
+    } else if (started) { c.lineTo(X(i), Y(peak)); started = false; }
+  }
+  c.fillStyle = "rgba(224,101,95,0.28)"; c.fill();
+  // equity curve
+  c.strokeStyle = "#d2a24c"; c.lineWidth = 2; c.beginPath();
+  for (i = 0; i < n; i++) { if (i === 0) c.moveTo(X(i), Y(eq[i])); else c.lineTo(X(i), Y(eq[i])); }
+  c.stroke();
+  // max drawdown span markers
+  var pi = m.ddSpan.peakIdx, ti = m.ddSpan.troughIdx;
+  if (m.maxDD > 0 && ti > pi) {
+    c.strokeStyle = "#9aa3b2"; c.setLineDash([4, 4]); c.lineWidth = 1;
+    c.beginPath(); c.moveTo(X(pi), padT); c.lineTo(X(pi), H - padB); c.stroke();
+    c.beginPath(); c.moveTo(X(ti), padT); c.lineTo(X(ti), H - padB); c.stroke();
+    c.setLineDash([]);
+    c.fillStyle = "#9aa3b2"; c.font = "11px Inter,sans-serif"; c.textAlign = "center";
+    c.fillText("max DD " + (m.maxDD * 100).toFixed(1) + "%", (X(pi) + X(ti)) / 2, padT + 4);
+    c.textAlign = "left";
+  }
+  // axes
+  c.fillStyle = "#9aa3b2"; c.font = "11px Inter,sans-serif";
+  c.fillText("100", 4, padT + (H - padT - padB) * (1 - (100 - ymin) / (ymax - ymin)) + 4);
+  c.fillText("month 1", padL - 4, H - 10);
+  c.fillText("month " + (n - 1), W - padR - 52, H - 10);
+  cv._geom = { X: X, Y: Y, W: W, H: H, eq: eq, n: n };
+}
+
+$("chart").addEventListener("mousemove", function (e) {
+  var cv = $("chart"), g = cv._geom; if (!g) return;
+  var r = cv.getBoundingClientRect(), mx = e.clientX - r.left;
+  var frac = (mx - 52) / (g.W - 66);
+  if (frac < 0 || frac > 1) { $("hover").style.display = "none"; return; }
+  var i = Math.round(frac * (g.n - 1));
+  var h = $("hover"); h.style.display = "block";
+  h.innerHTML = "month " + (i + 1) + "<br>equity <b>" + g.eq[i].toFixed(1) + "</b>";
+  h.style.left = Math.min(g.W - 130, Math.max(4, mx + 12)) + "px";
+  h.style.top = "30px";
+});
+$("chart").addEventListener("mouseleave", function () { $("hover").style.display = "none"; });
+$("chart").addEventListener("click", function (e) { /* tap = hover on touch */ 
+  var ev = new MouseEvent("mousemove", { clientX: e.clientX, clientY: e.clientY });
+  $("chart").dispatchEvent(ev);
+});
+
+var timer = null;
+$("series").addEventListener("input", function () {
+  clearTimeout(timer); timer = setTimeout(render, 150);
+});
+$("rf").addEventListener("input", render);
+$("mode-ret").addEventListener("click", function () { setMode("returns"); });
+$("mode-prx").addEventListener("click", function () { setMode("prices"); });
+$("sample").addEventListener("click", function () { $("series").value = SAMPLE; render(); });
+$("clear").addEventListener("click", function () { $("series").value = ""; lastGood = null; render(); });
+window.addEventListener("resize", function () { if (lastGood) drawChart(lastGood); });
+</script>
+</body>
+</html>

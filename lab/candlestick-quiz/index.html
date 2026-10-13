@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Candlestick Quiz · Shipwright Studio</title>
+  <meta name="description" content="Candlestick Quiz is a free online game that tests how fast you can name classic candlestick chart patterns against a 10-second clock." />
+  <link rel="canonical" href="https://shipwright-studio.pages.dev/lab/candlestick-quiz/" />
+  <link rel="icon" type="image/svg+xml" href="../../favicon.svg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..700;1,9..144,300..700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "Candlestick Quiz",
+    "description": "A free online game that tests how fast you can name classic candlestick chart patterns against a 10-second clock, with a one-line explanation after every answer.",
+    "applicationCategory": "GameApplication",
+    "operatingSystem": "Web",
+    "offers": { "@type": "Offer", "price": "0" },
+    "author": { "@type": "Organization", "name": "Shipwright Studio", "url": "https://shipwright-studio.pages.dev/" }
+  }
+  </script>
+  <style>
+    :root {
+      --bg: #0a0c0f; --text: #f2efe6; --muted: #a6abb4; --faint: #6d737c;
+      --accent: #d2a24c; --red: #c0574b; --green: #7fb069; --line: rgba(255,255,255,.09);
+      --font-display: "Fraunces", Georgia, serif;
+      --font-body: "Inter", -apple-system, "Segoe UI", sans-serif;
+      --font-mono: "JetBrains Mono", ui-monospace, monospace;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+    html, body { height: 100%; }
+    body {
+      background: var(--bg); color: var(--text); font-family: var(--font-body);
+      display: flex; flex-direction: column; overflow: hidden; height: 100dvh;
+      touch-action: manipulation; user-select: none; -webkit-user-select: none;
+    }
+    .topbar {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 14px 22px; border-bottom: 1px solid var(--line); z-index: 2;
+      background: rgba(10,12,15,.85); backdrop-filter: blur(8px);
+    }
+    .topbar a { color: var(--muted); text-decoration: none; font-size: 14px; }
+    .topbar a:hover { color: var(--accent); }
+    .brand { font-family: var(--font-display); font-size: 17px; }
+    .brand em { color: var(--accent); font-style: italic; }
+    .best { font-family: var(--font-mono); font-size: 12.5px; color: var(--faint); letter-spacing: .08em; }
+    main {
+      flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
+      gap: 14px; padding: 20px 22px; overflow: hidden; width: 100%; max-width: 640px; margin: 0 auto;
+    }
+    .screen { display: flex; flex-direction: column; align-items: center; gap: 14px; width: 100%; }
+    .screen[hidden] { display: none; }
+    h1 { font-family: var(--font-display); font-weight: 500; font-size: clamp(34px, 7vw, 56px); line-height: 1.05; text-align: center; }
+    h1 em { color: var(--accent); font-style: italic; }
+    .h1like { font-family: var(--font-display); font-weight: 500; font-size: clamp(34px, 7vw, 56px); line-height: 1.05; text-align: center; }
+    .h1like em { color: var(--accent); font-style: italic; }
+    .def { color: var(--muted); font-size: clamp(15px, 2.6vw, 18px); max-width: 560px; text-align: center; line-height: 1.55; }
+    .how { color: var(--faint); font-size: 14px; line-height: 1.9; text-align: center; }
+    .how b { color: var(--muted); font-weight: 600; }
+    .btn {
+      font-family: var(--font-body); font-size: 16px; font-weight: 600;
+      padding: 14px 40px; border-radius: 999px; border: 1px solid var(--accent);
+      background: var(--accent); color: #0a0c0f; cursor: pointer; min-height: 52px;
+    }
+    .btn:hover { filter: brightness(1.08); }
+    .btn.ghost { background: transparent; color: var(--accent); }
+    .hud { display: flex; gap: 26px; font-family: var(--font-mono); font-size: 12px; letter-spacing: .16em; text-transform: uppercase; color: var(--faint); }
+    .hud b { display: block; color: var(--text); font-size: 20px; letter-spacing: 0; margin-top: 2px; text-align: center; }
+    .hud .acc { color: var(--accent); }
+    .timerwrap { width: 100%; max-width: 560px; display: flex; align-items: center; gap: 12px; }
+    .timerbar { flex: 1; height: 8px; border-radius: 99px; background: var(--line); overflow: hidden; }
+    #timerFill { height: 100%; width: 100%; background: var(--accent); border-radius: 99px; transition: width .1s linear; }
+    #timerFill.low { background: var(--red); }
+    #timerNum { font-family: var(--font-display); font-size: 30px; color: var(--accent); min-width: 44px; text-align: right; }
+    #timerNum.low { color: var(--red); }
+    .chart-card {
+      width: 100%; max-width: 560px; border: 1px solid var(--line); border-radius: 14px;
+      background: rgba(255,255,255,.015); padding: 10px 6px 4px;
+    }
+    #chart { width: 100%; height: 250px; display: block; }
+    .choices { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; width: 100%; max-width: 560px; }
+    .choice {
+      font-family: var(--font-body); font-size: 16px; font-weight: 500; color: var(--text);
+      background: rgba(255,255,255,.02); border: 1px solid var(--line); border-radius: 12px;
+      padding: 14px 10px; min-height: 58px; cursor: pointer; transition: border-color .12s, color .12s, box-shadow .12s;
+    }
+    .choice:hover:not(:disabled) { border-color: var(--accent); }
+    .choice:disabled { cursor: default; opacity: .92; }
+    .choice.correct { border-color: var(--accent); color: var(--accent); box-shadow: 0 0 18px rgba(210,162,76,.25); }
+    .choice.wrong { border-color: var(--red); color: var(--red); }
+    .feedback {
+      width: 100%; max-width: 560px; border: 1px solid var(--line); border-radius: 12px;
+      padding: 14px 18px; background: rgba(255,255,255,.02); text-align: center;
+    }
+    .feedback[hidden] { display: none; }
+    #fbTitle { font-family: var(--font-display); font-size: 22px; margin-bottom: 6px; }
+    #fbTitle.good { color: var(--green); } #fbTitle.bad { color: var(--red); } #fbTitle.out { color: var(--accent); }
+    #fbText { color: var(--muted); font-size: 14.5px; line-height: 1.55; margin-bottom: 12px; }
+    #fbText b { color: var(--text); }
+    .results { display: flex; gap: 34px; flex-wrap: wrap; justify-content: center; }
+    .stat b { display: block; font-family: var(--font-display); font-size: clamp(34px, 6vw, 52px); font-weight: 500; color: var(--accent); text-align: center; }
+    .stat span { font-family: var(--font-mono); font-size: 11.5px; letter-spacing: .18em; text-transform: uppercase; color: var(--muted); }
+    #newBest { font-family: var(--font-display); font-style: italic; font-size: 20px; color: var(--accent); }
+    #newBest[hidden] { display: none; }
+    .foot { padding: 14px; text-align: center; border-top: 1px solid var(--line); font-size: 13px; color: var(--faint); z-index: 2; }
+    .foot a { color: var(--muted); text-decoration: none; }
+    .foot a:hover { color: var(--accent); }
+    @media (max-width: 480px) {
+      #chart { height: 200px; }
+      .choice { font-size: 15px; min-height: 54px; padding: 12px 8px; }
+      .hud { gap: 18px; }
+      main { padding: 14px 16px; gap: 12px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="topbar">
+    <a href="../../ideas/">&larr; The Lab</a>
+    <span class="brand">Shipwright <em>Studio</em></span>
+    <span class="best" id="bestLine"></span>
+  </div>
+
+  <main>
+    <!-- Intro -->
+    <section class="screen" id="screen-intro">
+      <h1>Candlestick <em>Quiz</em></h1>
+      <p class="def">Candlestick Quiz is a free online tool that quizzes you on classic candlestick chart patterns &mdash; a fresh pattern is drawn every round, and you name it before the 10-second clock runs out.</p>
+      <p class="how">
+        <b>10 rounds</b> &middot; <b>4 choices</b> per round &middot; <b>10 seconds</b> on the clock<br />
+        Correct: <b>100</b> + <b>10</b> per second left &middot; streak bonus from 3 in a row<br />
+        Every answer ends with a one-line explanation, so you learn as you play.
+      </p>
+      <button class="btn" id="startBtn">Start the clock</button>
+    </section>
+
+    <!-- Play -->
+    <section class="screen" id="screen-play" hidden>
+      <div class="hud">
+        <div>Round<b id="roundLabel">1/10</b></div>
+        <div>Score<b id="scoreLabel" class="acc">0</b></div>
+        <div>Streak<b id="streakLabel">0</b></div>
+      </div>
+      <div class="timerwrap" aria-hidden="true">
+        <div class="timerbar"><div id="timerFill"></div></div>
+        <div id="timerNum">10</div>
+      </div>
+      <div class="chart-card"><canvas id="chart" role="img" aria-label="Candlestick pattern chart"></canvas></div>
+      <div class="choices" id="choices"></div>
+      <div class="feedback" id="feedback" hidden>
+        <div id="fbTitle"></div>
+        <div id="fbText"></div>
+        <button class="btn ghost" id="nextBtn">Next pattern</button>
+      </div>
+    </section>
+
+    <!-- Results -->
+    <section class="screen" id="screen-result" hidden>
+      <div class="h1like">Time&rsquo;s <em>up</em></div>
+      <div id="newBest" hidden>New best score</div>
+      <div class="results">
+        <div class="stat"><b id="finalScore">0</b><span>Score</span></div>
+        <div class="stat"><b id="finalCorrect">0/10</b><span>Correct</span></div>
+        <div class="stat"><b id="finalAcc">0%</b><span>Accuracy</span></div>
+      </div>
+      <p class="def" id="finalBestLine"></p>
+      <button class="btn" id="againBtn">Play again</button>
+    </section>
+  </main>
+
+  <div class="foot">Built by <a href="../../">Shipwright Studio</a> &middot; <a href="../../ideas/">The Lab</a> &middot; Your best score stays in this browser only.</div>
+
+  <script>
+  'use strict';
+  /* ================= PURE LOGIC (no DOM) — also executed by the node test harness ================= */
+
+  // Deterministic RNG for tests; browser passes Math.random.
+  function mulberry32(seed) {
+    return function () {
+      seed |= 0; seed = seed + 0x6D2B79F5 | 0;
+      var t = Math.imul(seed ^ seed >>> 15, 1 | seed);
+      t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+      return ((t ^ t >>> 14) >>> 0) / 4294967296;
+    };
+  }
+  function j(rnd, a, b) { return a + rnd() * (b - a); }
+
+  // Candle = [open, close, high, low] in abstract price units (~0..100).
+  // Every generator keeps hard geometric guarantees under arbitrary jitter.
+  var PATTERNS = [
+    { id: 'doji', name: 'Doji', bias: 'neutral',
+      blurb: 'Open and close are nearly identical \u2014 a tug-of-war with no winner. Dojis signal indecision and often precede a turn.',
+      make: function (r) {
+        var m = j(r, 45, 55), d = j(r, 0.2, 0.6);
+        var w = j(r, 10, 15);
+        return [[m - d, m + d, m + w, m - w]];
+      } },
+    { id: 'hammer', name: 'Hammer', bias: 'bullish',
+      blurb: 'A small body near the top with a long lower wick (at least twice the body). Sellers pushed hard and lost \u2014 a bullish reversal hint.',
+      make: function (r) {
+        var t = j(r, 85, 92), bh = j(r, 2, 4);
+        return [[t - bh, t, t + j(r, 1, 3), t - j(r, 14, 20)]];
+      } },
+    { id: 'inv-hammer', name: 'Inverted Hammer', bias: 'bullish',
+      blurb: 'A small bullish body near the bottom with a long upper wick. Buyers probed higher \u2014 a potential bullish reversal.',
+      make: function (r) {
+        var b = j(r, 8, 15), bh = j(r, 2, 4);
+        return [[b, b + bh, b + j(r, 14, 20), b - j(r, 1, 3)]];
+      } },
+    { id: 'shooting-star', name: 'Shooting Star', bias: 'bearish',
+      blurb: 'Looks like an inverted hammer, but the red (down) body changes everything: buyers were rejected from the highs \u2014 bearish.',
+      make: function (r) {
+        var b = j(r, 8, 15), bh = j(r, 2, 4);
+        return [[b + bh, b, b + j(r, 14, 20), b - j(r, 1, 3)]];
+      } },
+    { id: 'bull-engulf', name: 'Bullish Engulfing', bias: 'bullish',
+      blurb: 'A small red candle fully swallowed by a bigger green body. Buyers took control \u2014 a bullish reversal signal.',
+      make: function (r) {
+        var o1 = j(r, 72, 78), c1 = o1 - j(r, 4, 7);
+        var o2 = c1 - j(r, 1, 3), c2 = o1 + j(r, 2, 5);
+        return [[o1, c1, o1 + j(r, 1, 3), c1 - j(r, 1, 3)],
+                [o2, c2, c2 + j(r, 1, 3), o2 - j(r, 1, 3)]];
+      } },
+    { id: 'bear-engulf', name: 'Bearish Engulfing', bias: 'bearish',
+      blurb: 'A small green candle fully swallowed by a bigger red body. Sellers took control \u2014 a bearish reversal signal.',
+      make: function (r) {
+        var o1 = j(r, 22, 28), c1 = o1 + j(r, 4, 7);
+        var o2 = c1 + j(r, 1, 3), c2 = o1 - j(r, 2, 5);
+        return [[o1, c1, c1 + j(r, 1, 3), o1 - j(r, 1, 3)],
+                [o2, c2, o2 + j(r, 1, 3), c2 - j(r, 1, 3)]];
+      } },
+    { id: 'morning-star', name: 'Morning Star', bias: 'bullish',
+      blurb: 'Big red candle, then a small star gapping down, then a big green candle closing past the first candle\u2019s midpoint \u2014 a classic bullish reversal.',
+      make: function (r) {
+        var o1 = j(r, 86, 92), c1 = o1 - j(r, 10, 14);
+        var m = c1 - j(r, 3, 6), d = j(r, 0.3, 0.8);
+        var mid = (o1 + c1) / 2;
+        var o3 = m + j(r, -1, 1), c3 = mid + j(r, 4, 8);
+        return [[o1, c1, o1 + j(r, 1, 2), c1 - j(r, 1, 2)],
+                [m - d, m + d, m + j(r, 4, 6), m - j(r, 4, 6)],
+                [o3, c3, c3 + j(r, 1, 2), o3 - j(r, 1, 2)]];
+      } },
+    { id: 'evening-star', name: 'Evening Star', bias: 'bearish',
+      blurb: 'Big green candle, then a small star gapping up, then a big red candle closing below the first candle\u2019s midpoint \u2014 a classic bearish reversal.',
+      make: function (r) {
+        var o1 = j(r, 8, 14), c1 = o1 + j(r, 10, 14);
+        var m = c1 + j(r, 3, 6), d = j(r, 0.3, 0.8);
+        var mid = (o1 + c1) / 2;
+        var o3 = m + j(r, -1, 1), c3 = mid - j(r, 4, 8);
+        return [[o1, c1, c1 + j(r, 1, 2), o1 - j(r, 1, 2)],
+                [m - d, m + d, m + j(r, 4, 6), m - j(r, 4, 6)],
+                [o3, c3, o3 + j(r, 1, 2), c3 - j(r, 1, 2)]];
+      } },
+    { id: 'white-soldiers', name: 'Three White Soldiers', bias: 'bullish',
+      blurb: 'Three green candles in a row, each closing higher and opening inside the prior body \u2014 steady, strong buying.',
+      make: function (r) {
+        var base = j(r, 40, 50), out = [];
+        for (var i = 0; i < 3; i++) {
+          var o = base + i * 5, c = o + j(r, 6, 9);
+          out.push([o, c, c + j(r, 1, 2.5), o - j(r, 1, 2.5)]);
+        }
+        return out;
+      } },
+    { id: 'black-crows', name: 'Three Black Crows', bias: 'bearish',
+      blurb: 'Three red candles in a row, each closing lower and opening inside the prior body \u2014 steady, strong selling.',
+      make: function (r) {
+        var base = j(r, 50, 60), out = [];
+        for (var i = 0; i < 3; i++) {
+          var o = base - i * 5, c = o - j(r, 6, 9);
+          out.push([o, c, o + j(r, 1, 2.5), c - j(r, 1, 2.5)]);
+        }
+        return out;
+      } }
+  ];
+
+  function makeCandles(id, rnd) {
+    rnd = rnd || Math.random;
+    for (var i = 0; i < PATTERNS.length; i++) {
+      if (PATTERNS[i].id === id) return PATTERNS[i].make(rnd);
+    }
+    throw new Error('unknown pattern: ' + id);
+  }
+
+  function shuffled(arr, rnd) {
+    var a = arr.slice();
+    for (var i = a.length - 1; i > 0; i--) {
+      var k = Math.floor(rnd() * (i + 1));
+      var t = a[i]; a[i] = a[k]; a[k] = t;
+    }
+    return a;
+  }
+
+  // 1 correct + 3 unique distractors, shuffled.
+  function pickChoices(correctId, rnd) {
+    rnd = rnd || Math.random;
+    var correct = null, others = [];
+    PATTERNS.forEach(function (p) { if (p.id === correctId) correct = p; else others.push(p); });
+    if (!correct) throw new Error('unknown pattern: ' + correctId);
+    return shuffled([correct].concat(shuffled(others, rnd).slice(0, 3)), rnd);
+  }
+
+  var ROUNDS = 10, ROUND_TIME = 10;
+
+  function pointsFor(correct, secondsLeft, streakBefore) {
+    if (!correct) return 0;
+    return 100 + Math.round(secondsLeft) * 10 + (streakBefore >= 2 ? 50 : 0);
+  }
+
+  function newGame(best) {
+    return { round: 0, score: 0, streak: 0, correct: 0, best: best || 0, done: false, newBest: false };
+  }
+
+  // pickedIdx: index into choices, -1 = timeout. Mutates game; returns {correct, gained}.
+  function submitAnswer(game, pickedIdx, correctIdx, secondsLeft) {
+    var correct = pickedIdx === correctIdx && pickedIdx >= 0;
+    var gained = pointsFor(correct, secondsLeft, game.streak);
+    game.score += gained;
+    if (correct) { game.streak += 1; game.correct += 1; } else { game.streak = 0; }
+    game.round += 1;
+    if (game.round >= ROUNDS) {
+      game.done = true;
+      if (game.score > game.best) { game.best = game.score; game.newBest = true; }
+    }
+    return { correct: correct, gained: gained };
+  }
+  /* =============== END PURE LOGIC =============== */
+
+  /* ================= DOM APP ================= */
+  if (typeof document !== 'undefined') (function () {
+    var $ = function (id) { return document.getElementById(id); };
+
+    var storageOK = true, best = 0;
+    try {
+      best = parseInt(localStorage.getItem('cq-best') || '0', 10) || 0;
+    } catch (e) { storageOK = false; }
+
+    function renderBest() {
+      $('bestLine').textContent = best > 0 ? ('Best ' + best) : 'No best yet \u2014 set one.';
+    }
+    renderBest();
+
+    var game = null, deck = [], correctIdx = -1, currentPattern = null;
+    var locked = false, tickId = null, timeLeft = ROUND_TIME;
+
+    function show(id) {
+      ['screen-intro', 'screen-play', 'screen-result'].forEach(function (s) {
+        $(s).hidden = (s !== id);
+      });
+    }
+
+    function startGame() {
+      game = newGame(best);
+      deck = shuffled(PATTERNS.map(function (p) { return p.id; }), Math.random);
+      show('screen-play');
+      nextQuestion();
+    }
+
+    function nextQuestion() {
+      locked = false;
+      $('feedback').hidden = true;
+      var id = deck[game.round % deck.length];
+      currentPattern = PATTERNS.filter(function (p) { return p.id === id; })[0];
+      drawCandles($('chart'), makeCandles(id, Math.random));
+      var choices = pickChoices(id, Math.random);
+      correctIdx = choices.indexOf(currentPattern);
+      var box = $('choices');
+      box.innerHTML = '';
+      choices.forEach(function (p, i) {
+        var b = document.createElement('button');
+        b.className = 'choice';
+        b.textContent = p.name;
+        b.addEventListener('click', function () { answer(i); });
+        box.appendChild(b);
+      });
+      $('roundLabel').textContent = (game.round + 1) + '/' + ROUNDS;
+      $('scoreLabel').textContent = game.score;
+      $('streakLabel').textContent = game.streak;
+      startTimer();
+    }
+
+    function startTimer() {
+      stopTimer();
+      timeLeft = ROUND_TIME;
+      renderTimer();
+      tickId = setInterval(function () {
+        timeLeft = Math.max(0, timeLeft - 0.1);
+        renderTimer();
+        if (timeLeft <= 0) { stopTimer(); onTimeout(); }
+      }, 100);
+    }
+    function stopTimer() { if (tickId) { clearInterval(tickId); tickId = null; } }
+    function renderTimer() {
+      $('timerFill').style.width = (timeLeft / ROUND_TIME * 100) + '%';
+      $('timerNum').textContent = Math.ceil(timeLeft);
+      var low = timeLeft <= 3;
+      $('timerFill').classList.toggle('low', low);
+      $('timerNum').classList.toggle('low', low);
+    }
+
+    function answer(i) { if (locked) return; locked = true; stopTimer(); reveal(submitAnswer(game, i, correctIdx, timeLeft), i); }
+    function onTimeout() { if (locked) return; locked = true; reveal(submitAnswer(game, -1, correctIdx, 0), -1); }
+
+    document.addEventListener('keydown', function (e) {
+      if ($('screen-play').hidden || locked) return;
+      var n = parseInt(e.key, 10);
+      if (n >= 1 && n <= 4) answer(n - 1);
+    });
+
+    function reveal(res, pickedIdx) {
+      var btns = $('choices').children;
+      for (var i = 0; i < btns.length; i++) {
+        btns[i].disabled = true;
+        if (i === correctIdx) btns[i].classList.add('correct');
+        else if (i === pickedIdx) btns[i].classList.add('wrong');
+      }
+      var t = $('fbTitle'), x = $('fbText');
+      t.className = '';
+      if (res.correct) {
+        t.textContent = 'Correct \u2014 +' + res.gained;
+        t.classList.add('good');
+      } else if (pickedIdx < 0) {
+        t.textContent = 'Time\u2019s up';
+        t.classList.add('out');
+      } else {
+        t.textContent = 'Not quite';
+        t.classList.add('bad');
+      }
+      x.innerHTML = '';
+      var b = document.createElement('b');
+      b.textContent = currentPattern.name + ' ';
+      x.appendChild(b);
+      x.appendChild(document.createTextNode('\u2014 ' + currentPattern.blurb));
+      $('nextBtn').textContent = game.done ? 'See results' : 'Next pattern';
+      $('feedback').hidden = false;
+      $('scoreLabel').textContent = game.score;
+      $('streakLabel').textContent = game.streak;
+    }
+
+    function showResults() {
+      stopTimer();
+      $('finalScore').textContent = game.score;
+      $('finalCorrect').textContent = game.correct + '/' + ROUNDS;
+      $('finalAcc').textContent = Math.round(game.correct / ROUNDS * 100) + '%';
+      $('newBest').hidden = !game.newBest;
+      if (game.newBest) { best = game.best; renderBest(); }
+      if (storageOK) {
+        try { localStorage.setItem('cq-best', String(best)); } catch (e) { /* ignore */ }
+      }
+      $('finalBestLine').textContent = 'Best score: ' + best + (storageOK ? '' : ' (browser storage unavailable)');
+      show('screen-result');
+    }
+
+    $('nextBtn').addEventListener('click', function () {
+      if (game.done) showResults(); else nextQuestion();
+    });
+    $('startBtn').addEventListener('click', startGame);
+    $('againBtn').addEventListener('click', startGame);
+
+    function drawCandles(canvas, candles) {
+      var dpr = window.devicePixelRatio || 1;
+      var w = canvas.clientWidth, h = canvas.clientHeight;
+      if (!w || !h) return;
+      canvas.width = Math.round(w * dpr);
+      canvas.height = Math.round(h * dpr);
+      var ctx = canvas.getContext('2d');
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, w, h);
+      var lo = Infinity, hi = -Infinity, i, c;
+      for (i = 0; i < candles.length; i++) {
+        c = candles[i];
+        if (c[3] < lo) lo = c[3];
+        if (c[2] > hi) hi = c[2];
+      }
+      var pad = (hi - lo) * 0.18 + 1e-6;
+      lo -= pad; hi += pad;
+      function y(v) { return h - (v - lo) / (hi - lo) * h; }
+      ctx.strokeStyle = 'rgba(255,255,255,.07)';
+      ctx.lineWidth = 1;
+      for (i = 1; i <= 3; i++) {
+        var gy = h * i / 4;
+        ctx.beginPath(); ctx.moveTo(0, gy); ctx.lineTo(w, gy); ctx.stroke();
+      }
+      var n = candles.length, slot = w / n;
+      var bw = Math.min(36, slot * 0.44);
+      for (i = 0; i < n; i++) {
+        c = candles[i];
+        var o = c[0], cl = c[1], hh = c[2], ll = c[3];
+        var bull = cl >= o;
+        var col = bull ? '#d2a24c' : '#c0574b';
+        var x = slot * i + slot / 2;
+        ctx.strokeStyle = col; ctx.fillStyle = col;
+        ctx.lineWidth = 2;
+        ctx.beginPath(); ctx.moveTo(x, y(hh)); ctx.lineTo(x, y(ll)); ctx.stroke();
+        var yO = y(o), yC = y(cl);
+        var top = Math.min(yO, yC);
+        var bh = Math.max(2, Math.abs(yC - yO));
+        var isDoji = Math.abs(o - cl) < (hi - lo) * 0.012;
+        if (isDoji) {
+          ctx.beginPath(); ctx.moveTo(x - bw / 2, yO); ctx.lineTo(x + bw / 2, yO); ctx.stroke();
+        } else {
+          ctx.fillRect(x - bw / 2, top, bw, bh);
+        }
+      }
+    }
+
+    window.addEventListener('resize', function () {
+      if (!$('screen-play').hidden && currentPattern) {
+        drawCandles($('chart'), makeCandles(currentPattern.id, Math.random));
+      }
+    });
+  })();
+  </script>
+</body>
+</html>
