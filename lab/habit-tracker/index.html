@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Habit Tracker · Shipwright Studio</title>
+<meta name="description" content="Free online daily habit tracker: add habits, tap to check them off each day, watch current and longest streaks grow, and view your week as a heatmap — all stored privately in your browser.">
+<link rel="canonical" href="https://shipwright-studio.pages.dev/lab/habit-tracker/">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"WebApplication","name":"Habit Tracker","url":"https://shipwright-studio.pages.dev/lab/habit-tracker/","description":"Habit Tracker is a free online tool that lets you add daily habits, check them off with one tap, track current and longest streaks, and visualise the week as a heatmap, storing everything privately in your browser's local storage.","applicationCategory":"UtilitiesApplication","operatingSystem":"Web","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"}}
+</script>
+<style>
+:root{--bg:#0a0c0f;--panel:#11141a;--line:#232a35;--txt:#e8e4da;--mut:#9aa3b2;--brass:#d2a24c;--red:#e0655f}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--txt);font-family:Inter,system-ui,sans-serif;line-height:1.6;padding:2.5rem 1.25rem 4rem;max-width:940px;margin:0 auto;text-align:center}
+a{color:var(--brass)}
+.crumb{display:block;text-align:left;font-size:.85rem;color:var(--mut);margin-bottom:1.2rem;text-decoration:none}
+.crumb:hover{color:var(--brass)}
+.eyebrow{font-size:.75rem;letter-spacing:.22em;text-transform:uppercase;color:var(--mut)}
+h1{font-family:Fraunces,serif;font-weight:600;font-size:clamp(2rem,4.5vw,3rem);margin:.4rem 0 .6rem}
+.define{color:var(--mut);max-width:52rem;margin:0 auto 1.8rem}
+.define strong{color:var(--txt)}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:1.5rem;margin-bottom:1.2rem;text-align:left}
+.card h2{font-family:Fraunces,serif;font-size:1.2rem;margin-bottom:1rem;text-align:center}
+.card .sub{text-align:center;color:var(--mut);font-size:.85rem;margin:-.6rem 0 1.2rem}
+/* week summary */
+.summary{display:flex;gap:1.8rem;align-items:center;justify-content:center;flex-wrap:wrap}
+.ringwrap{position:relative;width:132px;height:132px;flex:none}
+.ringwrap svg{transform:rotate(-90deg)}
+.ringtxt{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.ringtxt b{font-family:Fraunces,serif;font-size:1.7rem;color:var(--brass)}
+.ringtxt span{font-size:.72rem;color:var(--mut);letter-spacing:.1em;text-transform:uppercase}
+.sumstats{display:flex;gap:2rem}
+.sumstat{text-align:center}
+.sumstat b{font-family:Fraunces,serif;font-size:1.5rem;color:var(--txt);display:block}
+.sumstat span{font-size:.75rem;color:var(--mut);letter-spacing:.08em;text-transform:uppercase}
+/* today list */
+.todaydate{text-align:center;color:var(--mut);font-size:.9rem;margin:-.7rem 0 1.2rem}
+.habit{display:flex;align-items:center;gap:1rem;background:#0d1015;border:1px solid var(--line);border-radius:12px;padding:.85rem 1rem;margin-bottom:.7rem;min-height:60px}
+.check{flex:none;width:34px;height:34px;border-radius:50%;border:2px solid var(--mut);background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;color:transparent;transition:all .18s ease}
+.habit.done .check{background:var(--brass);border-color:var(--brass);color:#0a0c0f;animation:pop .25s ease}
+@keyframes pop{0%{transform:scale(.6)}60%{transform:scale(1.15)}100%{transform:scale(1)}}
+.check svg{width:18px;height:18px}
+.hname{flex:1;font-size:1.02rem;font-weight:500;text-align:left;overflow-wrap:anywhere}
+.habit.done .hname{color:var(--mut);text-decoration:line-through}
+.streak{flex:none;font-size:.85rem;color:var(--brass);background:rgba(210,162,76,.1);border:1px solid rgba(210,162,76,.35);border-radius:999px;padding:.2rem .7rem;white-space:nowrap}
+.best{flex:none;font-size:.75rem;color:var(--mut);white-space:nowrap}
+.iconbtn{flex:none;background:transparent;border:0;color:var(--mut);cursor:pointer;font-size:1rem;padding:.4rem;line-height:1}
+.iconbtn:hover{color:var(--txt)}
+.iconbtn.del:hover{color:var(--red)}
+/* heatmap */
+.hrow{display:flex;align-items:center;gap:.8rem;margin-bottom:.55rem}
+.hrow .nm{width:130px;flex:none;font-size:.9rem;text-align:right;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cells{display:flex;gap:.35rem;flex:1}
+.cell{flex:1;aspect-ratio:1;max-width:34px;border-radius:6px;border:1px solid var(--line);background:#0d1015}
+.cell.on{background:var(--brass);border-color:var(--brass)}
+.cell.today{outline:2px solid var(--brass);outline-offset:1px}
+.dowlabels{display:flex;gap:.8rem;margin-bottom:.4rem;margin-left:calc(130px + .8rem)}
+.dowlabels .cells span{font-size:.68rem;color:var(--mut);text-align:center}
+.legend{display:flex;gap:1.2rem;justify-content:center;font-size:.78rem;color:var(--mut);margin-top:1rem;flex-wrap:wrap}
+.legend i{display:inline-block;width:11px;height:11px;border-radius:3px;margin-right:.35rem;vertical-align:baseline;border:1px solid var(--line)}
+/* manage */
+.addrow{display:flex;gap:.6rem;margin-bottom:.4rem}
+.addrow input{flex:1;background:#0d1015;border:1px solid var(--line);border-radius:8px;color:var(--txt);padding:.7rem .9rem;font-size:1rem;font-family:inherit;outline:none}
+.addrow input:focus{border-color:var(--brass)}
+.btn{font-size:.9rem;border:1px solid var(--brass);background:transparent;color:var(--brass);border-radius:999px;padding:.6rem 1.5rem;cursor:pointer;font-family:inherit;white-space:nowrap}
+.btn:hover{background:rgba(210,162,76,.12)}
+.btn.ghost{border-color:var(--line);color:var(--mut)}
+.btn.ghost:hover{color:var(--txt);border-color:var(--mut)}
+.btn.solid{background:var(--brass);color:#0a0c0f;font-weight:600}
+.btn.solid:hover{background:#e0b464}
+.chips{display:flex;gap:.5rem;flex-wrap:wrap;justify-content:center;margin-top:.8rem}
+.chip{font-size:.85rem;border:1px dashed var(--line);background:transparent;color:var(--mut);border-radius:999px;padding:.4rem 1rem;cursor:pointer;font-family:inherit}
+.chip:hover{color:var(--brass);border-color:var(--brass)}
+.ferr{color:var(--red);font-size:.85rem;min-height:1.3em;margin-top:.3rem;text-align:center}
+.empty{text-align:center;color:var(--mut);padding:2.5rem 1rem}
+.empty h3{font-family:Fraunces,serif;color:var(--txt);font-size:1.4rem;margin-bottom:.5rem}
+.empty p{max-width:26rem;margin:0 auto 1.2rem}
+.notes{max-width:44rem;margin:1.8rem auto 0;color:var(--mut);font-size:.92rem;text-align:left}
+.notes li{margin:.5rem 0 .5rem 1.2rem}
+.fallbackbox{width:100%;background:#0d1015;border:1px solid var(--line);border-radius:8px;color:var(--txt);padding:.8rem;font-family:ui-monospace,Menlo,monospace;font-size:.85rem;margin-top:.8rem;white-space:pre-wrap}
+.copyok{color:var(--brass);font-size:.85rem;min-height:1.3em;margin-top:.5rem;text-align:center}
+footer{margin-top:2.5rem;font-size:.85rem;color:var(--mut)}
+footer .back{display:block;margin-top:.6rem}
+.editbox{flex:1;background:#0d1015;border:1px solid var(--brass);border-radius:8px;color:var(--txt);padding:.45rem .6rem;font-size:1rem;font-family:inherit;outline:none}
+@media(max-width:640px){
+  .card{padding:1.1rem}
+  .hrow .nm{width:84px;font-size:.82rem}
+  .dowlabels{margin-left:calc(84px + .8rem)}
+  .best{display:none}
+  .summary{gap:1.2rem}
+}
+</style>
+</head>
+<body>
+<a class="crumb" href="/ideas/">← Back to the idea bank</a>
+<p class="eyebrow">Shipwright Studio · Lab</p>
+<h1>Habit Tracker</h1>
+<p class="define"><strong>A habit tracker is a free online tool that helps you keep small daily promises to yourself</strong> — add a habit, check it off once a day with a single tap, and watch the streak grow as the days stack up. Everything is stored privately in this browser's local storage; no account, no sign-up, nothing ever leaves your device.</p>
+
+<div class="card" id="summaryCard">
+  <h2>This week</h2>
+  <div class="summary">
+    <div class="ringwrap">
+      <svg width="132" height="132" viewBox="0 0 132 132" role="img" aria-label="Weekly completion ring">
+        <circle cx="66" cy="66" r="56" fill="none" stroke="#232a35" stroke-width="12"/>
+        <circle id="ring" cx="66" cy="66" r="56" fill="none" stroke="#d2a24c" stroke-width="12" stroke-linecap="round" stroke-dasharray="351.86" stroke-dashoffset="351.86" style="transition:stroke-dashoffset .6s ease"/>
+      </svg>
+      <div class="ringtxt"><b id="ringPct">0%</b><span>of week</span></div>
+    </div>
+    <div class="sumstats">
+      <div class="sumstat"><b id="statDone">0</b><span>check-ins</span></div>
+      <div class="sumstat"><b id="statTotal">0</b><span>possible</span></div>
+      <div class="sumstat"><b id="statBest">–</b><span>best streak</span></div>
+    </div>
+  </div>
+</div>
+
+<div class="card" id="todayCard">
+  <h2>Today</h2>
+  <p class="todaydate" id="todayDate"></p>
+  <div id="habitList"></div>
+  <div class="empty" id="emptyState" hidden>
+    <h3>No habits yet</h3>
+    <p>Name your first habit below — or tap a suggestion to add it instantly. Then come back each day and check it off.</p>
+    <button class="btn solid" id="emptyAddBtn">Add your first habit</button>
+  </div>
+</div>
+
+<div class="card" id="heatCard" hidden>
+  <h2>This week</h2>
+  <p class="sub">Monday → Sunday</p>
+  <div class="dowlabels"><div class="cells" id="dowRow"></div></div>
+  <div id="heatRows"></div>
+  <div class="legend"><span><i style="background:#d2a24c"></i>Done</span><span><i style="background:#0d1015"></i>Missed</span><span><i style="outline:2px solid #d2a24c;background:transparent"></i>Today</span></div>
+</div>
+
+<div class="card">
+  <h2>Manage habits</h2>
+  <div class="addrow">
+    <input id="habitName" type="text" maxlength="24" placeholder="e.g. Exercise" aria-label="New habit name" autocomplete="off">
+    <button class="btn solid" id="addBtn">Add</button>
+  </div>
+  <div class="ferr" id="addErr"></div>
+  <div class="chips" id="suggestChips"></div>
+  <div style="text-align:center;margin-top:1.2rem">
+    <button class="btn ghost" id="copyBtn">Copy summary as text</button>
+    <div class="copyok" id="copyMsg"></div>
+    <div id="fallbackWrap" hidden><div class="fallbackbox" id="fallbackBox"></div></div>
+  </div>
+</div>
+
+<ul class="notes">
+  <li><strong>How streaks work.</strong> A habit's streak counts consecutive days you've checked it in, ending today. If you haven't checked in yet today, yesterday's streak still shows — tap it today to keep it alive. One missed day resets the streak to zero; your best streak is never lost.</li>
+  <li><strong>Private by design.</strong> Your habits live only in this browser's local storage. Clear your browser data and they disappear; nothing is sent anywhere.</li>
+</ul>
+
+<footer>Built by <a href="https://shipwright-studio.pages.dev/">Shipwright Studio</a><a class="back" href="/lab/">← All lab demos</a></footer>
+
+<script>
+(function(){
+"use strict";
+var KEY="habittracker:v1";
+var SUGGEST=["Exercise","Read","Meditate","Drink water"];
+
+function pad(n){return (n<10?"0":"")+n;}
+function dayKey(d){return d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate());}
+function todayKey(){return dayKey(new Date());}
+function offsetKey(off){var d=new Date();d.setDate(d.getDate()+off);return dayKey(d);}
+function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,7);}
+
+function load(){try{var raw=localStorage.getItem(KEY);if(!raw)return{habits:[]};var s=JSON.parse(raw);if(!s||!Array.isArray(s.habits))return{habits:[]};return s;}catch(e){return{habits:[]};}}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(state));}catch(e){}}
+
+/* --- streak logic (pure; tested in node) --- */
+function currentStreak(checks){
+  var off=(checks[offsetKey(0)]?0:1);
+  var n=0;
+  while(checks[offsetKey(-(off+n))])n++;
+  return n;
+}
+function longestStreak(checks){
+  var keys=Object.keys(checks).sort();
+  var best=0,run=0,prev=null;
+  for(var i=0;i<keys.length;i++){
+    var d=new Date(keys[i]+"T12:00:00");
+    if(prev){var gap=Math.round((d-prev)/86400000);run=(gap===1)?run+1:1;}
+    else run=1;
+    if(run>best)best=run;
+    prev=d;
+  }
+  return best;
+}
+function weekDates(){
+  var now=new Date(),dow=(now.getDay()+6)%7; /* Monday-first */
+  var days=[];
+  for(var i=0;i<7;i++){var d=new Date(now);d.setDate(now.getDate()-dow+i);days.push(dayKey(d));}
+  return days;
+}
+
+var state=load();
+
+function esc(s){return s.replace(/[&<>"']/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];});}
+
+function render(){
+  var habits=state.habits,tk=todayKey();
+  var now=new Date();
+  document.getElementById("todayDate").textContent=now.toLocaleDateString("en-GB",{weekday:"long",day:"numeric",month:"long"});
+
+  /* today list / empty state */
+  var list=document.getElementById("habitList");
+  document.getElementById("emptyState").hidden=habits.length>0;
+  list.innerHTML="";
+  habits.forEach(function(h){
+    var done=!!h.checks[tk];
+    var cs=currentStreak(h.checks),bs=longestStreak(h.checks);
+    var row=document.createElement("div");
+    row.className="habit"+(done?" done":"");
+    row.innerHTML=
+      '<button class="check" aria-label="Toggle today for '+esc(h.name)+'"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg></button>'+
+      '<span class="hname">'+esc(h.name)+'</span>'+
+      '<span class="streak">🔥 '+cs+(cs===1?" day":" days")+'</span>'+
+      '<span class="best">Best '+bs+'</span>'+
+      '<button class="iconbtn edit" title="Rename" aria-label="Rename '+esc(h.name)+'">✎</button>'+
+      '<button class="iconbtn del" title="Delete" aria-label="Delete '+esc(h.name)+'">✕</button>';
+    row.querySelector(".check").onclick=function(){h.checks[tk]=!done?1:0;if(!h.checks[tk])delete h.checks[tk];save();render();};
+    row.querySelector(".edit").onclick=function(){startRename(row,h);};
+    row.querySelector(".del").onclick=function(){
+      if(row.dataset.confirm==="1"){state.habits=state.habits.filter(function(x){return x.id!==h.id;});save();render();}
+      else{row.dataset.confirm="1";var b=this;b.textContent="Sure?";setTimeout(function(){row.dataset.confirm="";b.textContent="✕";},2500);}
+    };
+    list.appendChild(row);
+  });
+
+  /* week summary */
+  var wk=weekDates(),doneCount=0,bestOverall=0;
+  habits.forEach(function(h){
+    wk.forEach(function(k){if(h.checks[k])doneCount++;});
+    var b=longestStreak(h.checks);if(b>bestOverall)bestOverall=b;
+  });
+  var total=habits.length*7,pct=total?Math.round(doneCount/total*100):0;
+  var ring=document.getElementById("ring"),C=351.86;
+  ring.style.strokeDashoffset=(C*(1-pct/100)).toFixed(1);
+  document.getElementById("ringPct").textContent=pct+"%";
+  document.getElementById("statDone").textContent=doneCount;
+  document.getElementById("statTotal").textContent=total;
+  document.getElementById("statBest").textContent=habits.length?bestOverall+"d":"–";
+
+  /* heatmap */
+  var heat=document.getElementById("heatCard");
+  heat.hidden=habits.length===0;
+  if(habits.length){
+    var dows=["M","T","W","T","F","S","S"];
+    document.getElementById("dowRow").innerHTML=dows.map(function(d){return "<span>"+d+"</span>";}).join("");
+    var wrap=document.getElementById("heatRows");wrap.innerHTML="";
+    habits.forEach(function(h){
+      var r=document.createElement("div");r.className="hrow";
+      var cells=wk.map(function(k){
+        return '<div class="cell'+(h.checks[k]?" on":"")+(k===tk?" today":"")+'" title="'+esc(h.name)+" · "+k+'"></div>';
+      }).join("");
+      r.innerHTML='<span class="nm" title="'+esc(h.name)+'">'+esc(h.name)+'</span><div class="cells">'+cells+"</div>";
+      wrap.appendChild(r);
+    });
+  }
+
+  /* suggestion chips */
+  var chips=document.getElementById("suggestChips");chips.innerHTML="";
+  var names=habits.map(function(h){return h.name.toLowerCase();});
+  SUGGEST.forEach(function(s){
+    if(names.indexOf(s.toLowerCase())>=0)return;
+    var c=document.createElement("button");c.className="chip";c.textContent="+ "+s;
+    c.onclick=function(){addHabit(s);};
+    chips.appendChild(c);
+  });
+  if(!chips.children.length)chips.innerHTML='<span style="font-size:.8rem;color:var(--mut)">All suggestions added.</span>';
+}
+
+function addHabit(name){
+  var err=document.getElementById("addErr");err.textContent="";
+  name=(name||"").trim().slice(0,24);
+  if(!name){err.textContent="Give your habit a name first.";return;}
+  var dup=state.habits.some(function(h){return h.name.toLowerCase()===name.toLowerCase();});
+  if(dup){err.textContent='"'+name+'" is already on your list.';return;}
+  state.habits.push({id:uid(),name:name,created:todayKey(),checks:{}});
+  document.getElementById("habitName").value="";
+  save();render();
+}
+
+function startRename(row,h){
+  var span=row.querySelector(".hname");
+  var input=document.createElement("input");
+  input.className="editbox";input.value=h.name;input.maxLength=24;input.setAttribute("aria-label","Rename habit");
+  span.replaceWith(input);input.focus();input.select();
+  var commit=function(ok){
+    if(ok){var v=input.value.trim().slice(0,24);
+      var dup=state.habits.some(function(x){return x.id!==h.id&&x.name.toLowerCase()===v.toLowerCase();});
+      if(v&&!dup){h.name=v;save();}
+    }
+    render();
+  };
+  input.onkeydown=function(e){if(e.key==="Enter")commit(true);if(e.key==="Escape")commit(false);};
+  input.onblur=function(){commit(true);};
+}
+
+function copySummary(){
+  var msg=document.getElementById("copyMsg"),fb=document.getElementById("fallbackWrap");
+  msg.textContent="";fb.hidden=true;
+  var tk=todayKey(),lines=["Habit Tracker — "+tk,""];
+  state.habits.forEach(function(h){
+    lines.push((h.checks[tk]?"✔ ":"○ ")+h.name+" — streak "+currentStreak(h.checks)+"d (best "+longestStreak(h.checks)+"d)");
+  });
+  if(!state.habits.length)lines.push("(no habits yet)");
+  lines.push("", "Weekly check-ins: "+document.getElementById("statDone").textContent+"/"+document.getElementById("statTotal").textContent+" ("+document.getElementById("ringPct").textContent+")");
+  var text=lines.join("\n");
+  var done=function(){msg.textContent="Summary copied to clipboard.";};
+  var fallback=function(){
+    document.getElementById("fallbackBox").textContent=text;fb.hidden=false;
+    msg.textContent="Clipboard unavailable — copy the text below.";
+  };
+  if(navigator.clipboard&&navigator.clipboard.writeText){
+    navigator.clipboard.writeText(text).then(done,fallback);
+  }else fallback();
+}
+
+document.getElementById("addBtn").onclick=function(){addHabit(document.getElementById("habitName").value);};
+document.getElementById("habitName").addEventListener("keydown",function(e){if(e.key==="Enter")addHabit(this.value);});
+document.getElementById("emptyAddBtn").onclick=function(){document.getElementById("habitName").focus();window.scrollTo({top:0,behavior:"smooth"});};
+document.getElementById("copyBtn").onclick=copySummary;
+
+render();
+})();
+</script>
+</body>
+</html>

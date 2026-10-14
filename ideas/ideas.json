@@ -1,5 +1,5 @@
 {
-  "updated": "2026-10-13",
+  "updated": "2026-10-14",
   "ideas": [
     {
       "id": "idea-000a",
@@ -165,7 +165,9 @@
       "tagline": "Six guesses, one five-letter word, daily seed.",
       "priority": 83,
       "effort": "M",
-      "status": "todo"
+      "status": "done",
+      "url": "/lab/wordle-clone/",
+      "shipped": "2026-10-14"
     },
     {
       "id": "idea-013",
@@ -879,7 +881,9 @@
       "tagline": "Check off daily habits, watch the streak grow.",
       "priority": 83,
       "effort": "M",
-      "status": "todo"
+      "status": "done",
+      "url": "/lab/habit-tracker/",
+      "shipped": "2026-10-14"
     },
     {
       "id": "idea-082",
