@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>JWT Decoder · Shipwright Studio</title>
+<meta name="description" content="Free online JWT decoder: paste a JSON Web Token and inspect its header, payload and signature in your browser, with time-claim checks. No token ever leaves the page.">
+<link rel="canonical" href="https://shipwright-studio.pages.dev/lab/jwt-decoder/">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"WebApplication","name":"JWT Decoder","url":"https://shipwright-studio.pages.dev/lab/jwt-decoder/","description":"JWT Decoder is a free online tool that decodes JSON Web Tokens entirely in the browser — no token ever leaves the page. It splits a token into header, payload and signature, pretty-prints the JSON, and checks the exp, iat and nbf time claims against the current clock.","applicationCategory":"DeveloperApplication","operatingSystem":"Web","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"}}
+</script>
+<style>
+:root{--bg:#0a0c0f;--panel:#101318;--line:#1c2128;--txt:#e8e4da;--mut:#9aa3b2;--brass:#d2a24c;--teal:#7fd4c1;--green:#6fbf73;--amber:#e0a63e;--red:#e0655f}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--txt);font-family:Fraunces,Georgia,serif;line-height:1.65;padding:2rem 1.2rem 4rem;max-width:960px;margin:0 auto}
+a{color:var(--brass)}
+.nav{display:flex;gap:1.2rem;font-size:.85rem;margin-bottom:1.2rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.nav a{color:var(--mut);text-decoration:none}
+.nav a:hover{color:var(--brass)}
+.eyebrow{font-size:.75rem;letter-spacing:.22em;text-transform:uppercase;color:var(--mut);font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+h1{font-weight:600;font-size:clamp(2.1rem,5vw,3rem);margin:.5rem 0 .7rem}
+h2{font-weight:600;font-size:1.35rem;margin:0 0 .8rem}
+.define{color:var(--mut);max-width:46rem;margin-bottom:1.8rem;font-size:1rem}
+.define strong{color:var(--txt)}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:1.4rem;margin-bottom:1.4rem}
+.cardlabel{font-size:.72rem;letter-spacing:.18em;text-transform:uppercase;color:var(--mut);margin-bottom:.8rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+textarea{width:100%;min-height:9rem;background:#08090c;border:1px solid var(--line);border-radius:10px;color:var(--txt);font-family:"JetBrains Mono",ui-monospace,monospace;font-size:.85rem;line-height:1.6;padding:.9rem;resize:vertical}
+textarea:focus{outline:none;border-color:var(--brass)}
+.btnrow{display:flex;gap:.7rem;flex-wrap:wrap;margin-top:.9rem}
+.btn{font-size:.9rem;border:1px solid var(--brass);background:transparent;color:var(--brass);border-radius:999px;padding:.55rem 1.4rem;cursor:pointer;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.btn:hover{background:rgba(210,162,76,.12)}
+.btn.ghost{border-color:var(--line);color:var(--mut)}
+.btn.ghost:hover{color:var(--txt);border-color:var(--mut)}
+.btn.copy{width:auto}
+.banner{display:none;border:1px solid;border-radius:10px;padding:.9rem 1.1rem;margin-bottom:1.4rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.banner.show{display:block}
+.banner.green{border-color:var(--green);background:rgba(111,191,115,.07)}
+.banner.amber{border-color:var(--amber);background:rgba(224,166,62,.07)}
+.banner.red{border-color:var(--red);background:rgba(224,101,95,.08)}
+.banner .t{font-weight:700;margin-bottom:.15rem}
+.banner.green .t{color:var(--green)}.banner.amber .t{color:var(--amber)}.banner.red .t{color:var(--red)}
+.banner .d{font-size:.88rem;color:var(--mut)}
+.segstrip{display:grid;grid-template-columns:1fr 1fr 1fr;gap:.8rem;margin-bottom:1.4rem}
+.seg{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:.8rem;font-family:"JetBrains Mono",ui-monospace,monospace;font-size:.72rem;overflow:hidden}
+.seg .sl{color:var(--brass);font-size:.7rem;letter-spacing:.14em;text-transform:uppercase;margin-bottom:.3rem}
+.seg .sv{color:var(--mut);word-break:break-all}
+.seg .sb{color:var(--txt);margin-top:.3rem;font-size:.75rem}
+.panels{display:grid;grid-template-columns:1fr 1fr 1fr;gap:1rem;margin-bottom:1.4rem}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:1.2rem;display:flex;flex-direction:column;min-width:0}
+.panel h2{font-size:1.15rem}
+pre.json{background:#08090c;border:1px solid var(--line);border-radius:8px;padding:.9rem;font-family:"JetBrains Mono",ui-monospace,monospace;font-size:.8rem;line-height:1.7;overflow:auto;white-space:pre-wrap;word-break:break-word;flex:1}
+.jk{color:var(--brass)}.js{color:var(--teal)}.jn{color:var(--mut)}.jb{color:var(--mut);font-weight:600}.jp{color:#6b7280}
+.sigraw{font-family:"JetBrains Mono",ui-monospace,monospace;font-size:.78rem;color:var(--mut);word-break:break-all;line-height:1.7}
+.sigmeta{font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif;font-size:.85rem;color:var(--mut);margin-top:.7rem}
+.sigmeta b{color:var(--txt)}
+.note{font-size:.82rem;color:var(--mut);border-left:2px solid var(--brass);padding-left:.9rem;margin-top:.9rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.claimrow{display:grid;grid-template-columns:5.5rem 1fr auto;gap:1rem;align-items:baseline;padding:.7rem 0;border-bottom:1px solid var(--line);font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.claimrow:last-child{border-bottom:0}
+.claimrow .cn{font-family:"JetBrains Mono",ui-monospace,monospace;color:var(--brass);font-size:.9rem}
+.claimrow .ct{font-size:.85rem;color:var(--mut)}
+.claimrow .ct b{color:var(--txt);font-weight:600}
+.chip{display:inline-block;font-size:.75rem;font-weight:600;border-radius:999px;padding:.2rem .75rem;border:1px solid var(--line);color:var(--mut);white-space:nowrap}
+.chip.green{border-color:var(--green);color:var(--green)}
+.chip.amber{border-color:var(--amber);color:var(--amber)}
+.claimrow .ct .utc{color:#6b7280;font-size:.78rem}
+.disclaimer{font-size:.85rem;color:var(--mut);margin-top:.4rem}
+.disclaimer h2{font-size:1.1rem;margin-bottom:.4rem}
+footer{margin-top:2.5rem;font-size:.85rem;color:var(--mut);font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+@media(max-width:720px){
+  .panels{grid-template-columns:1fr}
+  .segstrip{grid-template-columns:1fr}
+  .btn.copy{width:100%}
+  .claimrow{grid-template-columns:4.5rem 1fr;grid-template-rows:auto auto}
+  .claimrow .chip{grid-column:2;justify-self:start;margin-top:.3rem}
+}
+</style>
+</head>
+<body>
+<div class="nav"><a href="/ideas/">← Idea bank</a></div>
+<p class="eyebrow">Shipwright Studio · Lab</p>
+<h1>JWT Decoder</h1>
+<p class="define"><strong>JWT Decoder is a free online tool that decodes JSON Web Tokens entirely in the browser</strong> — no token ever leaves the page and no server is involved. Paste a token to split it into header, payload and signature, pretty-print the JSON, and check the <code>exp</code>, <code>iat</code> and <code>nbf</code> time claims against the current clock. Built for developers debugging auth flows who need a quick, privacy-safe token inspector.</p>
+
+<div class="card">
+  <div class="cardlabel">Token input</div>
+  <label for="tokenin" style="position:absolute;left:-9999px">Paste your JWT</label>
+  <textarea id="tokenin" rows="5" placeholder="Paste a JWT here — e.g. eyJhbGciOi… (a Bearer prefix is fine)" spellcheck="false" autocomplete="off"></textarea>
+  <div class="btnrow">
+    <button class="btn" id="btnsample" type="button">Load sample token</button>
+    <button class="btn ghost" id="btnclear" type="button">Clear</button>
+    <button class="btn ghost copy" id="btncopytoken" type="button">Copy token</button>
+  </div>
+</div>
+
+<div class="banner" id="banner" role="status" aria-live="polite"><div class="t" id="bannert"></div><div class="d" id="bannerd"></div></div>
+
+<div id="results" style="display:none">
+  <div class="cardlabel">Segments</div>
+  <div class="segstrip" id="segstrip"></div>
+
+  <div class="panels">
+    <div class="panel">
+      <h2>Header</h2>
+      <pre class="json" id="outh" aria-label="Decoded header JSON"></pre>
+      <div class="btnrow"><button class="btn ghost copy" id="btncopyh" type="button">Copy header JSON</button></div>
+    </div>
+    <div class="panel">
+      <h2>Payload</h2>
+      <pre class="json" id="outp" aria-label="Decoded payload JSON"></pre>
+      <div class="btnrow"><button class="btn ghost copy" id="btncopyp" type="button">Copy payload JSON</button></div>
+    </div>
+    <div class="panel">
+      <h2>Signature</h2>
+      <div class="sigraw" id="outs"></div>
+      <div class="sigmeta" id="outsm"></div>
+      <div class="note">Decoding the signature only reveals its bytes — it does <b>not</b> verify that the signature is valid. Verification needs the secret or public key, which this tool never asks for.</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="cardlabel">Time claims</div>
+    <div id="claims"></div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="cardlabel">What this tool does not do</div>
+  <div class="disclaimer">
+    <p>No signature verification — that requires the signing secret or public key, which you should never paste into a website. No JWK fetching, no encrypted JWT (JWE) support, no network calls, and nothing is stored: refresh the page and your token is gone.</p>
+  </div>
+</div>
+
+<footer>Built in the Shipwright Studio lab. Everything on this page runs locally in your browser.</footer>
+
+<script>
+"use strict";
+/* ===== CORE-START (pure decoder logic, no DOM) ===== */
+function escHtml(s){
+  return s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+}
+function b64urlBytes(seg){
+  if(!/^[A-Za-z0-9_-]*$/.test(seg)) throw new Error("invalid base64url characters");
+  if(seg.length === 0) throw new Error("empty segment");
+  var s = seg.replace(/-/g,"+").replace(/_/g,"/");
+  while(s.length % 4 !== 0) s += "=";
+  var bin;
+  if(typeof atob === "function") bin = atob(s);
+  else bin = Buffer.from(s, "base64").toString("binary");
+  var u8 = new Uint8Array(bin.length);
+  for(var i=0;i<bin.length;i++) u8[i] = bin.charCodeAt(i);
+  return u8;
+}
+function b64urlUtf8(seg){
+  var u8 = b64urlBytes(seg);
+  if(typeof TextDecoder !== "undefined") return new TextDecoder("utf-8",{fatal:true}).decode(u8);
+  return Buffer.from(u8).toString("utf8");
+}
+function hexOf(u8){
+  var out = "";
+  for(var i=0;i<u8.length;i++){ var h = u8[i].toString(16); out += h.length===1 ? "0"+h : h; }
+  return out;
+}
+function decodePart(seg, label){
+  var text;
+  try { text = b64urlUtf8(seg); }
+  catch(e){ throw new Error(label + " is not valid base64url: " + e.message); }
+  try { return JSON.parse(text); }
+  catch(e){ throw new Error(label + " does not contain valid JSON"); }
+}
+function parseToken(raw){
+  var t = String(raw || "").trim();
+  t = t.replace(/^bearer\s+/i, "").trim();
+  if(!t) throw new Error("nothing to decode — paste a token first");
+  var parts = t.split(".");
+  if(parts.length !== 3) throw new Error("a JWT has exactly 3 dot-separated segments, found " + parts.length);
+  if(parts.some(function(p){ return p.length === 0; })) throw new Error("one or more segments are empty");
+  var header = decodePart(parts[0], "header");
+  var payload = decodePart(parts[1], "payload");
+  var sigBytes = b64urlBytes(parts[2]);
+  return {
+    token: t,
+    parts: [
+      {name:"Header", seg:parts[0], bytes:b64urlBytes(parts[0]).length},
+      {name:"Payload", seg:parts[1], bytes:b64urlBytes(parts[1]).length},
+      {name:"Signature", seg:parts[2], bytes:sigBytes.length}
+    ],
+    header: header,
+    payload: payload,
+    sigHex: hexOf(sigBytes),
+    sigBytes: sigBytes.length
+  };
+}
+function fmtEpoch(epoch){
+  var d = new Date(epoch * 1000);
+  return {
+    local: d.toLocaleString(),
+    utc: d.toUTCString(),
+    epoch: epoch
+  };
+}
+function relTime(nowSec, epoch){
+  var diff = epoch - nowSec;
+  var abs = Math.abs(diff);
+  var unit, val;
+  if(abs < 60){ val = abs; unit = "second"; }
+  else if(abs < 3600){ val = Math.floor(abs/60); unit = "minute"; }
+  else if(abs < 86400){ val = Math.floor(abs/3600); unit = "hour"; }
+  else if(abs < 86400*365){ val = Math.floor(abs/86400); unit = "day"; }
+  else { val = Math.floor(abs/(86400*365)); unit = "year"; }
+  var s = val + " " + unit + (val === 1 ? "" : "s");
+  return diff >= 0 ? "in " + s : s + " ago";
+}
+function claimsView(payload, nowSec){
+  var rows = [];
+  var specs = [
+    {claim:"exp", desc:"expiry time"},
+    {claim:"iat", desc:"issued at"},
+    {claim:"nbf", desc:"not valid before"}
+  ];
+  specs.forEach(function(sp){
+    var v = payload[sp.claim];
+    if(typeof v !== "number"){
+      rows.push({claim:sp.claim, desc:sp.desc, present:false});
+      return;
+    }
+    var status, chip;
+    if(sp.claim === "exp"){
+      if(v <= nowSec){ status = "Expired"; chip = "amber"; }
+      else { status = "Valid · expires " + relTime(nowSec, v); chip = "green"; }
+    } else if(sp.claim === "nbf"){
+      if(v > nowSec){ status = "Not yet valid"; chip = "amber"; }
+      else { status = "Active"; chip = "green"; }
+    } else {
+      status = v > nowSec ? "In the future" : "Issued " + relTime(nowSec, v);
+      chip = v > nowSec ? "amber" : "green";
+    }
+    rows.push({claim:sp.claim, desc:sp.desc, present:true, epoch:v, time:fmtEpoch(v), status:status, chip:chip});
+  });
+  return rows;
+}
+function bannerState(payload, nowSec){
+  if(typeof payload.exp === "number"){
+    if(payload.exp <= nowSec) return {kind:"amber", title:"Token expired", detail:"The exp claim is in the past (" + relTime(nowSec, payload.exp) + "). The token should no longer be accepted."};
+    if(typeof payload.nbf === "number" && payload.nbf > nowSec) return {kind:"amber", title:"Not yet valid", detail:"The nbf claim is in the future — this token becomes valid " + relTime(nowSec, payload.nbf) + "."};
+    return {kind:"green", title:"Valid token", detail:"The exp claim is in the future — it expires " + relTime(nowSec, payload.exp) + "."};
+  }
+  if(typeof payload.nbf === "number" && payload.nbf > nowSec) return {kind:"amber", title:"Not yet valid", detail:"The nbf claim is in the future — this token becomes valid " + relTime(nowSec, payload.nbf) + "."};
+  return {kind:"green", title:"Decoded successfully", detail:"No exp claim present, so no expiry check was possible."};
+}
+/* ===== CORE-END ===== */
+
+(function(){
+  var SAMPLE = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJkZW1vLXVzZXIiLCJuYW1lIjoiRGVtbyBVc2VyIiwiYWRtaW4iOmZhbHNlLCJpYXQiOjE3MDQwNjcyMDAsIm5iZiI6MTcwNDA2NzIwMCwiZXhwIjoxODkzNDU2MDAwfQ.B-qMQQjl9e6nSL8pLUrB5q6J3U21zaYA_EJ9C5eX7EM";
+
+  var ta = document.getElementById("tokenin");
+  var banner = document.getElementById("banner");
+  var bannert = document.getElementById("bannert");
+  var bannerd = document.getElementById("bannerd");
+  var results = document.getElementById("results");
+  var last = null;
+
+  function highlightJson(json){
+    var out = "";
+    var re = /("(?:\\.|[^"\\])*")(\s*:)?|(-?\d+(?:\.\d+)?(?:[eE][+-]?\d+)?)|\b(true|false)\b|\bnull\b/g;
+    var lastIdx = 0, m;
+    while((m = re.exec(json)) !== null){
+      out += escHtml(json.slice(lastIdx, m.index));
+      var tok = m[0];
+      if(m[1]){
+        out += m[2]
+          ? '<span class="jk">' + escHtml(m[1]) + "</span>" + '<span class="jp">:</span>'
+          : '<span class="js">' + escHtml(m[1]) + "</span>";
+      } else if(m[3]){
+        out += '<span class="jn">' + escHtml(m[3]) + "</span>";
+      } else if(m[4]){
+        out += '<span class="jb">' + escHtml(m[4]) + "</span>";
+      } else {
+        out += '<span class="jp">null</span>';
+      }
+      lastIdx = m.index + tok.length;
+    }
+    out += escHtml(json.slice(lastIdx));
+    return out;
+  }
+
+  function showBanner(kind, title, detail){
+    banner.className = "banner show " + kind;
+    bannert.textContent = title;
+    bannerd.textContent = detail;
+  }
+
+  function render(res){
+    var nowSec = Math.floor(Date.now()/1000);
+    last = res;
+    results.style.display = "block";
+
+    document.getElementById("segstrip").innerHTML = res.parts.map(function(p){
+      return '<div class="seg"><div class="sl">' + p.name + '</div><div class="sv">' + escHtml(p.seg.slice(0,42)) + (p.seg.length>42?"…":"") + '</div><div class="sb">' + p.bytes + " bytes</div></div>";
+    }).join("");
+
+    document.getElementById("outh").innerHTML = highlightJson(JSON.stringify(res.header, null, 2));
+    document.getElementById("outp").innerHTML = highlightJson(JSON.stringify(res.payload, null, 2));
+
+    document.getElementById("outs").textContent = res.parts[2].seg;
+    document.getElementById("outsm").innerHTML =
+      "<b>" + res.sigBytes + "</b> bytes · hex: <span style=\"font-family:'JetBrains Mono',monospace;font-size:.75rem\">" + escHtml(res.sigHex) + "</span>" +
+      "<br>Algorithm: <b>" + escHtml(String(res.header.alg || "not specified")) + "</b>";
+
+    var rows = claimsView(res.payload, nowSec);
+    document.getElementById("claims").innerHTML = rows.map(function(r){
+      if(!r.present) return '<div class="claimrow"><span class="cn">' + r.claim + '</span><span class="ct">not present in payload</span><span class="chip">—</span></div>';
+      return '<div class="claimrow"><span class="cn">' + r.claim + '</span><span class="ct"><b>' + escHtml(r.time.local) + '</b> (local)<br><span class="utc">' + escHtml(r.time.utc) + ' · epoch ' + r.epoch + '</span></span><span class="chip ' + r.chip + '">' + escHtml(r.status) + '</span></div>';
+    }).join("");
+
+    var bs = bannerState(res.payload, nowSec);
+    showBanner(bs.kind, bs.title, bs.detail);
+  }
+
+  function clearAll(){
+    ta.value = "";
+    last = null;
+    results.style.display = "none";
+    banner.className = "banner";
+  }
+
+  var timer = null;
+  function parseLive(){
+    if(timer) clearTimeout(timer);
+    timer = setTimeout(function(){
+      var raw = ta.value;
+      if(!raw.trim()){ results.style.display = "none"; banner.className = "banner"; return; }
+      try {
+        render(parseToken(raw));
+      } catch(e){
+        last = null;
+        results.style.display = "none";
+        showBanner("red", "Invalid token", e.message);
+      }
+    }, 300);
+  }
+
+  document.getElementById("btnsample").addEventListener("click", function(){ ta.value = SAMPLE; parseLive(); });
+  document.getElementById("btnclear").addEventListener("click", clearAll);
+  ta.addEventListener("input", parseLive);
+
+  function copyText(text, btn, label){
+    var done = function(){ var old = btn.textContent; btn.textContent = "Copied"; setTimeout(function(){ btn.textContent = old; }, 1200); };
+    if(navigator.clipboard && navigator.clipboard.writeText){
+      navigator.clipboard.writeText(text).then(done, function(){ fallback(); });
+    } else fallback();
+    function fallback(){
+      var tmp = document.createElement("textarea");
+      tmp.value = text; tmp.style.position = "fixed"; tmp.style.opacity = "0";
+      document.body.appendChild(tmp); tmp.select();
+      try { document.execCommand("copy"); done(); } catch(e){}
+      document.body.removeChild(tmp);
+    }
+  }
+  document.getElementById("btncopytoken").addEventListener("click", function(){
+    copyText(last ? last.token : ta.value.trim(), this, "token");
+  });
+  document.getElementById("btncopyh").addEventListener("click", function(){
+    if(last) copyText(JSON.stringify(last.header, null, 2), this, "header");
+  });
+  document.getElementById("btncopyp").addEventListener("click", function(){
+    if(last) copyText(JSON.stringify(last.payload, null, 2), this, "payload");
+  });
+})();
+</script>
+</body>
+</html>

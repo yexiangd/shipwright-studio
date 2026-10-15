@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Position Size Calculator · Shipwright Studio</title>
+<meta name="description" content="Free position size calculator for stock, futures and crypto traders — turn your risk per trade into exact order size, dollar risk and notional value.">
+<link rel="canonical" href="https://shipwright-studio.pages.dev/lab/position-size-calculator/">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
+  "name": "Position Size Calculator",
+  "url": "https://shipwright-studio.pages.dev/lab/position-size-calculator/",
+  "description": "A free online tool that converts your account risk per trade into exact position size (shares or contracts), dollar risk, and notional value for stocks, futures, and crypto.",
+  "applicationCategory": "FinanceApplication",
+  "operatingSystem": "Web",
+  "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+}
+</script>
+<style>
+  :root {
+    --bg: #0a0c0f;
+    --surface: #101318;
+    --border: #1c2128;
+    --text: #e8e6e1;
+    --muted: #9a978e;
+    --brass: #d2a24c;
+    --brass-dim: #a37f3a;
+    --danger: #e0655f;
+    --serif: "Fraunces", Georgia, serif;
+    --mono: "JetBrains Mono", ui-monospace, monospace;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+  a { color: var(--brass); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  .wrap { max-width: 1080px; margin: 0 auto; padding: 0 24px 96px; }
+  header.site {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 28px 0; border-bottom: 1px solid var(--border); margin-bottom: 56px;
+  }
+  header.site .brand { font-family: var(--serif); font-weight: 700; font-size: 1.15rem; color: var(--text); }
+  header.site nav a { color: var(--muted); font-size: 0.9rem; margin-left: 22px; }
+  header.site nav a:hover { color: var(--brass); }
+  h1 {
+    font-family: var(--serif); font-weight: 600; font-size: clamp(2rem, 5vw, 3.2rem);
+    line-height: 1.15; letter-spacing: -0.01em; margin-bottom: 24px;
+  }
+  h1 .accent { color: var(--brass); }
+  .definition {
+    font-size: 1.08rem; color: var(--text); max-width: 720px; margin-bottom: 14px;
+  }
+  .definition strong { color: var(--brass); font-weight: 600; }
+  .summary { color: var(--muted); max-width: 720px; margin-bottom: 48px; font-size: 0.98rem; }
+
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; align-items: start; }
+  .card {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 16px;
+    padding: 32px; box-shadow: 0 12px 40px rgba(0,0,0,0.35);
+  }
+  .card h2 {
+    font-family: var(--serif); font-weight: 600; font-size: 1.35rem; margin-bottom: 24px;
+  }
+  .field { margin-bottom: 20px; }
+  .field label { display: block; font-size: 0.82rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); margin-bottom: 8px; }
+  .field input[type="number"], .field input[type="text"] {
+    width: 100%; background: var(--bg); border: 1px solid var(--border); border-radius: 10px;
+    color: var(--text); font-family: var(--mono); font-size: 1.05rem; padding: 14px 16px;
+    min-height: 52px; outline: none; transition: border-color 0.15s;
+  }
+  .field input:focus { border-color: var(--brass); }
+  .field .hint { font-size: 0.82rem; color: var(--muted); margin-top: 6px; }
+  .chips { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 10px; }
+  .chip {
+    background: var(--bg); border: 1px solid var(--border); border-radius: 999px;
+    color: var(--text); font-family: var(--mono); font-size: 0.9rem;
+    padding: 10px 18px; cursor: pointer; transition: all 0.15s; min-height: 44px;
+  }
+  .chip:hover { border-color: var(--brass-dim); }
+  .chip.active { border-color: var(--brass); color: var(--brass); background: rgba(210,162,76,0.08); }
+  .actions { display: flex; gap: 12px; margin-top: 8px; flex-wrap: wrap; }
+  .btn {
+    border: 1px solid var(--brass); background: transparent; color: var(--brass);
+    font-size: 0.92rem; font-weight: 600; padding: 13px 22px; border-radius: 10px;
+    cursor: pointer; min-height: 48px; transition: all 0.15s;
+  }
+  .btn:hover { background: rgba(210,162,76,0.1); }
+  .btn.ghost { border-color: var(--border); color: var(--muted); }
+  .btn.ghost:hover { border-color: var(--muted); color: var(--text); background: transparent; }
+  .error {
+    display: none; margin-top: 16px; padding: 12px 16px; border-radius: 10px;
+    background: rgba(224,101,95,0.08); border: 1px solid rgba(224,101,95,0.4);
+    color: var(--danger); font-size: 0.9rem;
+  }
+  .error.show { display: block; }
+
+  .results { transition: opacity 0.2s; }
+  .results.dimmed { opacity: 0.35; }
+  .result-main { text-align: center; padding: 12px 0 28px; border-bottom: 1px solid var(--border); margin-bottom: 24px; }
+  .result-main .num {
+    font-family: var(--mono); font-weight: 600; font-size: clamp(3rem, 8vw, 4.5rem);
+    color: var(--brass); line-height: 1.1;
+  }
+  .result-main .label { font-size: 0.85rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); margin-top: 6px; }
+  .result-main .dir {
+    display: inline-block; margin-top: 10px; font-size: 0.82rem; font-family: var(--mono);
+    border: 1px solid var(--border); border-radius: 999px; padding: 6px 16px; color: var(--muted);
+  }
+  .result-main .dir.long { color: #7cc98a; border-color: rgba(124,201,138,0.4); }
+  .result-main .dir.short { color: #e0655f; border-color: rgba(224,101,95,0.4); }
+  .row {
+    display: flex; justify-content: space-between; align-items: baseline;
+    padding: 12px 0; border-bottom: 1px solid var(--border); font-size: 0.98rem;
+  }
+  .row:last-child { border-bottom: none; }
+  .row .k { color: var(--muted); }
+  .row .v { font-family: var(--mono); font-weight: 600; }
+
+  .how { margin-top: 64px; max-width: 760px; }
+  .how h2 { font-family: var(--serif); font-weight: 600; font-size: 1.6rem; margin-bottom: 20px; }
+  .how p { color: var(--muted); margin-bottom: 14px; }
+  .formula {
+    font-family: var(--mono); font-size: 1.05rem; color: var(--brass);
+    background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+    padding: 20px 24px; margin: 22px 0; overflow-x: auto; white-space: nowrap;
+  }
+  .how ol { color: var(--muted); margin: 0 0 14px 22px; }
+  .how li { margin-bottom: 8px; }
+  footer { margin-top: 64px; padding-top: 28px; border-top: 1px solid var(--border); color: var(--muted); font-size: 0.86rem; }
+  footer .disclaimer { max-width: 760px; margin-bottom: 18px; }
+  footer nav a { color: var(--muted); margin-right: 20px; font-size: 0.86rem; }
+
+  @media (max-width: 820px) {
+    .grid { grid-template-columns: 1fr; }
+    .card { padding: 24px; }
+    header.site { margin-bottom: 40px; }
+    /* Results pinned above the explainer on mobile: DOM already orders results second */
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="site">
+    <a class="brand" href="/">Shipwright Studio</a>
+    <nav>
+      <a href="/ideas/">Lab</a>
+      <a href="/ideas/">Ideas</a>
+    </nav>
+  </header>
+
+  <h1>Position Size <span class="accent">Calculator</span></h1>
+
+  <p class="definition">
+    <strong>Position Size Calculator</strong> is a free online tool that converts the one risk
+    decision every trader must make — how much to risk per trade — into exact order numbers:
+    maximum shares or contracts, dollar risk, and notional value, for stocks, futures, and crypto.
+  </p>
+  <p class="summary">Enter your account size, risk percentage, and stop-loss distance; the calculator sizes your position so the trade can never lose more than your chosen risk.</p>
+
+  <div class="grid">
+    <section class="card" aria-label="Trade inputs">
+      <h2>Your trade</h2>
+      <div class="field">
+        <label for="account">Account balance ($)</label>
+        <input type="number" id="account" inputmode="decimal" min="0" step="any" placeholder="10000" autocomplete="off">
+      </div>
+      <div class="field">
+        <label for="riskPct">Risk per trade (%)</label>
+        <input type="number" id="riskPct" inputmode="decimal" min="0" max="100" step="any" placeholder="1" autocomplete="off">
+        <div class="chips" role="group" aria-label="Risk presets">
+          <button type="button" class="chip" data-risk="0.5">0.5%</button>
+          <button type="button" class="chip" data-risk="1">1%</button>
+          <button type="button" class="chip" data-risk="2">2%</button>
+          <button type="button" class="chip" data-risk="3">3%</button>
+        </div>
+      </div>
+      <div class="field">
+        <label for="entry">Entry price ($)</label>
+        <input type="number" id="entry" inputmode="decimal" min="0" step="any" placeholder="150" autocomplete="off">
+      </div>
+      <div class="field">
+        <label for="stop">Stop price ($)</label>
+        <input type="number" id="stop" inputmode="decimal" min="0" step="any" placeholder="145" autocomplete="off">
+        <div class="hint">Stop below entry = long · stop above entry = short</div>
+      </div>
+      <div class="field">
+        <label for="held">Shares already held (optional)</label>
+        <input type="number" id="held" inputmode="decimal" min="0" step="any" placeholder="0" autocomplete="off">
+        <div class="hint">If you already hold some of the position</div>
+      </div>
+      <div class="actions">
+        <button type="button" class="btn" id="sample">Try a sample trade</button>
+        <button type="button" class="btn ghost" id="reset">Reset</button>
+      </div>
+      <div class="error" id="error" role="alert"></div>
+    </section>
+
+    <section class="card results" id="resultsCard" aria-label="Position size results">
+      <h2>Position size</h2>
+      <div class="results" id="results">
+        <div class="result-main">
+          <div class="num" id="rSize">--</div>
+          <div class="label" id="rSizeLabel">shares / contracts</div>
+          <div><span class="dir" id="rDir" style="display:none">--</span></div>
+        </div>
+        <div class="row"><span class="k">Dollar risk</span><span class="v" id="rRisk">--</span></div>
+        <div class="row"><span class="k">Notional value</span><span class="v" id="rNotional">--</span></div>
+        <div class="row"><span class="k">Risk as % of account</span><span class="v" id="rRiskPct">--</span></div>
+        <div class="row"><span class="k">Stop distance</span><span class="v" id="rDist">--</span></div>
+        <div class="row" id="rHeldRow" style="display:none"><span class="k">After held shares</span><span class="v" id="rHeld">--</span></div>
+      </div>
+    </section>
+  </div>
+
+  <section class="how">
+    <h2>How it works</h2>
+    <p>The math is deliberately simple: decide how many dollars you are willing to lose, divide by the dollars you lose per share, and round down.</p>
+    <div class="formula">size = (account &times; risk%) &divide; |entry &minus; stop|</div>
+    <ol>
+      <li>Multiply your account balance by your risk percentage to get your <strong>risk budget</strong> in dollars.</li>
+      <li>Measure the <strong>stop distance</strong>: the absolute difference between entry and stop prices.</li>
+      <li>Divide the risk budget by the stop distance and <strong>round down</strong> — you can never buy a fraction of a share.</li>
+    </ol>
+    <p>Because the size is rounded down, the actual dollar risk is always at or below your target — the tool reports both so you can see the difference.</p>
+  </section>
+
+  <footer>
+    <p class="disclaimer">This is a math tool, not financial advice. Position sizing math cannot protect against gaps, slippage, or liquidity risk. Nothing on this page is a recommendation to buy or sell any security.</p>
+    <nav>
+      <a href="/ideas/">Lab</a>
+      <a href="/ideas/">Ideas</a>
+      <a href="/">Shipwright Studio</a>
+    </nav>
+  </footer>
+</div>
+
+<script>
+(function () {
+  "use strict";
+  var $ = function (id) { return document.getElementById(id); };
+  var accountEl = $("account"), riskEl = $("riskPct"), entryEl = $("entry"),
+      stopEl = $("stop"), heldEl = $("held"),
+      errorEl = $("error"), resultsCard = $("resultsCard"),
+      rSize = $("rSize"), rSizeLabel = $("rSizeLabel"), rDir = $("rDir"),
+      rRisk = $("rRisk"), rNotional = $("rNotional"), rRiskPct = $("rRiskPct"),
+      rDist = $("rDist"), rHeldRow = $("rHeldRow"), rHeld = $("rHeld"),
+      chips = Array.prototype.slice.call(document.querySelectorAll(".chip"));
+
+  function fmtMoney(n) {
+    return "$" + n.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  }
+  function fmtInt(n) {
+    return Math.round(n).toLocaleString("en-US");
+  }
+  function showError(msg) {
+    errorEl.textContent = msg;
+    errorEl.classList.add("show");
+    resultsCard.classList.add("dimmed");
+  }
+  function clearError() {
+    errorEl.textContent = "";
+    errorEl.classList.remove("show");
+    resultsCard.classList.remove("dimmed");
+  }
+  function empty() {
+    clearError();
+    rSize.textContent = "--"; rRisk.textContent = "--"; rNotional.textContent = "--";
+    rRiskPct.textContent = "--"; rDist.textContent = "--";
+    rDir.style.display = "none"; rHeldRow.style.display = "none";
+    rSizeLabel.textContent = "shares / contracts";
+  }
+
+  function calculate() {
+    var account = parseFloat(accountEl.value),
+        riskPct = parseFloat(riskEl.value),
+        entry = parseFloat(entryEl.value),
+        stop = parseFloat(stopEl.value),
+        heldRaw = heldEl.value.trim(),
+        held = heldRaw === "" ? 0 : parseFloat(heldRaw);
+
+    if (isNaN(account) || isNaN(riskPct) || isNaN(entry) || isNaN(stop)) {
+      empty(); return;
+    }
+    if (!(account > 0)) { showError("Account balance must be greater than zero."); return; }
+    if (!(riskPct > 0) || riskPct > 100) { showError("Risk per trade must be between 0 and 100%."); return; }
+    if (!(entry > 0)) { showError("Entry price must be greater than zero."); return; }
+    if (!(stop > 0)) { showError("Stop price must be greater than zero."); return; }
+    if (stop === entry) { showError("Stop price must differ from the entry price — otherwise the position size is undefined."); return; }
+    if (isNaN(held) || held < 0) { showError("Shares already held must be zero or more."); return; }
+
+    clearError();
+    var dist = Math.abs(entry - stop);
+    var riskBudget = account * riskPct / 100;
+    var size = Math.floor(riskBudget / dist);
+    var dollarRisk = size * dist;
+    var notional = size * entry;
+    var longSide = stop < entry;
+
+    rSize.textContent = fmtInt(size);
+    rRisk.textContent = fmtMoney(dollarRisk);
+    rNotional.textContent = fmtMoney(notional);
+    rRiskPct.textContent = (dollarRisk / account * 100).toFixed(2) + "%";
+    rDist.textContent = fmtMoney(dist) + " / share";
+    rDir.style.display = "inline-block";
+    rDir.textContent = longSide ? "LONG" : "SHORT";
+    rDir.className = "dir " + (longSide ? "long" : "short");
+
+    if (held > 0) {
+      var remaining = Math.max(0, size - held);
+      rHeldRow.style.display = "flex";
+      rHeld.textContent = fmtInt(remaining) + " more";
+    } else {
+      rHeldRow.style.display = "none";
+    }
+  }
+
+  function syncChips() {
+    var v = riskEl.value.trim();
+    chips.forEach(function (c) {
+      c.classList.toggle("active", c.getAttribute("data-risk") === v);
+    });
+  }
+
+  [accountEl, riskEl, entryEl, stopEl, heldEl].forEach(function (el) {
+    el.addEventListener("input", function () { syncChips(); calculate(); });
+  });
+  chips.forEach(function (c) {
+    c.addEventListener("click", function () {
+      riskEl.value = c.getAttribute("data-risk");
+      syncChips(); calculate();
+      riskEl.focus();
+    });
+  });
+
+  $("sample").addEventListener("click", function () {
+    accountEl.value = "10000";
+    riskEl.value = "1";
+    entryEl.value = "150";
+    stopEl.value = "145";
+    heldEl.value = "";
+    syncChips(); calculate();
+    resultsCard.scrollIntoView({ behavior: "smooth", block: "nearest" });
+  });
+
+  $("reset").addEventListener("click", function () {
+    accountEl.value = ""; riskEl.value = ""; entryEl.value = "";
+    stopEl.value = ""; heldEl.value = "";
+    syncChips(); empty();
+    accountEl.focus();
+  });
+
+  syncChips();
+  empty();
+})();
+</script>
+</body>
+</html>
