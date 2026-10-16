@@ -1,0 +1,675 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pairs Trading Lab · Shipwright Studio</title>
+<meta name="description" content="Free pairs trading simulator: generate synthetic cointegrated price pairs, estimate the hedge ratio by OLS, read the spread z-score against ±σ bands, and backtest a mean-reversion strategy — all in your browser.">
+<link rel="canonical" href="https://shipwright-studio.pages.dev/lab/pairs-trading-lab/">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
+  "name": "Pairs Trading Lab",
+  "url": "https://shipwright-studio.pages.dev/lab/pairs-trading-lab/",
+  "description": "A free online tool that generates synthetic cointegrated stock pairs in the browser, estimates the hedge ratio by OLS regression, tracks the spread z-score against entry/exit bands, and backtests a pairs trading strategy with a full trade log.",
+  "applicationCategory": "FinanceApplication",
+  "operatingSystem": "Web",
+  "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+}
+</script>
+<style>
+  :root {
+    --bg: #0a0c0f;
+    --surface: #101318;
+    --border: #1c2128;
+    --text: #e8e6e1;
+    --muted: #9a978e;
+    --brass: #d2a24c;
+    --brass-dim: #a37f3a;
+    --green: #7cc98a;
+    --red: #e0655f;
+    --blue: #6fb3e0;
+    --serif: "Fraunces", Georgia, serif;
+    --mono: "JetBrains Mono", ui-monospace, monospace;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg); color: var(--text);
+    font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+    line-height: 1.6; -webkit-font-smoothing: antialiased;
+  }
+  a { color: var(--brass); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  .wrap { max-width: 1080px; margin: 0 auto; padding: 0 24px 96px; }
+  header.site {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 28px 0; border-bottom: 1px solid var(--border); margin-bottom: 56px;
+  }
+  header.site .brand { font-family: var(--serif); font-weight: 700; font-size: 1.15rem; color: var(--text); }
+  header.site nav a { color: var(--muted); font-size: 0.9rem; margin-left: 22px; }
+  header.site nav a:hover { color: var(--brass); }
+  h1 {
+    font-family: var(--serif); font-weight: 600; font-size: clamp(2rem, 5vw, 3.2rem);
+    line-height: 1.15; letter-spacing: -0.01em; margin-bottom: 24px;
+  }
+  h1 .accent { color: var(--brass); }
+  .definition { font-size: 1.08rem; max-width: 760px; margin-bottom: 14px; }
+  .definition strong { color: var(--brass); font-weight: 600; }
+  .summary { color: var(--muted); max-width: 760px; margin-bottom: 48px; font-size: 0.98rem; }
+  .summary .tag { color: var(--brass); font-family: var(--mono); font-size: 0.82rem; }
+
+  .grid { display: grid; grid-template-columns: 380px 1fr; gap: 28px; align-items: start; }
+  .card {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 16px;
+    padding: 32px; box-shadow: 0 12px 40px rgba(0,0,0,0.35);
+  }
+  .card h2 { font-family: var(--serif); font-weight: 600; font-size: 1.35rem; margin-bottom: 24px; }
+  .card.full { margin-top: 28px; }
+
+  .chips { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 24px; }
+  .chip {
+    background: var(--bg); border: 1px solid var(--border); border-radius: 999px;
+    color: var(--text); font-size: 0.85rem; padding: 10px 18px; cursor: pointer;
+    min-height: 44px; transition: all 0.15s;
+  }
+  .chip:hover { border-color: var(--brass-dim); }
+  .chip.active { border-color: var(--brass); color: var(--brass); background: rgba(210,162,76,0.08); }
+
+  .field { margin-bottom: 18px; }
+  .field .top { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 8px; }
+  .field label { font-size: 0.82rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
+  .field output { font-family: var(--mono); font-size: 0.9rem; color: var(--brass); }
+  .field input[type="range"] {
+    width: 100%; min-height: 44px; accent-color: var(--brass); cursor: pointer; background: transparent;
+  }
+  .field .hint { font-size: 0.8rem; color: var(--muted); margin-top: 2px; }
+
+  .actions { display: flex; gap: 12px; margin-top: 20px; flex-wrap: wrap; }
+  .btn {
+    border: 1px solid var(--brass); background: transparent; color: var(--brass);
+    font-size: 0.92rem; font-weight: 600; padding: 13px 22px; border-radius: 10px;
+    cursor: pointer; min-height: 48px; transition: all 0.15s;
+  }
+  .btn:hover { background: rgba(210,162,76,0.1); }
+  .seednote { font-family: var(--mono); font-size: 0.78rem; color: var(--muted); margin-top: 14px; }
+
+  .statrow { display: flex; justify-content: space-between; align-items: baseline; padding: 11px 0; border-bottom: 1px solid var(--border); font-size: 0.95rem; }
+  .statrow:last-child { border-bottom: none; }
+  .statrow .k { color: var(--muted); }
+  .statrow .v { font-family: var(--mono); font-weight: 600; text-align: right; }
+  .statrow .v .sub { display: block; font-size: 0.75rem; color: var(--muted); font-weight: 400; }
+  .badge {
+    display: inline-block; font-family: var(--mono); font-size: 0.78rem; font-weight: 600;
+    border-radius: 999px; padding: 5px 14px; border: 1px solid var(--border); color: var(--muted);
+  }
+  .badge.ok { color: var(--green); border-color: rgba(124,201,138,0.45); }
+  .badge.bad { color: var(--red); border-color: rgba(224,101,95,0.45); }
+  .badge.long { color: var(--green); border-color: rgba(124,201,138,0.45); }
+  .badge.short { color: var(--red); border-color: rgba(224,101,95,0.45); }
+
+  .metrics { display: grid; grid-template-columns: repeat(5, 1fr); gap: 16px; margin-bottom: 28px; }
+  .metric { background: var(--bg); border: 1px solid var(--border); border-radius: 12px; padding: 18px 16px; text-align: center; }
+  .metric .n { font-family: var(--mono); font-weight: 600; font-size: 1.35rem; color: var(--text); }
+  .metric .n.pos { color: var(--green); } .metric .n.neg { color: var(--red); }
+  .metric .l { font-size: 0.75rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); margin-top: 6px; }
+
+  canvas.chart { width: 100%; height: 300px; display: block; border-radius: 8px; cursor: crosshair; }
+  .legend { display: flex; gap: 18px; flex-wrap: wrap; margin-top: 14px; font-size: 0.82rem; color: var(--muted); }
+  .legend i { display: inline-block; width: 22px; height: 3px; border-radius: 2px; margin-right: 7px; vertical-align: middle; }
+
+  .tablewrap { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; font-size: 0.86rem; min-width: 640px; }
+  th, td { text-align: right; padding: 10px 12px; border-bottom: 1px solid var(--border); font-family: var(--mono); }
+  th { color: var(--muted); font-weight: 400; font-size: 0.75rem; letter-spacing: 0.05em; text-transform: uppercase; white-space: nowrap; }
+  td:first-child, th:first-child { text-align: left; }
+  td.pos { color: var(--green); } td.neg { color: var(--red); }
+  .empty { color: var(--muted); font-size: 0.9rem; padding: 18px 0; }
+
+  .how { margin-top: 64px; max-width: 780px; }
+  .how h2 { font-family: var(--serif); font-weight: 600; font-size: 1.6rem; margin-bottom: 20px; }
+  .how h3 { font-family: var(--serif); font-size: 1.15rem; margin: 28px 0 12px; color: var(--brass); }
+  .how p, .how li { color: var(--muted); margin-bottom: 12px; }
+  .how ol, .how ul { margin: 0 0 14px 22px; }
+  .formula {
+    font-family: var(--mono); font-size: 0.98rem; color: var(--brass);
+    background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+    padding: 18px 22px; margin: 20px 0; overflow-x: auto; white-space: nowrap;
+  }
+
+  footer { margin-top: 64px; padding-top: 28px; border-top: 1px solid var(--border); color: var(--muted); font-size: 0.86rem; }
+  footer .disclaimer { max-width: 780px; margin-bottom: 18px; }
+  footer nav a { color: var(--muted); margin-right: 20px; font-size: 0.86rem; }
+
+  @media (max-width: 900px) {
+    .grid { grid-template-columns: 1fr; }
+    .metrics { grid-template-columns: repeat(2, 1fr); }
+    .card { padding: 24px; }
+    header.site { margin-bottom: 40px; }
+    canvas.chart { height: 240px; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="site">
+    <a class="brand" href="/">Shipwright Studio</a>
+    <nav>
+      <a href="/ideas/">Lab</a>
+      <a href="/ideas/">Ideas</a>
+    </nav>
+  </header>
+
+  <h1>Pairs Trading <span class="accent">Lab</span></h1>
+
+  <p class="definition">
+    <strong>Pairs Trading Lab</strong> is a free online tool that simulates how statistical pairs
+    trading works: it generates a synthetic cointegrated stock pair in your browser, estimates the
+    hedge ratio with OLS regression, tracks the spread's z-score against ±σ entry/exit bands, and
+    backtests the mean-reversion trade with a full trade log.
+  </p>
+  <p class="summary">
+    No live market data, no sign-up, no API keys — every price series is simulated with a
+    seedable random generator, so the experiment is reproducible. <span class="tag">TICKER A / TICKER B are fictional.</span>
+  </p>
+
+  <div class="grid">
+    <section class="card" aria-label="Market and strategy controls">
+      <h2>Market &amp; strategy</h2>
+      <div class="chips" role="group" aria-label="Scenario presets" id="presets"></div>
+
+      <div class="field">
+        <div class="top"><label for="theta">Mean-reversion speed θ</label><output id="thetaOut"></output></div>
+        <input type="range" id="theta" min="0.005" max="0.40" step="0.005" value="0.12">
+        <div class="hint">How hard the spread is pulled back to its mean. 0 = pure random walk.</div>
+      </div>
+      <div class="field">
+        <div class="top"><label for="snoise">Spread noise σ<sub>s</sub></label><output id="snoiseOut"></output></div>
+        <input type="range" id="snoise" min="0.2" max="3.0" step="0.1" value="0.8">
+        <div class="hint">Daily shock to the spread. More noise = wider bands, sloppier pair.</div>
+      </div>
+      <div class="field">
+        <div class="top"><label for="beta">True hedge ratio β</label><output id="betaOut"></output></div>
+        <input type="range" id="beta" min="0.2" max="2.0" step="0.05" value="1.0">
+        <div class="hint">The hidden ratio used to build pair B. The Lab re-estimates it — see how close it gets.</div>
+      </div>
+      <div class="field">
+        <div class="top"><label for="drift">Structural drift</label><output id="driftOut"></output></div>
+        <input type="range" id="drift" min="0" max="0.05" step="0.005" value="0">
+        <div class="hint">A slow, smooth pull on the spread. The rolling window mostly absorbs this — try the shift below for a real break.</div>
+      </div>
+      <div class="field">
+        <div class="top"><label for="shift">Regime shift ($)</label><output id="shiftOut"></output></div>
+        <input type="range" id="shift" min="-20" max="20" step="1" value="0">
+        <div class="hint">The spread's equilibrium jumps at day 126 and stays there — a takeover, a broken thesis. This is what kills pairs books.</div>
+      </div>
+      <div class="field">
+        <div class="top"><label for="entry">Entry threshold</label><output id="entryOut"></output></div>
+        <input type="range" id="entry" min="1.5" max="3.0" step="0.1" value="2.0">
+        <div class="hint">Open a spread trade when |z| crosses this band.</div>
+      </div>
+      <div class="field">
+        <div class="top"><label for="exit">Exit threshold</label><output id="exitOut"></output></div>
+        <input type="range" id="exit" min="0" max="1.0" step="0.05" value="0.25">
+        <div class="hint">Close the trade when |z| falls back below this band.</div>
+      </div>
+      <div class="field">
+        <div class="top"><label for="cost">Cost per trade ($)</label><output id="costOut"></output></div>
+        <input type="range" id="cost" min="0" max="50" step="1" value="10">
+        <div class="hint">Flat friction per side — spread costs both entry and exit.</div>
+      </div>
+
+      <div class="actions">
+        <button type="button" class="btn" id="reseed">New random pair</button>
+      </div>
+      <p class="seednote" id="seednote"></p>
+    </section>
+
+    <section class="card" aria-label="Estimates">
+      <h2>Estimates</h2>
+      <div class="statrow"><span class="k">Estimated hedge ratio β̂ (OLS)</span><span class="v" id="sBeta">–<span class="sub" id="sBetaTrue"></span></span></div>
+      <div class="statrow"><span class="k">Mean-reversion half-life</span><span class="v" id="sHalf">–</span></div>
+      <div class="statrow"><span class="k">Stationarity (ADF-style heuristic)</span><span class="v"><span class="badge" id="sStat">–</span><span class="sub" id="sStatT"></span></span></div>
+      <div class="statrow"><span class="k">Price correlation (A, B)</span><span class="v" id="sCorr">–</span></div>
+      <div class="statrow"><span class="k">Current spread z-score</span><span class="v" id="sZ">–</span></div>
+      <div class="statrow"><span class="k">Signal</span><span class="v"><span class="badge" id="sSig">–</span></span></div>
+    </section>
+  </div>
+
+  <section class="card full" aria-label="Price co-movement chart">
+    <h2>Price co-movement <span style="font-family:var(--mono);font-size:0.75rem;color:var(--muted);font-weight:400;">· rebased to 100</span></h2>
+    <canvas class="chart" id="priceChart" role="img" aria-label="Line chart of the two simulated stock prices rebased to 100"></canvas>
+    <div class="legend">
+      <span><i style="background:#d2a24c"></i>Stock A</span>
+      <span><i style="background:#6fb3e0"></i>Stock B</span>
+    </div>
+  </section>
+
+  <section class="card full" aria-label="Spread and bands chart">
+    <h2>Spread &amp; bands <span style="font-family:var(--mono);font-size:0.75rem;color:var(--muted);font-weight:400;">· rolling 60-day ±σ</span></h2>
+    <canvas class="chart" id="spreadChart" role="img" aria-label="Line chart of the estimated spread with rolling entry bands and trade markers"></canvas>
+    <div class="legend">
+      <span><i style="background:#e8e6e1"></i>Spread (B − β̂·A, residual)</span>
+      <span><i style="background:#7cc98a"></i>± entry band</span>
+      <span><i style="background:#e0655f"></i>Entry marker</span>
+      <span><i style="background:#9a978e"></i>Exit marker</span>
+    </div>
+  </section>
+
+  <section class="card full" aria-label="Backtest results">
+    <h2>Band backtest <span style="font-family:var(--mono);font-size:0.75rem;color:var(--muted);font-weight:400;">· $10,000 notional per leg</span></h2>
+    <div class="metrics">
+      <div class="metric"><div class="n" id="mPnl">–</div><div class="l">Total P&amp;L ($)</div></div>
+      <div class="metric"><div class="n" id="mTrades">–</div><div class="l">Trades</div></div>
+      <div class="metric"><div class="n" id="mWin">–</div><div class="l">Win rate</div></div>
+      <div class="metric"><div class="n neg" id="mDd">–</div><div class="l">Max drawdown ($)</div></div>
+      <div class="metric"><div class="n" id="mRet">–</div><div class="l">Return on exposure</div></div>
+    </div>
+    <div class="tablewrap">
+      <table aria-label="Trade log">
+        <thead><tr><th>Entry day</th><th>Exit day</th><th>Direction</th><th>Entry z</th><th>Exit z</th><th>P&amp;L ($)</th></tr></thead>
+        <tbody id="tradeLog"></tbody>
+      </table>
+      <p class="empty" id="noTrades" style="display:none">No trades fired in this window — widen the entry band or slow the pair down.</p>
+    </div>
+  </section>
+
+  <section class="how" aria-label="How to read this">
+    <h2>How to read this</h2>
+    <p>Practical pairs trading is a statistical bet: two prices share a long-run equilibrium, so when they drift apart, the spread should snap back. This Lab walks through the whole pipeline on simulated data, in five steps:</p>
+    <ol>
+      <li><strong>Generate.</strong> Stock A is a random walk; the spread follows a mean-reverting process (Ornstein–Uhlenbeck) with speed θ, plus optional smooth drift and a one-time regime shift halfway through; Stock B = β·A + spread.</li>
+      <li><strong>Estimate β — without peeking.</strong> Regress B on A over a 60-day <em>formation window only</em> (the shaded region on the spread chart). The residual is the estimated spread. Fitting on the full sample would be cheating: demeaning a random walk manufactures fake mean reversion, making even a broken pair look tradable.</li>
+      <li><strong>Score it.</strong> A rolling 60-day z-score normalises the spread, so "+2" means the same thing on day 100 and day 200.</li>
+      <li><strong>Test stationarity.</strong> A simplified ADF check asks whether the spread genuinely mean-reverts. t-stat below −2.86 ≈ stationary.</li>
+      <li><strong>Trade the bands.</strong> Short the spread above +entry σ (short B, long β̂·A), buy it below −entry σ, exit near zero. Positions are sized to $10,000 notional per leg, the way a real pairs book would size them — a flat per-side cost is then economically meaningful.</li>
+    </ol>
+
+    <h3>The core formulas</h3>
+    <div class="formula">β̂ = Cov(A, B) / Var(A)</div>
+    <div class="formula">z<sub>t</sub> = (spread<sub>t</sub> − μ<sub>60</sub>) / σ<sub>60</sub></div>
+    <div class="formula">half-life = ln(2) / |γ| &nbsp;·&nbsp; from Δspread<sub>t</sub> = γ·spread<sub>t−1</sub> + ε</div>
+
+    <h3>What the presets teach</h3>
+    <ul>
+      <li><strong>Tight pair</strong> — fast mean reversion, small noise: bands are thin, β̂ is accurate, the strategy harvests small frequent wins.</li>
+      <li><strong>Sloppy pair</strong> — slow reversion, big noise: fewer trades, wider swings, costs bite harder.</li>
+      <li><strong>Drifting pair</strong> — barely any pull-back: the "stationary" verdict gets shaky and half-life explodes.</li>
+      <li><strong>Broken pair</strong> — a mid-sample regime shift: the spread jumps to a new level and never comes home. Fading the jump is the classic pairs-trade blow-up — the heuristic flags it "not stationary" and the trade log shows the damage.</li>
+    </ul>
+
+    <h3>Honest limitations</h3>
+    <ul>
+      <li>The stationarity check is a <strong>simplified heuristic</strong>, not a formal ADF test (no lag selection, no MacKinnon p-values).</li>
+      <li>The backtest assumes you can always trade at the simulated close, with one flat cost per side — real fills have slippage, borrow fees, and corporate actions. Positions are sized to $10,000 notional per leg, the way a real pairs book would size them.</li>
+      <li>β is estimated once on the formation window and frozen — in live trading it drifts and must be re-estimated, which is itself a source of blow-ups.</li>
+      <li><strong>Everything here is synthetic.</strong> This page teaches the mechanics; it is not investment advice and is not a recommendation to trade any security.</li>
+    </ul>
+  </section>
+
+  <footer>
+    <p class="disclaimer"><strong>Educational demo.</strong> All prices on this page are simulated in your browser with a seeded random generator — nothing here is real market data, a signal, or investment advice. Pairs trading involves substantial risk of loss.</p>
+    <nav>
+      <a href="/ideas/">Lab</a>
+      <a href="/ideas/">Ideas</a>
+    </nav>
+  </footer>
+
+</div>
+
+<script>
+(function () {
+  "use strict";
+  var N = 252;          // trading days
+  var WINDOW = 60;      // rolling z-score window
+  var FORM = 60;        // formation window: beta estimated here, traded after
+  var CRIT = -2.86;     // ADF-style heuristic critical value (5%, no trend)
+
+  /* ---------- seeded PRNG ---------- */
+  function mulberry32(a) {
+    return function () {
+      a |= 0; a = (a + 0x6D2B79F5) | 0;
+      var t = Math.imul(a ^ (a >>> 15), 1 | a);
+      t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+  }
+  function makeGaussian(rand) {
+    var spare = null;
+    return function () {
+      if (spare !== null) { var v = spare; spare = null; return v; }
+      var u = 0, v = 0;
+      while (u === 0) u = rand();
+      while (v === 0) v = rand();
+      var r = Math.sqrt(-2.0 * Math.log(u)), th = 2.0 * Math.PI * v;
+      spare = r * Math.sin(th);
+      return r * Math.cos(th);
+    };
+  }
+
+  /* ---------- synthetic pair ---------- */
+  function generate(seed, p) {
+    // independent innovation streams: shared shocks would fake correlation
+    var gaussA = makeGaussian(mulberry32(seed ^ 0x9e3779b9));
+    var gaussS = makeGaussian(mulberry32(seed ^ 0x51f7ab));
+    var A = new Array(N), B = new Array(N), S = new Array(N);
+    var a = 100, s = 0;
+    for (var t = 0; t < N; t++) {
+      a = a * (1 + 0.008 * gaussA());                              // Stock A: random walk, ~12.7% annualised vol
+      var mu = t >= (N >> 1) ? p.shift : 0;                        // regime break: new long-run mean after day 126
+      s = s + p.theta * (mu - s) + p.snoise * gaussS() + p.drift;  // OU spread + smooth drift
+      if (t === (N >> 1)) s += p.shift;                            // the break lands as a visible jump, then sticks
+      A[t] = a; S[t] = s; B[t] = p.beta * a + s;
+    }
+    return { A: A, B: B, S: S };
+  }
+
+  /* ---------- statistics ---------- */
+  function mean(x) { var m = 0; for (var i = 0; i < x.length; i++) m += x[i]; return m / x.length; }
+  function ols(x, y) {  // y ~ alpha + beta*x
+    var mx = mean(x), my = mean(y), sxy = 0, sxx = 0;
+    for (var i = 0; i < x.length; i++) { sxy += (x[i] - mx) * (y[i] - my); sxx += (x[i] - mx) * (x[i] - mx); }
+    var beta = sxx > 0 ? sxy / sxx : 0;
+    return { alpha: my - beta * mx, beta: beta };
+  }
+  function corr(x, y) {
+    var mx = mean(x), my = mean(y), sxy = 0, sxx = 0, syy = 0;
+    for (var i = 0; i < x.length; i++) {
+      sxy += (x[i] - mx) * (y[i] - my); sxx += (x[i] - mx) * (x[i] - mx); syy += (y[i] - my) * (y[i] - my);
+    }
+    return (sxx > 0 && syy > 0) ? sxy / Math.sqrt(sxx * syy) : 0;
+  }
+  function rollingStats(x, w) {
+    var mu = new Array(x.length), sd = new Array(x.length);
+    for (var t = 0; t < x.length; t++) {
+      var lo = Math.max(0, t - w + 1), n = t - lo + 1, m = 0;
+      for (var i = lo; i <= t; i++) m += x[i];
+      m /= n; var v = 0;
+      for (var j = lo; j <= t; j++) v += (x[j] - m) * (x[j] - m);
+      mu[t] = m; sd[t] = n > 1 ? Math.sqrt(v / (n - 1)) : 0;
+    }
+    return { mu: mu, sd: sd };
+  }
+  function adfHeuristic(r) {  // regress dr_t on r_{t-1}; t-stat of the lag coefficient
+    var n = r.length - 1, sx = 0, sy = 0, sxy = 0, sxx = 0;
+    for (var t = 1; t < r.length; t++) {
+      var x = r[t - 1], y = r[t] - r[t - 1];
+      sx += x; sy += y; sxy += x * y; sxx += x * x;
+    }
+    var mx = sx / n, my = sy / n, num = sxy - n * mx * my, den = sxx - n * mx * mx;
+    if (den <= 0) return { tstat: 0, gamma: 0 };
+    var gamma = num / den, alpha = my - gamma * mx, ssr = 0;
+    for (var t = 1; t < r.length; t++) {
+      var e = (r[t] - r[t - 1]) - (alpha + gamma * r[t - 1]);
+      ssr += e * e;
+    }
+    var se = Math.sqrt(ssr / Math.max(1, n - 2) / den);
+    return { tstat: se > 0 ? gamma / se : 0, gamma: gamma };
+  }
+
+  /* ---------- backtest: fixed $10k notional per leg, flat $ cost per side ---------- */
+  function backtest(resid, z, B, p, startT) {
+    var notional = 10000, k = notional / mean(B.map(Math.abs));  // scale spread $ moves to $10k legs
+    var pos = 0, trades = [], cur = null, eq = 0, eqCurve = [0], daysIn = 0;
+    var peak = 0, maxDd = 0;
+    for (var t = Math.max(1, startT); t < N; t++) {
+      var dr = (resid[t] - resid[t - 1]) * k, justOpened = false;
+      if (pos === 0) {
+        if (z[t] < -p.entry) { pos = 1; justOpened = true; eq -= p.cost; cur = { day: t, dir: "Long spread", zIn: z[t], gross: -p.cost }; }
+        else if (z[t] > p.entry) { pos = -1; justOpened = true; eq -= p.cost; cur = { day: t, dir: "Short spread", zIn: z[t], gross: -p.cost }; }
+      } else {
+        eq += pos * dr; cur.gross += pos * dr;  // position was open through day t's move
+        if (Math.abs(z[t]) <= p.exit) {
+          eq -= p.cost; cur.gross -= p.cost;
+          cur.out = t; cur.zOut = z[t]; cur.pnl = cur.gross; trades.push(cur); cur = null; pos = 0;
+        }
+      }
+      eqCurve.push(eq);
+      if (pos !== 0) daysIn++;
+      if (eq > peak) peak = eq;
+      if (peak - eq > maxDd) maxDd = peak - eq;
+    }
+    if (pos !== 0 && cur) {  // force-close at the end of the sample
+      eq -= p.cost; cur.gross -= p.cost; cur.out = N - 1; cur.zOut = z[N - 1]; cur.pnl = cur.gross; trades.push(cur);
+    }
+    var wins = trades.filter(function (x) { return x.pnl > 0; }).length;
+    return { trades: trades, total: eq, wins: wins, maxDd: maxDd, daysIn: daysIn, curve: eqCurve };
+  }
+
+  /* ---------- parameters & presets ---------- */
+  var PRESETS = {
+    tight:    { label: "Tight pair",   theta: 0.25,  snoise: 0.5, beta: 1.00, drift: 0.000, shift: 0 },
+    sloppy:   { label: "Sloppy pair",  theta: 0.05,  snoise: 1.6, beta: 1.00, drift: 0.000, shift: 0 },
+    drifting: { label: "Drifting pair",theta: 0.012, snoise: 1.2, beta: 0.85, drift: 0.000, shift: 0 },
+    broken:   { label: "Broken pair",  theta: 0.02,  snoise: 1.0, beta: 1.00, drift: 0.000, shift: 12 }
+  };
+  var state = { seed: 16, preset: "tight" };
+
+  function readParams() {
+    return {
+      theta: +el("theta").value, snoise: +el("snoise").value, beta: +el("beta").value,
+      drift: +el("drift").value, shift: +el("shift").value,
+      entry: +el("entry").value, exit: +el("exit").value, cost: +el("cost").value
+    };
+  }
+  function el(id) { return document.getElementById(id); }
+
+  /* ---------- formatting ---------- */
+  function fmt2(x) { return (x >= 0 ? "" : "−") + Math.abs(x).toFixed(2); }
+  function fmt$(x) { var s = x < 0 ? "−$" : "$"; return s + Math.abs(x).toFixed(2); }
+
+  /* ---------- charts ---------- */
+  function setupCanvas(id) {
+    var c = el(id), dpr = window.devicePixelRatio || 1;
+    var w = c.clientWidth, h = c.clientHeight;
+    c.width = w * dpr; c.height = h * dpr;
+    var ctx = c.getContext("2d"); ctx.scale(dpr, dpr);
+    return { ctx: ctx, w: w, h: h };
+  }
+  function drawPriceChart(data, crossDay) {
+    var cv = setupCanvas("priceChart"), ctx = cv.ctx, W = cv.w, H = cv.h, pad = 36;
+    var A = data.A, B = data.B;
+    var a0 = A[0], b0 = B[0];
+    var lo = Infinity, hi = -Infinity, i;
+    for (i = 0; i < N; i++) {
+      var ra = A[i] / a0 * 100, rb = B[i] / b0 * 100;
+      if (ra < lo) lo = ra; if (ra > hi) hi = ra;
+      if (rb < lo) lo = rb; if (rb > hi) hi = rb;
+    }
+    var span = hi - lo || 1, X = function (t) { return pad + t / (N - 1) * (W - pad * 1.4); },
+        Y = function (v) { return H - 24 - (v - lo) / span * (H - 48); };
+    ctx.clearRect(0, 0, W, H);
+    ctx.strokeStyle = "#1c2128"; ctx.lineWidth = 1;
+    for (i = 0; i <= 4; i++) {
+      var gy = 24 + i / 4 * (H - 48);
+      ctx.beginPath(); ctx.moveTo(pad, gy); ctx.lineTo(W - pad * 0.4, gy); ctx.stroke();
+    }
+    var series = [[A, a0, "#d2a24c"], [B, b0, "#6fb3e0"]];
+    series.forEach(function (s) {
+      ctx.strokeStyle = s[2]; ctx.lineWidth = 1.8; ctx.beginPath();
+      for (var t = 0; t < N; t++) { var px = X(t), py = Y(s[0][t] / s[1] * 100); t ? ctx.lineTo(px, py) : ctx.moveTo(px, py); }
+      ctx.stroke();
+    });
+    drawCrosshair(ctx, X, W, H, pad, crossDay);
+    ctx.fillStyle = "#9a978e"; ctx.font = "11px 'JetBrains Mono', monospace";
+    ctx.fillText(hi.toFixed(0), 4, 30); ctx.fillText(lo.toFixed(0), 4, H - 20);
+  }
+  function drawSpreadChart(resid, mu, sd, z, bt, p, crossDay) {
+    var cv = setupCanvas("spreadChart"), ctx = cv.ctx, W = cv.w, H = cv.h, pad = 36;
+    var lo = Infinity, hi = -Infinity, t, i;
+    for (t = 0; t < N; t++) {
+      var up = mu[t] + p.entry * sd[t], dn = mu[t] - p.entry * sd[t];
+      lo = Math.min(lo, resid[t], dn); hi = Math.max(hi, resid[t], up);
+    }
+    var span = hi - lo || 1, X = function (t) { return pad + t / (N - 1) * (W - pad * 1.4); },
+        Y = function (v) { return H - 24 - (v - lo) / span * (H - 48); };
+    ctx.clearRect(0, 0, W, H);
+    // formation-period shading (no trading here)
+    ctx.fillStyle = "rgba(154,151,142,0.05)";
+    ctx.fillRect(pad, 10, X(FORM) - pad, H - 34);
+    ctx.fillStyle = "rgba(154,151,142,0.55)"; ctx.font = "10px 'JetBrains Mono', monospace";
+    ctx.fillText("formation", pad + 6, 24);
+    ctx.strokeStyle = "#1c2128"; ctx.lineWidth = 1;
+    for (i = 0; i <= 4; i++) {
+      var gy = 24 + i / 4 * (H - 48);
+      ctx.beginPath(); ctx.moveTo(pad, gy); ctx.lineTo(W - pad * 0.4, gy); ctx.stroke();
+    }
+    // bands
+    ctx.strokeStyle = "rgba(124,201,138,0.55)"; ctx.lineWidth = 1.2; ctx.setLineDash([5, 4]);
+    [["up", 1], ["dn", -1]].forEach(function (b) {
+      ctx.beginPath();
+      for (t = 0; t < N; t++) { var v = mu[t] + b[1] * p.entry * sd[t]; t ? ctx.lineTo(X(t), Y(v)) : ctx.moveTo(X(t), Y(v)); }
+      ctx.stroke();
+    });
+    ctx.setLineDash([]);
+    // zero line
+    ctx.strokeStyle = "rgba(154,151,142,0.35)";
+    ctx.beginPath(); ctx.moveTo(pad, Y(0)); ctx.lineTo(W - pad * 0.4, Y(0)); ctx.stroke();
+    // spread
+    ctx.strokeStyle = "#e8e6e1"; ctx.lineWidth = 1.6; ctx.beginPath();
+    for (t = 0; t < N; t++) { t ? ctx.lineTo(X(t), Y(resid[t])) : ctx.moveTo(X(t), Y(resid[t])); }
+    ctx.stroke();
+    // trade markers
+    bt.trades.forEach(function (tr) {
+      ctx.fillStyle = "#e0655f";
+      ctx.beginPath(); ctx.arc(X(tr.day), Y(resid[tr.day]), 4.5, 0, 7); ctx.fill();
+      ctx.fillStyle = "#9a978e";
+      ctx.beginPath(); ctx.arc(X(tr.out), Y(resid[tr.out]), 4.5, 0, 7); ctx.fill();
+    });
+    drawCrosshair(ctx, X, W, H, pad, crossDay);
+  }
+  function drawCrosshair(ctx, X, W, H, pad, day) {
+    if (day == null || day < 0) return;
+    var x = X(day);
+    ctx.strokeStyle = "rgba(210,162,76,0.5)"; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(x, 10); ctx.lineTo(x, H - 24); ctx.stroke();
+    ctx.fillStyle = "#d2a24c"; ctx.font = "11px 'JetBrains Mono', monospace";
+    ctx.fillText("day " + day, Math.min(x + 6, W - 70), 22);
+  }
+
+  /* ---------- main pipeline ---------- */
+  var last = null, crossDay = null;
+  function run() {
+    var p = readParams();
+    var data = generate(state.seed, p);
+    // Formation / trading split: estimate beta on days [0, FORM) only — never on traded data.
+    var fit = ols(data.A.slice(0, FORM), data.B.slice(0, FORM));
+    var resid = new Array(N);
+    for (var t = 0; t < N; t++) resid[t] = data.B[t] - fit.alpha - fit.beta * data.A[t];
+    var rs = rollingStats(resid, WINDOW);
+    var z = new Array(N);
+    for (var t2 = 0; t2 < N; t2++) z[t2] = rs.sd[t2] > 1e-9 ? (resid[t2] - rs.mu[t2]) / rs.sd[t2] : 0;
+    var adf = adfHeuristic(resid.slice(FORM));  // trading period only: no in-sample lookahead
+    var half = adf.gamma < 0 ? Math.log(2) / Math.abs(adf.gamma) : Infinity;
+    var bt = backtest(resid, z, data.B, p, FORM);
+    last = { p: p, data: data, fit: fit, resid: resid, rs: rs, z: z, adf: adf, half: half, bt: bt };
+    render();
+  }
+
+  function render() {
+    var p = last.p, fit = last.fit, adf = last.adf, bt = last.bt, z = last.z;
+    // estimates
+    el("sBeta").innerHTML = fmt2(fit.beta) + '<span class="sub">60-day formation · true β = ' + p.beta.toFixed(2) + "</span>";
+    el("sHalf").textContent = isFinite(last.half) ? last.half.toFixed(1) + " days" : "— (no reversion)";
+    var stationary = adf.tstat < CRIT;
+    var badge = el("sStat");
+    badge.textContent = stationary ? "likely stationary" : "not stationary";
+    badge.className = "badge " + (stationary ? "ok" : "bad");
+    el("sStatT").textContent = "t = " + fmt2(adf.tstat) + " vs −2.86";
+    el("sCorr").textContent = corr(last.data.A, last.data.B).toFixed(3);
+    var zc = z[N - 1];
+    el("sZ").textContent = fmt2(zc) + " σ";
+    var sig = el("sSig");
+    if (zc < -p.entry) { sig.textContent = "Long spread"; sig.className = "badge long"; }
+    else if (zc > p.entry) { sig.textContent = "Short spread"; sig.className = "badge short"; }
+    else { sig.textContent = "Flat — inside bands"; sig.className = "badge"; }
+    // metrics
+    var mPnl = el("mPnl");
+    mPnl.textContent = fmt$(bt.total);
+    mPnl.className = "n " + (bt.total > 0 ? "pos" : bt.total < 0 ? "neg" : "");
+    el("mTrades").textContent = bt.trades.length;
+    el("mWin").textContent = bt.trades.length ? Math.round(100 * bt.wins / bt.trades.length) + "%" : "–";
+    el("mDd").textContent = "−$" + bt.maxDd.toFixed(2);
+    var avgExposure = 20000 * bt.daysIn / (N - FORM);
+    el("mRet").textContent = avgExposure > 0 ? fmt2(100 * bt.total / avgExposure) + "%" : "–";
+    // trade log
+    var tb = el("tradeLog"); tb.innerHTML = "";
+    bt.trades.forEach(function (tr) {
+      var tr2 = document.createElement("tr");
+      tr2.innerHTML = "<td>" + tr.day + "</td><td>" + tr.out + "</td><td>" + tr.dir + "</td>" +
+        "<td>" + fmt2(tr.zIn) + "</td><td>" + fmt2(tr.zOut) + "</td>" +
+        '<td class="' + (tr.pnl >= 0 ? "pos" : "neg") + '">' + fmt$(tr.pnl) + "</td>";
+      tb.appendChild(tr2);
+    });
+    el("noTrades").style.display = bt.trades.length ? "none" : "block";
+    drawPriceChart(last.data, crossDay);
+    drawSpreadChart(last.resid, last.rs.mu, last.rs.sd, z, bt, p, crossDay);
+  }
+
+  /* ---------- UI wiring ---------- */
+  function syncOutputs() {
+    var p = readParams();
+    el("thetaOut").textContent = p.theta.toFixed(3);
+    el("snoiseOut").textContent = "±" + p.snoise.toFixed(1);
+    el("betaOut").textContent = p.beta.toFixed(2);
+    el("driftOut").textContent = p.drift.toFixed(3) + "/day";
+    el("shiftOut").textContent = (p.shift >= 0 ? "+" : "−") + "$" + Math.abs(p.shift);
+    el("entryOut").textContent = "±" + p.entry.toFixed(1) + "σ";
+    el("exitOut").textContent = "±" + p.exit.toFixed(2) + "σ";
+    el("costOut").textContent = "$" + p.cost;
+    el("seednote").textContent = "seed " + state.seed + " · " + N + " simulated days";
+  }
+  function applyPreset(key) {
+    var pr = PRESETS[key]; state.preset = key;
+    el("theta").value = pr.theta; el("snoise").value = pr.snoise;
+    el("beta").value = pr.beta; el("drift").value = pr.drift; el("shift").value = pr.shift;
+    document.querySelectorAll("#presets .chip").forEach(function (c) {
+      c.classList.toggle("active", c.dataset.preset === key);
+    });
+  }
+  Object.keys(PRESETS).forEach(function (key) {
+    var b = document.createElement("button");
+    b.type = "button"; b.className = "chip"; b.dataset.preset = key;
+    b.textContent = PRESETS[key].label;
+    b.addEventListener("click", function () { applyPreset(key); syncOutputs(); run(); });
+    el("presets").appendChild(b);
+  });
+  ["theta", "snoise", "beta", "drift", "shift", "entry", "exit", "cost"].forEach(function (id) {
+    el(id).addEventListener("input", function () {
+      state.preset = null;
+      document.querySelectorAll("#presets .chip").forEach(function (c) { c.classList.remove("active"); });
+      syncOutputs(); run();
+    });
+  });
+  el("reseed").addEventListener("click", function () {
+    state.seed = (Math.random() * 1e9) | 0; syncOutputs(); run();
+  });
+  function bindCrosshair(id) {
+    el(id).addEventListener("mousemove", function (e) {
+      if (!last) return;
+      var r = el(id).getBoundingClientRect(), pad = 36;
+      var x = e.clientX - r.left - pad, frac = x / (r.width - pad * 1.4);
+      crossDay = Math.max(0, Math.min(N - 1, Math.round(frac * (N - 1))));
+      drawPriceChart(last.data, crossDay);
+      drawSpreadChart(last.resid, last.rs.mu, last.rs.sd, last.z, last.bt, last.p, crossDay);
+    });
+    el(id).addEventListener("mouseleave", function () {
+      if (!last) return; crossDay = null;
+      drawPriceChart(last.data, null);
+      drawSpreadChart(last.resid, last.rs.mu, last.rs.sd, last.z, last.bt, last.p, null);
+    });
+  }
+  bindCrosshair("priceChart"); bindCrosshair("spreadChart");
+  window.addEventListener("resize", function () { if (last) render(); });
+
+  applyPreset("tight");
+  syncOutputs();
+  run();
+})();
+</script>
+</body>
+</html>

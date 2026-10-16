@@ -38,7 +38,7 @@
 
 AI 搜索不看排名看"可引用性"。打法：
 
-1. **`llms.txt` 持续维护** ✅ 2026-09-20（追加 2048 + Palette Lab）：服务、作品、联系方式保持最新；这是 AI 了解站点的第一手材料。
+1. **`llms.txt` 持续维护** ✅ 2026-10-16（追加 Sudoku + Pairs Trading Lab）：服务、作品、联系方式保持最新；这是 AI 了解站点的第一手材料。
 2. **写作格式**：每个页面开头用 1–2 句说清"这是什么、给谁用、解决什么" —— 定义式句子最容易被 AI 原样引用。
 3. **问答式内容**：FAQ、"How it works" 段落直接回答用户会问 AI 的问题（"How much does it cost to hire a freelance web developer?"）。
 4. **品牌一致性**：全网统一表述 —— "Shipwright Studio — independent engineering studio, Bay Area, working worldwide"。GitHub、社交媒体、lab 页脚署名全部一致，AI 才能把碎片拼成一个实体。
@@ -66,6 +66,8 @@ AI 搜索不看排名看"可引用性"。打法：
 | 每季度 | Lighthouse + Search Console 数据复盘 |
 
 ## 运行日志
+
+- **2026-10-16**：Phase 3-① `llms.txt` 持续维护 —— "Recent additions" 更新为今日新上线的两个实验（Sudoku：免费在线数独游戏，浏览器内生成、唯一解保证，三档难度、铅笔备注、提示、错误标红与计时器，全本地计算；Pairs Trading Lab：免费在线配对交易探索器，合成协整价格对、OLS 对冲比率估计、滚动价差 z-score、平稳性检查与半衰期、带完整交易日志的通道回测，教育演示、仅合成数据），实验总数 36→38；移除较早的 Whack-a-Mole / Stopwatch 条目以控制长度。另：当日两个 lab 新页（sudoku、pairs-trading-lab）均按构建 checklist 自带 canonical/title/description/quotable 定义段/WebApplication JSON-LD（每页恰 1 个 h1、无 mailto、无密钥痕迹、回链 /ideas/；seo-check.py 本地 41 页全通过；sudoku 核心逻辑经 node 校验通过——10/10 有效完整解盘、easy/medium/hard 分别约 43/36/29 givens、countSolutions===1 确认唯一解、生成 2–39ms；pairs-trading-lab 核心逻辑经 node 校验 17/17 通过——种子可复现、默认种子 β̂=0.976/ADF t=−4.92/半衰期 3.1 天、Broken 预设判为非平稳且回测亏损、交易日志求和与总盈亏一致、紧凑预设 40/40 种子盈利；构建中修了 3 处方法论问题：共享高斯流导致对冲比率偏估→独立扰动流、1 股单位被成本吞没→$10k/腿名义、全样本 OLS 制造虚假均值回归→60 天形成/交易期分离、平滑漂移可被滚动窗口吃掉→Broken 预设改用永久 regime shift）；sitemap 由 CI 的 `generate-sitemap.py` 在 push 后自动重生成。跳过：og 社交卡片（待用户拍板，见 §5）、GSC 验证（需人工）、Lighthouse 性能基线（Phase 1-⑤，按季度节奏）。下一步候选：Lighthouse 性能基线（Phase 1-⑤）或 og 社交卡片（等用户拍板）。
 
 - **2026-10-15**：Phase 3-① `llms.txt` 持续维护 —— "Recent additions" 更新为今日新上线的两个实验（Position Size Calculator：免费在线交易工具，输入账户规模/风险比例/止损距离得精确仓位股数、风险金额与名义价值，长/空方向与实时重算，全本地计算；JWT Decoder：免费在线开发工具，浏览器内解码 JSON Web Token——粘贴 token 即看 header/payload/signature 解码、过期与未生效检查、语法高亮，数据绝不离开页面），实验总数 34→36；移除较早的 Correlation Heatmap 条目以控制长度。另：当日两个 lab 新页（position-size-calculator、jwt-decoder）均按构建 checklist 自带 canonical/title/description/quotable 定义段/WebApplication JSON-LD（每页恰 1 个 h1、无 mailto、无密钥痕迹，seo-check.py 本地 39 页全通过；修复两处错误回链 /lab/→/ideas/，spec 同步更新；position-size-calculator 核心公式经 node 校验：$10,000/1%/$150/$145→20 股/$100 风险；jwt-decoder 解码核心经 node 校验 20/20 + 高亮 6/6 通过，全页 fetch/XMLHttpRequest grep 为零）；sitemap 经 `generate-sitemap.py` 重生成为 38 个 URL（CI 在 push 后也会重生成）。跳过：og 社交卡片（待用户拍板，见 §5）、GSC 验证（需人工）、Lighthouse 性能基线（Phase 1-⑤，按季度节奏）。下一步候选：Lighthouse 性能基线（Phase 1-⑤）或 og 社交卡片（等用户拍板）。
 
