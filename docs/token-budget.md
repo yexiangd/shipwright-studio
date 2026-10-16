@@ -44,3 +44,4 @@
 | 2026-10-13 | n/r | 23% | n/r | 标准运行（2 idea + 1 SEO 任务；构建子 agent 超时，提交/部署/记账由修复流程补完；CI 部署成功，两页 curl 200；状态粒度为 1%） |
 | 2026-10-14 | 0% | 1% | 1% | 标准运行（2 idea + 1 SEO 任务；预算预测 ~0.5% 落在 ≤90% 档：全量运行；双子 agent 并行构建：wordle-clone 1,365 答案词/daily seed/着色算法 node 校验通过、habit-tracker 13/13 node 校验通过；CI 首轮 seo-check 拦截 habit-tracker 页脚坏链 /lab/（已改 /ideas/ 补提交），第二轮 CI 通过、两页 curl 200；状态粒度为 1%） |
 | 2026-10-15 | 8% | 11% | 3% | 标准运行（2 idea + 1 SEO 任务；预算预测 ~8.6% 落在 ≤90% 档：全量运行；双子 agent 并行构建：position-size-calculator node 公式校验通过、jwt-decoder 解码核心 20/20 + 高亮 6/6 通过；本地 seo-check 拦截两处坏链 /lab/（已改 /ideas/，spec 同步），重跑 39 页全通过；CI 部署成功，两页 curl 200；状态粒度为 1%） |
+| 2026-10-16 | 16% | 17% | 1% | 标准运行（2 idea + 1 SEO 任务；预算预测 ~17% 落在 ≤90% 档：全量运行；双子 agent 并行构建：sudoku 10/10 解盘唯一解 node 校验通过、pairs-trading-lab 17/17 node 校验通过；CI seo-check 通过、两页 curl 200；状态粒度为 1%，实际成本 1%） |
