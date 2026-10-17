@@ -1,5 +1,5 @@
 {
-  "updated": "2026-10-16",
+  "updated": "2026-10-17",
   "ideas": [
     {
       "id": "idea-000a",
@@ -455,7 +455,9 @@
       "tagline": "Unix timestamps to human dates, every timezone.",
       "priority": 81,
       "effort": "S",
-      "status": "todo"
+      "status": "done",
+      "url": "/lab/timestamp-converter/",
+      "shipped": "2026-10-17"
     },
     {
       "id": "idea-040",
@@ -897,7 +899,9 @@
       "tagline": "Payment, amortization, and the true cost of the house.",
       "priority": 81,
       "effort": "M",
-      "status": "todo"
+      "status": "done",
+      "url": "/lab/mortgage-calc/",
+      "shipped": "2026-10-17"
     },
     {
       "id": "idea-083",

@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Time Converter · Shipwright Studio</title>
+<meta name="description" content="Free online tool that converts Unix timestamps to human-readable dates in any timezone — and back — with auto unit detection and relative times.">
+<link rel="canonical" href="https://shipwright-studio.pages.dev/lab/timestamp-converter/">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
+  "name": "Time Converter",
+  "description": "Free online tool that converts Unix timestamps to human-readable dates in any timezone — and back — with auto unit detection and relative times.",
+  "applicationCategory": "DeveloperApplication",
+  "operatingSystem": "Web",
+  "url": "https://shipwright-studio.pages.dev/lab/timestamp-converter/",
+  "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+}
+</script>
+<style>
+:root{
+  --bg:#0a0c0f; --panel:#121519; --panel-2:#171b21; --line:#232a33;
+  --ink:#e9e4d8; --muted:#9aa3ad; --dim:#5d6771;
+  --brass:#d2a24c; --brass-dim:rgba(210,162,76,.16);
+  --red:#e06666; --green:#7fc98f;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);
+  font-family:"Fraunces",Georgia,serif;line-height:1.6;
+  -webkit-font-smoothing:antialiased}
+.mono{font-family:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,monospace}
+.wrap{max-width:880px;margin:0 auto;padding:48px 24px 64px}
+nav.top{margin-bottom:40px}
+nav.top a{color:var(--muted);text-decoration:none;font-size:14px;letter-spacing:.04em}
+nav.top a:hover{color:var(--brass)}
+h1{font-weight:600;font-size:clamp(2.4rem,6vw,3.6rem);line-height:1.1;margin:0 0 18px;letter-spacing:-.01em}
+h1 .accent{color:var(--brass)}
+.def{font-size:1.15rem;color:var(--muted);max-width:640px;margin:0 0 48px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;
+  padding:28px;margin-bottom:24px}
+.card h2{font-size:1.05rem;font-weight:600;margin:0 0 4px;letter-spacing:.02em}
+.card .sub{color:var(--dim);font-size:.9rem;margin:0 0 20px}
+.hero{text-align:center;padding:36px 28px}
+.hero .now-label{color:var(--dim);font-size:.8rem;letter-spacing:.14em;text-transform:uppercase;margin-bottom:10px}
+.hero .now-ts{font-size:clamp(2rem,7vw,3.2rem);font-weight:600;color:var(--brass);
+  letter-spacing:.02em;margin:0}
+.hero .now-iso{color:var(--muted);font-size:.95rem;margin:14px 0 20px;word-break:break-all}
+.btn{background:var(--brass-dim);border:1px solid var(--brass);color:var(--brass);
+  border-radius:8px;padding:8px 18px;font-family:inherit;font-size:.9rem;cursor:pointer;
+  transition:background .15s}
+.btn:hover{background:rgba(210,162,76,.28)}
+.btn.copied{color:var(--green);border-color:var(--green);background:rgba(127,201,143,.12)}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:24px}
+@media(max-width:720px){.grid{grid-template-columns:1fr}.wrap{padding:32px 18px 48px}}
+label.field{display:block;font-size:.8rem;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--dim);margin:0 0 8px}
+input[type=text],input[type=datetime-local],input[list]{
+  width:100%;background:var(--bg);border:1px solid var(--line);border-radius:8px;
+  color:var(--ink);padding:12px 14px;font-size:1rem;outline:none;color-scheme:dark}
+input:focus{border-color:var(--brass)}
+.unit{display:inline-block;margin-top:10px;font-size:.8rem;color:var(--brass);
+  background:var(--brass-dim);border:1px solid rgba(210,162,76,.4);
+  border-radius:999px;padding:3px 12px}
+.out{margin-top:20px;border-top:1px solid var(--line);padding-top:16px}
+.row{display:flex;align-items:center;justify-content:space-between;gap:12px;
+  padding:9px 0;border-bottom:1px dashed var(--line)}
+.row:last-child{border-bottom:0}
+.row .k{color:var(--dim);font-size:.85rem;flex-shrink:0}
+.row .v{font-size:.95rem;text-align:right;word-break:break-all}
+.row .v.big{font-size:1.05rem;color:var(--ink)}
+.copy-mini{background:none;border:1px solid var(--line);color:var(--muted);
+  border-radius:6px;padding:3px 10px;font-size:.75rem;cursor:pointer;flex-shrink:0}
+.copy-mini:hover{border-color:var(--brass);color:var(--brass)}
+.copy-mini.ok{color:var(--green);border-color:var(--green)}
+.rel{margin-top:14px;color:var(--brass);font-size:1.05rem}
+.err{display:none;margin-top:12px;color:var(--red);background:rgba(224,102,102,.08);
+  border:1px solid rgba(224,102,102,.4);border-radius:8px;padding:10px 14px;font-size:.9rem}
+.err.show{display:block}
+.empty{color:var(--dim);font-size:.95rem}
+footer{margin-top:56px;padding-top:24px;border-top:1px solid var(--line);
+  color:var(--dim);font-size:.9rem;text-align:center}
+footer a{color:var(--brass);text-decoration:none}
+footer a:hover{text-decoration:underline}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <nav class="top"><a href="/">← Shipwright Studio</a></nav>
+
+  <h1>Time <span class="accent">Converter</span></h1>
+  <p class="def">Time Converter is a free online tool that converts Unix timestamps to human-readable dates in any timezone — and back again.</p>
+
+  <section class="card hero" aria-label="Current time">
+    <div class="now-label">Current Unix time</div>
+    <p class="now-ts mono" id="now-ts">–</p>
+    <p class="now-iso mono" id="now-iso">–</p>
+    <button class="btn" id="copy-now" type="button">Copy timestamp</button>
+  </section>
+
+  <div class="grid">
+    <section class="card" aria-label="Timestamp to date">
+      <h2>Timestamp → Date</h2>
+      <p class="sub">Paste an epoch value — the unit is detected automatically.</p>
+      <label class="field" for="ts-in">Timestamp</label>
+      <input type="text" id="ts-in" class="mono" inputmode="numeric" autocomplete="off"
+             placeholder="e.g. 1696118400">
+      <div><span class="unit" id="unit-badge" hidden></span></div>
+      <div class="err" id="ts-err" role="alert"></div>
+      <div class="out" id="ts-out">
+        <p class="empty" id="ts-empty">Paste a timestamp to see it rendered here.</p>
+      </div>
+      <p class="rel" id="ts-rel"></p>
+    </section>
+
+    <section class="card" aria-label="Date to timestamp">
+      <h2>Date → Timestamp</h2>
+      <p class="sub">Pick a local date and time in the chosen timezone.</p>
+      <label class="field" for="dt-in">Date &amp; time</label>
+      <input type="datetime-local" id="dt-in" class="mono">
+      <div class="err" id="dt-err" role="alert"></div>
+      <div class="out" id="dt-out">
+        <p class="empty" id="dt-empty">Choose a date and time to see the epoch value here.</p>
+      </div>
+      <p class="rel" id="dt-rel"></p>
+    </section>
+  </div>
+
+  <section class="card" aria-label="Timezone">
+    <h2>Timezone</h2>
+    <p class="sub">Applies to both converters. Type to search the full IANA list.</p>
+    <label class="field" for="tz-in">Timezone</label>
+    <input list="tz-list" id="tz-in" class="mono" autocomplete="off" spellcheck="false">
+    <datalist id="tz-list"></datalist>
+    <div class="err" id="tz-err" role="alert"></div>
+  </section>
+
+  <footer>Built by <a href="/ideas/">Shipwright Studio</a></footer>
+</div>
+
+<script>
+(function(){
+"use strict";
+var $=function(id){return document.getElementById(id);};
+
+var COMMON=["UTC","America/Los_Angeles","America/New_York","Europe/London",
+  "Europe/Berlin","Asia/Shanghai","Asia/Tokyo","Australia/Sydney"];
+var ALLZONES=(typeof Intl.supportedValuesOf==="function")
+  ? Intl.supportedValuesOf("timeZone") : COMMON.slice();
+
+function detectUnit(s){
+  var d=s.replace(/^-/,"").replace(/^0+/,"")||"0";
+  var n=d.length;
+  if(n<=10) return {unit:"seconds",ms:1e3};
+  if(n<=13) return {unit:"milliseconds",ms:1};
+  if(n<=16) return {unit:"microseconds",ms:1e-3};
+  if(n<=19) return {unit:"nanoseconds",ms:1e-6};
+  return null;
+}
+function toEpochMs(raw){
+  var det=detectUnit(raw);
+  if(!det) return null;
+  var v=Number(raw)*det.ms;
+  return {ms:v,unit:det.unit};
+}
+function tzOffsetMs(epochMs,tz){
+  try{
+    var f=new Intl.DateTimeFormat("en-US",{timeZone:tz,year:"numeric",month:"2-digit",
+      day:"2-digit",hour:"2-digit",minute:"2-digit",second:"2-digit",hour12:false});
+    var p={}; f.formatToParts(new Date(epochMs)).forEach(function(x){p[x.type]=x.value;});
+    var asUTC=Date.UTC(+p.year,+p.month-1,+p.day,+p.hour%24,+p.minute,+p.second);
+    return asUTC-epochMs;
+  }catch(e){return 0;}
+}
+function fmtOffset(ms){
+  var m=Math.round(ms/60000),sign=m<0?"-":"+";
+  m=Math.abs(m);
+  var h=Math.floor(m/60),mm=m%60;
+  return "UTC"+sign+("0"+h).slice(-2)+":"+("0"+mm).slice(-2);
+}
+function fmtWall(epochMs,tz){
+  try{
+    return new Date(epochMs).toLocaleString("en-US",{timeZone:tz,year:"numeric",
+      month:"short",day:"numeric",hour:"numeric",minute:"2-digit",
+      second:"2-digit",hour12:true});
+  }catch(e){return new Date(epochMs).toUTCString();}
+}
+function relativeTime(epochMs){
+  var diff=epochMs-Date.now(),abs=Math.abs(diff);
+  if(abs<10e3) return "just now";
+  var units=[[1e3,"second"],[60e3,"minute"],[36e5,"hour"],[864e5,"day"],
+             [6048e5,"week"],[26298e5,"month"],[315576e5,"year"]];
+  var u=units[0];
+  for(var i=0;i<units.length;i++){ if(abs>=units[i][0]) u=units[i]; }
+  var n=Math.round(abs/u[0]);
+  var s=n===1?u[1]:u[1]+"s";
+  return diff>0 ? "in "+n+" "+s : n+" "+s+" ago";
+}
+function wallToEpoch(local,tz){
+  var m=/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})/.exec(local);
+  if(!m) return null;
+  var W=Date.UTC(+m[1],+m[2]-1,+m[3],+m[4],+m[5]);
+  var guess=W-tzOffsetMs(W,tz);
+  for(var i=0;i<3;i++){ guess=W-tzOffsetMs(guess,tz); }
+  return guess;
+}
+function copyText(text,btn,orig){
+  function done(){btn.classList.add("ok");btn.textContent="Copied";
+    setTimeout(function(){btn.classList.remove("ok");btn.textContent=orig;},1400);}
+  if(navigator.clipboard&&navigator.clipboard.writeText){
+    navigator.clipboard.writeText(text).then(done,done);
+  }else{
+    var ta=document.createElement("textarea");ta.value=text;
+    ta.style.position="fixed";ta.style.opacity="0";document.body.appendChild(ta);
+    ta.select();try{document.execCommand("copy");}catch(e){}
+    document.body.removeChild(ta);done();
+  }
+}
+function row(k,v,mono){
+  var r=document.createElement("div");r.className="row";
+  var kk=document.createElement("span");kk.className="k";kk.textContent=k;
+  var vv=document.createElement("span");vv.className="v"+(mono?" mono big":"");
+  vv.textContent=v;
+  var b=document.createElement("button");b.type="button";b.className="copy-mini";
+  b.textContent="copy";b.setAttribute("aria-label","Copy "+k);
+  b.addEventListener("click",function(){copyText(v,b,"copy");});
+  r.appendChild(kk);r.appendChild(vv);r.appendChild(b);
+  return r;
+}
+function err(el,msg){el.textContent=msg;el.classList.add("show");}
+function clearErr(el){el.textContent="";el.classList.remove("show");}
+
+var tzIn=$("tz-in");
+COMMON.forEach(function(z){
+  var o=document.createElement("option");o.value=z;o.textContent="★ "+z;
+  $("tz-list").appendChild(o);
+});
+ALLZONES.forEach(function(z){
+  if(COMMON.indexOf(z)>=0) return;
+  var o=document.createElement("option");o.value=z;$("tz-list").appendChild(o);
+});
+var localTz=null;
+try{localTz=Intl.DateTimeFormat().resolvedOptions().timeZone;}catch(e){}
+function tz(){
+  var v=tzIn.value.trim();
+  if(ALLZONES.indexOf(v)<0) return "UTC";
+  return v;
+}
+tzIn.value=(localTz&&ALLZONES.indexOf(localTz)>=0)?localTz:"UTC";
+
+var tsIn=$("ts-in"),dtIn=$("dt-in");
+var hashTimer=null;
+function syncHash(d){
+  clearTimeout(hashTimer);
+  hashTimer=setTimeout(function(){
+    var p=[];
+    if(d==="t2d"&&tsIn.value.trim()) p.push("t="+encodeURIComponent(tsIn.value.trim()));
+    if(d==="d2t"&&dtIn.value) p.push("dt="+encodeURIComponent(dtIn.value));
+    p.push("tz="+encodeURIComponent(tzIn.value.trim()||"UTC"));
+    p.push("d="+d);
+    history.replaceState(null,"","#"+p.join("&"));
+  },400);
+}
+
+function renderTs2Date(){
+  var raw=tsIn.value.trim();
+  var out=$("ts-out"),rel=$("ts-rel"),badge=$("unit-badge"),e=$("ts-err");
+  clearErr(e);rel.textContent="";badge.hidden=true;
+  out.innerHTML='<p class="empty">Paste a timestamp to see it rendered here.</p>';
+  if(!raw) return;
+  if(!/^-?\d+$/.test(raw)){err(e,"That doesn't look like an integer timestamp — digits only, please.");return;}
+  var r=toEpochMs(raw);
+  if(!r||!isFinite(r.ms)){err(e,"That value is out of range — try something shorter.");return;}
+  var ms=Math.round(r.ms);
+  var zone=tz(),iso=new Date(ms).toISOString();
+  badge.textContent="detected: "+r.unit;badge.hidden=false;
+  out.innerHTML="";
+  out.appendChild(row("ISO 8601 (UTC)",iso,true));
+  out.appendChild(row(zone,fmtWall(ms,zone)+" ("+fmtOffset(tzOffsetMs(ms,zone))+")",false));
+  rel.textContent="≈ "+relativeTime(ms);
+  syncHash("t2d");
+}
+function renderDate2Ts(){
+  var raw=dtIn.value;
+  var out=$("dt-out"),rel=$("dt-rel"),e=$("dt-err");
+  clearErr(e);rel.textContent="";
+  out.innerHTML='<p class="empty">Choose a date and time to see the epoch value here.</p>';
+  if(!raw) return;
+  var zone=tz(),ms=wallToEpoch(raw,zone);
+  if(ms===null||!isFinite(ms)){err(e,"Couldn't parse that date — use the picker above.");return;}
+  out.innerHTML="";
+  out.appendChild(row("Epoch seconds",String(Math.floor(ms/1000)),true));
+  out.appendChild(row("Epoch milliseconds",String(ms),true));
+  out.appendChild(row("ISO 8601 (UTC)",new Date(ms).toISOString(),true));
+  rel.textContent="≈ "+relativeTime(ms);
+  syncHash("d2t");
+}
+function onTz(){
+  var v=tzIn.value.trim();
+  if(v&&ALLZONES.indexOf(v)<0){err($("tz-err"),'"'+v+'" is not a recognised IANA timezone.');return;}
+  clearErr($("tz-err"));
+  if(tsIn.value.trim()) renderTs2Date();
+  if(dtIn.value) renderDate2Ts();
+}
+
+tsIn.addEventListener("input",renderTs2Date);
+dtIn.addEventListener("input",renderDate2Ts);
+dtIn.addEventListener("change",renderDate2Ts);
+tzIn.addEventListener("input",onTz);
+tzIn.addEventListener("change",onTz);
+
+function restoreFromHash(){
+  var h=location.hash.replace(/^#/,"");
+  if(!h) return;
+  var p={};
+  h.split("&").forEach(function(kv){
+    var i=kv.indexOf("=");if(i<0)return;
+    p[kv.slice(0,i)]=decodeURIComponent(kv.slice(i+1));
+  });
+  if(p.tz&&ALLZONES.indexOf(p.tz)>=0) tzIn.value=p.tz;
+  if(p.d==="d2t"&&p.dt){dtIn.value=p.dt;renderDate2Ts();}
+  else if(p.t&&/^-?\d+$/.test(p.t)){tsIn.value=p.t;renderTs2Date();}
+}
+
+function tick(){
+  var now=Date.now();
+  $("now-ts").textContent=String(Math.floor(now/1000));
+  $("now-iso").textContent=new Date(now).toISOString();
+}
+$("copy-now").addEventListener("click",function(){
+  copyText(String(Math.floor(Date.now()/1000)),this,"Copy timestamp");
+});
+tick();setInterval(tick,1000);
+restoreFromHash();
+})();
+</script>
+</body>
+</html>
