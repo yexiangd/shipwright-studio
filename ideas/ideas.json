@@ -1,5 +1,5 @@
 {
-  "updated": "2026-10-17",
+  "updated": "2026-10-18",
   "ideas": [
     {
       "id": "idea-000a",
@@ -189,7 +189,9 @@
       "tagline": "Unbeatable minimax, plus a beatable 'easy' mode.",
       "priority": 80,
       "effort": "S",
-      "status": "todo"
+      "status": "done",
+      "url": "/lab/tic-tac-toe/",
+      "shipped": "2026-10-18"
     },
     {
       "id": "idea-015",
@@ -1199,7 +1201,9 @@
       "tagline": "Animated limit order book depth chart simulator.",
       "priority": 81,
       "effort": "M",
-      "status": "todo"
+      "status": "done",
+      "url": "/lab/orderbook-visualizer/",
+      "shipped": "2026-10-18"
     },
     {
       "id": "idea-111",

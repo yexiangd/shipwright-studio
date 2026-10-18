@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Tic-Tac-Toe vs AI · Shipwright Studio</title>
+  <meta name="description" content="Tic-Tac-Toe vs AI is a free online game: play X against a beatable Easy bot or a perfect Unbeatable minimax opponent, with win/loss/draw tracking and persistent stats." />
+  <link rel="canonical" href="https://shipwright-studio.pages.dev/lab/tic-tac-toe/" />
+  <link rel="icon" type="image/svg+xml" href="../../favicon.svg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..700;1,9..144,300..700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "Tic-Tac-Toe vs AI",
+    "description": "A free online tic-tac-toe game: play as X against an Easy AI that makes human-like mistakes, or face Unbeatable — a perfect minimax opponent that never loses. Includes score tally and persistent stats.",
+    "applicationCategory": "GameApplication",
+    "operatingSystem": "Web",
+    "offers": { "@type": "Offer", "price": "0" },
+    "author": { "@type": "Organization", "name": "Shipwright Studio", "url": "https://shipwright-studio.pages.dev/" }
+  }
+  </script>
+  <style>
+    :root {
+      --bg: #0a0c0f; --surface: #10141a; --surface-2: #141a22;
+      --text: #f2efe6; --muted: #a6abb4; --faint: #6d737c;
+      --accent: #d2a24c; --line: rgba(255,255,255,.09);
+      --red: #e0655f; --green: #7fc98f;
+      --font-display: "Fraunces", Georgia, serif;
+      --font-body: "Inter", -apple-system, "Segoe UI", sans-serif;
+      --font-mono: "JetBrains Mono", ui-monospace, monospace;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: var(--bg); color: var(--text); font-family: var(--font-body); min-height: 100vh; display: flex; flex-direction: column; }
+    .topbar { display: flex; justify-content: space-between; align-items: center; padding: 16px 22px; border-bottom: 1px solid var(--line); }
+    .topbar a { color: var(--muted); text-decoration: none; font-size: 14px; }
+    .topbar a:hover { color: var(--accent); }
+    .brand { font-family: var(--font-display); font-size: 17px; }
+    .brand em { color: var(--accent); font-style: italic; }
+    main { flex: 1; width: 100%; max-width: 720px; margin: 0 auto; padding: 44px 24px 60px; display: flex; flex-direction: column; gap: 26px; }
+    h1 { font-family: var(--font-display); font-weight: 500; font-size: clamp(30px, 5vw, 44px); letter-spacing: -.01em; }
+    h1 em { color: var(--accent); font-style: italic; }
+    .lede { color: var(--muted); max-width: 680px; line-height: 1.65; }
+    .lede strong { color: var(--text); font-weight: 600; }
+    .card { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 26px; }
+    .scoreboard { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 22px; }
+    .stat { text-align: center; padding: 12px 6px; border: 1px solid var(--line); border-radius: 10px; background: var(--bg); }
+    .stat .n { font-family: var(--font-mono); font-size: 24px; font-variant-numeric: tabular-nums; }
+    .stat .l { font-size: 11.5px; color: var(--faint); text-transform: uppercase; letter-spacing: .08em; margin-top: 4px; }
+    .stat.you .n { color: var(--accent); }
+    .stat.ai .n { color: var(--text); }
+    .roundline { text-align: center; color: var(--faint); font-family: var(--font-mono); font-size: 12.5px; margin: -12px 0 22px; letter-spacing: .06em; }
+    .lifetime { text-align: center; color: var(--faint); font-size: 12.5px; margin: -14px 0 20px; font-family: var(--font-mono); }
+    .boardwrap { position: relative; width: fit-content; margin: 0 auto; }
+    .board { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+    .cell {
+      width: clamp(84px, 26vw, 128px); aspect-ratio: 1;
+      background: var(--surface-2); border: 1px solid var(--line); border-radius: 12px;
+      cursor: pointer; display: flex; align-items: center; justify-content: center;
+      padding: 18%; transition: background .15s ease, border-color .15s ease, transform .12s ease;
+    }
+    .board.can-play .cell:not(.filled):hover { border-color: rgba(210,162,76,.55); }
+    .board.locked .cell { cursor: default; }
+    .cell.filled { cursor: default; }
+    .cell .mark { width: 100%; height: 100%; }
+    .cell .mark line, .cell .mark circle {
+      fill: none; stroke-linecap: round; stroke-width: 11;
+      stroke-dasharray: 400; stroke-dashoffset: 400;
+      animation: draw .28s ease-out forwards;
+    }
+    .cell .mark.x line { stroke: var(--accent); }
+    .cell .mark.o circle { stroke: var(--text); stroke-width: 10; }
+    @keyframes draw { to { stroke-dashoffset: 0; } }
+    .cell.win { background: rgba(210,162,76,.14); border-color: rgba(210,162,76,.6); }
+    .cell.lose { background: rgba(224,101,95,.12); border-color: rgba(224,101,95,.5); }
+    .boardwrap.draw .cell { opacity: .55; }
+    .boardwrap.shake .board { animation: shake .4s ease; }
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      25% { transform: translateX(-7px); } 55% { transform: translateX(5px); } 80% { transform: translateX(-3px); }
+    }
+    #lineSvg { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+    #lineSvg line { stroke-width: 6; stroke-linecap: round; stroke-dasharray: 400; stroke-dashoffset: 400; }
+    #lineSvg line.show { animation: drawline .35s ease-out forwards; }
+    #lineSvg.win line { stroke: var(--accent); }
+    #lineSvg.lose line { stroke: var(--red); opacity: .8; }
+    @keyframes drawline { to { stroke-dashoffset: 0; } }
+    .status { text-align: center; min-height: 32px; margin: 20px 0 4px; font-family: var(--font-display); font-size: 19px; font-style: italic; color: var(--text); }
+    .status.thinking { color: var(--faint); }
+    .status.win { color: var(--accent); }
+    .status.lose { color: var(--red); }
+    .controls { display: flex; flex-direction: column; gap: 14px; align-items: center; margin-top: 18px; }
+    .control-group { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; justify-content: center; }
+    .control-group .cap { font-size: 12px; color: var(--faint); text-transform: uppercase; letter-spacing: .08em; }
+    .pills { display: flex; gap: 8px; }
+    .pills button { font-family: var(--font-mono); font-size: 12.5px; padding: 9px 16px; border-radius: 999px; border: 1px solid var(--line); background: transparent; color: var(--muted); cursor: pointer; }
+    .pills button.active { border-color: var(--accent); color: var(--accent); background: rgba(210,162,76,.08); }
+    .pills button:hover { color: var(--text); }
+    .btn { font-family: var(--font-body); font-weight: 600; font-size: 14px; padding: 11px 26px; border-radius: 10px; border: 1px solid rgba(210,162,76,.5); background: rgba(210,162,76,.1); color: var(--accent); cursor: pointer; transition: background .15s ease; }
+    .btn:hover { background: rgba(210,162,76,.18); }
+    .reset-link { background: none; border: none; color: var(--faint); font-size: 12.5px; cursor: pointer; text-decoration: underline; text-underline-offset: 3px; }
+    .reset-link:hover { color: var(--muted); }
+    .note { color: var(--muted); font-size: 13.5px; line-height: 1.7; }
+    .note strong { color: var(--text); }
+    .note code { font-family: var(--font-mono); font-size: 12.5px; color: var(--accent); background: rgba(210,162,76,.08); padding: 2px 6px; border-radius: 5px; }
+    footer { border-top: 1px solid var(--line); padding: 22px; text-align: center; color: var(--faint); font-size: 13px; }
+    footer a { color: var(--accent); text-decoration: none; }
+    footer a:hover { text-decoration: underline; }
+    @media (max-width: 480px) { .card { padding: 18px; } .stat .n { font-size: 20px; } }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="/">Shipwright <em>Studio</em></a>
+    <a href="/ideas/">Lab</a>
+  </header>
+  <main>
+    <h1>Tic-Tac-Toe <em>vs AI</em></h1>
+    <p class="lede"><strong>Tic-Tac-Toe vs AI is a free online tool that pits you, as X, against two computer opponents:</strong> Easy, which makes human-like mistakes you can punish, and Unbeatable, a perfect minimax engine that can never lose — the best you can do against it is a draw. Your win/loss/draw tally is tracked per difficulty and remembered between visits.</p>
+
+    <section class="card" aria-label="Tic-tac-toe game">
+      <div class="scoreboard" role="status" aria-label="Score">
+        <div class="stat you"><div class="n" id="scoreYou">0</div><div class="l">You (X)</div></div>
+        <div class="stat"><div class="n" id="scoreDraw">0</div><div class="l">Draws</div></div>
+        <div class="stat ai"><div class="n" id="scoreAI">0</div><div class="l">AI (O)</div></div>
+      </div>
+      <div class="roundline" id="roundLine">ROUND 1</div>
+      <div class="lifetime" id="lifetimeLine"></div>
+
+      <div class="boardwrap" id="boardWrap">
+        <div class="board can-play" id="board" role="grid" aria-label="Tic-tac-toe board">
+          <button class="cell" data-i="0" role="gridcell" aria-label="Cell 1"></button>
+          <button class="cell" data-i="1" role="gridcell" aria-label="Cell 2"></button>
+          <button class="cell" data-i="2" role="gridcell" aria-label="Cell 3"></button>
+          <button class="cell" data-i="3" role="gridcell" aria-label="Cell 4"></button>
+          <button class="cell" data-i="4" role="gridcell" aria-label="Cell 5"></button>
+          <button class="cell" data-i="5" role="gridcell" aria-label="Cell 6"></button>
+          <button class="cell" data-i="6" role="gridcell" aria-label="Cell 7"></button>
+          <button class="cell" data-i="7" role="gridcell" aria-label="Cell 8"></button>
+          <button class="cell" data-i="8" role="gridcell" aria-label="Cell 9"></button>
+        </div>
+        <svg id="lineSvg" viewBox="0 0 300 300" aria-hidden="true"><line id="winLine" x1="0" y1="0" x2="0" y2="0"/></svg>
+      </div>
+
+      <div class="status" id="status">Your move — you're X.</div>
+
+      <div class="controls">
+        <div class="control-group">
+          <span class="cap">Opponent</span>
+          <div class="pills" id="diffPills" role="group" aria-label="Difficulty">
+            <button data-d="easy" class="active" aria-pressed="true">Easy</button>
+            <button data-d="unbeatable" aria-pressed="false">Unbeatable</button>
+          </div>
+        </div>
+        <div class="control-group">
+          <span class="cap">Starts</span>
+          <div class="pills" id="startPills" role="group" aria-label="Who starts">
+            <button data-s="player" class="active" aria-pressed="true">You start</button>
+            <button data-s="ai" aria-pressed="false">AI starts</button>
+          </div>
+        </div>
+        <button class="btn" id="newRound">New round</button>
+        <button class="reset-link" id="resetStats">Reset stats</button>
+      </div>
+    </section>
+
+    <section class="note">
+      <p><strong>Easy</strong> takes a win when it sees one, but often <em>forgets</em> to block yours — beat it, then try again. <strong>Unbeatable</strong> evaluates every line with <code>minimax</code> plus alpha-beta pruning, so it always answers perfectly; a draw is a victory of sorts. The AI always plays O, and your stats are kept separately per opponent.</p>
+    </section>
+  </main>
+  <footer>Built by <a href="/ideas/">Shipwright Studio</a></footer>
+
+  <script>
+  // ================= PURE GAME LOGIC (node-testable) =================
+  const X = 1, O = 2;                       // player is X, AI is O
+  const LINES = [
+    [0,1,2],[3,4,5],[6,7,8],               // rows
+    [0,3,6],[1,4,7],[2,5,8],               // cols
+    [0,4,8],[2,4,6]                        // diagonals
+  ];
+  // winner(b): 0 = ongoing, 1 = X wins, 2 = O wins, 3 = draw.
+  // Returns {r, line} shape in winLineOf; keep winner() scalar for speed.
+  function winner(b) {
+    for (const [a,c,d] of LINES) {
+      if (b[a] !== 0 && b[a] === b[c] && b[c] === b[d]) return b[a];
+    }
+    for (let i = 0; i < 9; i++) if (b[i] === 0) return 0;
+    return 3;
+  }
+  function winLineOf(b) {
+    for (const ln of LINES) {
+      const [a,c,d] = ln;
+      if (b[a] !== 0 && b[a] === b[c] && b[c] === b[d]) return ln;
+    }
+    return null;
+  }
+  function empties(b) {
+    const out = [];
+    for (let i = 0; i < 9; i++) if (b[i] === 0) out.push(i);
+    return out;
+  }
+  // Immediate winning move for `mark`, or -1.
+  function immediateWin(b, mark) {
+    for (const i of empties(b)) {
+      b[i] = mark;
+      const w = winner(b);
+      b[i] = 0;
+      if (w === mark) return i;
+    }
+    return -1;
+  }
+  // Perfect play: minimax with alpha-beta, score from `me`'s perspective.
+  // Depth adjustment prefers faster wins / slower losses.
+  function minimax(b, turn, me, depth, alpha, beta) {
+    const w = winner(b);
+    if (w === me) return 10 - depth;
+    if (w === 3) return 0;
+    if (w !== 0) return depth - 10;
+    const other = turn === X ? O : X;
+    if (turn === me) {
+      let best = -Infinity;
+      for (const i of empties(b)) {
+        b[i] = turn;
+        best = Math.max(best, minimax(b, other, me, depth + 1, alpha, beta));
+        b[i] = 0;
+        alpha = Math.max(alpha, best);
+        if (beta <= alpha) break;
+      }
+      return best;
+    }
+    let best = Infinity;
+    for (const i of empties(b)) {
+      b[i] = turn;
+      best = Math.min(best, minimax(b, other, me, depth + 1, alpha, beta));
+      b[i] = 0;
+      beta = Math.min(beta, best);
+      if (beta <= alpha) break;
+    }
+    return best;
+  }
+  function bestMove(b, me) {
+    const other = me === X ? O : X;
+    let bestScore = -Infinity, move = -1;
+    // Center/corner/edge preference order breaks ties toward strong openings.
+    const order = [4,0,2,6,8,1,3,5,7];
+    for (const i of order) {
+      if (b[i] !== 0) continue;
+      b[i] = me;
+      const s = minimax(b, other, me, 0, -Infinity, Infinity);
+      b[i] = 0;
+      if (s > bestScore) { bestScore = s; move = i; }
+    }
+    return move;
+  }
+  // Beatable AI: always takes a win; blocks the opponent's immediate win only
+  // ~25% of the time; otherwise plays a random empty cell.
+  function easyMove(b, me, rng) {
+    rng = rng || Math.random;
+    const win = immediateWin(b, me);
+    if (win !== -1) return win;
+    const opp = me === X ? O : X;
+    const block = immediateWin(b, opp);
+    if (block !== -1 && rng() < 0.25) return block;
+    const e = empties(b);
+    return e[Math.floor(rng() * e.length)];
+  }
+  function aiMove(b, difficulty, me, rng) {
+    return difficulty === "unbeatable" ? bestMove(b, me) : easyMove(b, me, rng);
+  }
+  // === DOM WIRING (not executed in node tests) ===
+
+  const $ = id => document.getElementById(id);
+  const boardEl = $("board"), statusEl = $("status"), boardWrap = $("boardWrap");
+  const cells = [...boardEl.querySelectorAll(".cell")];
+  const winLineEl = $("winLine"), lineSvg = $("lineSvg");
+
+  let board = new Array(9).fill(0);
+  let difficulty = "easy";
+  let starter = "player";
+  let roundOver = false;
+  let aiThinking = false;
+  let round = 1;
+  let session = { you: 0, draws: 0, ai: 0 };
+
+  const LS_KEY = "ttt-stats-v1";
+  let lifetime = { easy: { you: 0, draws: 0, ai: 0 }, unbeatable: { you: 0, draws: 0, ai: 0 } };
+  function loadLifetime() {
+    try {
+      const raw = localStorage.getItem(LS_KEY);
+      if (raw) {
+        const p = JSON.parse(raw);
+        for (const d of ["easy", "unbeatable"]) for (const k of ["you", "draws", "ai"]) {
+          if (typeof p?.[d]?.[k] === "number") lifetime[d][k] = p[d][k];
+        }
+      }
+    } catch (e) { /* private mode: stats stay session-only */ }
+  }
+  function saveLifetime() {
+    try { localStorage.setItem(LS_KEY, JSON.stringify(lifetime)); } catch (e) {}
+  }
+  function fmtStat(s) { return `${s.you}W · ${s.draws}D · ${s.ai}L`; }
+  function renderScores() {
+    $("scoreYou").textContent = session.you;
+    $("scoreDraw").textContent = session.draws;
+    $("scoreAI").textContent = session.ai;
+    $("roundLine").textContent = "ROUND " + round;
+    $("lifetimeLine").textContent =
+      `Lifetime — Easy ${fmtStat(lifetime.easy)} · Unbeatable ${fmtStat(lifetime.unbeatable)}`;
+  }
+
+  const MARK_SVG = {
+    [X]: '<svg class="mark x" viewBox="0 0 100 100" aria-hidden="true"><line x1="28" y1="28" x2="72" y2="72"/><line x1="72" y1="28" x2="28" y2="72"/></svg>',
+    [O]: '<svg class="mark o" viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="50" r="24"/></svg>'
+  };
+  function setStatus(text, cls) {
+    statusEl.textContent = text;
+    statusEl.className = "status" + (cls ? " " + cls : "");
+  }
+  function placeMark(i, mark) {
+    board[i] = mark;
+    cells[i].innerHTML = MARK_SVG[mark];
+    cells[i].classList.add("filled");
+  }
+  function drawWinLine(ln, kind) {
+    const c = i => ({ x: (i % 3) * 100 + 50, y: Math.floor(i / 3) * 100 + 50 });
+    const a = c(ln[0]), d = c(ln[2]);
+    winLineEl.setAttribute("x1", a.x); winLineEl.setAttribute("y1", a.y);
+    winLineEl.setAttribute("x2", d.x); winLineEl.setAttribute("y2", d.y);
+    lineSvg.setAttribute("class", kind);
+    requestAnimationFrame(() => winLineEl.classList.add("show"));
+  }
+  function clearWinLine() {
+    winLineEl.classList.remove("show");
+    lineSvg.removeAttribute("class");
+  }
+  function setBoardPlayable(on) {
+    boardEl.classList.toggle("can-play", on);
+    boardEl.classList.toggle("locked", !on);
+  }
+
+  function finishRound(result, ln) {
+    roundOver = true;
+    aiThinking = false;
+    setBoardPlayable(false);
+    clearWinLine();
+    if (result === X) {
+      session.you++; lifetime[difficulty].you++;
+      ln.forEach(i => cells[i].classList.add("win"));
+      drawWinLine(ln, "win");
+      setStatus("You win. Nicely done.", "win");
+    } else if (result === O) {
+      session.ai++; lifetime[difficulty].ai++;
+      ln.forEach(i => cells[i].classList.add("lose"));
+      drawWinLine(ln, "lose");
+      boardWrap.classList.add("shake");
+      setTimeout(() => boardWrap.classList.remove("shake"), 450);
+      setStatus("AI wins this round.", "lose");
+    } else {
+      session.draws++; lifetime[difficulty].draws++;
+      boardWrap.classList.add("draw");
+      setStatus("Draw — perfect defense.", "");
+    }
+    saveLifetime();
+    renderScores();
+  }
+
+  function checkEnd() {
+    const w = winner(board);
+    if (w === 0) return false;
+    finishRound(w === 3 ? 0 : w, w === 3 ? null : winLineOf(board));
+    return true;
+  }
+
+  function aiTurn() {
+    if (roundOver) return;
+    aiThinking = true;
+    setBoardPlayable(false);
+    setStatus("AI is thinking…", "thinking");
+    setTimeout(() => {
+      if (roundOver) { aiThinking = false; return; }
+      const move = aiMove(board, difficulty, O);
+      aiThinking = false;
+      if (move === -1 || move === undefined) return;
+      placeMark(move, O);
+      if (!checkEnd()) {
+        setBoardPlayable(true);
+        setStatus("Your move — you're X.");
+      }
+    }, 450);
+  }
+
+  function onCellClick(i) {
+    if (roundOver || aiThinking || board[i] !== 0) return;
+    placeMark(i, X);
+    if (!checkEnd()) aiTurn();
+  }
+
+  function newRound() {
+    board = new Array(9).fill(0);
+    roundOver = false; aiThinking = false;
+    cells.forEach(c => { c.innerHTML = ""; c.className = "cell"; c.setAttribute("data-i", c.dataset.i); });
+    boardWrap.classList.remove("draw");
+    clearWinLine();
+    renderScores();
+    if (starter === "ai") aiTurn();
+    else { setBoardPlayable(true); setStatus("Your move — you're X."); }
+  }
+
+  boardEl.addEventListener("click", e => {
+    const cell = e.target.closest(".cell");
+    if (!cell) return;
+    onCellClick(+cell.dataset.i);
+  });
+
+  $("diffPills").addEventListener("click", e => {
+    const b = e.target.closest("button"); if (!b) return;
+    difficulty = b.dataset.d;
+    [...$("diffPills").children].forEach(x => {
+      const on = x === b;
+      x.classList.toggle("active", on);
+      x.setAttribute("aria-pressed", String(on));
+    });
+    newRound();
+  });
+
+  $("startPills").addEventListener("click", e => {
+    const b = e.target.closest("button"); if (!b) return;
+    starter = b.dataset.s;
+    [...$("startPills").children].forEach(x => {
+      const on = x === b;
+      x.classList.toggle("active", on);
+      x.setAttribute("aria-pressed", String(on));
+    });
+    newRound();
+  });
+
+  $("newRound").addEventListener("click", newRound);
+  $("resetStats").addEventListener("click", () => {
+    session = { you: 0, draws: 0, ai: 0 };
+    lifetime = { easy: { you: 0, draws: 0, ai: 0 }, unbeatable: { you: 0, draws: 0, ai: 0 } };
+    saveLifetime(); renderScores();
+  });
+
+  loadLifetime();
+  renderScores();
+  newRound();
+  </script>
+</body>
+</html>

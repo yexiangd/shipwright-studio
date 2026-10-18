@@ -1,0 +1,791 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Order Book Visualizer · Shipwright Studio</title>
+<meta name="description" content="Free animated limit order book simulator: watch a synthetic bid/ask depth chart breathe, explore the live ladder, and place your own limit orders. All data is simulated — no real market prices.">
+<link rel="canonical" href="https://shipwright-studio.pages.dev/lab/orderbook-visualizer/">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"WebApplication","name":"Order Book Visualizer","url":"https://shipwright-studio.pages.dev/lab/orderbook-visualizer/","description":"Order Book Visualizer is a free online tool that simulates a limit order book in your browser — an animated depth chart, a live bid/ask ladder, and a synthetic order-flow engine — so you can learn how bids, asks, spreads, and depth work. All data is simulated.","applicationCategory":"DeveloperApplication","operatingSystem":"Web","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"}}
+</script>
+<style>
+:root{--bg:#0a0c0f;--panel:#11141a;--line:#232a35;--txt:#e8e4da;--mut:#9aa3b2;--brass:#d2a24c;--red:#e0655f;--green:#7dc98a}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--txt);font-family:Inter,system-ui,sans-serif;line-height:1.6;padding:2.5rem 1.25rem 4rem;max-width:1020px;margin:0 auto;text-align:center}
+a{color:var(--brass)}
+.crumb{display:block;text-align:left;font-size:.85rem;color:var(--mut);margin-bottom:1.2rem;text-decoration:none}
+.crumb:hover{color:var(--brass)}
+.eyebrow{font-size:.75rem;letter-spacing:.22em;text-transform:uppercase;color:var(--mut)}
+h1{font-family:Fraunces,serif;font-weight:600;font-size:clamp(2rem,4.5vw,3rem);margin:.4rem 0 .6rem}
+.define{color:var(--mut);max-width:52rem;margin:0 auto 1rem}
+.define strong{color:var(--txt)}
+.sim-pill{display:inline-block;font-size:.75rem;letter-spacing:.18em;text-transform:uppercase;color:var(--brass);border:1px solid var(--brass);border-radius:999px;padding:.35rem 1rem;margin-bottom:1.8rem}
+.readouts{display:grid;grid-template-columns:repeat(5,1fr);gap:.8rem;margin-bottom:1.2rem}
+@media(max-width:760px){.readouts{grid-template-columns:repeat(2,1fr)}}
+.ro{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:.9rem .6rem}
+.ro .v{font-family:Fraunces,serif;font-size:clamp(1.25rem,3vw,1.6rem);font-weight:600;color:var(--brass);font-variant-numeric:tabular-nums}
+.ro .v .arrow{font-size:.9rem;margin-left:.25rem}
+.ro .v .arrow.up{color:var(--green)}
+.ro .v .arrow.dn{color:var(--red)}
+.ro .l{font-size:.72rem;letter-spacing:.12em;text-transform:uppercase;color:var(--mut);margin-top:.25rem}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:1.5rem;margin-bottom:1.2rem;text-align:left}
+.card h2{font-family:Fraunces,serif;font-size:1.2rem;margin-bottom:1rem;text-align:center}
+#chartwrap{position:relative}
+#depth{width:100%;height:320px;display:block;cursor:crosshair;touch-action:pan-y}
+@media(max-width:640px){#depth{height:260px}}
+#tip{position:absolute;pointer-events:none;background:#0d1015;border:1px solid var(--line);border-radius:8px;padding:.45rem .7rem;font-size:.78rem;display:none;white-space:nowrap;color:var(--txt);z-index:2;font-variant-numeric:tabular-nums}
+#tip b{color:var(--brass);font-weight:600}
+.legend{display:flex;gap:1.2rem;justify-content:center;font-size:.8rem;color:var(--mut);margin-top:.8rem;flex-wrap:wrap}
+.legend i{display:inline-block;width:22px;height:3px;border-radius:2px;margin-right:.35rem;vertical-align:middle}
+.cols{display:grid;grid-template-columns:1.15fr .85fr;gap:1.2rem;align-items:start}
+@media(max-width:860px){.cols{grid-template-columns:1fr}}
+table.ladder{width:100%;border-collapse:collapse;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.82rem;font-variant-numeric:tabular-nums}
+table.ladder th{font-family:Inter,system-ui,sans-serif;font-size:.68rem;letter-spacing:.14em;text-transform:uppercase;color:var(--mut);font-weight:500;text-align:right;padding:.35rem .4rem;border-bottom:1px solid var(--line)}
+table.ladder th:first-child,table.ladder td:first-child{text-align:left}
+table.ladder td{text-align:right;padding:.3rem .4rem;border-bottom:1px solid #1a1f27}
+td.px-b{color:var(--green)}
+td.px-a{color:var(--red)}
+td.sz{color:var(--txt)}
+td.cum{color:var(--mut)}
+.bar{width:56px;height:8px;background:#1a1f27;border-radius:4px;overflow:hidden;display:inline-block;vertical-align:middle}
+.bar i{display:block;height:100%;border-radius:4px}
+.bar.b i{background:rgba(125,201,138,.75)}
+.bar.a i{background:rgba(224,101,95,.75)}
+tr.spreadrow td{text-align:center;color:var(--brass);font-family:Inter,system-ui,sans-serif;font-size:.72rem;letter-spacing:.16em;text-transform:uppercase;padding:.5rem;border-bottom:1px solid var(--line)}
+tr.mine td{background:rgba(210,162,76,.09)}
+tr.mine td:first-child{box-shadow:inset 3px 0 0 var(--brass)}
+@keyframes up{0%{background:rgba(125,201,138,.4)}100%{background:transparent}}
+@keyframes dn{0%{background:rgba(224,101,95,.4)}100%{background:transparent}}
+td.up{animation:up .6s}
+td.dn{animation:dn .6s}
+.ctlrow{margin-bottom:1rem}
+.ctlrow:last-child{margin-bottom:0}
+label.lbl{display:block;font-size:.85rem;color:var(--mut);margin-bottom:.5rem}
+label.lbl b{color:var(--brass);font-weight:600}
+.seg{display:flex;border:1px solid var(--line);border-radius:8px;overflow:hidden;margin-bottom:1rem}
+.seg button{flex:1;background:transparent;border:0;color:var(--mut);padding:.65rem;font-size:.88rem;font-family:inherit;cursor:pointer}
+.seg button.on{background:#1b2029;color:var(--brass)}
+input[type=range]{width:100%;accent-color:var(--brass)}
+.btnrow{display:flex;gap:.7rem;flex-wrap:wrap;justify-content:center}
+.btn{font-size:.9rem;border:1px solid var(--brass);background:transparent;color:var(--brass);border-radius:999px;padding:.55rem 1.4rem;cursor:pointer;font-family:inherit}
+.btn:hover{background:rgba(210,162,76,.12)}
+.btn.ghost{border-color:var(--line);color:var(--mut)}
+.btn.ghost:hover{color:var(--txt);border-color:var(--mut)}
+.btn.small{padding:.35rem .9rem;font-size:.8rem}
+.num{width:100%;background:#0d1015;border:1px solid var(--line);border-radius:8px;color:var(--txt);padding:.65rem .8rem;font-size:1rem;font-family:inherit;outline:none;font-variant-numeric:tabular-nums}
+.num:focus{border-color:var(--brass)}
+.f2{display:grid;grid-template-columns:1fr 1fr;gap:.8rem;margin-bottom:.9rem}
+.myorder{border:1px solid var(--line);border-radius:10px;padding:.8rem .9rem;margin-top:.7rem;font-size:.85rem}
+.myorder.open{border-color:rgba(210,162,76,.5)}
+.myorder .st{color:var(--mut);margin-top:.25rem;font-variant-numeric:tabular-nums}
+.myorder .st b{color:var(--brass);font-weight:600}
+.myorder.done{opacity:.65}
+.myorder .hd{display:flex;justify-content:space-between;align-items:center;gap:.6rem}
+.myorder .hd .t{font-family:ui-monospace,Menlo,monospace;font-variant-numeric:tabular-nums}
+ul.feed{list-style:none;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.78rem;font-variant-numeric:tabular-nums}
+ul.feed li{padding:.32rem 0;border-bottom:1px solid #1a1f27;color:var(--mut)}
+ul.feed li:last-child{border-bottom:0}
+ul.feed .tag{display:inline-block;min-width:3.2em;font-weight:600;margin-right:.5rem}
+ul.feed li.bid .tag{color:var(--green)}
+ul.feed li.ask .tag{color:var(--red)}
+ul.feed li.mkt .tag{color:var(--brass)}
+ul.feed li.cxl .tag{color:var(--mut)}
+.notes{max-width:46rem;margin:1.8rem auto 0;color:var(--mut);font-size:.92rem;text-align:left}
+.notes h2{font-family:Fraunces,serif;color:var(--txt);font-size:1.25rem;text-align:center;margin-bottom:1rem}
+.notes li{margin:.55rem 0 .55rem 1.2rem}
+.notes li b{color:var(--txt);font-weight:600}
+.disc{font-size:.8rem;color:var(--mut);opacity:.75;margin-top:1.2rem;text-align:center}
+footer{margin-top:2.5rem;font-size:.85rem;color:var(--mut)}
+footer .back{display:block;margin-top:.6rem}
+</style>
+</head>
+<body>
+<a class="crumb" href="/ideas/">← Back to the idea bank</a>
+<p class="eyebrow">Shipwright Studio · Lab</p>
+<h1>Order Book Visualizer</h1>
+<p class="define"><strong>Order Book Visualizer is a free online tool that simulates a limit order book in your browser</strong> — an animated depth chart, a live bid/ask ladder, and a synthetic order-flow engine firing limit, market, and cancel events — so you can learn how bids, asks, spreads, and depth work. All data is simulated; nothing on this page is a real market price.</p>
+<div><span class="sim-pill">Simulated data · for learning only</span></div>
+
+<div class="readouts" aria-live="off">
+  <div class="ro"><div class="v" id="roMid">—</div><div class="l">Mid-price</div></div>
+  <div class="ro"><div class="v" id="roSpread">—</div><div class="l">Spread</div></div>
+  <div class="ro"><div class="v" id="roBid">—</div><div class="l">Bid depth</div></div>
+  <div class="ro"><div class="v" id="roAsk">—</div><div class="l">Ask depth</div></div>
+  <div class="ro"><div class="v" id="roEvents">0</div><div class="l">Events</div></div>
+</div>
+
+<div class="card">
+  <h2>Depth chart</h2>
+  <div id="chartwrap">
+    <canvas id="depth"></canvas>
+    <div id="tip"></div>
+  </div>
+  <div class="legend">
+    <span><i style="background:#7dc98a"></i>Bids · cumulative</span>
+    <span><i style="background:#e0655f"></i>Asks · cumulative</span>
+    <span><i style="background:transparent;border-top:2px dashed #d2a24c;height:0"></i>Mid-price</span>
+  </div>
+</div>
+
+<div class="cols">
+  <div class="card">
+    <h2>Order book ladder</h2>
+    <table class="ladder" aria-label="Live simulated order book">
+      <thead><tr><th>Price</th><th>Size</th><th>Total</th><th></th></tr></thead>
+      <tbody id="ladderBody"></tbody>
+    </table>
+  </div>
+  <div>
+    <div class="card">
+      <h2>Simulation controls</h2>
+      <div class="ctlrow">
+        <div class="seg" id="presetSeg" role="group" aria-label="Spread preset">
+          <button data-p="tight">Tight spread</button>
+          <button data-p="normal" class="on">Normal</button>
+          <button data-p="wide">Wide spread</button>
+        </div>
+      </div>
+      <div class="ctlrow">
+        <label class="lbl" for="speed">Speed · <b id="speedLbl">20</b> events/sec</label>
+        <input type="range" id="speed" min="1" max="120" value="20">
+      </div>
+      <div class="ctlrow btnrow">
+        <button class="btn" id="playBtn">Pause</button>
+        <button class="btn ghost" id="resetBtn">Reset book</button>
+      </div>
+    </div>
+    <div class="card">
+      <h2>Place your own limit order</h2>
+      <div class="seg" id="sideSeg" role="group" aria-label="Order side">
+        <button data-s="bid" class="on">Bid · buy</button>
+        <button data-s="ask">Ask · sell</button>
+      </div>
+      <div class="f2">
+        <div><label class="lbl" for="pxIn">Price ($)</label><input class="num" id="pxIn" type="number" step="0.01" min="0"></div>
+        <div><label class="lbl" for="qIn">Size</label><input class="num" id="qIn" type="number" step="1" min="1" value="5"></div>
+      </div>
+      <div class="btnrow"><button class="btn" id="placeBtn">Place limit order</button></div>
+      <div id="myOrders"></div>
+    </div>
+    <div class="card">
+      <h2>Event feed</h2>
+      <ul class="feed" id="feed"></ul>
+    </div>
+  </div>
+</div>
+
+<div class="notes">
+  <h2>How to read an order book</h2>
+  <ul>
+    <li><b>Bid</b> — the highest price buyers are willing to pay. <b>Ask</b> — the lowest price sellers will accept. The best bid and best ask sit on either side of the mid-price line.</li>
+    <li><b>Spread</b> — best ask minus best bid. It is the cost of demanding immediacy; a tight spread means a liquid market, a wide one means thin trading.</li>
+    <li><b>Depth</b> — resting size at each price. The depth chart stacks it cumulatively: the higher the curve at the middle, the more size is waiting near the touch.</li>
+    <li><b>Limit order</b> — "I will buy/sell at this price or better." It rests in the book and <em>adds</em> depth. <b>Market order</b> — "fill me now." It <em>takes</em> depth, walking through price levels and pushing the mid-price.</li>
+    <li><b>Cancel</b> — a resting order is withdrawn, thinning the book. Watch the feed: makers stepping inside a wide spread tighten it again.</li>
+    <li><b>Mid-price</b> — the average of best bid and best ask. A reference point, not a tradable price.</li>
+  </ul>
+  <p class="disc">Every number on this page is generated by a local random simulation for education. It is not market data, not a quote, and not financial advice.</p>
+</div>
+
+<footer>
+  Built by <a href="https://shipwright-studio.pages.dev/">Shipwright Studio</a>
+  <a class="back" href="/ideas/">← Back to the idea bank</a>
+</footer>
+<script>
+/* === ENGINE-START === */
+"use strict";
+/* Pure synthetic order-book engine. Integer-cent prices, no DOM, no Date/Math.random
+   (takes an rng function) so node can extract and test it. */
+function makeBook(rng, opts) {
+  opts = opts || {};
+  var mid0 = opts.midCents || 10000;
+  var spreadT = opts.spreadTicks || 4;
+  var nLevels = opts.levels || 12;
+  var maxSpread = opts.maxSpreadTicks || 40;
+  var minLevels = Math.max(3, Math.floor(nLevels / 3));
+  var maxLevels = nLevels + 6;
+  var bids = [], asks = [];
+  var momentum = 0;
+
+  function ri(a, b) { return a + Math.floor(rng() * (b - a + 1)); }
+  function newQty() { return 1 + Math.round(39 * rng() * rng() * rng()); }
+  function desc(a, b) { return b.p - a.p; }
+  function asc(a, b) { return a.p - b.p; }
+
+  function seed() {
+    bids = []; asks = [];
+    var bb = Math.round(mid0 - spreadT / 2), i, p = bb;
+    for (i = 0; i < nLevels; i++) { bids.push({ p: p, q: newQty() }); p -= ri(1, 4); }
+    p = bb + spreadT;
+    for (i = 0; i < nLevels; i++) { asks.push({ p: p, q: newQty() }); p += ri(1, 4); }
+  }
+
+  function levelAt(book, price) {
+    for (var i = 0; i < book.length; i++) if (book[i].p === price) return book[i];
+    return null;
+  }
+  function bestBid() { return bids[0]; }
+  function bestAsk() { return asks[0]; }
+  function spread() { return asks[0].p - bids[0].p; }
+  function mid() { return (asks[0].p + bids[0].p) / 2; }
+
+  function topUp(which) {
+    var book = which === "bids" ? bids : asks;
+    while (book.length < minLevels) {
+      var anchor = book.length ? book[book.length - 1].p :
+        (which === "bids" ? asks[0].p - 2 : bids[0].p + 2);
+      var p = which === "bids" ? anchor - ri(1, 4) : anchor + ri(1, 4);
+      book.push({ p: p, q: newQty() * 2 });
+    }
+    book.sort(which === "bids" ? desc : asc);
+  }
+
+  /* Makers step inside a stretched spread within the same event, so the
+     spread invariant holds after every mutating call. Each placement lands
+     strictly inside the touch (k <= sp-2), so the spread shrinks by >= 2
+     every iteration and the loop terminates. */
+  function enforceSpread() {
+    var guard = 0;
+    while (spread() > maxSpread && guard++ < 100) {
+      var sp = spread(), side = rng() < 0.5 ? "bid" : "ask", px;
+      if (side === "bid") px = asks[0].p - ri(1, sp - 2);
+      else px = bids[0].p + ri(1, sp - 2);
+      addLimit(side, px, newQty());
+    }
+  }
+
+  /* side: "bid" | "ask". Never crosses: clamped to just inside the touch. */
+  function addLimit(side, price, q) {
+    price = Math.round(price); q = Math.max(1, Math.round(q));
+    if (side === "bid") { if (price >= asks[0].p) price = asks[0].p - 1; }
+    else { if (price <= bids[0].p) price = bids[0].p + 1; }
+    var book = side === "bid" ? bids : asks;
+    var lvl = levelAt(book, price);
+    if (lvl) { lvl.q += q; }
+    else {
+      book.push({ p: price, q: q });
+      book.sort(side === "bid" ? desc : asc);
+      if (book.length > maxLevels) book.length = maxLevels;
+    }
+    return price;
+  }
+
+  /* Reduce a specific level (user cancel). Returns remaining qty, or -1 if gone. */
+  function reduceLevel(side, price, q) {
+    var book = side === "bid" ? bids : asks;
+    for (var i = 0; i < book.length; i++) {
+      if (book[i].p === price) {
+        book[i].q -= q;
+        if (book[i].q <= 0) book.splice(i, 1);
+        if (book.length < minLevels) topUp(side === "bid" ? "bids" : "asks");
+        enforceSpread();
+        var lvl = levelAt(book, price);
+        return lvl ? lvl.q : -1;
+      }
+    }
+    return -1;
+  }
+
+  /* side: "buy" lifts asks, "sell" hits bids. FIFO; returns fills. */
+  function market(side, q) {
+    q = Math.max(1, Math.round(q));
+    var book = side === "buy" ? asks : bids;
+    var fills = [], remaining = q;
+    while (remaining > 0 && book.length > 0) {
+      var lvl = book[0], take = Math.min(remaining, lvl.q);
+      lvl.q -= take; remaining -= take;
+      fills.push({ p: lvl.p, q: take });
+      if (lvl.q <= 0) book.shift();
+    }
+    if (book.length < minLevels) topUp(side === "buy" ? "asks" : "bids");
+    momentum = Math.max(-1, Math.min(1, momentum * 0.8 + (side === "buy" ? 0.25 : -0.25)));
+    enforceSpread();
+    return fills;
+  }
+
+  /* side: "bid" | "ask". Touch-biased. Returns {p, q} removed, or null. */
+  function cancel(side) {
+    var book = side === "bid" ? bids : asks;
+    if (!book.length) return null;
+    var i = Math.min(book.length - 1, Math.floor(Math.pow(rng(), 1.6) * book.length));
+    var lvl = book[i];
+    var take = Math.min(lvl.q, Math.max(1, Math.round(lvl.q * (0.3 + rng() * 0.7))));
+    lvl.q -= take;
+    if (lvl.q <= 0) book.splice(i, 1);
+    if (book.length < minLevels) topUp(side === "bid" ? "bids" : "asks");
+    enforceSpread();
+    return { p: lvl.p, q: take };
+  }
+
+  function step() {
+    var sp = spread(), r = rng(), ev, side, px, lvl, bq, placed;
+    if (r < 0.52) {
+      side = rng() < 0.5 ? "bid" : "ask";
+      if (side === "bid") px = (sp > 1 && rng() < 0.25) ? bids[0].p + ri(1, sp - 1) : bids[0].p - ri(0, 5);
+      else px = (sp > 1 && rng() < 0.25) ? asks[0].p - ri(1, sp - 1) : asks[0].p + ri(0, 5);
+      bq = 0; lvl = levelAt(side === "bid" ? bids : asks, Math.round(px));
+      if (lvl) bq = lvl.q;
+      placed = addLimit(side, px, newQty());
+      lvl = levelAt(side === "bid" ? bids : asks, placed);
+      ev = { t: "limit", side: side, p: placed, q: (lvl ? lvl.q : 0) - bq };
+    } else if (r < 0.78) {
+      var dir = rng() < 0.5 + momentum * 0.3 ? "buy" : "sell";
+      var fills = market(dir, 1 + Math.floor(rng() * rng() * 25));
+      var vwap = 0, vq = 0, i;
+      for (i = 0; i < fills.length; i++) { vwap += fills[i].p * fills[i].q; vq += fills[i].q; }
+      ev = { t: "market", side: dir, q: vq, p: vq ? Math.round(vwap / vq) : 0, lvls: fills.length };
+    } else {
+      side = rng() < 0.5 ? "bid" : "ask";
+      var c = cancel(side);
+      ev = { t: "cancel", side: side, p: c ? c.p : 0, q: c ? c.q : 0 };
+    }
+    return ev;
+  }
+
+  function totals() {
+    var b = 0, a = 0, i;
+    for (i = 0; i < bids.length; i++) b += bids[i].q;
+    for (i = 0; i < asks.length; i++) a += asks[i].q;
+    return { bid: b, ask: a };
+  }
+
+  function check() {
+    var errs = [], i;
+    if (!bids.length || !asks.length) errs.push("empty side");
+    for (i = 1; i < bids.length; i++) if (bids[i].p >= bids[i - 1].p) errs.push("bids not desc at " + i);
+    for (i = 1; i < asks.length; i++) if (asks[i].p <= asks[i - 1].p) errs.push("asks not asc at " + i);
+    for (i = 0; i < bids.length; i++) if (!(bids[i].q > 0)) errs.push("bid q<=0 at " + i);
+    for (i = 0; i < asks.length; i++) if (!(asks[i].q > 0)) errs.push("ask q<=0 at " + i);
+    if (bids.length && asks.length && bids[0].p >= asks[0].p) errs.push("crossed book");
+    if (bids.length > maxLevels || asks.length > maxLevels) errs.push("too many levels");
+    var sp = spread();
+    if (!(sp >= 1 && sp <= maxSpread)) errs.push("spread out of range: " + sp);
+    if (Math.abs(mid() - (bids[0].p + asks[0].p) / 2) > 1e-9) errs.push("mid mismatch");
+    return errs;
+  }
+
+  /* Depth-chart series, ascending x. Both curves peak at the touch:
+     bid cum grows toward the best bid, ask cum starts at total depth at
+     the best ask and shrinks outward. Length bounded by 2*maxLevels. */
+  function depthSeries() {
+    var pts = [], i, cb = 0, run = 0, totA = 0;
+    for (i = bids.length - 1; i >= 0; i--) { cb += bids[i].q; pts.push({ x: bids[i].p, bid: cb, ask: 0 }); }
+    for (i = 0; i < asks.length; i++) totA += asks[i].q;
+    for (i = 0; i < asks.length; i++) { pts.push({ x: asks[i].p, bid: 0, ask: totA - run }); run += asks[i].q; }
+    return pts;
+  }
+
+  seed();
+  return {
+    bids: bids, asks: asks, maxLevels: maxLevels,
+    step: step, addLimit: addLimit, reduceLevel: reduceLevel,
+    market: market, cancel: cancel, check: check,
+    spread: spread, mid: mid, bestBid: bestBid, bestAsk: bestAsk,
+    totals: totals, depthSeries: depthSeries
+  };
+}
+
+/* Smooth-morph helper: move display levels toward target levels, matched by
+   price. dir: "bid" (desc) | "ask" (asc). Pure; converges (diffs snap < 0.5). */
+function lerpLevels(dArr, tArr, dir) {
+  var map = {}, i, k;
+  for (i = 0; i < tArr.length; i++) map[tArr[i].p] = tArr[i].q;
+  var out = [];
+  for (i = 0; i < dArr.length; i++) {
+    var p = dArr[i].p;
+    if (map[p] !== undefined) {
+      var q = dArr[i].q + (map[p] - dArr[i].q) * 0.3;
+      if (Math.abs(q - map[p]) < 0.5) q = map[p];
+      out.push({ p: p, q: q });
+      delete map[p];
+    } else {
+      var qd = dArr[i].q * 0.7;
+      if (qd > 0.5) out.push({ p: p, q: qd });
+    }
+  }
+  for (k in map) if (Object.prototype.hasOwnProperty.call(map, k)) out.push({ p: +k, q: map[k] * 0.3 });
+  out.sort(dir === "bid" ? function (a, b) { return b.p - a.p; } : function (a, b) { return a.p - b.p; });
+  return out;
+}
+/* === ENGINE-END === */
+
+/* ---------------- page ---------------- */
+(function () {
+"use strict";
+function $(id) { return document.getElementById(id); }
+function fmtP(cents) { return "$" + (cents / 100).toFixed(2); }
+function esc(s) { return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;"); }
+
+var PRESETS = {
+  tight:  { midCents: 10000, spreadTicks: 2,  levels: 10, maxSpreadTicks: 12 },
+  normal: { midCents: 10000, spreadTicks: 5,  levels: 12, maxSpreadTicks: 40 },
+  wide:   { midCents: 10000, spreadTicks: 18, levels: 10, maxSpreadTicks: 90 }
+};
+var preset = "normal";
+var book = makeBook(Math.random, PRESETS[preset]);
+var dispBids = [], dispAsks = [];
+var running = true, eps = 20, acc = 0, lastT = 0, events = 0;
+var prevMid = book.mid();
+var prevQty = {};
+var myOrders = [], orderSeq = 0;
+var feedItems = [];
+var hoverX = null, lastGeom = null;
+var lastLadder = 0, lastReadout = 0;
+
+function findLevel(side, price) {
+  var arr = side === "bid" ? book.bids : book.asks;
+  for (var i = 0; i < arr.length; i++) if (arr[i].p === price) return arr[i];
+  return null;
+}
+function myPriceAt(side, price) {
+  for (var i = 0; i < myOrders.length; i++) {
+    var o = myOrders[i];
+    if (o.status === "open" && o.side === side && o.p === price) return true;
+  }
+  return false;
+}
+
+/* ---------- simulation loop ---------- */
+function doStep() {
+  var ev = book.step();
+  events++;
+  pushFeed(ev);
+  syncMyOrders();
+}
+function frame(t) {
+  requestAnimationFrame(frame);
+  if (!running) return;
+  if (!lastT) lastT = t;
+  var dt = (t - lastT) / 1000; lastT = t;
+  if (dt > 0.25) dt = 0.25;
+  acc += dt * eps;
+  var n = Math.floor(acc); acc -= n;
+  if (n > 500) n = 500;
+  for (var i = 0; i < n; i++) doStep();
+  dispBids = lerpLevels(dispBids, book.bids, "bid");
+  dispAsks = lerpLevels(dispAsks, book.asks, "ask");
+  drawChart();
+  if (t - lastLadder > 150) { lastLadder = t; renderLadder(); }
+  if (t - lastReadout > 200) { lastReadout = t; renderReadouts(); }
+}
+
+/* ---------- feed ---------- */
+function pushFeed(ev) {
+  var li;
+  if (ev.t === "limit") {
+    li = { tag: "LMT", txt: ev.side.toUpperCase() + " +" + ev.q + " @ " + fmtP(ev.p), cls: ev.side };
+  } else if (ev.t === "market") {
+    li = { tag: "MKT", txt: ev.side.toUpperCase() + " " + ev.q + " @ " + fmtP(ev.p) + " avg · " + ev.lvls + " lvl" + (ev.lvls > 1 ? "s" : ""), cls: "mkt" };
+  } else {
+    li = { tag: "CXL", txt: ev.side.toUpperCase() + " −" + ev.q + " @ " + fmtP(ev.p), cls: "cxl" };
+  }
+  feedItems.unshift(li);
+  if (feedItems.length > 30) feedItems.pop();
+  var html = "";
+  for (var i = 0; i < Math.min(7, feedItems.length); i++) {
+    html += '<li class="' + feedItems[i].cls + '"><span class="tag">' + feedItems[i].tag + '</span>' + esc(feedItems[i].txt) + '</li>';
+  }
+  $("feed").innerHTML = html;
+}
+
+/* ---------- ladder ---------- */
+function ladderRow(kind, lvl, cum, maxSize, isBest) {
+  var key = kind + ":" + lvl.p;
+  var prev = prevQty[key], fl = "";
+  if (prev !== undefined) {
+    if (lvl.q > prev) fl = "up"; else if (lvl.q < prev) fl = "dn";
+  }
+  prevQty[key] = lvl.q;
+  var mine = myPriceAt(kind === "b" ? "bid" : "ask", lvl.p) ? ' class="mine"' : "";
+  var pxCls = kind === "b" ? "px-b" : "px-a";
+  var barCls = kind === "b" ? "b" : "a";
+  var w = Math.max(2, Math.round(lvl.q / maxSize * 100));
+  return '<tr' + mine + '><td class="' + pxCls + '">' + fmtP(lvl.p) + (isBest ? " ◂" : "") + '</td>' +
+    '<td class="sz ' + fl + '">' + lvl.q + '</td>' +
+    '<td class="cum">' + cum + '</td>' +
+    '<td><span class="bar ' + barCls + '"><i style="width:' + w + '%"></i></span></td></tr>';
+}
+function renderLadder() {
+  var asks = book.asks, bids = book.bids, i, html = "";
+  var maxSize = 1;
+  for (i = 0; i < asks.length; i++) maxSize = Math.max(maxSize, asks[i].q);
+  for (i = 0; i < bids.length; i++) maxSize = Math.max(maxSize, bids[i].q);
+  var cum = 0, cums = [];
+  for (i = 0; i < asks.length; i++) { cum += asks[i].q; cums.push(cum); }
+  for (i = asks.length - 1; i >= 0; i--) html += ladderRow("a", asks[i], cums[i], maxSize, i === 0);
+  html += '<tr class="spreadrow"><td colspan="4">Spread ' + book.spread() + ' ticks · ' + fmtP(book.spread()) + '</td></tr>';
+  cum = 0;
+  for (i = 0; i < bids.length; i++) { cum += bids[i].q; html += ladderRow("b", bids[i], cum, maxSize, i === 0); }
+  $("ladderBody").innerHTML = html;
+}
+
+/* ---------- readouts ---------- */
+function renderReadouts() {
+  var mid = book.mid(), t = book.totals();
+  var arrow = "", acls = "";
+  if (mid > prevMid) { arrow = "▲"; acls = "up"; }
+  else if (mid < prevMid) { arrow = "▼"; acls = "dn"; }
+  prevMid = mid;
+  $("roMid").innerHTML = fmtP(Math.round(mid)) + (arrow ? '<span class="arrow ' + acls + '">' + arrow + '</span>' : "");
+  $("roSpread").textContent = book.spread() + " ticks";
+  $("roBid").textContent = t.bid;
+  $("roAsk").textContent = t.ask;
+  $("roEvents").textContent = events;
+}
+
+/* ---------- depth chart ---------- */
+function chartGeom(W, H) {
+  var padL = 48, padR = 16, padT = 20, padB = 32;
+  var bs = dispBids.length ? dispBids : book.bids;
+  var as = dispAsks.length ? dispAsks : book.asks;
+  var xMin = bs[bs.length - 1].p - 3, xMax = as[as.length - 1].p + 3;
+  var bidPts = [], askPts = [], cb = 0, totA = 0, run = 0, i;
+  for (i = bs.length - 1; i >= 0; i--) { cb += bs[i].q; bidPts.push({ x: bs[i].p, c: cb }); }
+  for (i = 0; i < as.length; i++) totA += as[i].q;
+  for (i = 0; i < as.length; i++) { askPts.push({ x: as[i].p, c: totA - run }); run += as[i].q; }
+  var yMax = Math.max(cb, totA, 10) * 1.15;
+  return {
+    W: W, H: H, padL: padL, padR: padR, padT: padT, padB: padB,
+    xMin: xMin, xMax: xMax, yMax: yMax, bidPts: bidPts, askPts: askPts,
+    X: function (x) { return padL + (x - xMin) / (xMax - xMin) * (W - padL - padR); },
+    Y: function (y) { return H - padB - y / yMax * (H - padT - padB); }
+  };
+}
+function drawChart() {
+  var cv = $("depth"), wrap = $("chartwrap");
+  var W = wrap.clientWidth, H = cv.clientHeight || 320;
+  var dpr = window.devicePixelRatio || 1;
+  if (cv.width !== Math.round(W * dpr) || cv.height !== Math.round(H * dpr)) {
+    cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr);
+  }
+  var g = cv.getContext("2d");
+  g.setTransform(dpr, 0, 0, dpr, 0, 0);
+  g.clearRect(0, 0, W, H);
+  var gm = chartGeom(W, H);
+  lastGeom = gm;
+  var i, x, y;
+
+  /* gridlines */
+  g.strokeStyle = "#1a1f27"; g.fillStyle = "#9aa3b2";
+  g.font = "10px Inter, sans-serif"; g.lineWidth = 1;
+  g.textAlign = "right"; g.textBaseline = "middle";
+  var steps = [0, gm.yMax / 2, gm.yMax];
+  for (i = 0; i < steps.length; i++) {
+    y = gm.Y(steps[i]);
+    g.beginPath(); g.moveTo(gm.padL, y); g.lineTo(W - gm.padR, y); g.stroke();
+    g.fillText(String(Math.round(steps[i])), gm.padL - 6, y);
+  }
+  g.textAlign = "center"; g.textBaseline = "top";
+  for (i = 0; i <= 4; i++) {
+    x = gm.xMin + (gm.xMax - gm.xMin) * i / 4;
+    var px = gm.X(x);
+    g.fillText(fmtP(Math.round(x)), px, H - gm.padB + 8);
+  }
+
+  /* bid area */
+  var bp = gm.bidPts, ap = gm.askPts;
+  function area(pts, fill, stroke) {
+    if (!pts.length) return;
+    g.beginPath();
+    g.moveTo(gm.X(pts[0].x), gm.Y(0));
+    for (i = 0; i < pts.length; i++) g.lineTo(gm.X(pts[i].x), gm.Y(pts[i].c));
+    g.lineTo(gm.X(pts[pts.length - 1].x), gm.Y(0));
+    g.closePath();
+    g.fillStyle = fill; g.fill();
+    g.beginPath();
+    g.moveTo(gm.X(pts[0].x), gm.Y(pts[0].c));
+    for (i = 1; i < pts.length; i++) g.lineTo(gm.X(pts[i].x), gm.Y(pts[i].c));
+    g.strokeStyle = stroke; g.lineWidth = 1.6; g.stroke();
+  }
+  area(bp, "rgba(125,201,138,0.16)", "rgba(125,201,138,0.9)");
+  area(ap, "rgba(224,101,95,0.16)", "rgba(224,101,95,0.9)");
+
+  /* mid line */
+  var mx = gm.X(book.mid());
+  g.setLineDash([5, 4]);
+  g.strokeStyle = "#d2a24c"; g.lineWidth = 1.2;
+  g.beginPath(); g.moveTo(mx, gm.padT - 6); g.lineTo(mx, H - gm.padB); g.stroke();
+  g.setLineDash([]);
+  g.fillStyle = "#d2a24c"; g.textAlign = mx > W - 90 ? "right" : "left"; g.textBaseline = "top";
+  g.fillText("MID " + fmtP(Math.round(book.mid())), mx + (mx > W - 90 ? -6 : 6), gm.padT - 16);
+
+  /* best bid / ask dots */
+  if (bp.length) {
+    var bb = bp[bp.length - 1];
+    g.fillStyle = "#7dc98a";
+    g.beginPath(); g.arc(gm.X(bb.x), gm.Y(bb.c), 3.5, 0, 7); g.fill();
+  }
+  if (ap.length) {
+    var ba = ap[0];
+    g.fillStyle = "#e0655f";
+    g.beginPath(); g.arc(gm.X(ba.x), gm.Y(ba.c), 3.5, 0, 7); g.fill();
+  }
+
+  /* hover crosshair */
+  if (hoverX !== null && hoverX >= gm.padL && hoverX <= W - gm.padR) {
+    var hxPrice = gm.xMin + (hoverX - gm.padL) / (W - gm.padL - gm.padR) * (gm.xMax - gm.xMin);
+    g.strokeStyle = "rgba(232,228,218,0.35)"; g.lineWidth = 1;
+    g.beginPath(); g.moveTo(hoverX, gm.padT - 6); g.lineTo(hoverX, H - gm.padB); g.stroke();
+    var bc = cumAt(bp, hxPrice, "bid"), ac = cumAt(ap, hxPrice, "ask");
+    g.fillStyle = "#7dc98a"; g.beginPath(); g.arc(hoverX, gm.Y(bc), 4, 0, 7); g.fill();
+    g.fillStyle = "#e0655f"; g.beginPath(); g.arc(hoverX, gm.Y(ac), 4, 0, 7); g.fill();
+  }
+}
+function cumAt(pts, price, side) {
+  var c = 0;
+  if (side === "bid") {
+    for (var i = 0; i < pts.length; i++) { if (pts[i].x <= price) c = pts[i].c; else break; }
+  } else {
+    for (var j = pts.length - 1; j >= 0; j--) { if (pts[j].x >= price) c = pts[j].c; else break; }
+  }
+  return c;
+}
+function showTip(clientX, clientY) {
+  var cv = $("depth"), gm = lastGeom;
+  if (!gm) return;
+  var r = cv.getBoundingClientRect();
+  var mx = clientX - r.left, my = clientY - r.top;
+  if (mx < gm.padL || mx > gm.W - gm.padR || my < gm.padT - 6 || my > gm.H - gm.padB) {
+    hoverX = null; $("tip").style.display = "none"; drawChart(); return;
+  }
+  hoverX = mx;
+  var price = gm.xMin + (mx - gm.padL) / (gm.W - gm.padL - gm.padR) * (gm.xMax - gm.xMin);
+  var bc = Math.round(cumAt(gm.bidPts, price, "bid"));
+  var ac = Math.round(cumAt(gm.askPts, price, "ask"));
+  var tip = $("tip");
+  tip.innerHTML = "<b>" + fmtP(Math.round(price)) + "</b><br>bid depth " + bc + " · ask depth " + ac;
+  tip.style.display = "block";
+  tip.style.left = Math.min(gm.W - 170, Math.max(4, mx + 14)) + "px";
+  tip.style.top = Math.max(4, my - 54) + "px";
+  drawChart();
+}
+$("depth").addEventListener("mousemove", function (e) { showTip(e.clientX, e.clientY); });
+$("depth").addEventListener("mouseleave", function () { hoverX = null; $("tip").style.display = "none"; drawChart(); });
+$("depth").addEventListener("click", function (e) { showTip(e.clientX, e.clientY); });
+window.addEventListener("resize", function () { drawChart(); });
+
+/* ---------- your orders ---------- */
+var mySide = "bid";
+function prefillPrice() {
+  var p = mySide === "bid" ? book.bestBid().p : book.bestAsk().p;
+  $("pxIn").value = (p / 100).toFixed(2);
+}
+function segWire(id, attr, cb) {
+  var el = $(id);
+  el.addEventListener("click", function (e) {
+    var b = e.target.closest("button"); if (!b) return;
+    var bs = el.querySelectorAll("button");
+    for (var i = 0; i < bs.length; i++) bs[i].classList.remove("on");
+    b.classList.add("on");
+    cb(b.getAttribute(attr));
+  });
+}
+segWire("sideSeg", "data-s", function (s) { mySide = s; prefillPrice(); });
+segWire("presetSeg", "data-p", function (p) { reseed(p); });
+
+$("placeBtn").addEventListener("click", function () {
+  var pv = parseFloat($("pxIn").value), qv = Math.round(parseFloat($("qIn").value));
+  if (!(pv > 0) || !(qv >= 1)) { $("pxIn").focus(); return; }
+  var cents = Math.round(pv * 100);
+  var placedP = book.addLimit(mySide, cents, Math.min(qv, 10000));
+  var lvl = findLevel(mySide, placedP);
+  var ahead = lvl ? Math.max(0, lvl.q - qv) : 0;
+  myOrders.unshift({ id: ++orderSeq, side: mySide, p: placedP, q0: qv, ahead: ahead, mine: qv, status: "open" });
+  if (myOrders.length > 8) myOrders.pop();
+  renderMyOrders();
+});
+function syncMyOrders() {
+  for (var i = 0; i < myOrders.length; i++) {
+    var o = myOrders[i];
+    if (o.status !== "open") continue;
+    var lvl = findLevel(o.side, o.p);
+    if (!lvl) { o.status = "gone"; continue; }
+    var delta = lvl.q - (o.ahead + o.mine);
+    o.ahead += delta;
+    if (o.ahead < 0) { o.mine += o.ahead; o.ahead = 0; }
+    if (o.mine < 0) o.mine = 0;
+    if (o.mine <= 0) { o.mine = 0; o.status = "filled"; }
+  }
+}
+function cancelMyOrder(id) {
+  for (var i = 0; i < myOrders.length; i++) {
+    var o = myOrders[i];
+    if (o.id === id && o.status === "open") {
+      book.reduceLevel(o.side, o.p, o.mine);
+      o.status = "cancelled";
+      o.mine = 0;
+    }
+  }
+  renderMyOrders();
+}
+function renderMyOrders() {
+  var html = "";
+  for (var i = 0; i < myOrders.length; i++) {
+    var o = myOrders[i];
+    var title = (o.side === "bid" ? "BID " : "ASK ") + o.q0 + " @ " + fmtP(o.p);
+    if (o.status === "open") {
+      var rank = 1, arr = o.side === "bid" ? book.bids : book.asks, j;
+      for (j = 0; j < arr.length; j++) {
+        if (o.side === "bid" ? arr[j].p > o.p : arr[j].p < o.p) rank++;
+      }
+      html += '<div class="myorder open"><div class="hd"><span class="t">' + esc(title) + '</span>' +
+        '<button class="btn ghost small" data-cancel="' + o.id + '">Cancel</button></div>' +
+        '<div class="st">Resting · price priority <b>#' + rank + '</b> · <b>' + Math.round(o.ahead) + '</b> shares ahead of you at this price</div></div>';
+    } else {
+      var label = o.status === "filled" ? "Filled ✓" : o.status === "gone" ? "Level removed by the market" : "Cancelled by you";
+      html += '<div class="myorder done"><div class="t">' + esc(title) + '</div><div class="st">' + esc(label) + '</div></div>';
+    }
+  }
+  $("myOrders").innerHTML = html;
+  var btns = $("myOrders").querySelectorAll("[data-cancel]");
+  for (var k = 0; k < btns.length; k++) {
+    btns[k].addEventListener("click", function (e) { cancelMyOrder(+e.target.getAttribute("data-cancel")); });
+  }
+}
+
+/* ---------- controls ---------- */
+function setRunning(v) {
+  running = v;
+  lastT = 0;
+  $("playBtn").textContent = running ? "Pause" : "Play";
+}
+$("playBtn").addEventListener("click", function () { setRunning(!running); });
+$("resetBtn").addEventListener("click", function () { reseed(preset); });
+$("speed").addEventListener("input", function () {
+  eps = +$("speed").value;
+  $("speedLbl").textContent = eps;
+});
+document.addEventListener("keydown", function (e) {
+  if (e.code !== "Space") return;
+  var t = e.target.tagName;
+  if (t === "INPUT" || t === "TEXTAREA" || t === "SELECT" || t === "BUTTON") return;
+  e.preventDefault();
+  setRunning(!running);
+});
+function reseed(p) {
+  preset = p;
+  var bs = $("presetSeg").querySelectorAll("button");
+  for (var i = 0; i < bs.length; i++) bs[i].classList.toggle("on", bs[i].getAttribute("data-p") === p);
+  book = makeBook(Math.random, PRESETS[p]);
+  dispBids = []; dispAsks = [];
+  events = 0; acc = 0; prevQty = {}; myOrders = []; feedItems = [];
+  prevMid = book.mid();
+  hoverX = null; $("tip").style.display = "none";
+  $("feed").innerHTML = ""; $("myOrders").innerHTML = "";
+  prefillPrice();
+  renderLadder(); renderReadouts(); renderMyOrders();
+  drawChart();
+}
+
+/* ---------- init ---------- */
+prefillPrice();
+renderLadder(); renderReadouts();
+requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>
