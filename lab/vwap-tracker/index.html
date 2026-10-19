@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VWAP Tracker · Shipwright Studio</title>
+<meta name="description" content="VWAP Tracker is a free interactive lab that plots intraday price against VWAP and its ±1σ/±2σ deviation bands, with replay, scrubbing and band-reversion stats.">
+<link rel="canonical" href="https://shipwright-studio.pages.dev/lab/vwap-tracker/">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
+  "name": "VWAP Tracker",
+  "url": "https://shipwright-studio.pages.dev/lab/vwap-tracker/",
+  "description": "A free interactive tool that plots a stock's intraday price against its volume-weighted average price (VWAP) and ±1σ/±2σ deviation bands, with animated replay, bar-by-bar scrubbing and band-reversion statistics.",
+  "applicationCategory": "FinanceApplication",
+  "operatingSystem": "Web",
+  "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+}
+</script>
+<style>
+:root{
+  --bg:#0a0c0f; --panel:#111418; --panel2:#151a20; --line:#232a33;
+  --text:#e9e6dd; --muted:#9aa3ad; --faint:#6b7480;
+  --brass:#d2a24c; --brass-dim:#a87f33;
+  --price:#e8e6e0; --teal:#5fb3a1; --red:#d96a5f;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:'Inter',system-ui,sans-serif;line-height:1.6;-webkit-font-smoothing:antialiased}
+.wrap{max-width:1080px;margin:0 auto;padding:0 24px}
+.topbar{border-bottom:1px solid var(--line);padding:18px 0;margin-bottom:44px}
+.topbar a{color:var(--muted);text-decoration:none;font-size:.9rem;letter-spacing:.04em}
+.topbar a:hover{color:var(--brass)}
+.topbar a span{color:var(--brass);font-family:'Fraunces',serif;font-size:1.05rem;letter-spacing:0}
+h1{font-family:'Fraunces',serif;font-weight:600;font-size:clamp(2.2rem,5vw,3.4rem);letter-spacing:-.01em;margin-bottom:18px}
+h1 .thin{color:var(--brass)}
+.definition{font-size:1.08rem;color:var(--muted);max-width:44em;margin-bottom:36px}
+.definition strong{color:var(--text);font-weight:600}
+h2{font-family:'Fraunces',serif;font-weight:600;font-size:1.45rem;margin:52px 0 16px}
+.sessions{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:20px}
+.sess{background:var(--panel);border:1px solid var(--line);color:var(--muted);border-radius:10px;
+  padding:10px 18px;font-size:.95rem;cursor:pointer;font-family:inherit;transition:border-color .15s,color .15s}
+.sess:hover{border-color:var(--brass-dim);color:var(--text)}
+.sess.active{border-color:var(--brass);color:var(--brass);background:#191510}
+.sess:disabled{opacity:.35;cursor:not-allowed}
+.sess:disabled:hover{border-color:var(--line);color:var(--muted)}
+.chart-card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:18px;position:relative}
+.legend{display:flex;gap:18px;flex-wrap:wrap;margin-bottom:12px;font-size:.85rem;color:var(--muted)}
+.legend i{display:inline-block;width:22px;height:3px;border-radius:2px;vertical-align:middle;margin-right:7px}
+canvas{display:block;width:100%;height:min(60vh,520px);min-height:320px;cursor:crosshair;touch-action:none}
+.readout{display:flex;gap:22px;flex-wrap:wrap;background:var(--panel);border:1px solid var(--line);
+  border-radius:12px;padding:14px 20px;margin-top:14px;font-size:.9rem}
+.readout .ro{min-width:92px}
+.readout .k{color:var(--faint);font-size:.72rem;text-transform:uppercase;letter-spacing:.08em;display:block}
+.readout .v{font-variant-numeric:tabular-nums;font-weight:500}
+.readout .v.brass{color:var(--brass)}
+.controls{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-top:16px}
+.btn{background:var(--brass);border:none;color:#141414;font-weight:600;border-radius:10px;
+  padding:11px 22px;font-size:.95rem;cursor:pointer;font-family:inherit}
+.btn:hover{background:#e0b45e}
+.btn.ghost{background:var(--panel);border:1px solid var(--line);color:var(--text);font-weight:500}
+.btn.ghost:hover{border-color:var(--brass-dim)}
+.speed{display:flex;align-items:center;gap:10px;color:var(--muted);font-size:.9rem;margin-left:6px}
+input[type=range]{accent-color:var(--brass);width:150px}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:34px}
+.stat{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:18px 20px}
+.stat .num{font-family:'Fraunces',serif;font-size:2rem;color:var(--brass);font-variant-numeric:tabular-nums}
+.stat .lbl{color:var(--muted);font-size:.85rem;margin-top:4px}
+.stat .sub{color:var(--faint);font-size:.76rem;margin-top:2px}
+.explainer{max-width:46em;color:var(--muted)}
+.explainer p{margin-bottom:16px}
+.explainer strong{color:var(--text)}
+.explainer code{color:var(--brass);font-size:.92em}
+details.paste{background:var(--panel);border:1px solid var(--line);border-radius:12px;margin-top:26px}
+details.paste summary{cursor:pointer;padding:16px 20px;font-weight:600;list-style:none}
+details.paste summary::-webkit-details-marker{display:none}
+details.paste summary::before{content:'▸ ';color:var(--brass)}
+details.paste[open] summary::before{content:'▾ '}
+.paste-body{padding:0 20px 20px}
+.paste-body p.hint{color:var(--faint);font-size:.86rem;margin-bottom:10px}
+textarea{width:100%;min-height:170px;background:#0d1013;border:1px solid var(--line);border-radius:10px;
+  color:var(--text);font-family:ui-monospace,'SF Mono',Menlo,monospace;font-size:.85rem;padding:14px;resize:vertical}
+textarea:focus{outline:none;border-color:var(--brass-dim)}
+.errors{margin-top:10px;color:#e8908a;font-size:.86rem}
+.errors li{margin:3px 0 3px 18px}
+.foot{border-top:1px solid var(--line);margin-top:64px;padding:28px 0 44px;color:var(--faint);font-size:.84rem}
+.foot a{color:var(--muted);text-decoration:none}.foot a:hover{color:var(--brass)}
+@media(max-width:720px){
+  .stats{grid-template-columns:1fr 1fr}
+  canvas{min-height:280px;height:52vh}
+  .wrap{padding:0 16px}
+}
+@media(max-width:460px){.stats{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="topbar"><div class="wrap"><a href="/">← <span>Shipwright Studio</span></a></div></div>
+<main class="wrap">
+
+<h1>VWAP <span class="thin">Tracker</span></h1>
+<p class="definition"><strong>VWAP Tracker is a free online tool that</strong> plots a stock's intraday price against its volume-weighted average price (VWAP) and the classic ±1σ / ±2σ deviation bands — the chart day traders watch all day, rebuilt as a teaching lab with animated replay, bar-by-bar scrubbing and a band-reversion score. Everything runs in your browser on included sample sessions or your own pasted data; no live market feed.</p>
+
+<div class="sessions" role="group" aria-label="Session selector">
+  <button class="sess active" data-kind="trend">Trend day</button>
+  <button class="sess" data-kind="chop">Chop</button>
+  <button class="sess" data-kind="reversal">Reversal</button>
+  <button class="sess" id="customBtn" data-kind="custom" disabled title="Paste a series below first">Custom</button>
+</div>
+
+<div class="chart-card">
+  <div class="legend">
+    <span><i style="background:var(--price)"></i>Price</span>
+    <span><i style="background:var(--brass)"></i>VWAP</span>
+    <span><i style="background:var(--teal)"></i>±1σ</span>
+    <span><i style="background:var(--red)"></i>±2σ</span>
+  </div>
+  <canvas id="chart" role="img" aria-label="Intraday price chart with VWAP and deviation bands"></canvas>
+</div>
+
+<div class="readout" id="readout" aria-live="polite"></div>
+
+<div class="controls">
+  <button class="btn" id="replayBtn">Replay</button>
+  <button class="btn ghost" id="resetBtn">Reset</button>
+  <label class="speed">Speed <input type="range" id="speed" min="1" max="5" step="1" value="2" aria-label="Replay speed"> <span id="speedVal">2×</span></label>
+</div>
+
+<div class="stats">
+  <div class="stat"><div class="num" id="stTouches">–</div><div class="lbl">±2σ touches</div><div class="sub">bars touching the outer bands</div></div>
+  <div class="stat"><div class="num" id="stBeyond">–</div><div class="lbl">Closes beyond ±2σ</div><div class="sub">bars fully outside the bands</div></div>
+  <div class="stat"><div class="num" id="stExc">–</div><div class="lbl">Max excursion</div><div class="sub">farthest bar from VWAP, %</div></div>
+  <div class="stat"><div class="num" id="stScore">–</div><div class="lbl">Reversion score</div><div class="sub">±2σ runs that came back to VWAP</div></div>
+</div>
+
+<h2>How VWAP works</h2>
+<div class="explainer">
+  <p><strong>VWAP — volume-weighted average price</strong> — is the running average price of every share traded since the open: <code>Σ(price × volume) / Σ(volume)</code>. Unlike a simple average, it weights each bar by how much actually changed hands, so the morning rush counts more than a quiet noon. Institutions benchmark their fills against it: buy below VWAP and you beat the day's average.</p>
+  <p><strong>The bands</strong> are the volume-weighted standard deviation of price around VWAP, drawn at ±1σ and ±2σ. They answer "how stretched is this move?" — in a random walk roughly 95% of bars land inside ±2σ, so a touch of the outer band is where mean-reversion traders start paying attention.</p>
+  <p><strong>The reversion score</strong> counts each run of bars beyond ±2σ and checks whether price later crossed back through VWAP before the close — the fraction that did. Watch a replay: on the trend day almost nothing reverts (score near 0%), on the chop day every stretch snaps back (score 100%). This is a teaching metric, not a trading signal — no live data here, just the mechanics.</p>
+</div>
+
+<details class="paste">
+  <summary>Paste your own series</summary>
+  <div class="paste-body">
+    <p class="hint">One bar per line: <code>HH:MM,price,volume</code> — e.g. <code>09:30,100.25,5200</code>. At least 5 bars; volume must be a whole number.</p>
+    <textarea id="pasteBox" placeholder="09:30,100.00,5000&#10;09:35,101.20,3200&#10;09:40,102.10,2800&#10;…" spellcheck="false"></textarea>
+    <div style="margin-top:12px"><button class="btn" id="loadBtn">Load session</button></div>
+    <ul class="errors" id="pasteErrors"></ul>
+  </div>
+</details>
+
+</main>
+<footer class="foot"><div class="wrap">
+  VWAP Tracker — a Shipwright Studio lab. Sample sessions are synthetic; not market data, not financial advice. <a href="/">shipwright-studio.pages.dev</a>
+</div></footer>
+
+<script>
+/* ---------- VWAP engine (pure; no DOM) ---------- */
+function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;var t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+function fmtTime(min){var h=Math.floor(min/60),m=min%60;return(h<10?'0':'')+h+':'+(m<10?'0':'')+m}
+function makeSession(kind){
+  var seeds={trend:11,chop:22,reversal:33},rng=mulberry32(seeds[kind]),bars=[],i,t,u,vol,p,m;
+  for(i=0;i<78;i++){
+    t=fmtTime(570+i*5);
+    u=Math.exp(-Math.pow((i-8)/14,2))+Math.exp(-Math.pow((i-70)/14,2));
+    vol=Math.round(1200*(1+2.2*u)*(0.8+0.4*rng()));
+    if(kind==='trend')p=100+i*0.055+(rng()-0.5)*0.35;
+    else if(kind==='chop')p=100+0.9*Math.sin(i/4.5)+(rng()-0.5)*0.5;
+    else{m=i<=40?100-i*0.04:98.4+(i-40)*0.134;p=m+(rng()-0.5)*0.35}
+    bars.push({t:t,p:+p.toFixed(2),v:vol});
+  }
+  return bars;
+}
+function compute(bars){
+  var n=bars.length,vwap=new Array(n),sd=new Array(n),pv=0,v=0,i,j,s2,vv,d;
+  for(i=0;i<n;i++){pv+=bars[i].p*bars[i].v;v+=bars[i].v;vwap[i]=pv/v}
+  for(i=0;i<n;i++){s2=0;vv=0;for(j=0;j<=i;j++){d=bars[j].p-vwap[i];s2+=bars[j].v*d*d;vv+=bars[j].v}sd[i]=vv>0?Math.sqrt(s2/vv):0}
+  return{vwap:vwap,sd:sd};
+}
+function computeStats(bars,vwap,sd){
+  var n=bars.length,touches=0,beyond=0,maxExc=0,i,s,u2,l2,runs=[],cur=null,side,rev=0,r,j;
+  for(i=0;i<n;i++){s=sd[i]||0;u2=vwap[i]+2*s;l2=vwap[i]-2*s;
+    if(bars[i].p>=u2||bars[i].p<=l2)touches++;
+    if(bars[i].p>u2||bars[i].p<l2)beyond++;
+    if(vwap[i]>0)maxExc=Math.max(maxExc,Math.abs(bars[i].p-vwap[i])/vwap[i]*100)}
+  for(i=0;i<n;i++){s=sd[i]||0;u2=vwap[i]+2*s;l2=vwap[i]-2*s;
+    side=bars[i].p>u2?1:(bars[i].p<l2?-1:0);
+    if(side!==0&&(cur===null||cur.side!==side)){if(cur)runs.push(cur);cur={side:side,start:i,end:i}}
+    else if(side!==0){cur.end=i}
+    else{if(cur){runs.push(cur);cur=null}}}
+  if(cur)runs.push(cur);
+  for(r=0;r<runs.length;r++){for(j=runs[r].end+1;j<n;j++){
+    if((runs[r].side===1&&bars[j].p<=vwap[j])||(runs[r].side===-1&&bars[j].p>=vwap[j])){rev++;break}}}
+  return{touches:touches,beyond:beyond,maxExc:maxExc,excursions:runs.length,reverted:rev,
+         score:runs.length?rev/runs.length:null};
+}
+function parsePaste(text){
+  var lines=text.split(/\r?\n/),bars=[],errors=[];
+  lines.forEach(function(raw,idx){
+    var line=raw.trim();if(!line)return;
+    var parts=line.split(',').map(function(s){return s.trim()});
+    if(parts.length!==3){errors.push('Line '+(idx+1)+': expected 3 comma-separated fields (HH:MM,price,volume), got '+parts.length);return}
+    var t=parts[0],p=Number(parts[1]),v=Number(parts[2]);
+    if(!/^\d{1,2}:\d{2}$/.test(t)){errors.push('Line '+(idx+1)+': time "'+t+'" must be HH:MM');return}
+    if(!isFinite(p)||p<=0){errors.push('Line '+(idx+1)+': price "'+parts[1]+'" is not a positive number');return}
+    if(!isFinite(v)||v<0||Math.floor(v)!==v){errors.push('Line '+(idx+1)+': volume "'+parts[2]+'" must be a non-negative integer');return}
+    bars.push({t:t,p:p,v:v});
+  });
+  return{bars:bars,errors:errors};
+}
+
+/* ---------- UI ---------- */
+(function(){
+var canvas=document.getElementById('chart'),ctx=canvas.getContext('2d');
+var readout=document.getElementById('readout'),replayBtn=document.getElementById('replayBtn'),
+    resetBtn=document.getElementById('resetBtn'),speed=document.getElementById('speed'),
+    speedVal=document.getElementById('speedVal');
+var sessions={trend:makeSession('trend'),chop:makeSession('chop'),reversal:makeSession('reversal')};
+var customBars=null;
+var S={kind:'trend',bars:sessions.trend,comp:null,stats:null,
+       replayT:0,playing:false,scrub:null,raf:0,lastTs:0};
+
+function load(kind){
+  S.kind=kind;S.bars=kind==='custom'?customBars:sessions[kind];
+  S.comp=compute(S.bars);S.stats=computeStats(S.bars,S.comp.vwap,S.comp.sd);
+  S.replayT=0;S.playing=false;S.scrub=null;cancelAnimationFrame(S.raf);
+  replayBtn.textContent='Replay';
+  document.querySelectorAll('.sess').forEach(function(b){b.classList.toggle('active',b.dataset.kind===kind)});
+  renderStats();draw(S.bars.length);showBar(S.bars.length-1);
+}
+function renderStats(){
+  var st=S.stats;
+  document.getElementById('stTouches').textContent=st.touches;
+  document.getElementById('stBeyond').textContent=st.beyond;
+  document.getElementById('stExc').textContent=st.maxExc.toFixed(2)+'%';
+  document.getElementById('stScore').textContent=st.score===null?'–':Math.round(st.score*100)+'%';
+}
+function fmtV(v){return v>=1000?(v/1000).toFixed(1)+'k':''+v}
+function showBar(i){
+  var b=S.bars[i],vw=S.comp.vwap[i],s=S.comp.sd[i]||0;
+  readout.innerHTML=
+    ro('Time',b.t)+ro('Price','$'+b.p.toFixed(2))+ro('Volume',fmtV(b.v))+
+    ro('VWAP','$'+vw.toFixed(2),'brass')+ro('+1σ','$'+(vw+s).toFixed(2))+
+    ro('−1σ','$'+(vw-s).toFixed(2))+ro('+2σ','$'+(vw+2*s).toFixed(2))+ro('−2σ','$'+(vw-2*s).toFixed(2));
+  function ro(k,v,c){return '<div class="ro"><span class="k">'+k+'</span><span class="v'+(c?' '+c:'')+'">'+v+'</span></div>'}
+}
+
+/* --- chart --- */
+var W=0,H=0,dpr=1,plot={};
+function fit(){
+  dpr=window.devicePixelRatio||1;
+  W=canvas.clientWidth;H=canvas.clientHeight;
+  canvas.width=W*dpr;canvas.height=H*dpr;ctx.setTransform(dpr,0,0,dpr,0,0);
+  plot={l:56,r:12,t:14,b:30};plot.w=W-plot.l-plot.r;plot.h=H-plot.t-plot.b;
+}
+function scales(){
+  var vw=S.comp.vwap,sd=S.comp.sd,n=S.bars.length,mn=Infinity,mx=-Infinity,i,v;
+  for(i=0;i<n;i++){v=S.bars[i].p;mn=Math.min(mn,v);mx=Math.max(mx,v);
+    v=vw[i]+2*sd[i];mx=Math.max(mx,v);v=vw[i]-2*sd[i];mn=Math.min(mn,v)}
+  var pad=(mx-mn)*0.06;mn-=pad;mx+=pad;
+  return{mn:mn,mx:mx,
+    x:function(i){return plot.l+plot.w*i/(n-1)},
+    y:function(p){return plot.t+plot.h*(1-(p-mn)/(mx-mn))}};
+}
+function line(pts,color,width){ctx.strokeStyle=color;ctx.lineWidth=width;ctx.beginPath();
+  pts.forEach(function(p,i){i?ctx.lineTo(p[0],p[1]):ctx.moveTo(p[0],p[1])});ctx.stroke()}
+function band(pts,color,width){line(pts,color,width)}
+function draw(limit){
+  fit();var sc=scales(),n=S.bars.length,L=Math.max(2,Math.min(limit,n));
+  ctx.clearRect(0,0,W,H);
+  var i,x,y,vw=S.comp.vwap,sd=S.comp.sd;
+  /* grid + y labels */
+  ctx.font='11px Inter,sans-serif';ctx.fillStyle='#6b7480';ctx.textAlign='right';ctx.textBaseline='middle';
+  for(var g=0;g<=4;g++){var pv=sc.mn+(sc.mx-sc.mn)*g/4;y=sc.y(pv);
+    ctx.strokeStyle='#1a2027';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(plot.l,y);ctx.lineTo(W-plot.r,y);ctx.stroke();
+    ctx.fillText('$'+pv.toFixed(2),plot.l-8,y)}
+  /* x labels */
+  ctx.textAlign='center';ctx.textBaseline='top';
+  var step=Math.max(1,Math.floor(n/6));
+  for(i=0;i<n;i+=step){x=sc.x(i);ctx.fillText(S.bars[i].t,x,H-plot.b+8)}
+  /* fills: ±1σ teal, 1σ→2σ red */
+  function path(series,fn){var pts=[];for(var k=0;k<L;k++){x=sc.x(k);pts.push([x,sc.y(fn(k))])}return pts}
+  var up1=path(0,function(k){return vw[k]+sd[k]}),dn1=path(0,function(k){return vw[k]-sd[k]}),
+      up2=path(0,function(k){return vw[k]+2*sd[k]}),dn2=path(0,function(k){return vw[k]-2*sd[k]});
+  ctx.fillStyle='rgba(95,179,161,.10)';fill(up1.concat(dn1.reverse()));
+  ctx.fillStyle='rgba(217,106,95,.07)';fill(up2.concat(up1.reverse()));fill(dn1.concat(dn2.reverse()));
+  function fill(pts){ctx.beginPath();pts.forEach(function(p,j){j?ctx.lineTo(p[0],p[1]):ctx.moveTo(p[0],p[1])});ctx.closePath();ctx.fill()}
+  /* band edges */
+  band(up2,'rgba(217,106,95,.75)',1);band(dn2,'rgba(217,106,95,.75)',1);
+  band(up1,'rgba(95,179,161,.8)',1);band(dn1,'rgba(95,179,161,.8)',1);
+  /* VWAP */
+  line(path(0,function(k){return vw[k]}),'#d2a24c',2);
+  /* price */
+  line(path(0,function(k){return S.bars[k].p}),'#e8e6e0',1.6);
+  /* replay marker */
+  if(S.playing||S.replayT>0&&S.replayT<n){
+    var ci=Math.min(Math.floor(S.replayT),L-1);
+    x=sc.x(ci);y=sc.y(S.bars[ci].p);
+    ctx.fillStyle='#d2a24c';ctx.beginPath();ctx.arc(x,y,5,0,7);ctx.strokeStyle='#0a0c0f';ctx.lineWidth=2;ctx.fill();ctx.stroke();
+  }
+  /* scrub marker */
+  if(S.scrub!==null){var si=S.scrub;x=sc.x(si);y=sc.y(S.bars[si].p);
+    ctx.strokeStyle='rgba(210,162,76,.5)';ctx.setLineDash([4,4]);ctx.beginPath();ctx.moveTo(x,plot.t);ctx.lineTo(x,plot.t+plot.h);ctx.stroke();ctx.setLineDash([]);
+    ctx.fillStyle='#fff';ctx.beginPath();ctx.arc(x,y,4,0,7);ctx.fill()}
+}
+
+/* --- replay --- */
+function tick(ts){
+  if(!S.playing)return;
+  var dt=(ts-S.lastTs)/1000;S.lastTs=ts;
+  S.replayT+=dt*(+speed.value)*3;
+  if(S.replayT>=S.bars.length){S.replayT=S.bars.length;S.playing=false;replayBtn.textContent='Replay'}
+  draw(Math.floor(S.replayT)+1);showBar(Math.min(Math.floor(S.replayT),S.bars.length-1));
+  if(S.playing)S.raf=requestAnimationFrame(tick);
+}
+replayBtn.addEventListener('click',function(){
+  if(S.playing){S.playing=false;cancelAnimationFrame(S.raf);replayBtn.textContent='Resume';return}
+  S.scrub=null;
+  if(S.replayT>=S.bars.length)S.replayT=0;
+  S.playing=true;S.lastTs=performance.now();replayBtn.textContent='Pause';
+  S.raf=requestAnimationFrame(tick);
+});
+resetBtn.addEventListener('click',function(){load(S.kind)});
+speed.addEventListener('input',function(){speedVal.textContent=speed.value+'×'});
+
+/* --- scrub --- */
+function barFromEvent(e){
+  var r=canvas.getBoundingClientRect(),px=(e.touches?e.touches[0].clientX:e.clientX)-r.left;
+  var i=Math.round((px-plot.l)/plot.w*(S.bars.length-1));
+  return Math.max(0,Math.min(S.bars.length-1,i));
+}
+function scrubTo(e){e.preventDefault();S.scrub=barFromEvent(e);
+  if(S.playing){S.playing=false;cancelAnimationFrame(S.raf);replayBtn.textContent='Resume'}
+  draw(S.bars.length);showBar(S.scrub)}
+var dragging=false;
+canvas.addEventListener('pointerdown',function(e){dragging=true;canvas.setPointerCapture(e.pointerId);scrubTo(e)});
+canvas.addEventListener('pointermove',function(e){if(dragging)scrubTo(e)});
+canvas.addEventListener('pointerup',function(){dragging=false});
+
+/* --- session buttons --- */
+document.querySelectorAll('.sess').forEach(function(b){
+  b.addEventListener('click',function(){if(b.disabled)return;load(b.dataset.kind)});
+});
+
+/* --- custom paste --- */
+document.getElementById('loadBtn').addEventListener('click',function(){
+  var res=parsePaste(document.getElementById('pasteBox').value),err=document.getElementById('pasteErrors');
+  err.innerHTML='';
+  if(res.errors.length){res.errors.forEach(function(m){var li=document.createElement('li');li.textContent=m;err.appendChild(li)});
+    if(res.bars.length>=5){/* keep old session */}
+    return}
+  if(res.bars.length<5){var li=document.createElement('li');li.textContent='Need at least 5 valid bars, got '+res.bars.length+'.';err.appendChild(li);return}
+  customBars=res.bars;
+  var cb=document.getElementById('customBtn');cb.disabled=false;cb.textContent='Custom ('+res.bars.length+' bars)';
+  load('custom');
+});
+
+window.addEventListener('resize',function(){draw(S.playing?Math.floor(S.replayT)+1:S.bars.length)});
+load('trend');
+})();
+</script>
+</body>
+</html>

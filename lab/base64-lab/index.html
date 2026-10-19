@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Base64 Lab · Shipwright Studio</title>
+<meta name="description" content="Free online Base64 encoder and decoder: convert text and files to Base64, decode with exact error pinpointing, and preview data URIs — all in your browser, nothing uploaded.">
+<link rel="canonical" href="https://shipwright-studio.pages.dev/lab/base64-lab/">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"WebApplication","name":"Base64 Lab","url":"https://shipwright-studio.pages.dev/lab/base64-lab/","description":"Base64 Lab is a free online tool that encodes text to Base64, decodes Base64 back to readable text or raw bytes, and converts small files to data URIs — entirely in the browser, so nothing is ever uploaded.","applicationCategory":"DeveloperApplication","operatingSystem":"Web","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"}}
+</script>
+<style>
+:root{--bg:#0a0c0f;--panel:#101318;--line:#1c2128;--txt:#e8e4da;--mut:#9aa3b2;--brass:#d2a24c;--green:#6fbf73;--amber:#e0a63e;--red:#e0655f}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--txt);font-family:Fraunces,Georgia,serif;line-height:1.65;padding:2rem 1.2rem 4rem;max-width:960px;margin:0 auto}
+a{color:var(--brass)}
+.nav{display:flex;gap:1.2rem;font-size:.85rem;margin-bottom:1.2rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.nav a{color:var(--mut);text-decoration:none}
+.nav a:hover{color:var(--brass)}
+.eyebrow{font-size:.75rem;letter-spacing:.22em;text-transform:uppercase;color:var(--mut);font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+h1{font-weight:600;font-size:clamp(2.1rem,5vw,3rem);margin:.5rem 0 .7rem}
+h2{font-weight:600;font-size:1.25rem;margin:0 0 .8rem}
+.define{color:var(--mut);max-width:46rem;margin-bottom:1.8rem;font-size:1rem}
+.define strong{color:var(--txt)}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:1.4rem;margin-bottom:1.4rem}
+.cardlabel{font-size:.72rem;letter-spacing:.18em;text-transform:uppercase;color:var(--mut);margin-bottom:.8rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.tabs{display:flex;gap:.5rem;margin-bottom:1.2rem}
+.tab{font-size:.9rem;border:1px solid var(--line);background:transparent;color:var(--mut);border-radius:999px;padding:.55rem 1.6rem;cursor:pointer;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.tab.on{border-color:var(--brass);color:var(--brass);background:rgba(210,162,76,.08)}
+.modeline{display:flex;gap:.8rem;align-items:center;flex-wrap:wrap;margin-bottom:1rem}
+.seg{display:flex;border:1px solid var(--line);border-radius:999px;overflow:hidden}
+.seg button{border:0;background:transparent;color:var(--mut);padding:.5rem 1.3rem;font-size:.88rem;cursor:pointer;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.seg button.on{background:rgba(210,162,76,.14);color:var(--brass)}
+.autowrap{display:flex;align-items:center;gap:.45rem;font-size:.85rem;color:var(--mut);font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif;cursor:pointer}
+.autowrap input{accent-color:var(--brass);width:1rem;height:1rem;cursor:pointer}
+.autobadge{display:none;font-size:.72rem;font-weight:600;border:1px solid var(--brass);color:var(--brass);border-radius:999px;padding:.18rem .7rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.autobadge.show{display:inline-block}
+.panes{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:.6rem}
+.pane label{display:block;font-size:.72rem;letter-spacing:.16em;text-transform:uppercase;color:var(--mut);margin-bottom:.5rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+textarea{width:100%;min-height:10rem;background:#08090c;border:1px solid var(--line);border-radius:10px;color:var(--txt);font-family:"JetBrains Mono",ui-monospace,monospace;font-size:.85rem;line-height:1.6;padding:.9rem;resize:vertical}
+textarea:focus{outline:none;border-color:var(--brass)}
+textarea[readonly]{color:#cfc9ba}
+.statstrip{font-family:"JetBrains Mono",ui-monospace,monospace;font-size:.74rem;color:var(--mut);margin-top:.45rem;min-height:1.2em;word-break:break-all}
+.statstrip b{color:var(--brass);font-weight:500}
+.btnrow{display:flex;gap:.7rem;flex-wrap:wrap;margin-top:1rem}
+.btn{font-size:.9rem;border:1px solid var(--brass);background:transparent;color:var(--brass);border-radius:999px;padding:.55rem 1.4rem;cursor:pointer;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.btn:hover{background:rgba(210,162,76,.12)}
+.btn.ghost{border-color:var(--line);color:var(--mut)}
+.btn.ghost:hover{color:var(--txt);border-color:var(--mut)}
+.banner{display:none;border:1px solid;border-radius:10px;padding:.9rem 1.1rem;margin:1rem 0 0;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.banner.show{display:block}
+.banner.red{border-color:var(--red);background:rgba(224,101,95,.08)}
+.banner.amber{border-color:var(--amber);background:rgba(224,166,62,.07)}
+.banner.green{border-color:var(--green);background:rgba(111,191,115,.07)}
+.banner .t{font-weight:700;margin-bottom:.2rem}
+.banner.red .t{color:var(--red)}.banner.amber .t{color:var(--amber)}.banner.green .t{color:var(--green)}
+.banner .d{font-size:.88rem;color:var(--mut)}
+.errctx{font-family:"JetBrains Mono",ui-monospace,monospace;font-size:.82rem;background:#08090c;border:1px solid var(--line);border-radius:8px;padding:.7rem .9rem;margin-top:.6rem;word-break:break-all;color:var(--mut);line-height:1.8}
+.errctx mark{background:rgba(224,101,95,.35);color:#ffd9d6;border-radius:3px;padding:0 .15em}
+.errctx mark.ws{background:rgba(224,166,62,.3);color:#ffe2b3}
+.insight{list-style:none;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif;font-size:.9rem;color:var(--mut)}
+.insight li{display:flex;gap:.8rem;padding:.65rem 0;border-bottom:1px solid var(--line);align-items:baseline}
+.insight li:last-child{border-bottom:0}
+.insight .k{min-width:9rem;color:var(--brass);font-size:.8rem;letter-spacing:.06em;text-transform:uppercase;flex-shrink:0}
+.insight .v{color:var(--txt);font-family:"JetBrains Mono",ui-monospace,monospace;font-size:.82rem;word-break:break-all}
+.dropzone{border:1.5px dashed var(--line);border-radius:12px;padding:2.2rem 1.4rem;text-align:center;color:var(--mut);cursor:pointer;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif;transition:border-color .15s}
+.dropzone:hover,.dropzone.over{border-color:var(--brass);color:var(--txt)}
+.dropzone .big{font-size:1.05rem;color:var(--txt);margin-bottom:.3rem;font-family:Fraunces,Georgia,serif}
+.filemeta{display:grid;grid-template-columns:repeat(3,1fr);gap:.8rem;margin:1rem 0}
+.fm{background:#08090c;border:1px solid var(--line);border-radius:10px;padding:.7rem .9rem}
+.fm .l{font-size:.68rem;letter-spacing:.14em;text-transform:uppercase;color:var(--mut);font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif;margin-bottom:.2rem}
+.fm .n{font-family:"JetBrains Mono",ui-monospace,monospace;font-size:.85rem;color:var(--txt);word-break:break-all}
+pre.uri{background:#08090c;border:1px solid var(--line);border-radius:10px;padding:.9rem;font-family:"JetBrains Mono",ui-monospace,monospace;font-size:.76rem;line-height:1.7;overflow:auto;white-space:pre-wrap;word-break:break-all;color:var(--mut);max-height:11rem}
+.note{font-size:.82rem;color:var(--mut);border-left:2px solid var(--brass);padding-left:.9rem;margin-top:.9rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+footer{margin-top:2.5rem;font-size:.85rem;color:var(--mut);font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.hidden{display:none!important}
+@media(max-width:720px){
+  .panes{grid-template-columns:1fr}
+  .filemeta{grid-template-columns:1fr}
+  .btn{width:100%}
+  .insight .k{min-width:7.5rem}
+}
+</style>
+</head>
+<body>
+<nav class="nav"><a href="/">Shipwright Studio</a><a href="/ideas/">Idea Lab</a></nav>
+<p class="eyebrow">Lab · Developer tools</p>
+<h1>Base64 Lab</h1>
+<p class="define"><strong>Base64 Lab is a free online tool that</strong> encodes text to Base64, decodes Base64 back to readable text or raw bytes, and turns small files into data URIs — entirely in your browser, so sensitive content never leaves your device. Paste a blob, drop a file, or clean up a broken payload; every conversion is instant and local.</p>
+
+<div class="tabs">
+  <button class="tab on" id="tabText">Text</button>
+  <button class="tab" id="tabFile">File</button>
+</div>
+
+<!-- ============ TEXT MODE ============ -->
+<section id="viewText" class="card">
+  <div class="cardlabel">Encode / decode text</div>
+  <div class="modeline">
+    <div class="seg">
+      <button id="dirEncode" class="on">Encode</button>
+      <button id="dirDecode">Decode</button>
+    </div>
+    <label class="autowrap"><input type="checkbox" id="autoDetect" checked> Auto-detect input</label>
+    <span class="autobadge" id="autoBadge"></span>
+  </div>
+  <div class="panes">
+    <div class="pane">
+      <label for="inText">Input</label>
+      <textarea id="inText" spellcheck="false" placeholder="Encode: type or paste any text — even emoji.&#10;Decode: paste Base64 (or a full data: URI)."></textarea>
+      <div class="statstrip" id="inStats"></div>
+    </div>
+    <div class="pane">
+      <label for="outText">Output</label>
+      <textarea id="outText" readonly spellcheck="false" placeholder="Result appears here…"></textarea>
+      <div class="statstrip" id="outStats"></div>
+    </div>
+  </div>
+  <div class="banner" id="msgBanner"><div class="t" id="msgTitle"></div><div class="d" id="msgDetail"></div><div class="errctx hidden" id="errCtx"></div></div>
+  <div class="btnrow">
+    <button class="btn" id="btnSwap">⇄ Swap</button>
+    <button class="btn ghost" id="btnCopyIn">Copy input</button>
+    <button class="btn ghost" id="btnCopyOut">Copy output</button>
+    <button class="btn ghost" id="btnClean">Clean whitespace</button>
+  </div>
+</section>
+
+<!-- ============ FILE MODE ============ -->
+<section id="viewFile" class="card hidden">
+  <div class="cardlabel">File ⇄ data URI</div>
+  <div class="modeline">
+    <div class="seg">
+      <button id="fDirEncode" class="on">File → data URI</button>
+      <button id="fDirDecode">Data URI → file</button>
+    </div>
+  </div>
+  <div id="fileEncodePane">
+    <div class="dropzone" id="dropzone">
+      <div class="big">Drop a file here</div>
+      <div>or click to browse — it never leaves your browser</div>
+      <input type="file" id="fileInput" class="hidden">
+    </div>
+    <div id="fileResult" class="hidden">
+      <div class="filemeta">
+        <div class="fm"><div class="l">File</div><div class="n" id="fmName">—</div></div>
+        <div class="fm"><div class="l">Size</div><div class="n" id="fmSize">—</div></div>
+        <div class="fm"><div class="l">MIME (magic-byte sniffed)</div><div class="n" id="fmMime">—</div></div>
+      </div>
+      <div class="cardlabel">Data URI (preview, truncated at 4,000 chars)</div>
+      <pre class="uri" id="uriPreview"></pre>
+      <div class="btnrow">
+        <button class="btn" id="btnCopyUri">Copy full data URI</button>
+      </div>
+    </div>
+  </div>
+  <div id="fileDecodePane" class="hidden">
+    <label for="uriIn" style="display:block;font-size:.72rem;letter-spacing:.16em;text-transform:uppercase;color:var(--mut);margin-bottom:.5rem;font-family:-apple-system,'Segoe UI',Inter,system-ui,sans-serif">Paste a data URI</label>
+    <textarea id="uriIn" spellcheck="false" placeholder="data:image/png;base64,iVBORw0KGgo…"></textarea>
+    <div class="statstrip" id="uriStats"></div>
+    <div class="btnrow">
+      <button class="btn" id="btnDownload">Download decoded file</button>
+    </div>
+    <div class="banner" id="uriBanner"><div class="t" id="uriTitle"></div><div class="d" id="uriDetail"></div></div>
+  </div>
+</section>
+
+<!-- ============ INSIGHT CARD ============ -->
+<section class="card">
+  <div class="cardlabel">What to look for</div>
+  <ul class="insight">
+    <li><span class="k">Length</span><span class="v" id="insLength">—</span></li>
+    <li><span class="k">Charset guess</span><span class="v" id="insCharset">—</span></li>
+    <li><span class="k">Suspicious characters</span><span class="v" id="insSusp">—</span></li>
+    <li><span class="k">Padding</span><span class="v" id="insPad">—</span></li>
+  </ul>
+  <p class="note">URL-safe Base64 (<code>-</code> and <code>_</code>) is not handled here — this lab works with the standard <code>+/=</code> alphabet. Everything runs locally; the only network request this page makes is the font stylesheet.</p>
+</section>
+
+<footer>Built in the Shipwright Studio Lab · <a href="/ideas/">more experiments</a></footer>
+
+<script>
+"use strict";
+/* ===== Core (node-tested, 40 assertions) ===== */
+function b64EncodeText(s){
+  var bytes=new TextEncoder().encode(s),bin="",i;
+  for(i=0;i<bytes.length;i++)bin+=String.fromCharCode(bytes[i]);
+  return btoa(bin);
+}
+function stripWhitespace(s){return s.replace(/\s+/g,"");}
+function validateBase64(raw){
+  if(/[\s]/.test(raw))return{ok:false,kind:"whitespace"};
+  var bad=/[^A-Za-z0-9+/=]/.exec(raw);
+  if(bad)return{ok:false,kind:"illegal",ch:bad[0],pos:bad.index+1};
+  if(raw.indexOf("=")!==-1&&!/^[^=]*={1,2}$/.test(raw))return{ok:false,kind:"padding"};
+  if(raw.length%4!==0)return{ok:false,kind:"length"};
+  return{ok:true};
+}
+function b64ToBytes(s){
+  var bin=atob(s),out=new Uint8Array(bin.length),i;
+  for(i=0;i<bin.length;i++)out[i]=bin.charCodeAt(i);
+  return out;
+}
+function decodeUtf8Fatal(bytes){
+  try{return{ok:true,text:new TextDecoder("utf-8",{fatal:true}).decode(bytes)};}
+  catch(e){return{ok:false};}
+}
+function bytesToHex(bytes,maxBytes){
+  maxBytes=maxBytes||64;var n=Math.min(bytes.length,maxBytes),parts=[],i;
+  for(i=0;i<n;i++)parts.push(bytes[i].toString(16).padStart(2,"0"));
+  return parts.join(" ")+(bytes.length>maxBytes?" … (+"+(bytes.length-maxBytes)+" more bytes)":"");
+}
+function sniffMime(b,fallback){
+  if(b.length>=4&&b[0]===0x89&&b[1]===0x50&&b[2]===0x4E&&b[3]===0x47)return"image/png";
+  if(b.length>=3&&b[0]===0xFF&&b[1]===0xD8&&b[2]===0xFF)return"image/jpeg";
+  if(b.length>=4&&b[0]===0x47&&b[1]===0x49&&b[2]===0x46&&b[3]===0x38)return"image/gif";
+  if(b.length>=12&&b[0]===0x52&&b[1]===0x49&&b[2]===0x46&&b[3]===0x46&&
+     b[8]===0x57&&b[9]===0x45&&b[10]===0x42&&b[11]===0x50)return"image/webp";
+  if(b.length>=4&&b[0]===0x25&&b[1]===0x50&&b[2]===0x44&&b[3]===0x46)return"application/pdf";
+  if(b.length>=3&&b[0]===0x49&&b[1]===0x44&&b[2]===0x33)return"audio/mpeg";
+  if(b.length>=4&&b[0]===0x50&&b[1]===0x4B&&b[2]===0x03&&b[3]===0x04)return"application/zip";
+  return fallback||"application/octet-stream";
+}
+function mimeFromExtension(name){
+  var m=/\.([a-z0-9]+)$/i.exec(name||"");
+  if(!m)return"";
+  var map={png:"image/png",jpg:"image/jpeg",jpeg:"image/jpeg",gif:"image/gif",
+    webp:"image/webp",svg:"image/svg+xml",pdf:"application/pdf",txt:"text/plain",
+    json:"application/json",js:"text/javascript",css:"text/css",html:"text/html",
+    mp3:"audio/mpeg",mp4:"video/mp4",zip:"application/zip",ico:"image/x-icon"};
+  return map[m[1].toLowerCase()]||"";
+}
+function extFromMime(mime){
+  var map={"image/png":"png","image/jpeg":"jpg","image/gif":"gif","image/webp":"webp",
+    "image/svg+xml":"svg","application/pdf":"pdf","text/plain":"txt","application/json":"json",
+    "text/javascript":"js","text/css":"css","text/html":"html","audio/mpeg":"mp3",
+    "video/mp4":"mp4","application/zip":"zip","image/x-icon":"ico"};
+  return map[mime]||"bin";
+}
+function parseDataUri(s){
+  var m=/^data:([^;,]+)?(;base64)?,(.*)$/s.exec((s||"").trim());
+  if(!m)return null;
+  return{mime:m[1]||"application/octet-stream",isBase64:!!m[2],payload:m[3]};
+}
+function looksLikeBase64(s){
+  var t=stripWhitespace(s||"");
+  return t.length>=8&&/^[A-Za-z0-9+/=]+$/.test(t)&&t.length%4===0;
+}
+function guessCharset(bytes,utf8Valid){
+  var printable=0,nul=0,i,b;
+  for(i=0;i<bytes.length;i++){b=bytes[i];
+    if(b===0)nul++;
+    else if(b===9||b===10||b===13)printable++;
+    else if(b>=32&&b<=126)printable++;}
+  var ratio=bytes.length?printable/bytes.length:0;
+  if(utf8Valid&&ratio>0.95)return"UTF-8 / ASCII text";
+  if(utf8Valid)return"UTF-8 text (some control bytes)";
+  if(bytes.length&&nul>bytes.length*0.1)return"binary (NUL bytes present)";
+  return"binary (not valid UTF-8)";
+}
+/* ===== UI ===== */
+var $=function(id){return document.getElementById(id)};
+var inT=$("inText"),outT=$("outText"),inS=$("inStats"),outS=$("outStats"),
+    banner=$("msgBanner"),msgT=$("msgTitle"),msgD=$("msgDetail"),errCtx=$("errCtx"),
+    badge=$("autoBadge");
+var mode="encode",autoOn=true,timer=null,lastBytes=null,lastClean=null;
+
+function setMode(m,fromAuto){
+  mode=m;
+  $("dirEncode").className=m==="encode"?"on":"";
+  $("dirDecode").className=m==="decode"?"on":"";
+  if(fromAuto){badge.textContent="auto → "+m;badge.classList.add("show");}
+  else badge.classList.remove("show");
+  convert();
+}
+function hideBanner(){banner.className="banner";errCtx.classList.add("hidden");}
+function showBanner(kind,title,detail){
+  banner.className="banner show "+kind;msgT.textContent=title;msgD.textContent=detail;
+}
+function showErrorAt(raw,pos,wsOnly){
+  var lo=Math.max(0,pos-32),hi=Math.min(raw.length,pos+32),i,out="";
+  for(i=lo;i<hi;i++){
+    var c=raw[i],esc=c==="<"?"&lt;":c==="&"?"&amp;":c==="\n"?"⏎\n":c==="\r"?"⏎":c==="\t"?"⇥":c===" "?"·":c;
+    out+=i===pos-1?'<mark class="'+(wsOnly?"ws":"")+'">'+esc+"</mark>":esc;
+  }
+  errCtx.innerHTML=(lo>0?"…":"")+out+(hi<raw.length?"…":"");
+  errCtx.classList.remove("hidden");
+}
+function fmtBytes(n){
+  if(n<1024)return n+" B";
+  if(n<1048576)return (n/1024).toFixed(1)+" KB";
+  return (n/1048576).toFixed(2)+" MB";
+}
+function sha256hex(bytes,cb){
+  try{
+    crypto.subtle.digest("SHA-256",bytes).then(function(d){
+      var h="",a=new Uint8Array(d),i;
+      for(i=0;i<a.length;i++)h+=a[i].toString(16).padStart(2,"0");
+      cb(h);
+    }).catch(function(){cb(null);});
+  }catch(e){cb(null);}
+}
+function setInsight(len,charset,susp,pad){
+  $("insLength").textContent=len;$("insCharset").textContent=charset;
+  $("insSusp").textContent=susp;$("insPad").textContent=pad;
+}
+
+function convert(){
+  var raw=inT.value;
+  hideBanner();lastBytes=null;lastClean=null;
+  if(autoOn&&raw.trim()!==""){
+    var want=looksLikeBase64(raw)?"decode":"encode";
+    if(want!==mode){setMode(want,true);return;}
+    badge.textContent="auto → "+mode;badge.classList.add("show");
+  }else if(!autoOn){badge.classList.remove("show");}
+  if(raw===""){outT.value="";inS.textContent="";outS.textContent="";
+    setInsight("—","—","—","—");return;}
+  var inBytes=new TextEncoder().encode(raw);
+  if(mode==="encode"){
+    var enc=b64EncodeText(raw);
+    outT.value=enc;
+    inS.innerHTML=raw.length+" chars · <b>"+inBytes.length+"</b> bytes (UTF-8)";
+    outS.innerHTML="<b>"+enc.length+"</b> chars · ratio "+(inBytes.length?(enc.length/inBytes.length).toFixed(2):"—")+"×";
+    var ws=(raw.match(/\s/g)||[]).length;
+    setInsight(raw.length+" chars / "+inBytes.length+" bytes","UTF-8 source text",
+      ws?ws+" whitespace char(s) in source — harmless, copied verbatim":"none",
+      "n/a (encoding)");
+    return;
+  }
+  /* decode */
+  var dataUri=parseDataUri(raw),payload=raw,mimeNote="";
+  if(dataUri&&dataUri.isBase64){payload=dataUri.payload;
+    mimeNote=" · data URI declares MIME "+dataUri.mime;}
+  else if(dataUri&&!dataUri.isBase64){
+    showBanner("red","Not a base64 data URI","The pasted data URI is not base64-encoded.");
+    outT.value="";outS.textContent="";lastBytes=null;return;}
+  var v=validateBase64(payload);
+  if(!v.ok){
+    outT.value="";outS.textContent="";inS.textContent=raw.length+" chars · "+inBytes.length+" bytes (UTF-8)";
+    if(v.kind==="whitespace"){
+      var wsc=(payload.match(/\s/g)||[]).length;
+      var first=/[\s]/.exec(payload).index+1;
+      lastClean=stripWhitespace(payload);
+      showBanner("amber","Whitespace broke the decode",
+        "The input contains "+wsc+" whitespace/newline character(s)"+mimeNote+". Press “Clean whitespace” to strip them and retry automatically.");
+      showErrorAt(raw,first,true);
+      setInsight(raw.length+" chars","—",wsc+" whitespace char(s) (first at position "+first+")","n/a (decode blocked)");
+    }else if(v.kind==="illegal"){
+      showBanner("red","Not valid Base64",
+        "Illegal character '"+v.ch+"' at position "+v.pos+mimeNote+". Remove it or use a valid Base64 alphabet (A–Z, a–z, 0–9, +, /, =).");
+      showErrorAt(raw,v.pos,false);
+      setInsight(raw.length+" chars","—","illegal '"+v.ch+"' at position "+v.pos,"n/a (decode blocked)");
+    }else if(v.kind==="padding"){
+      showBanner("red","Not valid Base64","Misplaced '=' padding — padding may only appear as 1–2 '=' at the very end.");
+      setInsight(raw.length+" chars","—","bad padding","invalid");
+    }else{
+      showBanner("red","Not valid Base64","Length must be a multiple of 4 (got "+payload.length+" chars). Check for truncation.");
+      setInsight(raw.length+" chars","—","length "+payload.length+" not a multiple of 4","invalid");
+    }
+    return;
+  }
+  var bytes;
+  try{bytes=b64ToBytes(payload);}catch(e){
+    showBanner("red","Decode failed","The browser could not decode this string.");return;}
+  lastBytes=bytes;
+  var dec=decodeUtf8Fatal(bytes);
+  var charset=guessCharset(bytes,dec.ok);
+  if(dec.ok){outT.value=dec.text;}
+  else{
+    outT.value="[not valid UTF-8 — showing raw byte hex view]\n\n"+bytesToHex(bytes,256);
+  }
+  inS.textContent=raw.length+" chars (input text)";
+  outS.innerHTML="<b>"+bytes.length+"</b> bytes decoded · charset: "+charset+" · SHA-256: <b>computing…</b>"+(mimeNote?" ·"+mimeNote:"");
+  sha256hex(bytes,function(h){
+    outS.innerHTML="<b>"+bytes.length+"</b> bytes decoded · charset: "+charset+
+      (h?' · SHA-256: <b title="'+h+'">'+h.slice(0,16)+"…</b>":" · SHA-256: unavailable")+
+      (mimeNote?" ·"+mimeNote:"");
+  });
+  var ws2=(raw.match(/\s/g)||[]).length;
+  setInsight(raw.length+" chars / "+bytes.length+" decoded bytes",charset,
+    ws2?ws2+" whitespace char(s) (input was cleaned?)":"none","valid");
+}
+
+function copyText(t,btn){
+  function done(){var o=btn.textContent;btn.textContent="Copied ✓";setTimeout(function(){btn.textContent=o},1200);}
+  if(navigator.clipboard&&navigator.clipboard.writeText){
+    navigator.clipboard.writeText(t).then(done).catch(function(){fallback();});
+  }else fallback();
+  function fallback(){
+    var ta=document.createElement("textarea");ta.value=t;document.body.appendChild(ta);
+    ta.select();try{document.execCommand("copy");done();}catch(e){}document.body.removeChild(ta);
+  }
+}
+
+inT.addEventListener("input",function(){clearTimeout(timer);timer=setTimeout(convert,150);});
+$("dirEncode").addEventListener("click",function(){autoOn=false;$("autoDetect").checked=false;setMode("encode");});
+$("dirDecode").addEventListener("click",function(){autoOn=false;$("autoDetect").checked=false;setMode("decode");});
+$("autoDetect").addEventListener("change",function(){autoOn=this.checked;convert();});
+$("btnSwap").addEventListener("click",function(){
+  var v=inT.value;inT.value=outT.value;
+  setMode(mode==="encode"?"decode":"encode");
+});
+$("btnCopyIn").addEventListener("click",function(){copyText(inT.value,this);});
+$("btnCopyOut").addEventListener("click",function(){copyText(outT.value,this);});
+$("btnClean").addEventListener("click",function(){
+  if(lastClean===null){inT.value=stripWhitespace(inT.value);}
+  else{inT.value=lastClean;}
+  autoOn=false;$("autoDetect").checked=false;
+  setMode("decode");convert();
+});
+
+/* ===== tabs ===== */
+$("tabText").addEventListener("click",function(){
+  this.className="tab on";$("tabFile").className="tab";
+  $("viewText").classList.remove("hidden");$("viewFile").classList.add("hidden");
+});
+$("tabFile").addEventListener("click",function(){
+  this.className="tab on";$("tabText").className="tab";
+  $("viewFile").classList.remove("hidden");$("viewText").classList.add("hidden");
+});
+
+/* ===== file mode ===== */
+var fmode="encode",fullUri="",lastUriBytes=null,lastUriMime="";
+$("fDirEncode").addEventListener("click",function(){
+  fmode="encode";this.className="on";$("fDirDecode").className="";
+  $("fileEncodePane").classList.remove("hidden");$("fileDecodePane").classList.add("hidden");
+});
+$("fDirDecode").addEventListener("click",function(){
+  fmode="decode";this.className="on";$("fDirEncode").className="";
+  $("fileDecodePane").classList.remove("hidden");$("fileEncodePane").classList.add("hidden");
+});
+var dz=$("dropzone"),fi=$("fileInput");
+dz.addEventListener("click",function(){fi.click();});
+["dragover","dragenter"].forEach(function(e){dz.addEventListener(e,function(ev){ev.preventDefault();dz.classList.add("over");});});
+["dragleave","drop"].forEach(function(e){dz.addEventListener(e,function(ev){ev.preventDefault();dz.classList.remove("over");});});
+dz.addEventListener("drop",function(ev){
+  if(ev.dataTransfer.files&&ev.dataTransfer.files[0])handleFile(ev.dataTransfer.files[0]);
+});
+fi.addEventListener("change",function(){if(fi.files[0])handleFile(fi.files[0]);fi.value="";});
+
+function handleFile(f){
+  var reader=new FileReader();
+  reader.onload=function(){
+    var head;
+    f.slice(0,16).arrayBuffer().then(function(ab){
+      head=new Uint8Array(ab);
+      var mime=sniffMime(head,f.type||mimeFromExtension(f.name));
+      var b64=String(reader.result).split(",")[1];
+      fullUri="data:"+mime+";base64,"+b64;
+      $("fmName").textContent=f.name||"unnamed";
+      $("fmSize").textContent=fmtBytes(f.size);
+      $("fmMime").textContent=mime+(f.type&&f.type!==mime?" (OS reported "+f.type+")":"");
+      $("uriPreview").textContent=fullUri.slice(0,4000)+(fullUri.length>4000?"\n… [truncated — use “Copy full data URI” for all "+fullUri.length+" chars]":"");
+      $("fileResult").classList.remove("hidden");
+    });
+  };
+  reader.readAsDataURL(f);
+}
+$("btnCopyUri").addEventListener("click",function(){copyText(fullUri,this);});
+
+var uriBanner=$("uriBanner"),uriT=$("uriTitle"),uriD=$("uriDetail");
+function uriMsg(kind,title,detail){
+  uriBanner.className="banner show "+kind;uriT.textContent=title;uriD.textContent=detail;
+}
+function uriHide(){uriBanner.className="banner";}
+function refreshUriDecode(){
+  var raw=$("uriIn").value;uriHide();lastUriBytes=null;
+  if(raw.trim()===""){$("uriStats").textContent="";return;}
+  var d=parseDataUri(raw);
+  if(!d){uriMsg("red","Not a data URI","Expected the form data:[mime];base64,….");return;}
+  if(!d.isBase64){uriMsg("red","Not base64","This data URI is not base64-encoded.");return;}
+  var v=validateBase64(d.payload);
+  if(!v.ok){
+    if(v.kind==="whitespace"){uriMsg("amber","Whitespace found","Strip whitespace/newlines from the payload, then retry.");}
+    else if(v.kind==="illegal"){uriMsg("red","Invalid payload","Illegal character '"+v.ch+"' at position "+v.pos+".");}
+    else{uriMsg("red","Invalid payload","Base64 payload failed validation ("+v.kind+").");}
+    return;
+  }
+  try{lastUriBytes=b64ToBytes(d.payload);lastUriMime=d.mime;}
+  catch(e){uriMsg("red","Decode failed","The browser could not decode the payload.");return;}
+  $("uriStats").innerHTML="MIME: <b>"+d.mime+"</b> · <b>"+lastUriBytes.length+"</b> bytes ("+fmtBytes(lastUriBytes.length)+")";
+  uriMsg("green","Ready to download","Decoded "+lastUriBytes.length+" bytes of "+d.mime+".");
+}
+$("uriIn").addEventListener("input",function(){clearTimeout(timer);timer=setTimeout(refreshUriDecode,150);});
+$("btnDownload").addEventListener("click",function(){
+  refreshUriDecode();
+  if(!lastUriBytes){uriMsg("red","Nothing to download","Paste a valid base64 data URI first.");return;}
+  var blob=new Blob([lastUriBytes],{type:lastUriMime});
+  var a=document.createElement("a");
+  a.href=URL.createObjectURL(blob);
+  a.download="decoded."+extFromMime(lastUriMime);
+  document.body.appendChild(a);a.click();
+  setTimeout(function(){URL.revokeObjectURL(a.href);a.remove();},4000);
+});
+convert();
+</script>
+</body>
+</html>

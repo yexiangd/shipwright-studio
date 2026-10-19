@@ -1,5 +1,5 @@
 {
-  "updated": "2026-10-18",
+  "updated": "2026-10-19",
   "ideas": [
     {
       "id": "idea-000a",
@@ -469,7 +469,9 @@
       "tagline": "Encode, decode, and inspect any text or file.",
       "priority": 80,
       "effort": "S",
-      "status": "todo"
+      "status": "done",
+      "url": "/lab/base64-lab/",
+      "shipped": "2026-10-19"
     },
     {
       "id": "idea-041",
@@ -1213,7 +1215,9 @@
       "tagline": "Intraday price deviation bands around VWAP.",
       "priority": 80,
       "effort": "M",
-      "status": "todo"
+      "status": "done",
+      "url": "/lab/vwap-tracker/",
+      "shipped": "2026-10-19"
     },
     {
       "id": "idea-112",
