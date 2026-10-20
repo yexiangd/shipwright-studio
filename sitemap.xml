@@ -46,6 +46,11 @@
     <priority>0.7</priority>
   </url>
   <url>
+    <loc>https://shipwright-studio.pages.dev/lab/connect-four/</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
     <loc>https://shipwright-studio.pages.dev/lab/correlation-heatmap/</loc>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
@@ -207,6 +212,11 @@
   </url>
   <url>
     <loc>https://shipwright-studio.pages.dev/lab/unit-converter/</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://shipwright-studio.pages.dev/lab/url-codec/</loc>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
