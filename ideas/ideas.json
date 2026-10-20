@@ -1,5 +1,5 @@
 {
-  "updated": "2026-10-19",
+  "updated": "2026-10-20",
   "ideas": [
     {
       "id": "idea-000a",
@@ -201,7 +201,9 @@
       "tagline": "Out-think the machine, four in a row.",
       "priority": 79,
       "effort": "M",
-      "status": "todo"
+      "status": "done",
+      "url": "/lab/connect-four/",
+      "shipped": "2026-10-20"
     },
     {
       "id": "idea-016",
@@ -481,7 +483,9 @@
       "tagline": "Encode/decode URLs and query strings, parameter table.",
       "priority": 79,
       "effort": "S",
-      "status": "todo"
+      "status": "done",
+      "url": "/lab/url-codec/",
+      "shipped": "2026-10-20"
     },
     {
       "id": "idea-042",

@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>URL Codec · Shipwright Studio</title>
+<meta name="description" content="Free online URL encoder and decoder: percent-encode or decode URLs and query strings, see the encodeURIComponent vs encodeURI difference, and edit query parameters in a live table — all in your browser.">
+<link rel="canonical" href="https://shipwright-studio.pages.dev/lab/url-codec/">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"WebApplication","name":"URL Codec","url":"https://shipwright-studio.pages.dev/lab/url-codec/","description":"URL Codec is a free online tool that percent-encodes and decodes URLs and query strings, shows the encodeURIComponent vs encodeURI difference, and parses query strings into an editable parameter table — entirely in the browser, nothing uploaded.","applicationCategory":"DeveloperApplication","operatingSystem":"Web","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"}}
+</script>
+<style>
+:root{--bg:#0a0c0f;--panel:#101318;--line:#1c2128;--txt:#e8e4da;--mut:#9aa3b2;--brass:#d2a24c;--green:#6fbf73;--red:#e0655f}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--txt);font-family:Fraunces,Georgia,serif;line-height:1.65;padding:2rem 1.2rem 4rem;max-width:960px;margin:0 auto}
+a{color:var(--brass)}
+.nav{display:flex;gap:1.2rem;font-size:.85rem;margin-bottom:1.2rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.nav a{color:var(--mut);text-decoration:none}
+.nav a:hover{color:var(--brass)}
+.eyebrow{font-size:.75rem;letter-spacing:.22em;text-transform:uppercase;color:var(--mut);font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+h1{font-weight:600;font-size:clamp(2.1rem,5vw,3rem);margin:.5rem 0 .7rem}
+.define{color:var(--mut);max-width:46rem;margin-bottom:1.8rem;font-size:1rem}
+.define strong{color:var(--txt)}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:1.4rem;margin-bottom:1.4rem}
+.cardlabel{font-size:.72rem;letter-spacing:.18em;text-transform:uppercase;color:var(--mut);margin-bottom:.8rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.modeline{display:flex;gap:.8rem;align-items:center;flex-wrap:wrap;margin-bottom:1rem}
+.seg{display:flex;border:1px solid var(--line);border-radius:999px;overflow:hidden}
+.seg button{border:0;background:transparent;color:var(--mut);padding:.5rem 1.3rem;font-size:.88rem;cursor:pointer;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.seg button.on{background:rgba(210,162,76,.14);color:var(--brass)}
+.diffenote{font-size:.82rem;color:var(--mut);font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif;border-left:2px solid var(--brass);padding-left:.8rem;flex-basis:100%}
+.diffenote code{font-family:"JetBrains Mono",ui-monospace,monospace;color:var(--txt);font-size:.78rem}
+.panes{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:.6rem}
+.pane label{display:block;font-size:.72rem;letter-spacing:.16em;text-transform:uppercase;color:var(--mut);margin-bottom:.5rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+textarea{width:100%;min-height:9rem;background:#08090c;border:1px solid var(--line);border-radius:10px;color:var(--txt);font-family:"JetBrains Mono",ui-monospace,monospace;font-size:.85rem;line-height:1.6;padding:.9rem;resize:vertical}
+textarea:focus{outline:none;border-color:var(--brass)}
+textarea[readonly]{color:#cfc9ba}
+.statstrip{font-family:"JetBrains Mono",ui-monospace,monospace;font-size:.74rem;color:var(--mut);margin-top:.45rem;min-height:1.2em;word-break:break-all}
+.statstrip b{color:var(--brass);font-weight:500}
+.btnrow{display:flex;gap:.7rem;flex-wrap:wrap;margin-top:1rem}
+.btn{font-size:.9rem;border:1px solid var(--brass);background:transparent;color:var(--brass);border-radius:999px;padding:.55rem 1.4rem;cursor:pointer;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.btn:hover{background:rgba(210,162,76,.12)}
+.btn.ghost{border-color:var(--line);color:var(--mut)}
+.btn.ghost:hover{color:var(--txt);border-color:var(--mut)}
+.banner{display:none;border:1px solid var(--red);border-radius:10px;padding:.9rem 1.1rem;margin:1rem 0 0;background:rgba(224,101,95,.08);font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.banner.show{display:block}
+.banner .t{font-weight:700;color:var(--red);margin-bottom:.2rem}
+.banner .d{font-size:.88rem;color:var(--mut)}
+.banner .d code{font-family:"JetBrains Mono",ui-monospace,monospace;color:var(--txt);font-size:.82rem}
+table.params{width:100%;border-collapse:collapse;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif;font-size:.88rem}
+table.params th{font-size:.68rem;letter-spacing:.14em;text-transform:uppercase;color:var(--mut);text-align:left;padding:.5rem .6rem;border-bottom:1px solid var(--line);font-weight:600}
+table.params td{padding:.4rem .6rem;border-bottom:1px solid var(--line);vertical-align:middle}
+table.params td.key{font-family:"JetBrains Mono",ui-monospace,monospace;color:var(--brass);font-size:.82rem;word-break:break-all}
+table.params td.enc{font-family:"JetBrains Mono",ui-monospace,monospace;font-size:.82rem;color:var(--mut);word-break:break-all}
+table.params input[type=text]{width:100%;background:#08090c;border:1px solid var(--line);border-radius:8px;color:var(--txt);font-family:"JetBrains Mono",ui-monospace,monospace;font-size:.82rem;padding:.5rem .7rem}
+table.params input[type=text]:focus{outline:none;border-color:var(--brass)}
+.rowdel{border:1px solid var(--line);background:transparent;color:var(--mut);border-radius:999px;width:1.8rem;height:1.8rem;cursor:pointer;font-size:.85rem;line-height:1}
+.rowdel:hover{color:var(--red);border-color:var(--red)}
+.empty{color:var(--mut);font-size:.9rem;padding:1rem .2rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.note{font-size:.82rem;color:var(--mut);border-left:2px solid var(--brass);padding-left:.9rem;margin-top:.9rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+footer{margin-top:2.5rem;font-size:.85rem;color:var(--mut);font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.hidden{display:none!important}
+@media(max-width:720px){
+  .panes{grid-template-columns:1fr}
+  .btn{width:100%}
+  table.params td.enc{display:none}
+  table.params th.enc-h{display:none}
+}
+</style>
+</head>
+<body>
+<nav class="nav"><a href="/">Shipwright Studio</a><a href="/ideas/">Idea Lab</a></nav>
+<p class="eyebrow">Lab · Developer tools</p>
+<h1>URL Codec</h1>
+<p class="define"><strong>URL Codec is a free online tool that</strong> percent-encodes and decodes URLs and query strings, shows exactly what changes between <code>encodeURIComponent</code> and <code>encodeURI</code>, and turns any query string into an editable parameter table — entirely in your browser, so nothing is ever uploaded.</p>
+
+<!-- ============ CODEC ============ -->
+<section class="card">
+  <div class="cardlabel">Encode / decode</div>
+  <div class="modeline">
+    <div class="seg">
+      <button id="dirEncode" class="on">Encode</button>
+      <button id="dirDecode">Decode</button>
+    </div>
+    <div class="seg" id="encModeSeg">
+      <button id="emComponent" class="on">Component</button>
+      <button id="emFullUrl">Full URL</button>
+    </div>
+    <div class="diffenote" id="diffNote"><code>Component</code> = <code>encodeURIComponent</code>: encodes <code>? &amp; = / #</code> too — for values. <code>Full URL</code> = <code>encodeURI</code>: keeps URL structure intact, encodes only spaces and Unicode.</div>
+  </div>
+  <div class="panes">
+    <div class="pane">
+      <label for="inUrl">Input</label>
+      <textarea id="inUrl" spellcheck="false" placeholder="Paste a URL or any text to encode, or a percent-encoded string to decode…"></textarea>
+      <div class="statstrip" id="inStats"></div>
+    </div>
+    <div class="pane">
+      <label for="outUrl">Output</label>
+      <textarea id="outUrl" readonly spellcheck="false" placeholder="Result appears here…"></textarea>
+      <div class="statstrip" id="outStats"></div>
+    </div>
+  </div>
+  <div class="banner" id="errBanner"><div class="t" id="errTitle"></div><div class="d" id="errDetail"></div></div>
+  <div class="btnrow">
+    <button class="btn" id="btnSwap">⇄ Swap</button>
+    <button class="btn ghost" id="btnClear">Clear</button>
+    <button class="btn ghost" id="btnCopyIn">Copy input</button>
+    <button class="btn ghost" id="btnCopyOut">Copy output</button>
+  </div>
+</section>
+
+<!-- ============ PARAM TABLE ============ -->
+<section class="card">
+  <div class="cardlabel">Query-string parameters</div>
+  <div class="btnrow" style="margin:0 0 1rem">
+    <button class="btn" id="btnParse">Parse params from input</button>
+    <button class="btn ghost" id="btnRebuild">Rebuild query → output</button>
+  </div>
+  <div id="tableEmpty" class="empty">No parameters parsed yet — enter a URL with a query string above and press “Parse params from input”.</div>
+  <table class="params hidden" id="paramTable">
+    <thead><tr><th>Key</th><th>Value (editable)</th><th class="enc-h">Encoded</th><th></th></tr></thead>
+    <tbody id="paramBody"></tbody>
+  </table>
+  <p class="note">Values are stored decoded; “Rebuild query” joins them with <code>encodeURIComponent</code> as <code>?key=value&amp;…</code> into the output pane. Duplicate keys are preserved as separate rows.</p>
+</section>
+
+<!-- ============ SAMPLES ============ -->
+<section class="card">
+  <div class="cardlabel">Try a sample</div>
+  <div class="btnrow" style="margin-top:0">
+    <button class="btn ghost" id="smp1">Messy URL with Unicode</button>
+    <button class="btn ghost" id="smp2">Encoded URL (for decoding)</button>
+    <button class="btn ghost" id="smp3">Same key twice</button>
+  </div>
+</section>
+
+<footer>Built in the Shipwright Studio Lab · <a href="/ideas/">more experiments</a></footer>
+
+<script>
+"use strict";
+/* ===== Core (node-tested) ===== */
+function codecEncode(s,encMode){
+  return encMode==="full"?encodeURI(s):encodeURIComponent(s);
+}
+function firstBadPercent(s){
+  for(var i=0;i<s.length;i++){
+    if(s[i]==="%"){
+      var h1=s[i+1],h2=s[i+2];
+      if(!isHex(h1)||!isHex(h2))return{pos:i,seq:s.slice(i,i+3)};
+    }
+  }
+  return null;
+}
+function isHex(c){return typeof c==="string"&&/^[0-9a-fA-F]$/.test(c);}
+function codecDecode(s){
+  var bad=firstBadPercent(s);
+  if(bad)return{ok:false,bad:bad};
+  try{return{ok:true,text:decodeURIComponent(s)};}
+  catch(e){return{ok:false,bad:{pos:-1,seq:"(invalid encoding)"}};}
+}
+function parseParams(s){
+  var q=s.indexOf("?");
+  var qs=q===-1?s:s.slice(q+1);
+  if(q===-1&&qs.indexOf("=")===-1)return[];
+  var hash=qs.indexOf("#");
+  if(hash!==-1)qs=qs.slice(0,hash);
+  if(qs===""||/^[/?]+$/.test(qs))return[];
+  var rows=[],parts=qs.split("&"),i;
+  for(i=0;i<parts.length;i++){
+    var p=parts[i];
+    if(p==="")continue;
+    var eq=p.indexOf("=");
+    var k=eq===-1?p:p.slice(0,eq);
+    var v=eq===-1?"":p.slice(eq+1);
+    rows.push({key:decSafe(k),value:decSafe(v),encoded:v});
+  }
+  return rows;
+}
+function decSafe(s){
+  try{return decodeURIComponent(s.replace(/\+/g,"%20"));}catch(e){return s;}
+}
+function rebuildQuery(rows){
+  return "?"+rows.map(function(r){
+    return encodeURIComponent(r.key)+"="+encodeURIComponent(r.value);
+  }).join("&");
+}
+/* ===== UI ===== */
+var $=function(id){return document.getElementById(id)};
+var inT=$("inUrl"),outT=$("outUrl"),inS=$("inStats"),outS=$("outStats"),
+    banner=$("errBanner"),bannerT=$("errTitle"),bannerD=$("errDetail"),
+    mode="encode",encMode="component",timer=null;
+
+function setMode(m){
+  mode=m;
+  $("dirEncode").className=m==="encode"?"on":"";
+  $("dirDecode").className=m==="decode"?"on":"";
+  $("encModeSeg").style.display=m==="encode"?"":"none";
+  $("diffNote").style.display=m==="encode"?"":"none";
+  convert();
+}
+function setEncMode(m){
+  encMode=m;
+  $("emComponent").className=m==="component"?"on":"";
+  $("emFullUrl").className=m==="full"?"on":"";
+  convert();
+}
+function hideErr(){banner.className="banner";}
+function showErr(title,html){
+  bannerT.textContent=title;bannerD.innerHTML=html;banner.className="banner show";
+}
+function fmtChars(n){return n+" char"+(n===1?"":"s");}
+
+function convert(){
+  var raw=inT.value;
+  hideErr();
+  if(raw===""){outT.value="";inS.textContent="";outS.textContent="";return;}
+  inS.innerHTML="<b>"+raw.length+"</b> chars in";
+  if(mode==="encode"){
+    var enc=codecEncode(raw,encMode);
+    outT.value=enc;
+    outS.innerHTML="<b>"+enc.length+"</b> chars out";
+  }else{
+    var res=codecDecode(raw);
+    if(!res.ok){
+      outT.value="";
+      outS.textContent="decode failed";
+      if(res.bad.pos>=0){
+        showErr("Malformed percent-sequence",
+          "The input is not valid percent-encoding: <code>"+escapeHtml(res.bad.seq)+
+          "</code> at position "+(res.bad.pos+1)+". A <code>%</code> must be followed by exactly two hex digits.");
+      }else{
+        showErr("Decode failed","The string contains an invalid percent-encoding sequence.");
+      }
+      return;
+    }
+    outT.value=res.text;
+    outS.innerHTML="<b>"+res.text.length+"</b> chars out";
+  }
+}
+function escapeHtml(s){
+  return s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+}
+
+function copyText(t,btn){
+  function done(){var o=btn.textContent;btn.textContent="Copied ✓";setTimeout(function(){btn.textContent=o;},1200);}
+  function fallback(){
+    var ta=document.createElement("textarea");ta.value=t;document.body.appendChild(ta);
+    ta.select();try{document.execCommand("copy");done();}catch(e){}document.body.removeChild(ta);
+  }
+  if(navigator.clipboard&&navigator.clipboard.writeText){
+    navigator.clipboard.writeText(t).then(done).catch(fallback);
+  }else fallback();
+}
+
+/* ===== param table ===== */
+var tableRows=[];
+function renderTable(){
+  var tb=$("paramBody");tb.innerHTML="";
+  if(!tableRows.length){
+    $("paramTable").classList.add("hidden");
+    $("tableEmpty").classList.remove("hidden");
+    return;
+  }
+  $("paramTable").classList.remove("hidden");
+  $("tableEmpty").classList.add("hidden");
+  tableRows.forEach(function(r,idx){
+    var tr=document.createElement("tr");
+    var tdK=document.createElement("td");tdK.className="key";tdK.textContent=r.key;
+    var tdV=document.createElement("td");
+    var inp=document.createElement("input");inp.type="text";inp.value=r.value;
+    inp.setAttribute("aria-label","Value for "+r.key);
+    inp.addEventListener("input",function(){tableRows[idx].value=inp.value;});
+    tdV.appendChild(inp);
+    var tdE=document.createElement("td");tdE.className="enc";
+    tdE.textContent=encodeURIComponent(r.value);
+    var tdD=document.createElement("td");
+    var del=document.createElement("button");del.className="rowdel";del.textContent="×";
+    del.setAttribute("aria-label","Delete parameter "+r.key);
+    del.addEventListener("click",function(){tableRows.splice(idx,1);renderTable();});
+    tdD.appendChild(del);
+    tr.appendChild(tdK);tr.appendChild(tdV);tr.appendChild(tdE);tr.appendChild(tdD);
+    tb.appendChild(tr);
+  });
+}
+$("btnParse").addEventListener("click",function(){
+  tableRows=parseParams(inT.value);
+  renderTable();
+  if(!tableRows.length){
+    $("tableEmpty").textContent="No query parameters found in the input — try a URL containing ?key=value&…";
+  }
+});
+$("btnRebuild").addEventListener("click",function(){
+  if(!tableRows.length)return;
+  var q=rebuildQuery(tableRows);
+  outT.value=q;
+  outS.innerHTML="<b>"+q.length+"</b> chars out (rebuilt query)";
+});
+
+/* ===== wiring ===== */
+inT.addEventListener("input",function(){clearTimeout(timer);timer=setTimeout(convert,150);});
+$("dirEncode").addEventListener("click",function(){setMode("encode");});
+$("dirDecode").addEventListener("click",function(){setMode("decode");});
+$("emComponent").addEventListener("click",function(){setEncMode("component");});
+$("emFullUrl").addEventListener("click",function(){setEncMode("full");});
+$("btnSwap").addEventListener("click",function(){
+  inT.value=outT.value;
+  if(mode==="encode")setMode("decode");else setMode("encode");
+});
+$("btnClear").addEventListener("click",function(){
+  inT.value="";tableRows=[];renderTable();convert();
+});
+$("btnCopyIn").addEventListener("click",function(){copyText(inT.value,this);});
+$("btnCopyOut").addEventListener("click",function(){copyText(outT.value,this);});
+
+/* ===== samples ===== */
+$("smp1").addEventListener("click",function(){
+  setMode("encode");setEncMode("component");
+  inT.value="https://example.com/search?q=hello world&lang=中文&filter=a/b";
+  convert();
+});
+$("smp2").addEventListener("click",function(){
+  setMode("decode");
+  inT.value="https%3A%2F%2Fexample.com%2Fsearch%3Fq%3Dhello%2520world";
+  convert();
+});
+$("smp3").addEventListener("click",function(){
+  setMode("encode");
+  inT.value="https://example.com/items?tag=new&tag=sale&sort=price+asc";
+  convert();
+});
+
+renderTable();
+convert();
+</script>
+</body>
+</html>

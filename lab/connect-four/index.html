@@ -1,0 +1,635 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Connect Four vs AI · Shipwright Studio</title>
+  <meta name="description" content="Connect Four vs AI is a free online game: drop discs on a 7×6 board against a minimax engine with Easy, Medium and Hard levels, or play local 2-player — with win-line highlights, undo and persistent stats." />
+  <link rel="canonical" href="https://shipwright-studio.pages.dev/lab/connect-four/" />
+  <link rel="icon" type="image/svg+xml" href="../../favicon.svg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..700;1,9..144,300..700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "Connect Four vs AI",
+    "description": "A free online Connect Four game: drop discs on a 7×6 board against a minimax AI with Easy, Medium and Hard difficulties, or play pass-and-play local 2-player. Includes winning-line highlights, move undo, and persistent lifetime stats.",
+    "applicationCategory": "GameApplication",
+    "operatingSystem": "Web",
+    "offers": { "@type": "Offer", "price": "0" },
+    "author": { "@type": "Organization", "name": "Shipwright Studio", "url": "https://shipwright-studio.pages.dev/" }
+  }
+  </script>
+  <style>
+    :root {
+      --bg: #0a0c0f; --surface: #10141a; --surface-2: #141a22;
+      --text: #f2efe6; --muted: #a6abb4; --faint: #6d737c;
+      --accent: #d2a24c; --line: rgba(255,255,255,.09);
+      --red: #e0655f; --green: #7fc98f;
+      --ivory: #e8e4d8;
+      --font-display: "Fraunces", Georgia, serif;
+      --font-body: "Inter", -apple-system, "Segoe UI", sans-serif;
+      --font-mono: "JetBrains Mono", ui-monospace, monospace;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: var(--bg); color: var(--text); font-family: var(--font-body); min-height: 100vh; display: flex; flex-direction: column; }
+    .topbar { display: flex; justify-content: space-between; align-items: center; padding: 16px 22px; border-bottom: 1px solid var(--line); }
+    .topbar a { color: var(--muted); text-decoration: none; font-size: 14px; }
+    .topbar a:hover { color: var(--accent); }
+    .brand { font-family: var(--font-display); font-size: 17px; }
+    .brand em { color: var(--accent); font-style: italic; }
+    main { flex: 1; width: 100%; max-width: 720px; margin: 0 auto; padding: 44px 24px 60px; display: flex; flex-direction: column; gap: 26px; }
+    h1 { font-family: var(--font-display); font-weight: 500; font-size: clamp(30px, 5vw, 44px); letter-spacing: -.01em; }
+    h1 em { color: var(--accent); font-style: italic; }
+    .lede { color: var(--muted); max-width: 680px; line-height: 1.65; }
+    .lede strong { color: var(--text); font-weight: 600; }
+    .card { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 26px; }
+    .scoreboard { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 22px; }
+    .stat { text-align: center; padding: 12px 6px; border: 1px solid var(--line); border-radius: 10px; background: var(--bg); }
+    .stat .n { font-family: var(--font-mono); font-size: 24px; font-variant-numeric: tabular-nums; }
+    .stat .l { font-size: 11.5px; color: var(--faint); text-transform: uppercase; letter-spacing: .08em; margin-top: 4px; }
+    .stat.you .n { color: var(--accent); }
+    .roundline { text-align: center; color: var(--faint); font-family: var(--font-mono); font-size: 12.5px; margin: -12px 0 22px; letter-spacing: .06em; }
+    .lifetime { text-align: center; color: var(--faint); font-size: 12px; margin: -14px 0 20px; font-family: var(--font-mono); line-height: 1.8; }
+    .boardwrap { position: relative; width: fit-content; margin: 0 auto; }
+    .arrowrow { display: grid; grid-template-columns: repeat(7, 1fr); gap: clamp(6px, 1.5vw, 12px); margin-bottom: 10px; }
+    .arrowrow button {
+      background: none; border: none; cursor: pointer; height: 44px; display: flex;
+      align-items: center; justify-content: center; border-radius: 10px;
+    }
+    .arrowrow button:hover, .arrowrow button:focus-visible { background: rgba(210,162,76,.08); outline: none; }
+    .arrowrow svg { width: 22px; height: 22px; stroke: var(--faint); fill: none; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; transition: stroke .15s ease, transform .15s ease; }
+    .arrowrow button:hover svg, .arrowrow button:focus-visible svg { stroke: var(--accent); transform: translateY(3px); }
+    .arrowrow button.hot svg { stroke: var(--accent); animation: bounce .7s ease-in-out infinite; }
+    @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(5px); } }
+    .arrowrow.shake { animation: shake .35s ease; }
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      25% { transform: translateX(-6px); } 55% { transform: translateX(4px); } 80% { transform: translateX(-2px); }
+    }
+    .board {
+      position: relative; display: grid; grid-template-columns: repeat(7, 1fr);
+      grid-template-rows: repeat(6, 1fr); gap: clamp(6px, 1.5vw, 12px);
+      width: min(calc(100vw - 100px), 560px); aspect-ratio: 7 / 6;
+      background: var(--surface-2); border: 1px solid rgba(210,162,76,.25);
+      border-radius: 18px; padding: clamp(8px, 2vw, 16px);
+    }
+    .board.locked .cell { cursor: default; }
+    .cell { position: relative; cursor: pointer; }
+    .slot {
+      position: absolute; inset: 0; border-radius: 50%;
+      background: radial-gradient(circle at 50% 38%, #07090c 0%, #0b0e13 70%);
+      box-shadow: inset 0 2px 6px rgba(0,0,0,.75), 0 1px 0 rgba(255,255,255,.04);
+      display: flex; align-items: center; justify-content: center;
+    }
+    .disc { width: 100%; height: 100%; border-radius: 50%; transform: scale(0); transition: transform .18s ease-out; }
+    .slot.filled .disc { transform: scale(1); }
+    .disc.x { background: radial-gradient(circle at 34% 30%, #f3d08a 0%, #d2a24c 42%, #8a6223 100%); box-shadow: 0 2px 10px rgba(210,162,76,.35), inset 0 -3px 8px rgba(0,0,0,.35); }
+    .disc.o { background: radial-gradient(circle at 34% 30%, #ffffff 0%, #dcd8cc 42%, #8f8b7e 100%); box-shadow: 0 2px 10px rgba(232,228,216,.28), inset 0 -3px 8px rgba(0,0,0,.3); }
+    .slot.ghost .disc { transform: scale(1); opacity: .3; }
+    .slot.win .disc.x { box-shadow: 0 0 0 3px rgba(210,162,76,.9), 0 0 22px rgba(210,162,76,.75); }
+    .slot.win .disc.o { box-shadow: 0 0 0 3px rgba(232,228,216,.9), 0 0 22px rgba(232,228,216,.6); }
+    .boardwrap.draw .board { opacity: .6; }
+    .fly { position: absolute; z-index: 5; border-radius: 50%; pointer-events: none; }
+    #strikeSvg { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 4; }
+    #strikeSvg line { stroke-width: 9; stroke-linecap: round; stroke-dasharray: 1200; stroke-dashoffset: 1200; }
+    #strikeSvg line.show { animation: drawline .4s ease-out forwards; }
+    #strikeSvg.win line { stroke: var(--accent); }
+    #strikeSvg.lose line { stroke: var(--ivory); opacity: .85; }
+    @keyframes drawline { to { stroke-dashoffset: 0; } }
+    .status { text-align: center; min-height: 32px; margin: 20px 0 4px; font-family: var(--font-display); font-size: 19px; font-style: italic; color: var(--text); }
+    .status.thinking { color: var(--faint); }
+    .status.win { color: var(--accent); }
+    .status.lose { color: var(--ivory); }
+    .controls { display: flex; flex-direction: column; gap: 14px; align-items: center; margin-top: 18px; }
+    .control-group { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; justify-content: center; }
+    .control-group .cap { font-size: 12px; color: var(--faint); text-transform: uppercase; letter-spacing: .08em; }
+    .pills { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; }
+    .pills button { font-family: var(--font-mono); font-size: 12.5px; padding: 9px 16px; border-radius: 999px; border: 1px solid var(--line); background: transparent; color: var(--muted); cursor: pointer; }
+    .pills button.active { border-color: var(--accent); color: var(--accent); background: rgba(210,162,76,.08); }
+    .pills button:hover { color: var(--text); }
+    .btn-row { display: flex; gap: 12px; align-items: center; }
+    .btn { font-family: var(--font-body); font-weight: 600; font-size: 14px; padding: 11px 26px; border-radius: 10px; border: 1px solid rgba(210,162,76,.5); background: rgba(210,162,76,.1); color: var(--accent); cursor: pointer; transition: background .15s ease; }
+    .btn:hover { background: rgba(210,162,76,.18); }
+    .btn.ghost { border-color: var(--line); background: transparent; color: var(--muted); }
+    .btn.ghost:hover { color: var(--text); background: rgba(255,255,255,.04); }
+    .btn:disabled { opacity: .35; cursor: default; }
+    .reset-link { background: none; border: none; color: var(--faint); font-size: 12.5px; cursor: pointer; text-decoration: underline; text-underline-offset: 3px; }
+    .reset-link:hover { color: var(--muted); }
+    .note { color: var(--muted); font-size: 13.5px; line-height: 1.7; }
+    .note strong { color: var(--text); }
+    .note code { font-family: var(--font-mono); font-size: 12.5px; color: var(--accent); background: rgba(210,162,76,.08); padding: 2px 6px; border-radius: 5px; }
+    footer { border-top: 1px solid var(--line); padding: 22px; text-align: center; color: var(--faint); font-size: 13px; }
+    footer a { color: var(--accent); text-decoration: none; }
+    footer a:hover { text-decoration: underline; }
+    @media (max-width: 480px) {
+      .card { padding: 18px; }
+      .stat .n { font-size: 20px; }
+      .arrowrow button { height: 44px; }
+      main { padding: 32px 14px 48px; }
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="/">Shipwright <em>Studio</em></a>
+    <a href="/ideas/">Lab</a>
+  </header>
+  <main>
+    <h1>Connect Four <em>vs AI</em></h1>
+    <p class="lede"><strong>Connect Four vs AI is a free online tool that lets you drop discs into a classic 7×6 grid and try to line up four in a row before a minimax computer opponent does.</strong> Pick Easy, Medium or Hard, choose who opens, or hand the device to a friend for local 2-player — winning lines light up, moves undo cleanly, and your lifetime record is kept between visits.</p>
+
+    <section class="card" aria-label="Connect four game">
+      <div class="scoreboard" role="status" aria-label="Score">
+        <div class="stat you"><div class="n" id="scoreYou">0</div><div class="l" id="labelYou">You · amber</div></div>
+        <div class="stat"><div class="n" id="scoreDraw">0</div><div class="l">Draws</div></div>
+        <div class="stat"><div class="n" id="scoreAI">0</div><div class="l" id="labelAI">AI · ivory</div></div>
+      </div>
+      <div class="roundline" id="roundLine">ROUND 1</div>
+      <div class="lifetime" id="lifetimeLine"></div>
+
+      <div class="boardwrap" id="boardWrap">
+        <div class="arrowrow" id="arrowRow" role="group" aria-label="Drop a disc"></div>
+        <div class="board" id="board" role="grid" aria-label="Connect four board">
+          <svg id="strikeSvg" viewBox="0 0 700 600" preserveAspectRatio="none" aria-hidden="true">
+            <line id="strikeLine" x1="0" y1="0" x2="0" y2="0" />
+          </svg>
+        </div>
+      </div>
+
+      <div class="status" id="status">Your move — you're amber.</div>
+
+      <div class="controls">
+        <div class="control-group">
+          <span class="cap">Opponent</span>
+          <div class="pills" id="diffPills" role="group" aria-label="Difficulty">
+            <button data-d="easy" class="active" aria-pressed="true">Easy</button>
+            <button data-d="medium" aria-pressed="false">Medium</button>
+            <button data-d="hard" aria-pressed="false">Hard</button>
+          </div>
+        </div>
+        <div class="control-group">
+          <span class="cap">Mode</span>
+          <div class="pills" id="modePills" role="group" aria-label="Mode">
+            <button data-m="ai" class="active" aria-pressed="true">You vs AI</button>
+            <button data-m="two" aria-pressed="false">2 players</button>
+          </div>
+        </div>
+        <div class="control-group">
+          <span class="cap">Starts</span>
+          <div class="pills" id="startPills" role="group" aria-label="Who starts">
+            <button data-s="player" class="active" aria-pressed="true">You first</button>
+            <button data-s="ai" aria-pressed="false">AI first</button>
+          </div>
+        </div>
+        <div class="btn-row">
+          <button class="btn ghost" id="undoBtn">Undo</button>
+          <button class="btn" id="newRound">New round</button>
+        </div>
+        <button class="reset-link" id="resetStats">Reset stats</button>
+      </div>
+    </section>
+
+    <section class="note">
+      <p><strong>Easy</strong> sees one move ahead and misfires often — a good warm-up. <strong>Medium</strong> looks three moves deep with an occasional lapse in concentration. <strong>Hard</strong> searches five moves deep with <code>minimax</code> and alpha-beta pruning, always takes a win and always blocks yours. In 2-player mode the same board becomes a pass-and-play piece for game night.</p>
+    </section>
+  </main>
+  <footer>Built by <a href="/ideas/">Shipwright Studio</a></footer>
+
+  <script>
+  // ================= PURE GAME LOGIC (node-testable) =================
+  const ROWS = 6, COLS = 7, CELLS = 42;
+  const X = 1, O = 2;                       // player/amber = X, AI/ivory = O
+  const idx = (r, c) => r * COLS + c;
+
+  // All 69 possible winning lines of four.
+  const LINES = [];
+  (function buildLines() {
+    for (let r = 0; r < ROWS; r++) for (let c = 0; c <= COLS - 4; c++)
+      LINES.push([idx(r,c), idx(r,c+1), idx(r,c+2), idx(r,c+3)]);
+    for (let c = 0; c < COLS; c++) for (let r = 0; r <= ROWS - 4; r++)
+      LINES.push([idx(r,c), idx(r+1,c), idx(r+2,c), idx(r+3,c)]);
+    for (let r = 0; r <= ROWS - 4; r++) for (let c = 0; c <= COLS - 4; c++)
+      LINES.push([idx(r,c), idx(r+1,c+1), idx(r+2,c+2), idx(r+3,c+3)]);
+    for (let r = 3; r < ROWS; r++) for (let c = 0; c <= COLS - 4; c++)
+      LINES.push([idx(r,c), idx(r-1,c+1), idx(r-2,c+2), idx(r-3,c+3)]);
+  })();
+
+  // winner(b): 0 = ongoing, 1 = X wins, 2 = O wins, 3 = draw.
+  function winner(b) {
+    for (const ln of LINES) {
+      const a = ln[0];
+      if (b[a] !== 0 && b[a] === b[ln[1]] && b[a] === b[ln[2]] && b[a] === b[ln[3]]) return b[a];
+    }
+    for (let i = 0; i < CELLS; i++) if (b[i] === 0) return 0;
+    return 3;
+  }
+  function winLineOf(b) {
+    for (const ln of LINES) {
+      const a = ln[0];
+      if (b[a] !== 0 && b[a] === b[ln[1]] && b[a] === b[ln[2]] && b[a] === b[ln[3]]) return ln;
+    }
+    return null;
+  }
+  // Row a dropped disc lands in column c, or -1 when the column is full.
+  function landingRow(b, c) {
+    for (let r = ROWS - 1; r >= 0; r--) if (b[idx(r, c)] === 0) return r;
+    return -1;
+  }
+  function validCols(b) {
+    const out = [];
+    for (let c = 0; c < COLS; c++) if (b[idx(0, c)] === 0) out.push(c);
+    return out;
+  }
+
+  // Heuristic: score a 4-cell window from `me`'s perspective.
+  function windowScore(countMe, countOpp, countEmpty) {
+    if (countMe === 4) return 100000;
+    if (countOpp === 4) return -80000;
+    if (countMe === 3 && countEmpty === 1) return 120;
+    if (countMe === 2 && countEmpty === 2) return 12;
+    if (countMe === 1 && countEmpty === 3) return 1;
+    if (countOpp === 3 && countEmpty === 1) return -100;
+    if (countOpp === 2 && countEmpty === 2) return -8;
+    return 0;
+  }
+  function evaluate(b, me) {
+    let s = 0;
+    for (const ln of LINES) {
+      let m = 0, o = 0;
+      for (const i of ln) { if (b[i] === me) m++; else if (b[i] !== 0) o++; }
+      s += windowScore(m, o, 4 - m - o);
+    }
+    // Prefer the centre column — it participates in the most lines.
+    for (let r = 0; r < ROWS; r++) {
+      const v = b[idx(r, 3)];
+      if (v === me) s += 6; else if (v !== 0) s -= 4;
+    }
+    return s;
+  }
+
+  // Minimax with alpha-beta. Score from `me`'s perspective; depth = plies left.
+  function minimax(b, depth, turn, me, alpha, beta) {
+    const w = winner(b);
+    if (w === me) return 1000000 + depth;   // sooner wins score higher
+    if (w === 3) return 0;
+    if (w !== 0) return -1000000 - depth;
+    if (depth === 0) return evaluate(b, me);
+    const opp = turn === X ? O : X;
+    for (const c of ORDER) {
+      const r = landingRow(b, c);
+      if (r === -1) continue;
+      const i = idx(r, c);
+      b[i] = turn;
+      const s = minimax(b, depth - 1, opp, me, alpha, beta);
+      b[i] = 0;
+      if (turn === me) {
+        if (s > alpha) alpha = s;
+        if (alpha >= beta) break;
+      } else {
+        if (s < beta) beta = s;
+        if (alpha >= beta) break;
+      }
+    }
+    return turn === me ? alpha : beta;
+  }
+  // Centre-first move ordering: stronger play and better pruning.
+  const ORDER = [3, 2, 4, 1, 5, 0, 6];
+  function bestMove(b, me, depth) {
+    const opp = me === X ? O : X;
+    let bestScore = -Infinity, move = -1;
+    for (const c of ORDER) {
+      const r = landingRow(b, c);
+      if (r === -1) continue;
+      const i = idx(r, c);
+      b[i] = me;
+      const s = minimax(b, depth - 1, opp, me, -Infinity, Infinity);
+      b[i] = 0;
+      if (s > bestScore) { bestScore = s; move = c; }
+    }
+    return move;
+  }
+  const AI_LEVELS = {
+    easy:   { depth: 1, noise: 0.45 },
+    medium: { depth: 3, noise: 0.12 },
+    hard:   { depth: 5, noise: 0 }
+  };
+  function aiMove(b, difficulty, me, rng) {
+    rng = rng || Math.random;
+    const cfg = AI_LEVELS[difficulty] || AI_LEVELS.medium;
+    const cols = validCols(b);
+    if (cols.length === 0) return -1;
+    if (rng() < cfg.noise) return cols[Math.floor(rng() * cols.length)];
+    return bestMove(b, me, cfg.depth);
+  }
+  // === DOM WIRING (not executed in node tests) ===
+
+  const $ = id => document.getElementById(id);
+  const boardEl = $("board"), arrowRow = $("arrowRow"), statusEl = $("status"), boardWrap = $("boardWrap");
+  const strikeSvg = $("strikeSvg"), strikeLine = $("strikeLine");
+
+  let board = new Array(CELLS).fill(0);
+  let history = [];                    // [{c, r}]
+  let difficulty = "easy", mode = "ai", starter = "player";
+  let turn = X;                        // X = amber (you / first player)
+  let roundOver = false, thinking = false;
+  let round = 1;
+  let session = { you: 0, draws: 0, ai: 0 };
+
+  const LS_KEY = "cfour-stats-v1";
+  const statKeys = () => mode === "ai" ? ["easy", "medium", "hard"] : ["two"];
+  let lifetime = { easy: { you: 0, draws: 0, ai: 0 }, medium: { you: 0, draws: 0, ai: 0 },
+                   hard: { you: 0, draws: 0, ai: 0 }, two: { you: 0, draws: 0, ai: 0 } };
+  function loadLifetime() {
+    try {
+      const raw = localStorage.getItem(LS_KEY);
+      if (raw) {
+        const p = JSON.parse(raw);
+        for (const d of Object.keys(lifetime)) for (const k of ["you", "draws", "ai"]) {
+          if (typeof p?.[d]?.[k] === "number") lifetime[d][k] = p[d][k];
+        }
+      }
+    } catch (e) { /* private mode: stats stay session-only */ }
+  }
+  function saveLifetime() { try { localStorage.setItem(LS_KEY, JSON.stringify(lifetime)); } catch (e) {} }
+  function fmtStat(s) { return `${s.you}W · ${s.draws}D · ${s.ai}L`; }
+  function lifetimeKey() { return mode === "ai" ? difficulty : "two"; }
+  function renderScores() {
+    $("scoreYou").textContent = session.you;
+    $("scoreDraw").textContent = session.draws;
+    $("scoreAI").textContent = session.ai;
+    $("labelYou").textContent = mode === "ai" ? "You · amber" : "Amber";
+    $("labelAI").textContent = mode === "ai" ? "AI · ivory" : "Friend · ivory";
+    $("roundLine").textContent = "ROUND " + round;
+    $("lifetimeLine").textContent =
+      `Lifetime — Easy ${fmtStat(lifetime.easy)} · Medium ${fmtStat(lifetime.medium)} · Hard ${fmtStat(lifetime.hard)} · 2P ${fmtStat(lifetime.two)}`;
+  }
+
+  // Build DOM: arrows + 42 cells.
+  const ARROW_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true"><polyline points="6 14 12 20 18 14"/><line x1="12" y1="4" x2="12" y2="19"/></svg>';
+  const cells = [];
+  for (let c = 0; c < COLS; c++) {
+    const b = document.createElement("button");
+    b.className = ""; b.dataset.c = c;
+    b.setAttribute("aria-label", "Drop disc in column " + (c + 1));
+    b.innerHTML = ARROW_SVG;
+    arrowRow.appendChild(b);
+  }
+  const arrows = [...arrowRow.children];
+  for (let r = 0; r < ROWS; r++) {
+    for (let c = 0; c < COLS; c++) {
+      const cell = document.createElement("div");
+      cell.className = "cell"; cell.dataset.c = c; cell.dataset.r = r;
+      cell.setAttribute("role", "gridcell");
+      cell.setAttribute("aria-label", "Column " + (c + 1) + ", row " + (r + 1));
+      cell.innerHTML = '<div class="slot"></div>';
+      boardEl.appendChild(cell);
+      cells.push(cell);
+    }
+  }
+
+  function setStatus(text, cls) {
+    statusEl.textContent = text;
+    statusEl.className = "status" + (cls ? " " + cls : "");
+  }
+  function sideName(m) {
+    if (mode === "ai") return m === X ? "You" : "AI";
+    return m === X ? "Amber" : "Friend";
+  }
+  function statusForTurn() {
+    if (mode === "ai") setStatus(turn === X ? "Your move — you're amber." : "AI is thinking…", turn === O ? "thinking" : "");
+    else setStatus(sideName(turn) + (turn === X ? " to move — amber." : " to move — ivory."));
+  }
+
+  // Ghost preview of where the disc would land.
+  function showGhost(c) {
+    clearGhost();
+    if (roundOver || thinking) return;
+    const r = landingRow(board, c);
+    if (r === -1) return;
+    const slot = cells[idx(r, c)].firstChild;
+    slot.classList.add("ghost");
+    slot.innerHTML = `<div class="disc ${turn === X ? "x" : "o"}"></div>`;
+  }
+  function clearGhost() {
+    const g = boardEl.querySelector(".slot.ghost");
+    if (g) { g.classList.remove("ghost"); g.innerHTML = ""; }
+  }
+
+  // Animated disc drop: a disc flies from above the column into the cell.
+  function animateDrop(c, r, mark, done) {
+    const cell = cells[idx(r, c)];
+    const boardBox = boardEl.getBoundingClientRect();
+    const cellBox = cell.firstChild.getBoundingClientRect();
+    const size = cellBox.width;
+    const fly = document.createElement("div");
+    fly.className = "fly";
+    fly.innerHTML = `<div class="disc ${mark === X ? "x" : "o"}" style="transform:scale(1)"></div>`;
+    const fromY = arrowRow.getBoundingClientRect().bottom - boardBox.top - size;
+    const toY = cellBox.top - boardBox.top;
+    fly.style.cssText = `left:${cellBox.left - boardBox.left}px;top:${fromY}px;width:${size}px;height:${size}px;`;
+    boardEl.appendChild(fly);
+    requestAnimationFrame(() => {
+      fly.style.transition = "top .28s cubic-bezier(.45,0,.9,.6)";
+      fly.style.top = toY + "px";
+      setTimeout(() => {
+        fly.remove();
+        const slot = cell.firstChild;
+        slot.classList.add("filled");
+        slot.innerHTML = `<div class="disc ${mark === X ? "x" : "o"}"></div>`;
+        done();
+      }, 290);
+    });
+  }
+
+  function drawStrikeLine(ln, kind) {
+    // Live cell rects -> viewBox coords, so padding/gaps never misalign the line.
+    const svgBox = strikeSvg.getBoundingClientRect();
+    const center = i => {
+      const b = cells[i].firstChild.getBoundingClientRect();
+      return {
+        x: (b.left + b.width / 2 - svgBox.left) / svgBox.width * 700,
+        y: (b.top + b.height / 2 - svgBox.top) / svgBox.height * 600,
+        s: b.width
+      };
+    };
+    const a = center(ln[0]), d = center(ln[3]);
+    // Extend past both ends by ~45% of a cell for a clean strike-through look.
+    const dx = d.x - a.x, dy = d.y - a.y;
+    const len = Math.hypot(dx, dy) || 1;
+    const ex = dx / len * a.s * 0.45, ey = dy / len * a.s * 0.45;
+    strikeLine.setAttribute("x1", (a.x - ex).toFixed(1)); strikeLine.setAttribute("y1", (a.y - ey).toFixed(1));
+    strikeLine.setAttribute("x2", (d.x + ex).toFixed(1)); strikeLine.setAttribute("y2", (d.y + ey).toFixed(1));
+    strikeSvg.setAttribute("class", kind);
+    requestAnimationFrame(() => strikeLine.classList.add("show"));
+  }
+  function clearStrikeLine() {
+    strikeLine.classList.remove("show");
+    strikeSvg.removeAttribute("class");
+  }
+  function setLocked(on) { boardEl.classList.toggle("locked", on); }
+
+  function finishRound(result, ln) {
+    roundOver = true; thinking = false;
+    setLocked(true); clearGhost();
+    const k = lifetimeKey();
+    if (result === 3) {
+      session.draws++; lifetime[k].draws++;
+      boardWrap.classList.add("draw");
+      setStatus("Draw — the board is full.");
+    } else {
+      if (result === X) { session.you++; lifetime[k].you++; } else { session.ai++; lifetime[k].ai++; }
+      for (const i of ln) cells[i].firstChild.classList.add("win");
+      const kind = result === X ? "win" : "lose";
+      drawStrikeLine(ln, kind);
+      if (mode === "ai") {
+        setStatus(result === X ? "You win. Four in a row — nicely done." : "AI wins this round.", kind);
+        if (kind === "lose") {
+          arrowRow.classList.add("shake");
+          setTimeout(() => arrowRow.classList.remove("shake"), 400);
+        }
+      } else {
+        setStatus(sideName(result) + " wins — four in a row!", kind);
+      }
+    }
+    saveLifetime();
+    renderScores();
+    $("undoBtn").disabled = true;
+  }
+
+  function checkEnd() {
+    const w = winner(board);
+    if (w === 0) return false;
+    finishRound(w, w === 3 ? null : winLineOf(board));
+    return true;
+  }
+
+  function afterMove() {
+    if (!checkEnd()) {
+      turn = turn === X ? O : X;
+      statusForTurn();
+      $("undoBtn").disabled = false;
+      maybeAiTurn();
+    }
+  }
+
+  function placeDisc(c) {
+    const r = landingRow(board, c);
+    if (r === -1) {
+      arrowRow.classList.add("shake");
+      setTimeout(() => arrowRow.classList.remove("shake"), 400);
+      setStatus("Column's full — pick another.");
+      return;
+    }
+    board[idx(r, c)] = turn;
+    history.push({ c, r });
+    clearGhost();
+    animateDrop(c, r, turn, afterMove);
+  }
+
+  function tryPlayerDrop(c) {
+    if (roundOver || thinking) return;
+    if (mode === "ai" && turn === O) return;
+    setLocked(true);
+    placeDisc(c);
+  }
+
+  function maybeAiTurn() {
+    if (mode !== "ai" || turn !== O || roundOver) { setLocked(false); return; }
+    thinking = true; setLocked(true);
+    setStatus("AI is thinking…", "thinking");
+    setTimeout(() => {
+      if (roundOver) { thinking = false; return; }
+      const move = aiMove(board, difficulty, O);
+      thinking = false;
+      if (move === -1) { checkEnd(); return; }
+      placeDisc(move);
+      setLocked(false);
+    }, 380);
+  }
+
+  function undo() {
+    if (roundOver || thinking || history.length === 0) return;
+    const steps = mode === "ai" ? Math.min(2, history.length) : 1;
+    for (let s = 0; s < steps; s++) {
+      const { c, r } = history.pop();
+      const i = idx(r, c);
+      board[i] = 0;
+      const slot = cells[i].firstChild;
+      slot.classList.remove("filled", "win");
+      slot.innerHTML = "";
+      turn = turn === X ? O : X;
+    }
+    clearStrikeLine();
+    $("undoBtn").disabled = history.length === 0;
+    setLocked(false);
+    statusForTurn();
+  }
+
+  function newRound() {
+    board = new Array(CELLS).fill(0);
+    history = [];
+    roundOver = false; thinking = false;
+    turn = (mode === "ai" && starter === "ai") || (mode === "two" && starter === "ai") ? O : X;
+    cells.forEach(cell => { cell.firstChild.className = "slot"; cell.firstChild.innerHTML = ""; });
+    boardWrap.classList.remove("draw");
+    arrowRow.classList.remove("shake");
+    clearStrikeLine(); clearGhost();
+    $("undoBtn").disabled = true;
+    renderScores();
+    setLocked(false);
+    statusForTurn();
+    maybeAiTurn();
+  }
+
+  // Column targeting: arrows + cells both drop; hover shows ghost preview.
+  function colFromEvent(e) {
+    const t = e.target.closest("[data-c]");
+    return t ? +t.dataset.c : -1;
+  }
+  arrowRow.addEventListener("click", e => { const c = colFromEvent(e); if (c >= 0) tryPlayerDrop(c); });
+  boardEl.addEventListener("click", e => { const c = colFromEvent(e); if (c >= 0) tryPlayerDrop(c); });
+  arrowRow.addEventListener("mouseover", e => { const c = colFromEvent(e); if (c >= 0) showGhost(c); });
+  boardEl.addEventListener("mouseover", e => { const c = colFromEvent(e); if (c >= 0) showGhost(c); });
+  arrowRow.addEventListener("mouseleave", clearGhost);
+  boardEl.addEventListener("mouseleave", clearGhost);
+  arrows.forEach(a => a.addEventListener("focus", () => showGhost(+a.dataset.c)));
+  arrows.forEach(a => a.addEventListener("blur", clearGhost));
+  // Hover intent: make the hovered column's arrow bounce so the target is clear.
+  document.addEventListener("mouseover", e => {
+    const c = colFromEvent(e);
+    arrows.forEach(a => a.classList.toggle("hot", +a.dataset.c === c && c >= 0));
+  });
+
+  function pillGroup(el, attr, set) {
+    el.addEventListener("click", e => {
+      const b = e.target.closest("button"); if (!b) return;
+      set(b.dataset[attr]);
+      [...el.children].forEach(x => {
+        const on = x === b;
+        x.classList.toggle("active", on);
+        x.setAttribute("aria-pressed", String(on));
+      });
+      newRound();
+    });
+  }
+  pillGroup($("diffPills"), "d", v => { difficulty = v; });
+  pillGroup($("modePills"), "m", v => { mode = v; });
+  pillGroup($("startPills"), "s", v => { starter = v; });
+
+  $("undoBtn").addEventListener("click", undo);
+  $("newRound").addEventListener("click", () => { round++; newRound(); });
+  $("resetStats").addEventListener("click", () => {
+    session = { you: 0, draws: 0, ai: 0 };
+    lifetime = { easy: { you: 0, draws: 0, ai: 0 }, medium: { you: 0, draws: 0, ai: 0 },
+                 hard: { you: 0, draws: 0, ai: 0 }, two: { you: 0, draws: 0, ai: 0 } };
+    saveLifetime(); renderScores();
+  });
+
+  loadLifetime();
+  newRound();
+  </script>
+</body>
+</html>
