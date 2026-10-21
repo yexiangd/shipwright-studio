@@ -1,5 +1,5 @@
 {
-  "updated": "2026-10-20",
+  "updated": "2026-10-21",
   "ideas": [
     {
       "id": "idea-000a",
@@ -919,7 +919,9 @@
       "tagline": "Split the bill fairly, tip without math anxiety.",
       "priority": 79,
       "effort": "S",
-      "status": "todo"
+      "status": "done",
+      "url": "/lab/tip-splitter/",
+      "shipped": "2026-10-21"
     },
     {
       "id": "idea-084",
@@ -1231,7 +1233,9 @@
       "tagline": "How likely is blowup given your edge and bet size?",
       "priority": 79,
       "effort": "M",
-      "status": "todo"
+      "status": "done",
+      "url": "/lab/ruin-simulator/",
+      "shipped": "2026-10-21"
     },
     {
       "id": "idea-113",

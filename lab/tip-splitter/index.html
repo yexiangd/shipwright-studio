@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tip &amp; Split · Shipwright Studio</title>
+<meta name="description" content="Free online bill splitter: assign dishes to each diner, set a tip percentage and tax, and get exactly what everyone owes — tax and tip divided fairly, totals always reconciled.">
+<link rel="canonical" href="https://shipwright-studio.pages.dev/lab/tip-splitter/">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"WebApplication","name":"Tip & Split","url":"https://shipwright-studio.pages.dev/lab/tip-splitter/","description":"Tip & Split is a free online tool that splits a restaurant bill fairly across diners: assign each dish to the people who ate it, set the tip and tax, and get each person's exact share with tax and tip divided proportionally — all in your browser, nothing uploaded.","applicationCategory":"FinanceApplication","operatingSystem":"Web","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"}}
+</script>
+<style>
+:root{--bg:#0a0c0f;--panel:#101318;--line:#1c2128;--txt:#e8e4da;--mut:#9aa3b2;--brass:#d2a24c;--green:#6fbf73;--red:#e0655f}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--txt);font-family:Fraunces,Georgia,serif;line-height:1.65;padding:2rem 1.2rem 4rem;max-width:960px;margin:0 auto}
+a{color:var(--brass)}
+.nav{display:flex;gap:1.2rem;font-size:.85rem;margin-bottom:1.2rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.nav a{color:var(--mut);text-decoration:none}
+.nav a:hover{color:var(--brass)}
+.eyebrow{font-size:.75rem;letter-spacing:.22em;text-transform:uppercase;color:var(--mut);font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+h1{font-weight:600;font-size:clamp(2.1rem,5vw,3rem);margin:.5rem 0 .7rem}
+.define{color:var(--mut);max-width:46rem;margin-bottom:1.8rem;font-size:1rem}
+.define strong{color:var(--txt)}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:1.4rem;margin-bottom:1.4rem}
+.cardlabel{font-size:.72rem;letter-spacing:.18em;text-transform:uppercase;color:var(--mut);margin-bottom:.8rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.ui{font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.inrow{display:flex;gap:.6rem;flex-wrap:wrap;margin-bottom:.8rem}
+input[type=text],input[type=number]{background:#08090c;border:1px solid var(--line);border-radius:10px;color:var(--txt);font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif;font-size:.92rem;padding:.6rem .8rem}
+input:focus{outline:none;border-color:var(--brass)}
+input.bad{border-color:var(--red)}
+.hint{font-size:.8rem;color:var(--red);min-height:1.2em;margin:-.4rem 0 .6rem}
+.chips{display:flex;gap:.5rem;flex-wrap:wrap}
+.chip{border:1px solid var(--line);background:transparent;color:var(--mut);border-radius:999px;padding:.4rem 1rem;font-size:.86rem;cursor:pointer;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.chip.on{background:rgba(210,162,76,.14);border-color:var(--brass);color:var(--brass)}
+.chip.static{cursor:default}
+.chip .x{color:var(--red);margin-left:.35rem;font-weight:700}
+.seg{display:flex;border:1px solid var(--line);border-radius:999px;overflow:hidden;margin-bottom:1rem}
+.seg button{border:0;background:transparent;color:var(--mut);padding:.55rem 1.4rem;font-size:.88rem;cursor:pointer;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif;flex:1}
+.seg button.on{background:rgba(210,162,76,.14);color:var(--brass)}
+.tiprow{display:flex;gap:.5rem;flex-wrap:wrap;align-items:center;margin-bottom:.8rem}
+.tipbtn{border:1px solid var(--line);background:transparent;color:var(--mut);border-radius:999px;padding:.55rem 1.25rem;font-size:.9rem;cursor:pointer;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.tipbtn.on{background:rgba(210,162,76,.14);border-color:var(--brass);color:var(--brass)}
+.item{border:1px solid var(--line);border-radius:10px;padding:.9rem;margin-bottom:.7rem;background:#0c0e12}
+.item .top{display:flex;gap:.6rem;flex-wrap:wrap;margin-bottom:.6rem}
+.item .top input[name=iname]{flex:2;min-width:8rem}
+.item .top input[name=iprice]{flex:1;min-width:6.5rem}
+.item .dinerline{display:flex;align-items:center;gap:.5rem;flex-wrap:wrap}
+.item .dinerline .who{font-size:.78rem;color:var(--mut)}
+.rowdel{border:1px solid var(--line);background:transparent;color:var(--mut);border-radius:999px;width:2rem;height:2rem;cursor:pointer;font-size:.9rem;align-self:flex-start}
+.rowdel:hover{color:var(--red);border-color:var(--red)}
+.btn{font-size:.9rem;border:1px solid var(--brass);background:transparent;color:var(--brass);border-radius:999px;padding:.55rem 1.4rem;cursor:pointer;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.btn:hover{background:rgba(210,162,76,.12)}
+.btn.ghost{border-color:var(--line);color:var(--mut)}
+.btn.ghost:hover{color:var(--txt);border-color:var(--mut)}
+.btn:disabled{opacity:.4;cursor:default}
+.btnrow{display:flex;gap:.7rem;flex-wrap:wrap;margin-top:1rem}
+.person{display:flex;justify-content:space-between;align-items:center;gap:1rem;padding:.75rem .2rem;border-bottom:1px solid var(--line)}
+.person .nm{font-size:1.05rem}
+.person .brk{font-size:.78rem;color:var(--mut);font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.person .tot{font-family:"JetBrains Mono",ui-monospace,monospace;font-size:1.2rem;color:var(--brass);white-space:nowrap}
+.grand{display:flex;justify-content:space-between;align-items:baseline;padding:1rem .2rem .2rem;font-family:"JetBrains Mono",ui-monospace,monospace}
+.grand .lab{font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif;font-size:.85rem;color:var(--mut)}
+.grand .val{font-size:1.6rem;color:var(--txt);font-weight:500}
+.reconcile{font-size:.82rem;color:var(--green);margin-top:.6rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.empty{color:var(--mut);font-size:.9rem;padding:1rem .2rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.warn{font-size:.85rem;color:var(--red);margin-top:.7rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.note{font-size:.82rem;color:var(--mut);border-left:2px solid var(--brass);padding-left:.9rem;margin-top:.9rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+footer{margin-top:2.5rem;font-size:.85rem;color:var(--mut);font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+@media(max-width:720px){.btn{width:100%}.inrow input[type=text]{flex:1;min-width:8rem}}
+</style>
+</head>
+<body>
+<nav class="nav"><a href="/">Shipwright Studio</a><a href="/ideas/">Idea Lab</a></nav>
+<p class="eyebrow">Lab · Everyday tools</p>
+<h1>Tip &amp; Split</h1>
+<p class="define"><strong>Tip &amp; Split is a free online tool that</strong> splits a restaurant bill fairly across diners: enter each dish, tap who ate it, set the tip and tax, and everyone gets an exact share with tax and tip divided proportionally — no mental maths, no awkward rounding, entirely in your browser.</p>
+
+<!-- ============ DINERS ============ -->
+<section class="card ui">
+  <div class="cardlabel">1 · Who's at the table</div>
+  <div class="inrow">
+    <input type="text" id="dinerName" placeholder="Diner name" aria-label="Diner name" autocomplete="off">
+    <button class="btn" id="btnAddDiner">Add diner</button>
+  </div>
+  <div class="hint" id="dinerHint"></div>
+  <div class="chips" id="dinerChips"></div>
+  <div class="empty" id="dinerEmpty">No diners yet — add everyone splitting the bill.</div>
+</section>
+
+<!-- ============ BILL ============ -->
+<section class="card ui">
+  <div class="cardlabel">2 · The bill</div>
+  <div class="seg" id="modeSeg">
+    <button id="modeItemised" class="on">Itemised dishes</button>
+    <button id="modeSimple">Simple totals</button>
+  </div>
+  <div id="itemisedWrap">
+    <div id="itemList"></div>
+    <div class="empty" id="itemEmpty">No dishes yet — add each item and tap who shared it.</div>
+    <button class="btn ghost" id="btnAddItem">+ Add dish</button>
+  </div>
+  <div id="simpleWrap" style="display:none">
+    <div id="simpleList"></div>
+    <p class="note">In simple mode, enter what each person spent. Tax and tip are still split proportionally to these amounts.</p>
+  </div>
+</section>
+
+<!-- ============ TIP & TAX ============ -->
+<section class="card ui">
+  <div class="cardlabel">3 · Tip &amp; tax</div>
+  <div class="tiprow" id="tipPresets">
+    <button class="tipbtn" data-tip="0">No tip</button>
+    <button class="tipbtn" data-tip="15">15%</button>
+    <button class="tipbtn on" data-tip="18">18%</button>
+    <button class="tipbtn" data-tip="20">20%</button>
+    <button class="tipbtn" data-tip="22">22%</button>
+  </div>
+  <div class="inrow">
+    <input type="number" id="tipCustom" placeholder="Custom % — e.g. 17.5" min="0" max="100" step="0.5" inputmode="decimal" aria-label="Custom tip percentage">
+    <input type="number" id="taxAmt" placeholder="Tax $ — e.g. 8.40" min="0" step="0.01" inputmode="decimal" aria-label="Tax amount">
+  </div>
+  <p class="note">Tip is calculated on the pre-tax subtotal — the standard convention. Tax is split proportionally to what each person ate.</p>
+</section>
+
+<!-- ============ RESULTS ============ -->
+<section class="card ui">
+  <div class="cardlabel">What everyone owes</div>
+  <div id="results"><div class="empty">Add people and items to see the split.</div></div>
+  <div class="reconcile" id="reconcile"></div>
+  <div class="warn" id="warn"></div>
+  <div class="btnrow">
+    <button class="btn" id="btnCopy">Copy summary</button>
+    <button class="btn ghost" id="btnSample">Load sample dinner</button>
+    <button class="btn ghost" id="btnReset">Start over</button>
+  </div>
+</section>
+
+<footer>Built in the Shipwright Studio Lab · <a href="/ideas/">more experiments</a></footer>
+
+<script>
+"use strict";
+/* ===== Core (node-tested) ===== */
+/* people: [{name}], items: [{name, price, dinerIdx: [i]}] */
+function subtotals(people, items){
+  var subs = people.map(function(){return 0;});
+  items.forEach(function(it){
+    if(!it.dinerIdx.length || !(it.price>0)) return;
+    var share = it.price / it.dinerIdx.length;
+    it.dinerIdx.forEach(function(i){ if(subs[i]!==undefined) subs[i]+=share; });
+  });
+  return subs;
+}
+function splitShares(people, items, tipPct, taxAmt){
+  var subs = subtotals(people, items);
+  var subTotal = subs.reduce(function(a,b){return a+b;},0);
+  var tipTotal = subTotal * (tipPct/100);
+  var shares = people.map(function(p,i){
+    var w = subTotal>0 ? subs[i]/subTotal : (people.length?1/people.length:0);
+    return {
+      name: p.name,
+      items: subs[i],
+      tax: taxAmt * w,
+      tip: tipTotal * w,
+      exact: subs[i] + taxAmt*w + tipTotal*w
+    };
+  });
+  /* largest-remainder penny adjustment so displayed totals sum exactly */
+  var grandCents = Math.round((subTotal + taxAmt + tipTotal)*100);
+  var rounded = shares.map(function(s){ return Math.floor(s.exact*100)/100; });
+  var frac = shares.map(function(s,i){ return s.exact - rounded[i]; });
+  var diff = grandCents - rounded.reduce(function(a,c){return a+Math.round(c*100);},0);
+  var order = frac.map(function(f,i){return i;}).sort(function(a,b){return frac[b]-frac[a];});
+  for(var k=0;k<diff;k++){ rounded[order[k%order.length]] += 0.01; }
+  shares.forEach(function(s,i){
+    s.total = Math.round(rounded[i]*100)/100;
+    s.items = Math.round(s.items*100)/100;
+    s.tax = Math.round(s.tax*100)/100;
+    s.tip = Math.round(s.tip*100)/100;
+    /* keep each person's displayed parts summing exactly to their total */
+    var partSum = Math.round(s.items*100)+Math.round(s.tax*100)+Math.round(s.tip*100);
+    s.tip = (Math.round(s.tip*100) + (Math.round(s.total*100)-partSum))/100;
+  });
+  return {
+    shares: shares,
+    subTotal: subTotal, tax: taxAmt, tipTotal: tipTotal,
+    grand: grandCents/100,
+    reconciled: Math.abs(shares.reduce(function(a,s){return a+s.total;},0) - grandCents/100) < 0.005
+  };
+}
+function money(n){ return "$"+n.toFixed(2); }
+function plainSummary(res){
+  var lines = res.shares.map(function(s){
+    return s.name+": "+money(s.total)+"  (dishes "+money(s.items)+", tax "+money(s.tax)+", tip "+money(s.tip)+")";
+  });
+  lines.push("Bill "+money(res.subTotal)+" + tax "+money(res.tax)+" + tip "+money(res.tipTotal)+" = "+money(res.grand)+" total");
+  return lines.join("\n");
+}
+
+/* ===== State & UI ===== */
+var $ = function(id){return document.getElementById(id);};
+var people = [];   /* {name} */
+var items = [];    /* {name, price, dinerIdx:[i]} */
+var mode = "itemised";
+var tipPct = 18;
+
+function cleanName(n){ return n.trim().slice(0,24); }
+
+function renderDiners(){
+  var c = $("dinerChips"); c.innerHTML = "";
+  people.forEach(function(p,i){
+    var b = document.createElement("button");
+    b.className = "chip static on";
+    b.innerHTML = "";
+    var sp = document.createElement("span"); sp.textContent = p.name;
+    var x = document.createElement("span"); x.className="x"; x.textContent="×";
+    x.setAttribute("role","button"); x.setAttribute("tabindex","0");
+    x.setAttribute("aria-label","Remove "+p.name);
+    x.addEventListener("click",function(e){ e.stopPropagation(); removeDiner(i); });
+    x.addEventListener("keydown",function(e){ if(e.key==="Enter"||e.key===" "){e.preventDefault();removeDiner(i);} });
+    b.appendChild(sp); b.appendChild(x); c.appendChild(b);
+  });
+  $("dinerEmpty").style.display = people.length ? "none" : "";
+}
+function removeDiner(i){
+  people.splice(i,1);
+  items.forEach(function(it){
+    it.dinerIdx = it.dinerIdx.map(function(j){return j>i?j-1:j;}).filter(function(j){return j!==i;});
+  });
+  renderAll();
+}
+function addDiner(){
+  var inp = $("dinerName"), h = $("dinerHint");
+  var n = cleanName(inp.value);
+  h.textContent = "";
+  if(!n){ inp.classList.add("bad"); h.textContent="Enter a name first."; return; }
+  if(people.length>=10){ h.textContent="Maximum 10 diners."; return; }
+  var base = n, k = 2;
+  while(people.some(function(p){return p.name===n;})){ n = base+" "+(k++); }
+  inp.classList.remove("bad");
+  people.push({name:n}); inp.value=""; inp.focus();
+  renderAll();
+}
+
+function renderItems(){
+  var list = $("itemList"); list.innerHTML = "";
+  items.forEach(function(it,idx){
+    var d = document.createElement("div"); d.className="item";
+    var top = document.createElement("div"); top.className="top";
+    var nm = document.createElement("input");
+    nm.type="text"; nm.name="iname"; nm.placeholder="Dish — e.g. Margherita pizza";
+    nm.value=it.name; nm.setAttribute("aria-label","Dish name");
+    nm.addEventListener("input",function(){ it.name=nm.value; });
+    var pr = document.createElement("input");
+    pr.type="number"; pr.name="iprice"; pr.placeholder="$ 0.00";
+    pr.min="0"; pr.step="0.01"; pr.inputMode="decimal";
+    if(it.price>0) pr.value=it.price;
+    pr.setAttribute("aria-label","Dish price");
+    pr.addEventListener("input",function(){ it.price=parseFloat(pr.value)||0; renderResults(); });
+    var del = document.createElement("button");
+    del.className="rowdel"; del.textContent="×";
+    del.setAttribute("aria-label","Remove dish");
+    del.addEventListener("click",function(){ items.splice(idx,1); renderAll(); });
+    top.appendChild(nm); top.appendChild(pr); top.appendChild(del);
+    var dl = document.createElement("div"); dl.className="dinerline";
+    var who = document.createElement("span"); who.className="who"; who.textContent="Shared by:";
+    dl.appendChild(who);
+    people.forEach(function(p,i){
+      var c = document.createElement("button");
+      c.className = "chip"+(it.dinerIdx.indexOf(i)>-1?" on":"");
+      c.textContent = p.name;
+      c.setAttribute("aria-pressed", it.dinerIdx.indexOf(i)>-1?"true":"false");
+      c.addEventListener("click",function(){
+        var j = it.dinerIdx.indexOf(i);
+        if(j>-1) it.dinerIdx.splice(j,1); else it.dinerIdx.push(i);
+        renderAll();
+      });
+      dl.appendChild(c);
+    });
+    if(!people.length) dl.appendChild(Object.assign(document.createElement("span"),{className:"who"})).textContent="add diners first";
+    d.appendChild(top); d.appendChild(dl);
+    list.appendChild(d);
+  });
+  $("itemEmpty").style.display = items.length ? "none" : "";
+}
+function renderSimple(){
+  var list = $("simpleList"); list.innerHTML = "";
+  people.forEach(function(p,i){
+    var row = document.createElement("div"); row.className="inrow";
+    var inp = document.createElement("input");
+    inp.type="number"; inp.min="0"; inp.step="0.01"; inp.inputMode="decimal";
+    inp.placeholder="$ 0.00";
+    if(p.amount>0) inp.value=p.amount;
+    inp.setAttribute("aria-label","Amount spent by "+p.name);
+    inp.addEventListener("input",function(){ p.amount=parseFloat(inp.value)||0; renderResults(); });
+    var lab = document.createElement("span");
+    lab.textContent = p.name+" spent:";
+    lab.style.minWidth="7rem";
+    row.appendChild(lab); row.appendChild(inp);
+    list.appendChild(row);
+  });
+  if(!people.length) list.innerHTML='<div class="empty">Add diners first.</div>';
+}
+function effectiveItems(){
+  if(mode==="itemised") return items;
+  return people.map(function(p,i){
+    return {name:p.name+"'s share", price:p.amount||0, dinerIdx: p.amount>0?[i]:[]};
+  });
+}
+function renderResults(){
+  var tax = Math.max(0, parseFloat($("taxAmt").value)||0);
+  var it = effectiveItems();
+  var assigned = it.filter(function(x){return x.price>0 && x.dinerIdx.length;});
+  var orphaned = it.filter(function(x){return x.price>0 && !x.dinerIdx.length;});
+  var res = $("results"), warn = $("warn");
+  warn.textContent = "";
+  if(!people.length){ res.innerHTML='<div class="empty">Add people and items to see the split.</div>'; $("reconcile").textContent=""; $("btnCopy").disabled=true; return; }
+  var calc = splitShares(people, assigned, tipPct, tax);
+  var html = "";
+  calc.shares.forEach(function(s){
+    html += '<div class="person"><div><div class="nm">'+escapeHtml(s.name)+'</div>'+
+      '<div class="brk">dishes '+money(s.items)+' · tax '+money(s.tax)+' · tip '+money(s.tip)+'</div></div>'+
+      '<div class="tot">'+money(s.total)+'</div></div>';
+  });
+  res.innerHTML = html;
+  document.getElementById("reconcile").innerHTML =
+    '<span style="color:var(--green)">✓ Totals reconcile:</span> '+money(calc.subTotal)+' + '+money(calc.tax)+' + '+money(calc.tipTotal)+' = <b>'+money(calc.grand)+'</b>';
+  if(orphaned.length) warn.textContent = orphaned.length+" item(s) have no diner assigned and are excluded from the split.";
+  if(!assigned.length) warn.textContent = "No priced items with diners assigned yet — totals show $0.00.";
+  $("btnCopy").disabled = !assigned.length;
+  window._lastRes = calc;
+}
+function renderAll(){ renderDiners(); renderItems(); renderSimple(); renderResults(); }
+function escapeHtml(s){ return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
+
+/* ===== wiring ===== */
+$("btnAddDiner").addEventListener("click",addDiner);
+$("dinerName").addEventListener("keydown",function(e){ if(e.key==="Enter") addDiner(); });
+$("dinerName").addEventListener("input",function(){ this.classList.remove("bad"); $("dinerHint").textContent=""; });
+$("btnAddItem").addEventListener("click",function(){
+  items.push({name:"", price:0, dinerIdx:people.map(function(_,i){return i;})});
+  renderAll();
+});
+function setMode(m){
+  mode=m;
+  $("modeItemised").className=m==="itemised"?"on":"";
+  $("modeSimple").className=m==="simple"?"on":"";
+  $("itemisedWrap").style.display=m==="itemised"?"":"none";
+  $("simpleWrap").style.display=m==="simple"?"":"none";
+  renderAll();
+}
+$("modeItemised").addEventListener("click",function(){setMode("itemised");});
+$("modeSimple").addEventListener("click",function(){setMode("simple");});
+
+document.querySelectorAll("#tipPresets .tipbtn").forEach(function(b){
+  b.addEventListener("click",function(){
+    document.querySelectorAll("#tipPresets .tipbtn").forEach(function(x){x.classList.remove("on");});
+    b.classList.add("on");
+    $("tipCustom").value="";
+    tipPct = parseFloat(b.getAttribute("data-tip"))||0;
+    renderResults();
+  });
+});
+$("tipCustom").addEventListener("input",function(){
+  var v = parseFloat(this.value);
+  if(!isNaN(v) && v>=0){
+    tipPct = v;
+    document.querySelectorAll("#tipPresets .tipbtn").forEach(function(x){x.classList.remove("on");});
+  }
+  renderResults();
+});
+$("taxAmt").addEventListener("input",renderResults);
+
+$("btnSample").addEventListener("click",function(){
+  people=[{name:"Maya"},{name:"Jordan"},{name:"Sam"},{name:"Rae"}];
+  items=[
+    {name:"Margherita pizza",price:24.00,dinerIdx:[0,1,2,3]},
+    {name:"Ribeye steak",price:58.00,dinerIdx:[1]},
+    {name:"Poke bowl",price:19.50,dinerIdx:[0,3]},
+    {name:"Craft cocktail",price:16.00,dinerIdx:[2]},
+    {name:"Chocolate cake",price:12.00,dinerIdx:[0,1,2,3]}
+  ];
+  tipPct=20; $("taxAmt").value="9.63";
+  document.querySelectorAll("#tipPresets .tipbtn").forEach(function(x){
+    x.classList.toggle("on",x.getAttribute("data-tip")==="20");
+  });
+  $("tipCustom").value="";
+  renderAll();
+});
+$("btnReset").addEventListener("click",function(){
+  people=[]; items=[]; tipPct=18; mode="itemised";
+  $("taxAmt").value=""; $("tipCustom").value="";
+  document.querySelectorAll("#tipPresets .tipbtn").forEach(function(x){
+    x.classList.toggle("on",x.getAttribute("data-tip")==="18");
+  });
+  setMode("itemised"); renderAll();
+});
+$("btnCopy").addEventListener("click",function(){
+  if(!window._lastRes) return;
+  var t = plainSummary(window._lastRes), btn=this;
+  function done(){ var o="Copy summary"; btn.textContent="Copied ✓"; setTimeout(function(){btn.textContent=o;},1400); }
+  function fb(){ var ta=document.createElement("textarea"); ta.value=t; document.body.appendChild(ta); ta.select();
+    try{document.execCommand("copy");done();}catch(e){} document.body.removeChild(ta); }
+  if(navigator.clipboard&&navigator.clipboard.writeText) navigator.clipboard.writeText(t).then(done).catch(fb);
+  else fb();
+});
+
+renderAll();
+</script>
+</body>
+</html>

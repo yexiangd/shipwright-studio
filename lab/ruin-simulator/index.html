@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Risk of Ruin Simulator · Shipwright Studio</title>
+<meta name="description" content="A free online risk-of-ruin simulator: enter bankroll, bet size, win probability and payout odds to Monte-Carlo your chance of going bust.">
+<link rel="canonical" href="https://shipwright-studio.pages.dev/lab/ruin-simulator/">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"WebApplication","name":"Risk of Ruin Simulator","url":"https://shipwright-studio.pages.dev/lab/ruin-simulator/","description":"Risk of Ruin Simulator is a free online tool that runs thousands of Monte Carlo betting paths to estimate how likely your bankroll is to go bust given your edge, bet size, and payout odds.","applicationCategory":"UtilitiesApplication","operatingSystem":"Web","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"}}
+</script>
+<style>
+:root{--bg:#0a0c0f;--panel:#11141a;--line:#232a35;--txt:#e8e4da;--mut:#9aa3b2;--brass:#d2a24c;--red:#e0655f;--green:#7dc98a}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--txt);font-family:Inter,system-ui,sans-serif;line-height:1.6;padding:2.5rem 1.25rem 4rem;max-width:940px;margin:0 auto;text-align:center}
+a{color:var(--brass)}
+.eyebrow{font-size:.75rem;letter-spacing:.22em;text-transform:uppercase;color:var(--mut)}
+h1{font-family:Fraunces,serif;font-weight:600;font-size:clamp(2rem,4.5vw,3rem);margin:.4rem 0 .6rem}
+.define{color:var(--mut);max-width:52rem;margin:0 auto 1.8rem}
+.define strong{color:var(--txt)}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:1.5rem;margin-bottom:1.2rem;text-align:left}
+.card h2{font-family:Fraunces,serif;font-size:1.2rem;margin-bottom:1rem;text-align:center}
+.inputs{display:grid;grid-template-columns:repeat(3,1fr);gap:1.2rem}
+@media(max-width:640px){.inputs{grid-template-columns:1fr}}
+.field label{display:block;font-size:.85rem;color:var(--mut);margin-bottom:.5rem}
+.field .num{width:100%;background:#0d1015;border:1px solid var(--line);border-radius:8px;color:var(--txt);padding:.7rem .9rem;font-size:1.05rem;font-family:inherit;outline:none;margin-bottom:.5rem}
+.field .num:focus{border-color:var(--brass)}
+.field .num.bad{border-color:var(--red)}
+input[type=range]{width:100%;accent-color:var(--brass);height:32px}
+.ferr{color:var(--red);font-size:.85rem;min-height:1.4em;text-align:center;margin-top:.6rem}
+.chips{display:flex;flex-wrap:wrap;gap:.5rem;justify-content:center;margin-top:1rem}
+.chip{font-size:.82rem;border:1px solid var(--line);background:transparent;color:var(--mut);border-radius:999px;padding:.4rem .95rem;cursor:pointer;font-family:inherit}
+.chip:hover{color:var(--brass);border-color:var(--brass)}
+.seg{display:flex;border:1px solid var(--line);border-radius:8px;overflow:hidden;margin-bottom:.5rem}
+.seg button{flex:1;background:transparent;border:0;color:var(--mut);padding:.65rem;font-size:.9rem;font-family:inherit;cursor:pointer}
+.seg button.on{background:#1a2030;color:var(--brass);font-weight:600}
+.runbtn{display:block;width:100%;background:var(--brass);color:#14100a;border:0;border-radius:10px;padding:.95rem;font-size:1.05rem;font-weight:600;font-family:inherit;cursor:pointer;margin-top:1rem}
+.runbtn:disabled{opacity:.55;cursor:wait}
+.hero{display:grid;grid-template-columns:1fr 1fr 1fr;gap:1rem}
+@media(max-width:640px){.hero{grid-template-columns:1fr}}
+.metric{background:#0d1015;border:1px solid var(--line);border-radius:12px;padding:1.1rem;text-align:center}
+.metric .v{font-family:Fraunces,serif;font-size:clamp(1.8rem,4vw,2.4rem);font-weight:600;color:var(--brass)}
+.metric .v.bad{color:var(--red)}.metric .v.good{color:var(--green)}
+.metric .l{font-size:.78rem;letter-spacing:.12em;text-transform:uppercase;color:var(--mut);margin-top:.3rem}
+.metric .s{font-size:.85rem;color:var(--mut);margin-top:.4rem}
+.kelly{background:#0d1015;border:1px solid var(--line);border-radius:12px;padding:1rem 1.2rem;margin-top:1rem;font-size:.92rem;color:var(--mut);text-align:center}
+.kelly b{color:var(--brass)}
+.kelly .warn{color:var(--red);font-weight:600}
+.compare{background:#0d1015;border:1px dashed var(--line);border-radius:12px;padding:1rem 1.2rem;margin-top:1rem;font-size:.92rem;color:var(--mut);text-align:center}
+.compare b{color:var(--txt)}
+#chartwrap{position:relative}
+#chart{width:100%;height:320px;display:block}
+@media(max-width:640px){#chart{height:240px}}
+.empty{border:1px dashed var(--line);border-radius:12px;padding:3rem 1rem;color:var(--mut);font-size:.95rem}
+.legend{display:flex;gap:1.2rem;justify-content:center;font-size:.8rem;color:var(--mut);margin-top:.7rem;flex-wrap:wrap}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:.35rem;vertical-align:baseline}
+.notes{max-width:42rem;margin:1.8rem auto 0;color:var(--mut);font-size:.92rem;text-align:left}
+.notes li{margin:.5rem 0 .5rem 1.2rem}
+.disc{font-size:.8rem;color:var(--mut);opacity:.75;margin-top:1rem;text-align:center}
+.back{margin-top:2.5rem;font-size:.9rem}
+.back a{margin:0 .6rem}
+</style>
+</head>
+<body>
+<p class="eyebrow">Shipwright Studio · Lab</p>
+<h1>Risk of Ruin Simulator</h1>
+<p class="define"><strong>Risk of Ruin Simulator is a free online tool that runs thousands of Monte Carlo betting paths to estimate how likely your bankroll is to go bust.</strong> Set your bankroll, bet size, win probability and payout odds — it simulates the grind and reports the one number that matters: your chance of ruin.</p>
+
+<div class="card">
+<h2>Your wager</h2>
+<div class="inputs">
+<div class="field"><label>Bankroll (USD)</label><input class="num" id="bank" type="number" value="10000" min="1" step="any"></div>
+<div class="field"><label>Bet sizing</label>
+<div class="seg"><button id="mfixed" class="on" type="button">Fixed $</button><button id="mprop" type="button">% of bankroll</button></div>
+<input class="num" id="bet" type="number" value="200" min="0" step="any"></div>
+<div class="field"><label id="bet2lab">Compare against bet size <span style="opacity:.6">(optional)</span></label><input class="num" id="bet2" type="number" placeholder="e.g. 100" min="0" step="any"></div>
+<div class="field"><label>Win probability <span id="p-lab">55%</span></label>
+<input class="num" id="p" type="number" value="55" min="1" max="99" step="any" style="margin-bottom:.2rem">
+<input type="range" id="p-r" min="1" max="99" step="1" value="55"></div>
+<div class="field"><label>Payout odds <span style="opacity:.6">(profit multiple · 1 = even money)</span></label><input class="num" id="odds" type="number" value="1" min="0.01" step="any"></div>
+<div class="field"><label>Bets per path</label><input class="num" id="nbets" type="number" value="200" min="10" max="2000" step="1"></div>
+<div class="field"><label>Simulation runs</label><input class="num" id="nruns" type="number" value="10000" min="1000" max="50000" step="1000"></div>
+</div>
+<div class="chips">
+<button class="chip" data-p="50" data-odds="1" data-mode="fixed" data-bet="200">Coin-flip trader</button>
+<button class="chip" data-p="55" data-odds="1" data-mode="fixed" data-bet="200">Small edge</button>
+<button class="chip" data-p="55" data-odds="1" data-mode="fixed" data-bet="2000">Overbettor</button>
+<button class="chip" data-p="55" data-odds="1" data-mode="prop" data-bet="2">Proportional 2%</button>
+</div>
+<button class="runbtn" id="run">Run simulation</button>
+<div class="ferr" id="err"></div>
+</div>
+
+<div class="card" id="results" style="display:none">
+<h2>Results</h2>
+<div class="hero">
+<div class="metric"><div class="v" id="m-ruin">–</div><div class="l">Risk of ruin</div><div class="s" id="s-ruin"></div></div>
+<div class="metric"><div class="v" id="m-med">–</div><div class="l">Median final bankroll</div><div class="s" id="s-med"></div></div>
+<div class="metric"><div class="v dim" id="m-ev">–</div><div class="l" id="l-ev">EV per bet (theory)</div><div class="s" id="s-ev"></div></div>
+</div>
+<div class="kelly" id="kelly"></div>
+<div class="compare" id="compare" style="display:none"></div>
+</div>
+
+<div class="card">
+<h2>Equity paths</h2>
+<div id="chartwrap">
+<div class="empty" id="empty">Set your numbers above and press <b>Run simulation</b> — up to 300 sampled paths will appear here.</div>
+<canvas id="chart" style="display:none"></canvas>
+</div>
+<div class="legend" id="legend" style="display:none">
+<span><i style="background:#7dc98a"></i>survived</span>
+<span><i style="background:#e0655f"></i>ruined</span>
+<span><i style="background:#d2a24c"></i>median path</span>
+</div>
+</div>
+
+<div class="notes">
+<ul>
+<li><b>Ruin</b> means the bankroll hits zero (fixed bets) — or falls below 1% of the starting bankroll (proportional bets, which can never reach exactly zero). A positive expected value does not imply a low risk of ruin.</li>
+<li>Bet sizing is the dominant lever: the same edge can be nearly un-bustable at 1% stakes and a coin flip away from blowup at 10%.</li>
+<li>The <b>Kelly hint</b> is the closed-form Kelly fraction for your win probability and odds. Staking well above it usually means most of your edge is being converted into volatility.</li>
+</ul>
+<p class="disc">Educational tool. Simulated paths are illustrative, not financial advice.</p>
+</div>
+
+<p class="back"><a href="/">← Shipwright Studio</a><a href="/ideas/">Back to the idea bank</a></p>
+
+<script>
+/* ==== PURE CORE (node-testable) ==== */
+function kellyFrac(p,b){return (p*b-(1-p))/b;}               // b = profit multiple
+function evFixed(p,b,bet){return bet*(p*b-(1-p));}          // arithmetic EV per bet, fixed sizing
+function growthProp(p,b,f){return p*Math.log(1+f*b)+(1-p)*Math.log(1-f);} // geometric growth per bet, proportional sizing
+// P: {bank, mode:'fixed'|'prop', bet (USD if fixed, fraction if prop), p (0..1), odds, nBets}
+// rng: ()-> [0,1). keepEvery: keep every k-th path for charting. acc: {ruin, finals, paths}
+function simulateBatch(P,n,keepEvery,offset,acc,rng){
+  var ruinLimit = P.mode==='fixed' ? 0 : P.bank*0.01;
+  var stride = Math.max(1, Math.ceil(P.nBets/240));
+  for(var i=0;i<n;i++){
+    var bal=P.bank, ruined=false, pts=null;
+    var keep=((offset+i)%keepEvery)===0;
+    if(keep) pts=[bal];
+    for(var t=1;t<=P.nBets;t++){
+      var stake = P.mode==='fixed' ? P.bet : bal*P.bet;
+      if(stake<=0 || stake>bal){ ruined=true; bal=0; break; } // can't cover the bet -> bust
+      if(rng()<P.p) bal+=stake*P.odds; else bal-=stake;
+      if(bal<=ruinLimit){ ruined=true; bal=0; if(keep) pts.push(0); break; }
+      if(keep && t%stride===0) pts.push(bal);
+    }
+    if(ruined){ acc.ruin++; acc.finals.push(0); }
+    else acc.finals.push(bal);
+    if(keep){ if(!ruined) pts.push(bal); acc.paths.push({v:pts, ruined:ruined}); }
+  }
+  return acc;
+}
+function pct(sorted,q){return sorted[Math.min(sorted.length-1,Math.floor(q*(sorted.length-1)))];}
+/* ==== DOM ==== */
+var $=function(id){return document.getElementById(id);};
+var mode='fixed', betMem={fixed:'200',prop:'2'}, chartData=null;
+function setMode(m){
+  betMem[mode]=$("bet").value;
+  mode=m;
+  $("mfixed").className=m==='fixed'?'on':''; $("mprop").className=m==='prop'?'on':'';
+  $("bet").value=betMem[m];
+}
+$("mfixed").onclick=function(){setMode('fixed');};
+$("mprop").onclick=function(){setMode('prop');};
+$("p").addEventListener("input",function(){$("p-r").value=$("p").value;$("p-lab").textContent=$("p").value+"%";});
+$("p-r").addEventListener("input",function(){$("p").value=$("p-r").value;$("p-lab").textContent=$("p-r").value+"%";});
+document.querySelectorAll(".chip").forEach(function(ch){
+  ch.addEventListener("click",function(){
+    $("bank").value=ch.dataset.bank||$("bank").value;
+    setMode(ch.dataset.mode);
+    $("bet").value=ch.dataset.bet; betMem[ch.dataset.mode]=ch.dataset.bet;
+    $("p").value=ch.dataset.p;$("p-r").value=ch.dataset.p;$("p-lab").textContent=ch.dataset.p+"%";
+    $("odds").value=ch.dataset.odds;
+    runAll();
+  });
+});
+function fmt$(x){return "$"+Math.round(x).toLocaleString("en-US");}
+function fmtPct(x,d){return (x*100).toFixed(d===undefined?1:d)+"%";}
+function readParams(){
+  var bank=parseFloat($("bank").value), bet=parseFloat($("bet").value),
+      p=parseFloat($("p").value)/100, odds=parseFloat($("odds").value),
+      nBets=parseInt($("nbets").value,10), nRuns=parseInt($("nruns").value,10);
+  return {bank:bank,mode:mode,bet:mode==='fixed'?bet:bet/100,p:p,odds:odds,nBets:nBets,runs:nRuns};
+}
+function validate(){
+  var bad=[];
+  var P=readParams();
+  if(!(P.bank>0))bad.push("bank");
+  if(!(P.mode==='fixed'?P.bet>0:(P.bet>0&&P.bet<1)))bad.push("bet");
+  if(!(P.p>0&&P.p<1))bad.push("p");
+  if(!(P.odds>0))bad.push("odds");
+  if(!(P.nBets>=10&&P.nBets<=2000))bad.push("nbets");
+  if(!(P.runs>=1000&&P.runs<=50000))bad.push("nruns");
+  var b2=$("bet2").value.trim();
+  if(b2!==""&&!(parseFloat(b2)>0))bad.push("bet2");
+  return {ok:bad.length===0,bad:bad,P:P,bet2raw:b2};
+}
+function runAll(){
+  var v=validate(), err=$("err");
+  ["bank","bet","p","odds","nbets","nruns","bet2"].forEach(function(id){$(id).classList.remove("bad");});
+  if(!v.ok){
+    v.bad.forEach(function(id){$(id).classList.add("bad");});
+    err.textContent="Check the highlighted fields — values look out of range.";
+    return;
+  }
+  err.textContent="";
+  var btn=$("run"); btn.disabled=true; btn.textContent="Simulating…";
+  var P=v.P, keepEvery=Math.max(1,Math.floor(P.runs/300));
+  var acc={ruin:0,finals:[],paths:[]};
+  var done=0, CH=500;
+  function doneAll(cmpAcc,P2){
+    render(acc,P,cmpAcc,P2,v.bet2raw);
+    btn.disabled=false; btn.textContent="Run simulation";
+  }
+  function runCompare(){
+    var b2v=parseFloat(v.bet2raw);
+    var P2={bank:P.bank,mode:P.mode,bet:P.mode==='fixed'?b2v:b2v/100,p:P.p,odds:P.odds,nBets:P.nBets};
+    var cmpAcc={ruin:0,finals:[],paths:[]}, d2=0, k2=Math.max(1,Math.floor(P.runs/300));
+    btn.textContent="Simulating comparison…";
+    (function step2(){
+      var n=Math.min(CH,P.runs-d2);
+      simulateBatch(P2,n,k2,d2,cmpAcc,Math.random); d2+=n;
+      if(d2<P.runs){setTimeout(step2,0);return;}
+      doneAll(cmpAcc,P2);
+    })();
+  }
+  (function step(){
+    var n=Math.min(CH,P.runs-done);
+    simulateBatch(P,n,keepEvery,done,acc,Math.random);
+    done+=n;
+    if(done<P.runs){setTimeout(step,0);return;}
+    if(v.bet2raw!=="") runCompare(); else doneAll(null,null);
+  })();
+}
+function render(acc,P,cmpAcc,P2,bet2raw){
+  var m=acc.finals.length, rp=acc.ruin/m;
+  var srt=acc.finals.slice().sort(function(a,b){return a-b;});
+  var med=pct(srt,.5), p10=pct(srt,.1), p90=pct(srt,.9);
+  $("results").style.display="block";
+  var ruinEl=$("m-ruin");
+  ruinEl.textContent=fmtPct(rp);
+  ruinEl.className="v "+(rp>=0.25?"bad":rp<=0.05?"good":"");
+  $("s-ruin").textContent=acc.ruin.toLocaleString("en-US")+" of "+m.toLocaleString("en-US")+" paths went bust";
+  $("m-med").textContent=fmt$(med);
+  $("s-med").textContent="10th "+fmt$(p10)+" · 90th "+fmt$(p90);
+  if(P.mode==='fixed'){
+    var ev=evFixed(P.p,P.odds,P.bet);
+    $("l-ev").textContent="EV per bet (theory)";
+    $("m-ev").textContent=(ev>=0?"+ ":"− ")+fmt$(Math.abs(ev))+" / bet";
+    $("s-ev").textContent="over "+P.nBets+" bets: "+(ev*P.nBets>=0?"+":"−")+fmt$(Math.abs(ev*P.nBets));
+  }else{
+    var g=growthProp(P.p,P.odds,P.bet);
+    $("l-ev").textContent="Geometric growth / bet (theory)";
+    $("m-ev").textContent=(g>=0?"+":"−")+fmtPct(Math.abs(g),2);
+    $("s-ev").textContent="long-run compounding rate";
+  }
+  var kf=kellyFrac(P.p,P.odds), userF=P.mode==='fixed'?P.bet/P.bank:P.bet;
+  var kh=$("kelly");
+  if(kf<=0){
+    kh.innerHTML="No positive edge at these odds — <b>Kelly says bet nothing</b>. Any staking plan bleeds the bankroll over time.";
+  }else{
+    var over=userF>kf;
+    kh.innerHTML="Full <b>Kelly</b> suggests staking <b>"+fmtPct(kf,2)+"</b> of bankroll per bet. You are staking <b>"+fmtPct(userF,2)+"</b>"+
+      (over?' — <span class="warn">above Kelly</span>, most of your edge is being converted into volatility.'
+            :' — below Kelly, a comparatively conservative line.');
+  }
+  var cmp=$("compare");
+  if(cmpAcc){
+    var rp2=cmpAcc.ruin/cmpAcc.finals.length, d=rp2-rp;
+    cmp.style.display="block";
+    cmp.innerHTML="At a bet size of <b>"+(P2.mode==='fixed'?fmt$(P2.bet):fmtPct(P2.bet,2))+"</b>: ruin <b>"+fmtPct(rp2)+"</b>"+
+      " — "+(d>0?"+":"")+fmtPct(d)+" vs your current stake.";
+  }else cmp.style.display="none";
+  var maxLen=0;
+  acc.paths.forEach(function(pt){if(pt.v.length>maxLen)maxLen=pt.v.length;});
+  chartData={paths:acc.paths,nBets:P.nBets,bank:P.bank,maxLen:maxLen};
+  drawChart();
+  $("results").scrollIntoView({behavior:"smooth",block:"start"});
+}
+function drawChart(){
+  if(!chartData)return;
+  var cv=$("chart"); $("empty").style.display="none"; $("legend").style.display="flex";
+  cv.style.display="block";
+  var dpr=window.devicePixelRatio||1, W=cv.clientWidth, H=cv.clientHeight;
+  cv.width=W*dpr; cv.height=H*dpr;
+  var ctx=cv.getContext("2d"); ctx.scale(dpr,dpr); ctx.clearRect(0,0,W,H);
+  var padL=52,padR=10,padT=14,padB=26, iw=W-padL-padR, ih=H-padT-padB;
+  var yMax=chartData.bank;
+  chartData.paths.forEach(function(pt){for(var i=0;i<pt.v.length;i++)if(pt.v[i]>yMax)yMax=pt.v[i];});
+  yMax*=1.08;
+  var nPts=chartData.maxLen;
+  var X=function(k){return padL+iw*k/(Math.max(1,nPts-1));};
+  var Y=function(v){return padT+ih*(1-v/yMax);};
+  ctx.strokeStyle="#232a35";ctx.fillStyle="#9aa3b2";ctx.font="11px Inter,sans-serif";ctx.lineWidth=1;
+  for(var g=0;g<=4;g++){
+    var yv=yMax*g/4, yy=Y(yv);
+    ctx.beginPath();ctx.moveTo(padL,yy);ctx.lineTo(W-padR,yy);ctx.stroke();
+    ctx.fillText(yv>=1000?(yv/1000).toFixed(1)+"k":Math.round(yv),6,yy+4);
+  }
+  for(var t=0;t<=2;t++){var tx=padL+iw*t/2;ctx.fillText(Math.round(chartData.nBets*t/2)+" bets",tx-22,H-8);}
+  chartData.paths.forEach(function(pt){
+    ctx.beginPath();
+    for(var k=0;k<pt.v.length;k++){var x=X(k),y=Y(Math.max(0,pt.v[k]));if(k===0)ctx.moveTo(x,y);else ctx.lineTo(x,y);}
+    ctx.strokeStyle=pt.ruined?"rgba(224,101,95,0.45)":"rgba(125,201,138,0.28)";
+    ctx.lineWidth=1;ctx.stroke();
+  });
+  if(nPts>0){ // median path: short (ruined) paths contribute 0 past their end
+    ctx.beginPath();
+    for(var k=0;k<nPts;k++){
+      var arr=[];
+      for(var j=0;j<chartData.paths.length;j++){
+        var pv=chartData.paths[j].v, vv=k<pv.length?pv[k]:(chartData.paths[j].ruined?0:pv[pv.length-1]);
+        arr.push(vv);
+      }
+      arr.sort(function(a,b){return a-b;});
+      var md=arr[Math.floor(arr.length/2)],x=X(k),y=Y(Math.max(0,md));
+      if(k===0)ctx.moveTo(x,y);else ctx.lineTo(x,y);
+    }
+    ctx.strokeStyle="#d2a24c";ctx.lineWidth=2.5;ctx.stroke();
+  }
+}
+window.addEventListener("resize",function(){drawChart();});
+$("run").addEventListener("click",runAll);
+</script>
+</body>
+</html>
