@@ -81,6 +81,11 @@
     <priority>0.7</priority>
   </url>
   <url>
+    <loc>https://shipwright-studio.pages.dev/lab/hangman/</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
     <loc>https://shipwright-studio.pages.dev/lab/json-formatter/</loc>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
@@ -227,6 +232,11 @@
   </url>
   <url>
     <loc>https://shipwright-studio.pages.dev/lab/url-codec/</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://shipwright-studio.pages.dev/lab/uuid-generator/</loc>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
