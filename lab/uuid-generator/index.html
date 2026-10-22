@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>UUID Generator · Shipwright Studio</title>
+<meta name="description" content="Free online UUID generator: bulk-generate v1, v4, v7 or nil UUIDs — up to 1,000 at a time — with one-click copy and .txt download. Cryptographically random, nothing leaves your browser.">
+<link rel="canonical" href="https://shipwright-studio.pages.dev/lab/uuid-generator/">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"WebApplication","name":"UUID Generator","url":"https://shipwright-studio.pages.dev/lab/uuid-generator/","description":"UUID Generator is a free online tool that creates version 1, 4, 7, or nil UUIDs in bulk — up to a thousand at a time — with one-click copy and .txt download, generated with the Web Crypto API so nothing ever leaves your browser.","applicationCategory":"DeveloperApplication","operatingSystem":"Web","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"}}
+</script>
+<style>
+:root{--bg:#0a0c0f;--panel:#101318;--line:#1c2128;--txt:#e8e4da;--mut:#9aa3b2;--brass:#d2a24c;--green:#6fbf73;--red:#e0655f}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--txt);font-family:Fraunces,Georgia,serif;line-height:1.65;padding:2rem 1.2rem 4rem;max-width:960px;margin:0 auto}
+a{color:var(--brass)}
+.nav{display:flex;gap:1.2rem;font-size:.85rem;margin-bottom:1.2rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.nav a{color:var(--mut);text-decoration:none}
+.nav a:hover{color:var(--brass)}
+.eyebrow{font-size:.75rem;letter-spacing:.22em;text-transform:uppercase;color:var(--mut);font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+h1{font-weight:600;font-size:clamp(2.1rem,5vw,3rem);margin:.5rem 0 .7rem}
+.define{color:var(--mut);max-width:46rem;margin-bottom:1.8rem;font-size:1rem}
+.define strong{color:var(--txt)}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:1.4rem;margin-bottom:1.4rem}
+.cardlabel{font-size:.72rem;letter-spacing:.18em;text-transform:uppercase;color:var(--mut);margin-bottom:.8rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.ui{font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.vergrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(9rem,1fr));gap:.6rem;margin-bottom:1.2rem}
+.ver{border:1px solid var(--line);background:transparent;border-radius:10px;padding:.7rem .9rem;cursor:pointer;text-align:left;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif;color:var(--mut)}
+.ver b{display:block;color:var(--txt);font-size:1rem;margin-bottom:.15rem}
+.ver span{font-size:.76rem;line-height:1.4;display:block}
+.ver.on{border-color:var(--brass);background:rgba(210,162,76,.08)}
+.ver.on b{color:var(--brass)}
+.optrow{display:flex;gap:1rem;flex-wrap:wrap;align-items:center;margin-bottom:1rem}
+.optrow label{font-size:.86rem;color:var(--mut);font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif;display:flex;align-items:center;gap:.45rem;cursor:pointer}
+input[type=number]{background:#08090c;border:1px solid var(--line);border-radius:10px;color:var(--txt);font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif;font-size:.92rem;padding:.55rem .8rem;width:7rem}
+input:focus{outline:none;border-color:var(--brass)}
+input[type=checkbox]{accent-color:var(--brass);width:1.05rem;height:1.05rem}
+.hintline{font-size:.8rem;color:var(--red);min-height:1.2em;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.btn{font-size:.9rem;border:1px solid var(--brass);background:transparent;color:var(--brass);border-radius:999px;padding:.55rem 1.4rem;cursor:pointer;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.btn:hover{background:rgba(210,162,76,.12)}
+.btn.ghost{border-color:var(--line);color:var(--mut)}
+.btn.ghost:hover{color:var(--txt);border-color:var(--mut)}
+.btnrow{display:flex;gap:.7rem;flex-wrap:wrap;margin-top:1rem;align-items:center}
+.out{border:1px solid var(--line);border-radius:10px;background:#08090c;max-height:26rem;overflow:auto;font-family:"JetBrains Mono",ui-monospace,monospace;font-size:.85rem}
+.urow{padding:.42rem .9rem;border-bottom:1px solid #12151b;cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--txt)}
+.urow:last-child{border-bottom:0}
+.urow:hover{background:rgba(210,162,76,.06)}
+.urow.flash{background:rgba(210,162,76,.22)}
+.urow .cp{float:right;color:var(--mut);font-size:.72rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.statsline{font-size:.85rem;color:var(--mut);margin-top:.8rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.statsline b{color:var(--green)}
+.toast{position:fixed;bottom:1.4rem;left:50%;transform:translateX(-50%);background:var(--brass);color:#0a0c0f;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif;font-size:.88rem;padding:.55rem 1.3rem;border-radius:999px;opacity:0;pointer-events:none;transition:opacity .25s}
+.toast.show{opacity:1}
+details.explain{border:1px solid var(--line);border-radius:10px;padding:.9rem 1.1rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif;font-size:.88rem;color:var(--mut)}
+details.explain summary{cursor:pointer;color:var(--txt);font-size:.95rem}
+details.explain p{margin-top:.6rem}
+details.explain code{font-family:"JetBrains Mono",ui-monospace,monospace;color:var(--brass);font-size:.82rem}
+footer{margin-top:2.5rem;font-size:.85rem;color:var(--mut);font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+@media(max-width:720px){.btn{width:100%}}
+</style>
+</head>
+<body>
+<nav class="nav"><a href="/">Shipwright Studio</a><a href="/ideas/">Idea Lab</a></nav>
+<p class="eyebrow">Lab · Developer tools</p>
+<h1>UUID Generator</h1>
+<p class="define"><strong>UUID Generator is a free online tool that</strong> creates version 1, 4, 7, or nil UUIDs in bulk — up to a thousand at a time — with one-click copy and .txt download. Everything is generated with the Web Crypto API, so nothing ever leaves your browser.</p>
+
+<section class="card">
+  <p class="cardlabel">Version</p>
+  <div class="vergrid" id="verGrid">
+    <button class="ver" data-v="v4"><b>v4</b><span>Random — the everyday default for ids and keys.</span></button>
+    <button class="ver" data-v="v1"><b>v1</b><span>Time-based — timestamp plus random node.</span></button>
+    <button class="ver" data-v="v7"><b>v7</b><span>Time-ordered — sorts by creation time, great for DB keys.</span></button>
+    <button class="ver" data-v="nil"><b>nil</b><span>All zeros — the null UUID for placeholders.</span></button>
+  </div>
+  <div class="optrow">
+    <label>Quantity <input type="number" id="qty" value="10" min="1" max="1000" inputmode="numeric"></label>
+    <button class="btn" id="btnRegen">Regenerate</button>
+  </div>
+  <div class="optrow">
+    <label><input type="checkbox" id="optUpper"> Uppercase</label>
+    <label><input type="checkbox" id="optHyphens" checked> Hyphens</label>
+    <label><input type="checkbox" id="optBraces"> {Braces}</label>
+  </div>
+  <p class="hintline" id="qtyHint"></p>
+</section>
+
+<section class="card">
+  <p class="cardlabel">Output — click any row to copy it</p>
+  <div class="out" id="out" aria-label="Generated UUIDs"></div>
+  <p class="statsline" id="statsline"></p>
+  <div class="btnrow">
+    <button class="btn" id="btnCopyAll">Copy all</button>
+    <button class="btn ghost" id="btnDl">Download .txt</button>
+  </div>
+</section>
+
+<section class="card">
+  <details class="explain">
+    <summary>What is a UUID?</summary>
+    <p>A UUID (universally unique identifier) is a 128-bit label like <code>6ba7b810-9dad-11d1-80b4-00c04fd430c8</code>. The version digit (the first character of the third group) tells you how it was made: <code>…-4…</code> is random, <code>…-1…</code> embeds a timestamp, <code>…-7…</code> starts with Unix milliseconds so ids sort chronologically. With 2¹²² possible v4 values, collisions are for all practical purposes impossible — which is why UUIDs work as database keys, request ids, and filenames without a central coordinator.</p>
+  </details>
+</section>
+
+<div class="toast" id="toast"></div>
+
+<footer>Built in the Shipwright Studio Lab · <a href="/ideas/">more experiments</a></footer>
+
+<script>
+"use strict";
+/* ===== Core (node-tested) ===== */
+function randBytes(n){var b=new Uint8Array(n);crypto.getRandomValues(b);return b;}
+function toHex(b){var s="";for(var i=0;i<b.length;i++)s+=("0"+b[i].toString(16)).slice(-2);return s;}
+function genV4(){var b=randBytes(16);b[6]=(b[6]&0x0f)|0x40;b[8]=(b[8]&0x3f)|0x80;return toHex(b);}
+/* v1 state: 60-bit timestamp must be monotonic within a batch */
+var _v1last=0;
+function genV1(){
+  var ts=Date.now()*10000+122192928000000000; /* 100ns ticks since 1582-10-15 */
+  if(ts<=_v1last)ts=_v1last+1;_v1last=ts;
+  var tl=(ts%4294967296), tm=Math.floor(ts/4294967296)%65536, th=Math.floor(ts/281474976710656)%4096;
+  var cs=randBytes(2);cs[0]=(cs[0]&0x3f)|0x80;
+  var node=randBytes(6);node[0]=node[0]|0x01; /* multicast bit: locally administered */
+  function h(v,n){var s=v.toString(16);while(s.length<n)s="0"+s;return s;}
+  return h(tl,8)+h(tm,4)+((th&0x0fff)|0x1000).toString(16)+h((cs[0]<<8|cs[1]),4)+toHex(node);
+}
+/* v7 state: 48-bit ms + 12-bit sub-ms counter for ordering within a batch */
+var _v7ms=0,_v7seq=0;
+function genV7(){
+  var ms=Date.now();
+  if(ms>_v7ms){_v7ms=ms;_v7seq=(randBytes(2)[0]<<4|randBytes(1)[0]>>4)&0xfff;}
+  else{_v7seq=(_v7seq+1)&0xfff;}
+  var rb=randBytes(8);
+  function h(v,n){var s=v.toString(16);while(s.length<n)s="0"+s;return s;}
+  var msH=h(ms,12), seqH=h(_v7seq,3);
+  var randB=toHex(rb);
+  return msH+"7"+seqH+((parseInt(randB.slice(0,2),16)&0x3f)|0x80).toString(16).padStart(2,"0")+randB.slice(2);
+}
+function genNil(){return "00000000000000000000000000000000";}
+function genRaw(version){return version==="v1"?genV1():version==="v7"?genV7():version==="nil"?genNil():genV4();}
+function formatUuid(raw,opts){
+  var s=opts.upper?raw.toUpperCase():raw;
+  if(opts.hyphens)s=s.slice(0,8)+"-"+s.slice(8,12)+"-"+s.slice(12,16)+"-"+s.slice(16,20)+"-"+s.slice(20);
+  if(opts.braces)s="{"+s+"}";
+  return s;
+}
+function genBatch(version,n){
+  n=Math.max(1,Math.min(1000,Math.floor(n)||1));
+  var out=[];for(var i=0;i<n;i++)out.push(genRaw(version));
+  return out;
+}
+function uniqCount(a){var s={},c=0;for(var i=0;i<a.length;i++){if(!s[a[i]]){s[a[i]]=1;c++;}}return c;}
+/* ===== UI ===== */
+function $(id){return document.getElementById(id);}
+var version="v4",batch=[];
+function opts(){return {upper:$("optUpper").checked,hyphens:$("optHyphens").checked,braces:$("optBraces").checked};}
+function render(){
+  var o=opts(),out=$("out");out.innerHTML="";
+  batch.forEach(function(raw){
+    var d=document.createElement("div");d.className="urow";
+    d.innerHTML='<span class="cp">copy</span>';
+    d.insertBefore(document.createTextNode(formatUuid(raw,o)),d.firstChild);
+    d.onclick=function(){copyText(formatUuid(raw,o));d.classList.add("flash");
+      setTimeout(function(){d.classList.remove("flash");},350);};
+    out.appendChild(d);
+  });
+  var u=uniqCount(batch);
+  $("statsline").innerHTML=batch.length+" generated · <b>"+u+" unique</b> · "+(batch.length-u)+" duplicates";
+}
+function regenerate(){
+  var q=parseInt($("qty").value,10),hint=$("qtyHint");
+  if(isNaN(q)||q<1||q>1000){hint.textContent="Quantity clamped to 1–1000.";$("qty").value=Math.max(1,Math.min(1000,isNaN(q)?10:q));}
+  else hint.textContent="";
+  batch=genBatch(version,parseInt($("qty").value,10));
+  render();
+}
+function toast(t){var el=$("toast");el.textContent=t;el.classList.add("show");
+  setTimeout(function(){el.classList.remove("show");},1500);}
+function copyText(t){
+  function fb(){var ta=document.createElement("textarea");ta.value=t;document.body.appendChild(ta);ta.select();
+    try{document.execCommand("copy");toast("Copied ✓");}catch(e){}document.body.removeChild(ta);}
+  if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(t).then(function(){toast("Copied ✓");}).catch(fb);
+  else fb();
+}
+document.querySelectorAll("#verGrid .ver").forEach(function(b){
+  b.onclick=function(){
+    document.querySelectorAll("#verGrid .ver").forEach(function(x){x.classList.remove("on");});
+    b.classList.add("on");version=b.getAttribute("data-v");regenerate();
+  };
+});
+document.querySelector("#verGrid .ver").classList.add("on");
+["optUpper","optHyphens","optBraces"].forEach(function(id){$(id).addEventListener("change",render);});
+$("btnRegen").onclick=regenerate;
+$("qty").addEventListener("change",regenerate);
+$("btnCopyAll").onclick=function(){copyText(batch.map(function(r){return formatUuid(r,opts());}).join("\n"));};
+$("btnDl").onclick=function(){
+  var blob=new Blob([batch.map(function(r){return formatUuid(r,opts());}).join("\n")+"\n"],{type:"text/plain"});
+  var a=document.createElement("a");a.href=URL.createObjectURL(blob);
+  a.download="uuids-"+version+"-"+batch.length+".txt";a.click();
+  setTimeout(function(){URL.revokeObjectURL(a.href);},2000);
+};
+regenerate();
+</script>
+</body>
+</html>

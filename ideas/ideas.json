@@ -1,5 +1,5 @@
 {
-  "updated": "2026-10-21",
+  "updated": "2026-10-22",
   "ideas": [
     {
       "id": "idea-000a",
@@ -213,7 +213,9 @@
       "tagline": "Guess the word before the drawing finishes.",
       "priority": 78,
       "effort": "S",
-      "status": "todo"
+      "status": "done",
+      "url": "/lab/hangman/",
+      "shipped": "2026-10-22"
     },
     {
       "id": "idea-017",
@@ -495,7 +497,9 @@
       "tagline": "Bulk-generate v4 UUIDs, one click to copy.",
       "priority": 78,
       "effort": "S",
-      "status": "todo"
+      "status": "done",
+      "url": "/lab/uuid-generator/",
+      "shipped": "2026-10-22"
     },
     {
       "id": "idea-043",

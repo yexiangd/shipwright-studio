@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hangman · Shipwright Studio</title>
+<meta name="description" content="Free online Hangman: guess the hidden word before the drawing finishes. Four categories, three difficulties, streak tracking — no sign-up, all in your browser.">
+<link rel="canonical" href="https://shipwright-studio.pages.dev/lab/hangman/">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&display=swap" rel="stylesheet">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"WebApplication","name":"Hangman","url":"https://shipwright-studio.pages.dev/lab/hangman/","description":"Hangman is a free online game that tests your vocabulary and nerve: pick a category and difficulty, guess the hidden word one letter at a time, and beat the six-miss clock — with streak tracking, all in your browser.","applicationCategory":"GameApplication","operatingSystem":"Web","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"}}
+</script>
+<style>
+:root{--bg:#0a0c0f;--panel:#101318;--line:#1c2128;--txt:#e8e4da;--mut:#9aa3b2;--brass:#d2a24c;--green:#6fbf73;--red:#e0655f}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--txt);font-family:Fraunces,Georgia,serif;line-height:1.65;padding:2rem 1.2rem 4rem;max-width:960px;margin:0 auto}
+a{color:var(--brass)}
+.nav{display:flex;gap:1.2rem;font-size:.85rem;margin-bottom:1.2rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.nav a{color:var(--mut);text-decoration:none}
+.nav a:hover{color:var(--brass)}
+.eyebrow{font-size:.75rem;letter-spacing:.22em;text-transform:uppercase;color:var(--mut);font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+h1{font-weight:600;font-size:clamp(2.1rem,5vw,3rem);margin:.5rem 0 .7rem}
+.define{color:var(--mut);max-width:46rem;margin-bottom:1.8rem;font-size:1rem}
+.define strong{color:var(--txt)}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:1.4rem;margin-bottom:1.4rem}
+.cardlabel{font-size:.72rem;letter-spacing:.18em;text-transform:uppercase;color:var(--mut);margin-bottom:.8rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.ui{font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.pillrow{display:flex;gap:.5rem;flex-wrap:wrap;align-items:center}
+.pillrow .cap{font-size:.8rem;color:var(--mut);margin-right:.2rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.chip{border:1px solid var(--line);background:transparent;color:var(--mut);border-radius:999px;padding:.45rem 1.1rem;font-size:.86rem;cursor:pointer;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.chip.on{background:rgba(210,162,76,.14);border-color:var(--brass);color:var(--brass)}
+.btn{font-size:.9rem;border:1px solid var(--brass);background:transparent;color:var(--brass);border-radius:999px;padding:.55rem 1.4rem;cursor:pointer;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.btn:hover{background:rgba(210,162,76,.12)}
+.btn.ghost{border-color:var(--line);color:var(--mut)}
+.btn.ghost:hover{color:var(--txt);border-color:var(--mut)}
+.btn:disabled{opacity:.35;cursor:default}
+.btnrow{display:flex;gap:.7rem;flex-wrap:wrap;margin-top:1rem;align-items:center}
+.gamewrap{display:flex;gap:2.2rem;align-items:flex-start}
+.stage{flex:0 0 230px}
+.stage svg{width:100%;height:auto;display:block}
+.figpart{opacity:0;transition:opacity .35s ease}
+.figpart.on{opacity:1}
+.figpart.final{stroke:var(--red)}
+.side{flex:1;min-width:0}
+.slots{display:flex;gap:.45rem;flex-wrap:wrap;margin:.4rem 0 1.1rem}
+.slot{width:2.1rem;height:2.9rem;border-bottom:3px solid var(--line);display:flex;align-items:center;justify-content:center;font-size:1.7rem;font-weight:600;color:var(--txt)}
+.slot.hit{border-color:var(--brass);color:var(--brass);animation:flip .35s ease}
+@keyframes flip{0%{transform:rotateX(90deg)}100%{transform:rotateX(0)}}
+.missline{display:flex;gap:.8rem;align-items:center;flex-wrap:wrap;margin-bottom:1rem}
+.misses{font-size:.85rem;color:var(--mut);font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.misses b{color:var(--txt)}
+.kbd{margin-top:.4rem}
+.krow{display:flex;gap:.4rem;justify-content:center;margin-bottom:.45rem}
+.key{flex:1;max-width:3.2rem;height:3rem;border:1px solid var(--line);background:#0c0e12;color:var(--txt);border-radius:9px;font-size:1rem;cursor:pointer;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif;min-width:2.4rem}
+.key:hover{border-color:var(--brass)}
+.key.hit{background:rgba(210,162,76,.16);border-color:var(--brass);color:var(--brass)}
+.key.miss{opacity:.28;text-decoration:line-through;cursor:default}
+.banner{display:none;border-radius:12px;padding:1.1rem 1.3rem;margin-bottom:1.2rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.banner.show{display:block}
+.banner.win{border:1px solid var(--brass);background:rgba(210,162,76,.08)}
+.banner.lose{border:1px solid var(--red);background:rgba(224,101,95,.07)}
+.banner .t{font-size:1.15rem;margin-bottom:.2rem}
+.banner.win .t{color:var(--brass)}
+.banner.lose .t{color:var(--red)}
+.banner .s{font-size:.88rem;color:var(--mut)}
+.stats{display:flex;gap:1.6rem;flex-wrap:wrap;font-size:.85rem;color:var(--mut);font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.stats b{color:var(--brass);font-size:1.05rem;margin-right:.3rem}
+.stats .reset{margin-left:auto;color:var(--mut);font-size:.78rem;background:none;border:0;cursor:pointer;text-decoration:underline;font-family:inherit}
+.live{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+footer{margin-top:2.5rem;font-size:.85rem;color:var(--mut);font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+@media(max-width:720px){.gamewrap{flex-direction:column}.stage{flex:none;width:200px;margin:0 auto}.key{height:3.2rem}.btn{width:100%}}
+</style>
+</head>
+<body>
+<nav class="nav"><a href="/">Shipwright Studio</a><a href="/ideas/">Idea Lab</a></nav>
+<p class="eyebrow">Lab · Games</p>
+<h1>Hangman</h1>
+<p class="define"><strong>Hangman is a free online game that</strong> tests your vocabulary and nerve: pick a category and difficulty, guess the hidden word one letter at a time, and solve it before six wrong guesses complete the drawing — with streak tracking, all in your browser.</p>
+
+<section class="card">
+  <p class="cardlabel">Setup</p>
+  <div class="pillrow" style="margin-bottom:.7rem"><span class="cap">Category</span><span id="catPills"></span></div>
+  <div class="pillrow"><span class="cap">Difficulty</span><span id="diffPills"></span></div>
+  <div class="btnrow"><button class="btn" id="btnNew">New word</button></div>
+</section>
+
+<div class="banner" id="banner" role="status"></div>
+
+<section class="card">
+  <div class="gamewrap">
+    <div class="stage">
+      <svg viewBox="0 0 200 240" role="img" aria-label="Hangman drawing">
+        <g stroke="#3a4150" stroke-width="6" stroke-linecap="round" fill="none">
+          <line x1="25" y1="225" x2="175" y2="225"/>
+          <line x1="60" y1="225" x2="60" y2="25"/>
+          <line x1="60" y1="25" x2="150" y2="25"/>
+          <line x1="150" y1="25" x2="150" y2="58"/>
+        </g>
+        <g id="fig" stroke="#d2a24c" stroke-width="4" stroke-linecap="round" fill="none">
+          <circle id="p0" class="figpart" cx="150" cy="80" r="20"/>
+          <line id="p1" class="figpart" x1="150" y1="100" x2="150" y2="160"/>
+          <line id="p2" class="figpart" x1="150" y1="116" x2="122" y2="140"/>
+          <line id="p3" class="figpart" x1="150" y1="116" x2="178" y2="140"/>
+          <line id="p4" class="figpart" x1="150" y1="160" x2="126" y2="196"/>
+          <line id="p5" class="figpart" x1="150" y1="160" x2="174" y2="196"/>
+        </g>
+      </svg>
+    </div>
+    <div class="side">
+      <div class="slots" id="slots" aria-label="Word to guess"></div>
+      <div class="missline">
+        <span class="misses" id="misses"></span>
+        <button class="btn ghost" id="btnHint">Hint · reveals a letter</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="card">
+  <p class="cardlabel">Guess a letter</p>
+  <div class="kbd" id="kbd"></div>
+</section>
+
+<section class="card">
+  <p class="cardlabel">Your record</p>
+  <div class="stats">
+    <span><b id="stW">0</b>wins</span>
+    <span><b id="stL">0</b>losses</span>
+    <span><b id="stS">0</b>streak</span>
+    <span><b id="stB">0</b>best</span>
+    <button class="reset" id="btnResetStats">reset</button>
+  </div>
+</section>
+
+<p class="live" aria-live="polite" id="live"></p>
+
+<footer>Built in the Shipwright Studio Lab · <a href="/ideas/">more experiments</a></footer>
+
+<script>
+"use strict";
+/* ===== Core (node-tested) ===== */
+var WORDS=[
+["CODE","tech"],["CHIP","tech"],["CACHE","tech"],["PIXEL","tech"],["MOUSE","tech"],["MODEM","tech"],
+["BIT","tech"],["BYTE","tech"],["CLOUD","tech"],["DATA","tech"],["DEBUG","tech"],["DEPLOY","tech"],
+["DOCKER","tech"],["FIBER","tech"],["GIT","tech"],["HASH","tech"],["JSON","tech"],["LINUX","tech"],
+["NODE","tech"],["PYTHON","tech"],["QUERY","tech"],["RAM","tech"],["SCRIPT","tech"],["SERVER","tech"],
+["STACK","tech"],["SYNTAX","tech"],["TOKEN","tech"],["THREAD","tech"],["VIRUS","tech"],["WIFI","tech"],
+["WIDGET","tech"],["ZIP","tech"],["ALGORITHM","tech"],["BANDWIDTH","tech"],["BINARY","tech"],
+["BLUETOOTH","tech"],["COMPILER","tech"],["CSS","tech"],["DATABASE","tech"],["ENCRYPTION","tech"],
+["FRAMEWORK","tech"],["FUNCTION","tech"],["GATEWAY","tech"],["HTML","tech"],["JAVASCRIPT","tech"],
+["KEYBOARD","tech"],["LAPTOP","tech"],["MALWARE","tech"],["NETWORK","tech"],["PROTOCOL","tech"],
+["RECURSION","tech"],["REGEX","tech"],["RUBY","tech"],["SOFTWARE","tech"],["SSH","tech"],
+["TERMINAL","tech"],["UNICODE","tech"],["VARIABLE","tech"],["WEBHOOK","tech"],["XML","tech"],
+["MICROCHIP","tech"],["PROCESSOR","tech"],["MOTHERBOARD","tech"],["VIRTUALIZATION","tech"],
+["CONTAINER","tech"],["KUBERNETES","tech"],["TYPESCRIPT","tech"],["WEBSOCKET","tech"],
+["MIDDLEWARE","tech"],["REPOSITORY","tech"],
+["LEAF","nature"],["TREE","nature"],["RIVER","nature"],["OCEAN","nature"],["MOUNTAIN","nature"],
+["FOREST","nature"],["CUMULUS","nature"],["STORM","nature"],["RAIN","nature"],["SNOW","nature"],
+["FLOWER","nature"],["BIRD","nature"],["FISH","nature"],["WOLF","nature"],["BEAR","nature"],
+["EAGLE","nature"],["SNAKE","nature"],["FROG","nature"],["WHALE","nature"],["SHARK","nature"],
+["CORAL","nature"],["DESERT","nature"],["GLACIER","nature"],["VALLEY","nature"],["MEADOW","nature"],
+["MOSS","nature"],["FERN","nature"],["PINE","nature"],["OAK","nature"],["TIDE","nature"],
+["WAVE","nature"],["BREEZE","nature"],["FROST","nature"],["THUNDER","nature"],["LIGHTNING","nature"],
+["VOLCANO","nature"],["CANYON","nature"],["REEF","nature"],["SAVANNA","nature"],["TUNDRA","nature"],
+["WILLOW","nature"],["CEDAR","nature"],["FALCON","nature"],["OTTER","nature"],["BADGER","nature"],
+["BISON","nature"],["CACTUS","nature"],["DUNE","nature"],["EMBER","nature"],["FLAME","nature"],
+["GROVE","nature"],["HAIL","nature"],["IVY","nature"],["JUNGLE","nature"],["KELP","nature"],
+["LAGOON","nature"],["MIST","nature"],["ORCHID","nature"],["PEAK","nature"],["QUARRY","nature"],
+["ROBIN","nature"],["SPARROW","nature"],["STREAM","nature"],["SWAN","nature"],["TULIP","nature"],
+["VINE","nature"],["ZEBRA","nature"],["AVALANCHE","nature"],["BUTTERFLY","nature"],
+["CATERPILLAR","nature"],["WATERFALL","nature"],["HUMMINGBIRD","nature"],
+["ALLIGATOR","nature"],["CROCODILE","nature"],["PORCUPINE","nature"],["CHAMELEON","nature"],
+["SUNFLOWER","nature"],["BLUEBERRY","nature"],["BLACKBERRY","nature"],["STRAWBERRY","nature"],
+["PINEAPPLE","nature"],["WATERMELON","nature"],["CENTIPEDE","nature"],["MILLIPEDE","nature"],
+["HIPPOPOTAMUS","nature"],
+["BREAD","food"],["CHEESE","food"],["APPLE","food"],["PIZZA","food"],["PASTA","food"],
+["SUSHI","food"],["TACO","food"],["RICE","food"],["SOUP","food"],["SALAD","food"],
+["CAKE","food"],["COOKIE","food"],["CHOCOLATE","food"],["COFFEE","food"],["TEA","food"],
+["HONEY","food"],["LEMON","food"],["MANGO","food"],["GRAPE","food"],["BERRY","food"],
+["PEACH","food"],["PLUM","food"],["MELON","food"],["ONION","food"],["GARLIC","food"],
+["PEPPER","food"],["BUTTER","food"],["EGG","food"],["MILK","food"],["STEAK","food"],
+["BACON","food"],["HAM","food"],["SHRIMP","food"],["CRAB","food"],["LOBSTER","food"],
+["OYSTER","food"],["CLAM","food"],["MUSSEL","food"],["SCALLOP","food"],["SALMON","food"],
+["TUNA","food"],["TROUT","food"],["BASIL","food"],["THYME","food"],["ROSEMARY","food"],
+["OREGANO","food"],["CINNAMON","food"],["VANILLA","food"],["NUTMEG","food"],["GINGER","food"],
+["CURRY","food"],["CHILI","food"],["MUSTARD","food"],["KETCHUP","food"],["MAYO","food"],
+["OLIVE","food"],["PICKLE","food"],["JAM","food"],["SYRUP","food"],["WAFFLE","food"],
+["PANCAKE","food"],["MUFFIN","food"],["BAGEL","food"],["DONUT","food"],["CROISSANT","food"],
+["SANDWICH","food"],["BURGER","food"],["FRIES","food"],["NACHOS","food"],["BURRITO","food"],
+["RAMEN","food"],["PHO","food"],["DUMPLING","food"],["KEBAB","food"],["FALAFEL","food"],
+["HUMMUS","food"],["GUACAMOLE","food"],["SALSA","food"],["QUICHE","food"],["OMELETTE","food"],
+["FRITTATA","food"],["LASAGNA","food"],["RISOTTO","food"],["PAELLA","food"],["STEW","food"],
+["CHOWDER","food"],["BISQUE","food"],["FONDUE","food"],["TART","food"],["PIE","food"],
+["PUDDING","food"],["MOUSSE","food"],["SORBET","food"],["GELATO","food"],["BROWNIE","food"],
+["CUPCAKE","food"],["CHEESECAKE","food"],["TIRAMISU","food"],["ECLAIR","food"],["MACARON","food"],
+["CREPE","food"],["PARFAIT","food"],["TRIFLE","food"],["COBBLER","food"],["CRISP","food"],
+["FLAN","food"],["CUSTARD","food"],["FUDGE","food"],["TOFFEE","food"],["CARAMEL","food"],
+["NOUGAT","food"],["BRITTLE","food"],["PRALINE","food"],["BARK","food"],["TRUFFLE","food"],
+["BONBON","food"],["LICORICE","food"],["TAFFY","food"],["GUMDROP","food"],["JELLYBEAN","food"],
+["MARSHMALLOW","food"],["POPCORN","food"],["PRETZEL","food"],["CRACKER","food"],["DIP","food"],
+["PEPPERONI","food"],["MOZZARELLA","food"],["BRUSCHETTA","food"],["QUESADILLA","food"],
+["ENCHILADA","food"],["MEATBALLS","food"],["SPAGHETTI","food"],["FETTUCCINE","food"],
+["MINESTRONE","food"],["GINGERBREAD","food"],["SHORTBREAD","food"],["SNICKERDOODLE","food"],
+["PUMPKINPIE","food"],
+];
+var DIFF={easy:[3,5],medium:[6,8],hard:[9,99]};
+var MAXMISS=6;
+function bankFor(cat){return WORDS.filter(function(w){return cat==="mixed"||w[1]===cat;}).map(function(w){return w[0];});}
+function poolFor(cat,diff){var r=DIFF[diff];return bankFor(cat).filter(function(w){return w.length>=r[0]&&w.length<=r[1];});}
+function makeBag(words,rng){var a=words.slice(),r=rng||Math.random;for(var i=a.length-1;i>0;i--){var j=Math.floor(r()*(i+1)),t=a[i];a[i]=a[j];a[j]=t;}return a;}
+function newGame(word){return {word:word,guessed:{},wrong:[],over:null,hintUsed:false};}
+function applyGuess(g,letter){
+  letter=String(letter).toUpperCase();
+  if(g.over||!/^[A-Z]$/.test(letter)||g.guessed[letter])return g;
+  g.guessed[letter]=true;
+  if(g.word.indexOf(letter)<0)g.wrong.push(letter);
+  if(g.wrong.length>=MAXMISS)g.over="lost";
+  else{var won=true;for(var i=0;i<g.word.length;i++){if(!g.guessed[g.word[i]]){won=false;break;}}if(won)g.over="won";}
+  return g;
+}
+function hintLetter(g,rng){var un=[],r=rng||Math.random;
+  for(var i=0;i<g.word.length;i++){var ch=g.word[i];if(!g.guessed[ch]&&un.indexOf(ch)<0)un.push(ch);}
+  if(!un.length)return null;return un[Math.floor(r()*un.length)];}
+/* ===== UI ===== */
+function $(id){return document.getElementById(id);}
+var CATS=[["tech","Tech"],["nature","Nature"],["food","Food"],["mixed","Mixed"]];
+var DIFFS=[["easy","Easy"],["medium","Medium"],["hard","Hard"]];
+var cat="mixed",diff="medium",bag=[],game=null,stats={w:0,l:0,s:0,b:0};
+try{var s0=JSON.parse(localStorage.getItem("hm_stats_v1")||"null");if(s0)stats=s0;}catch(e){}
+function saveStats(){try{localStorage.setItem("hm_stats_v1",JSON.stringify(stats));}catch(e){}}
+function pills(el,items,cur,cb){
+  el.innerHTML="";
+  items.forEach(function(it){var b=document.createElement("button");b.className="chip"+(it[0]===cur?" on":"");
+    b.textContent=it[1];b.onclick=function(){cb(it[0]);};el.appendChild(b);});
+}
+function dealWord(){
+  if(!bag.length)bag=makeBag(poolFor(cat,diff));
+  game=newGame(bag.pop());
+  $("btnHint").disabled=false;
+  render();
+}
+function render(){
+  var sw=$("slots");sw.innerHTML="";
+  for(var i=0;i<game.word.length;i++){var d=document.createElement("div");
+    d.className="slot"+(game.guessed[game.word[i]]?" hit":"");
+    d.textContent=game.guessed[game.word[i]]?game.word[i]:"";sw.appendChild(d);}
+  for(var p=0;p<MAXMISS;p++){var el=$("p"+p);el.classList.toggle("on",game.wrong.length>p);
+    el.classList.toggle("final",game.over==="lost"&&p===MAXMISS-1);}
+  var left=MAXMISS-game.wrong.length;
+  $("misses").innerHTML="Misses left: <b>"+left+"</b> of "+MAXMISS+(game.wrong.length?" · wrong: "+game.wrong.join(" "):"");
+  var kb=$("kbd");kb.innerHTML="";
+  ["QWERTYUIOP","ASDFGHJKL","ZXCVBNM"].forEach(function(row){
+    var r=document.createElement("div");r.className="krow";
+    for(var i=0;i<row.length;i++)(function(ch){var k=document.createElement("button");k.className="key";k.textContent=ch;
+      if(game.guessed[ch])k.classList.add(game.word.indexOf(ch)>=0?"hit":"miss");
+      k.onclick=function(){doGuess(ch);};r.appendChild(k);})(row[i]);
+    kb.appendChild(r);});
+  var bn=$("banner");bn.className="banner";
+  if(game.over==="won"){bn.classList.add("show","win");
+    bn.innerHTML='<div class="t">Solved — the word was '+game.word+'</div><div class="s">'+game.wrong.length+' wrong guess'+(game.wrong.length===1?"":"es")+' · streak '+stats.s+'</div>';}
+  else if(game.over==="lost"){bn.classList.add("show","lose");
+    bn.innerHTML='<div class="t">The word was '+game.word+'</div><div class="s">Better luck next round — streak reset.</div>';}
+  $("stW").textContent=stats.w;$("stL").textContent=stats.l;
+  $("stS").textContent=stats.s;$("stB").textContent=stats.b;
+}
+function say(t){$("live").textContent=t;}
+function doGuess(ch){
+  if(!game||game.over)return;
+  var before=game.wrong.length,wasOver=game.over;
+  applyGuess(game,ch);
+  if(game.guessed[ch]&&!wasOver){
+    if(game.word.indexOf(ch)>=0)say(ch+" is in the word.");
+    else if(game.wrong.length>before)say(ch+" is not in the word. "+(MAXMISS-game.wrong.length)+" misses left.");
+  }
+  if(game.over&&!wasOver){
+    if(game.over==="won"){stats.w++;stats.s++;if(stats.s>stats.b)stats.b=stats.s;}
+    else{stats.l++;stats.s=0;}
+    saveStats();
+  }
+  render();
+}
+function doHint(){
+  if(!game||game.over||game.hintUsed)return;
+  var h=hintLetter(game);
+  if(!h)return;
+  game.hintUsed=true;$("btnHint").disabled=true;
+  say("Hint: the word contains "+h+".");
+  doGuess(h);
+}
+function setCat(c){cat=c;pills($("catPills"),CATS,cat,setCat);bag=[];dealWord();}
+function setDiff(d){diff=d;pills($("diffPills"),DIFFS,diff,setDiff);bag=[];dealWord();}
+pills($("catPills"),CATS,cat,setCat);
+pills($("diffPills"),DIFFS,diff,setDiff);
+$("btnNew").onclick=function(){bag=[];dealWord();};
+$("btnHint").onclick=doHint;
+$("btnResetStats").onclick=function(){stats={w:0,l:0,s:0,b:0};saveStats();render();};
+document.addEventListener("keydown",function(e){
+  if(e.metaKey||e.ctrlKey||e.altKey)return;
+  if(/^[a-zA-Z]$/.test(e.key))doGuess(e.key.toUpperCase());
+});
+dealWord();
+</script>
+</body>
+</html>
