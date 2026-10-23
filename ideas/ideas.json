@@ -1,5 +1,5 @@
 {
-  "updated": "2026-10-22",
+  "updated": "2026-10-23",
   "ideas": [
     {
       "id": "idea-000a",
@@ -225,7 +225,9 @@
       "tagline": "Tap to fly, thread the pipes, rage responsibly.",
       "priority": 77,
       "effort": "S",
-      "status": "todo"
+      "status": "done",
+      "url": "/lab/flappy-flyer/",
+      "shipped": "2026-10-23"
     },
     {
       "id": "idea-018",
@@ -1249,7 +1251,9 @@
       "tagline": "Markowitz frontier from expected returns and covariances.",
       "priority": 78,
       "effort": "M",
-      "status": "todo"
+      "status": "done",
+      "url": "/lab/efficient-frontier/",
+      "shipped": "2026-10-23"
     },
     {
       "id": "idea-114",

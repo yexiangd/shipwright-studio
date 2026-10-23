@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Efficient Frontier Plotter · Shipwright Studio</title>
+<meta name="description" content="Free interactive efficient frontier plotter: enter expected returns, volatilities and correlations for 2–6 assets to chart the Markowitz frontier with min-variance and max-Sharpe portfolios, all in your browser.">
+<link rel="canonical" href="https://shipwright-studio.pages.dev/lab/efficient-frontier/">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"WebApplication","name":"Efficient Frontier Plotter","url":"https://shipwright-studio.pages.dev/lab/efficient-frontier/","description":"Efficient Frontier Plotter is a free online tool that computes the Markowitz efficient frontier from expected returns, volatilities and correlations you enter, plots it in your browser, and reveals each portfolio's exact asset mix on hover — with a long-only toggle, min-variance and max-Sharpe markers, and one-click weight export.","applicationCategory":"FinanceApplication","operatingSystem":"Web","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"}}
+</script>
+<style>
+:root{--bg:#0a0c0f;--panel:#101318;--line:#1c2128;--txt:#e8e4da;--mut:#9aa3b2;--brass:#d2a24c;--teal:#6fb3ad;--red:#e0655f;--amber:#e0a44c;--axis:#8a93a0;--sans:-apple-system,"Segoe UI",Inter,system-ui,sans-serif;--mono:"JetBrains Mono",ui-monospace,monospace}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--txt);font-family:Fraunces,Georgia,serif;line-height:1.65;padding:2rem 1.2rem 4rem;max-width:960px;margin:0 auto}
+a{color:var(--brass)}
+.nav{display:flex;gap:1.2rem;font-size:.85rem;margin-bottom:1.2rem;font-family:var(--sans)}
+.nav a{color:var(--mut);text-decoration:none}
+.nav a:hover{color:var(--brass)}
+.eyebrow{font-size:.75rem;letter-spacing:.22em;text-transform:uppercase;color:var(--mut);font-family:var(--sans)}
+h1{font-weight:600;font-size:clamp(2.1rem,5vw,3rem);margin:.5rem 0 .7rem}
+.define{color:var(--mut);max-width:46rem;margin-bottom:1.8rem;font-size:1rem}
+.define strong{color:var(--txt)}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:1.4rem;margin-bottom:1.4rem}
+.cardlabel{font-size:.72rem;letter-spacing:.18em;text-transform:uppercase;color:var(--mut);margin-bottom:.8rem;font-family:var(--sans)}
+.ui{font-family:var(--sans)}
+.tablescroll{overflow-x:auto;margin-bottom:.4rem}
+table.assets{width:100%;border-collapse:collapse;min-width:26rem}
+.assets th{font-size:.7rem;letter-spacing:.12em;text-transform:uppercase;color:var(--mut);text-align:left;padding:.4rem .5rem;border-bottom:1px solid var(--line);font-family:var(--sans);font-weight:500}
+.assets td{padding:.35rem .4rem;border-bottom:1px solid #14181f}
+.assets input{width:100%;background:#08090c;border:1px solid var(--line);border-radius:8px;color:var(--txt);font-family:var(--sans);font-size:.9rem;padding:.5rem .7rem}
+.assets input:focus{outline:none;border-color:var(--brass)}
+.xbtn{background:transparent;border:1px solid var(--line);color:var(--mut);border-radius:50%;width:1.8rem;height:1.8rem;cursor:pointer;font-size:1rem;line-height:1}
+.xbtn:hover:not(:disabled){color:var(--red);border-color:var(--red)}
+.xbtn:disabled{opacity:.25;cursor:default}
+.btn{font-size:.9rem;border:1px solid var(--brass);background:transparent;color:var(--brass);border-radius:999px;padding:.55rem 1.4rem;cursor:pointer;font-family:var(--sans)}
+.btn:hover{background:rgba(210,162,76,.12)}
+.btn.ghost{border-color:var(--line);color:var(--mut)}
+.btn.ghost:hover{color:var(--txt);border-color:var(--mut)}
+.btn:disabled{opacity:.35;cursor:default}
+.btnrow{display:flex;gap:.7rem;flex-wrap:wrap;margin-top:1rem;align-items:center}
+#corrGrid{display:grid;gap:.35rem;align-items:center;min-width:22rem}
+#corrGrid input{width:100%;min-width:3.4rem;text-align:center;padding:.45rem .3rem;background:#08090c;border:1px solid var(--line);border-radius:8px;color:var(--txt);font-size:.85rem;font-family:var(--mono)}
+#corrGrid input:focus{outline:none;border-color:var(--brass)}
+#corrGrid input.cdiag{color:var(--mut);border-style:dashed}
+.chead{font-size:.72rem;color:var(--mut);text-align:center;font-family:var(--sans);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:6rem;justify-self:center}
+.hintline{font-size:.8rem;color:var(--red);min-height:1.2em;font-family:var(--sans)}
+.hintline.neutral{color:var(--mut);margin-bottom:.6rem}
+.warn{font-size:.85rem;color:var(--amber);background:rgba(224,164,76,.08);border:1px solid rgba(224,164,76,.35);border-radius:10px;padding:.6rem .9rem;margin-top:.8rem;font-family:var(--sans)}
+.optrow{display:flex;gap:1rem;flex-wrap:wrap;align-items:center;margin-top:1rem}
+.optrow label{font-size:.86rem;color:var(--mut);font-family:var(--sans);display:flex;align-items:center;gap:.45rem}
+input[type=number].num{background:#08090c;border:1px solid var(--line);border-radius:10px;color:var(--txt);font-family:var(--sans);font-size:.92rem;padding:.55rem .8rem;width:7rem}
+input[type=number].num:focus{outline:none;border-color:var(--brass)}
+.modeseg{display:flex;border:1px solid var(--line);border-radius:999px;overflow:hidden}
+.seg{background:transparent;border:0;color:var(--mut);font-size:.85rem;padding:.55rem 1.1rem;cursor:pointer;font-family:var(--sans)}
+.seg.on{background:rgba(210,162,76,.14);color:var(--brass)}
+.chartwrap{position:relative}
+canvas#chart{display:block;width:100%;cursor:crosshair;touch-action:manipulation}
+.tooltip{position:absolute;pointer-events:none;background:#0d1014;border:1px solid var(--line);border-radius:8px;padding:.4rem .7rem;font-size:.78rem;color:var(--txt);font-family:var(--sans);white-space:nowrap;transform:translate(-50%,-118%);z-index:2}
+.tooltip b{color:var(--brass)}
+.legend{display:flex;gap:1.1rem;flex-wrap:wrap;font-size:.8rem;color:var(--mut);margin:.9rem 0 .2rem;font-family:var(--sans)}
+.li{display:flex;align-items:center;gap:.45rem}
+.swline{display:inline-block;width:1.4rem;height:3px;background:var(--brass);border-radius:2px}
+.swdot{display:inline-block;width:.6rem;height:.6rem;border-radius:50%}
+.swdot.teal{background:var(--teal)}.swdot.grey{background:var(--axis)}
+.swdia{display:inline-block;width:.58rem;height:.58rem;background:var(--brass);transform:rotate(45deg)}
+.inspector{border-top:1px solid var(--line);margin-top:.8rem;padding-top:1rem}
+.inspstats{font-size:.9rem;color:var(--mut);margin-bottom:.8rem;font-family:var(--sans)}
+.inspstats b{color:var(--txt)}
+.wrow{display:grid;grid-template-columns:9rem 1fr 4.6rem;gap:.7rem;align-items:center;font-size:.82rem;margin-bottom:.4rem;font-family:var(--sans)}
+.wn{color:var(--mut);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.wbar{height:.55rem;background:#08090c;border-radius:99px;overflow:hidden}
+.wbar span{display:block;height:100%;background:linear-gradient(90deg,#8a6a2e,var(--brass));border-radius:99px}
+.wp{text-align:right;font-family:var(--mono);color:var(--txt)}
+.sumline{font-size:.78rem;color:var(--mut);font-family:var(--sans)}
+.explain{color:var(--mut);font-size:.95rem;max-width:46rem}
+.explain strong{color:var(--txt)}
+.formulas{margin:1.1rem 0;display:grid;gap:.55rem;font-size:.88rem;color:var(--mut);font-family:var(--sans)}
+.formulas code{font-family:var(--mono);color:var(--brass);font-size:.84rem}
+details.explain{border:1px solid var(--line);border-radius:10px;padding:.9rem 1.1rem;font-family:var(--sans);font-size:.88rem;color:var(--mut);margin-top:1rem}
+details.explain summary{cursor:pointer;color:var(--txt);font-size:.95rem}
+details.explain p{margin-top:.6rem}
+.toast{position:fixed;bottom:1.4rem;left:50%;transform:translateX(-50%);background:var(--brass);color:#0a0c0f;font-family:var(--sans);font-size:.88rem;padding:.55rem 1.3rem;border-radius:999px;opacity:0;pointer-events:none;transition:opacity .25s}
+.toast.show{opacity:1}
+footer{margin-top:2.5rem;font-size:.85rem;color:var(--mut);font-family:var(--sans)}
+@media(max-width:720px){.btn{width:100%}.wrow{grid-template-columns:6.5rem 1fr 4.2rem}}
+</style>
+</head>
+<body>
+<nav class="nav"><a href="/">Shipwright Studio</a><a href="/ideas/">Idea Lab</a></nav>
+<p class="eyebrow">Lab · Finance tools</p>
+<h1>Efficient Frontier Plotter</h1>
+<p class="define"><strong>Efficient Frontier Plotter is a free online tool that</strong> computes the Markowitz efficient frontier from the expected returns, volatilities and correlations you type in — entirely in your browser — and lets you hover anywhere on the curve to reveal that portfolio's exact asset mix, with a long-only toggle, min-variance and max-Sharpe markers, and one-click weight export.</p>
+
+<section class="card" aria-label="Portfolio inputs">
+  <p class="cardlabel">Assets</p>
+  <div class="tablescroll">
+    <table class="assets">
+      <thead><tr><th>Name</th><th>Expected return %</th><th>Volatility %</th><th></th></tr></thead>
+      <tbody id="assetBody"></tbody>
+    </table>
+  </div>
+  <div class="btnrow">
+    <button class="btn ghost" id="btnAdd">+ Add asset</button>
+    <button class="btn ghost" id="btnReset">Reset to example</button>
+  </div>
+  <p class="cardlabel" style="margin-top:1.4rem">Correlation matrix</p>
+  <p class="hintline neutral">Diagonal locked at 1.00 · edits mirror across the diagonal · values clamp to −1…1</p>
+  <div class="tablescroll"><div id="corrGrid"></div></div>
+  <p class="warn" id="pdWarn" hidden></p>
+  <div class="optrow">
+    <label>Risk-free rate % <input type="number" class="num" id="rf" value="2" step="0.1" inputmode="decimal" aria-label="Risk-free rate percent"></label>
+    <div class="modeseg" role="group" aria-label="Short selling mode">
+      <button class="seg on" id="modeShort">Shorts allowed</button>
+      <button class="seg" id="modeLong">Long-only</button>
+    </div>
+  </div>
+  <p class="hintline" id="inputHint"></p>
+</section>
+
+<section class="card" aria-label="Efficient frontier chart">
+  <p class="cardlabel">Efficient frontier</p>
+  <div class="chartwrap">
+    <canvas id="chart" role="img" aria-label="Efficient frontier chart: portfolio volatility on the horizontal axis, expected return on the vertical axis, showing the frontier curve with global minimum-variance and maximum-Sharpe markers and the individual assets"></canvas>
+    <div class="tooltip" id="tooltip" hidden></div>
+  </div>
+  <div class="legend">
+    <span class="li"><i class="swline"></i>Frontier</span>
+    <span class="li"><i class="swdot teal"></i>Min-variance</span>
+    <span class="li"><i class="swdia"></i>Max Sharpe</span>
+    <span class="li"><i class="swdot grey"></i>Assets</span>
+  </div>
+  <div class="inspector">
+    <p class="inspstats" id="inspStats">Hover the curve to inspect a portfolio.</p>
+    <div id="wBars"></div>
+    <div class="btnrow">
+      <button class="btn" id="btnCopy">Copy weights</button>
+      <span class="sumline" id="sumLine"></span>
+    </div>
+  </div>
+</section>
+
+<section class="card" aria-label="About the efficient frontier">
+  <p class="cardlabel">What is the efficient frontier?</p>
+  <p class="explain"><strong>The efficient frontier</strong> is the set of portfolios that give the highest expected return for each level of risk. In Harry Markowitz's mean-variance framework, every portfolio is a point on a risk/return plane; the frontier is the upper edge of what's achievable. Portfolios below it are <strong>dominated</strong> — you could get more return for the same risk, or the same return for less risk. The leftmost point is the global minimum-variance portfolio; the steepest line from the risk-free rate touches the frontier at the maximum-Sharpe (tangency) portfolio.</p>
+  <div class="formulas">
+    <div>Frontier curve — <code>σ(μp) = √((a·μp² − 2b·μp + c) / d)</code>, where <code>a = 1′Σ⁻¹1</code>, <code>b = 1′Σ⁻¹μ</code>, <code>c = μ′Σ⁻¹μ</code>, <code>d = ac − b²</code></div>
+    <div>Global minimum variance — <code>w = Σ⁻¹1 / a</code>, with <code>σ² = 1/a</code> and <code>μ = b/a</code></div>
+    <div>Maximum Sharpe — <code>w ∝ Σ⁻¹(μ − rf·1)</code>, normalised to sum to 1</div>
+  </div>
+  <details class="explain">
+    <summary>Caveats</summary>
+    <p>Estimates in, estimates out: the frontier is only as good as your return, volatility and correlation guesses, and small input tweaks can swing the optimal weights a lot.</p>
+    <p>This page is an educational toy, not investment advice. It ignores taxes, fees, liquidity, and everything else that matters in real portfolios.</p>
+    <p>The closed-form curve allows short selling unless you switch on Long-only — negative weights are a property of the maths, not a recommendation.</p>
+  </details>
+</section>
+
+<div class="toast" id="toast"></div>
+
+<footer>Built by Shipwright Studio · <a href="/">home</a> · <a href="/ideas/">more experiments</a></footer>
+
+<script>
+"use strict";
+/* ===== Core math (node-tested; no DOM) ===== */
+// __CORE_BEGIN__
+function cZeros(n){var a=[],i;for(i=0;i<n;i++)a.push(0);return a;}
+function cOnes(n){var a=[],i;for(i=0;i<n;i++)a.push(1);return a;}
+function cDot(u,v){var s=0,i;for(i=0;i<u.length;i++)s+=u[i]*v[i];return s;}
+function cMatVec(A,v){var n=A.length,out=[],i,j;for(i=0;i<n;i++){var s=0;for(j=0;j<v.length;j++)s+=A[i][j]*v[j];out.push(s);}return out;}
+function cMatInv(A){ /* Gaussian elimination, partial pivot; null if singular */
+  var n=A.length,i,j,k,M=[];
+  for(i=0;i<n;i++){var row=A[i].slice();for(j=0;j<n;j++)row.push(i===j?1:0);M.push(row);}
+  for(k=0;k<n;k++){
+    var p=k;for(i=k+1;i<n;i++)if(Math.abs(M[i][k])>Math.abs(M[p][k]))p=i;
+    if(Math.abs(M[p][k])<1e-12)return null;
+    var t=M[k];M[k]=M[p];M[p]=t;
+    var d=M[k][k];for(j=k;j<2*n;j++)M[k][j]/=d;
+    for(i=0;i<n;i++){if(i===k)continue;var f=M[i][k];if(f!==0)for(j=k;j<2*n;j++)M[i][j]-=f*M[k][j];}
+  }
+  var inv=[];for(i=0;i<n;i++)inv.push(M[i].slice(n));
+  return inv;
+}
+function cIsPD(S){ /* Cholesky attempt */
+  var n=S.length,i,j,k,L=[];
+  for(i=0;i<n;i++)L.push(cZeros(n));
+  for(i=0;i<n;i++)for(j=0;j<=i;j++){
+    var s=S[i][j];
+    for(k=0;k<j;k++)s-=L[i][k]*L[j][k];
+    if(i===j){if(s<=1e-12)return false;L[i][j]=Math.sqrt(s);}
+    else L[i][j]=s/L[j][j];
+  }
+  return true;
+}
+function cCov(vols,corr){ /* decimals; corr symmetric, 1s on diagonal */
+  var n=vols.length,S=[],i,j;
+  for(i=0;i<n;i++){S.push([]);for(j=0;j<n;j++)S[i].push(corr[i][j]*vols[i]*vols[j]);}
+  return S;
+}
+function cFrontierParams(Sinv,mu){ /* a=1'Σ⁻¹1 b=1'Σ⁻¹μ c=μ'Σ⁻¹μ d=ac-b² */
+  var o=cOnes(mu.length),Si1=cMatVec(Sinv,o),Sim=cMatVec(Sinv,mu);
+  var a=cDot(o,Si1),b=cDot(o,Sim),c=cDot(mu,Sim);
+  return {a:a,b:b,c:c,d:a*c-b*b,Si1:Si1,Sim:Sim};
+}
+function cFrontierSigma(mp,P){var v=(P.a*mp*mp-2*P.b*mp+P.c)/P.d;return Math.sqrt(Math.max(v,0));}
+function cFrontierWeights(mp,Sinv,mu,P){
+  var al=(P.c-P.b*mp)/P.d,be=(P.a*mp-P.b)/P.d,w=[],i;
+  for(i=0;i<mu.length;i++)w.push(al*P.Si1[i]+be*P.Sim[i]);
+  return w;
+}
+function cGmvWeights(P){var w=[],i;for(i=0;i<P.Si1.length;i++)w.push(P.Si1[i]/P.a);return w;}
+function cGmvMu(P){return P.b/P.a;}
+function cTangencyWeights(Sinv,mu,rf){ /* w ∝ Σ⁻¹(μ − rf·1), normalised */
+  var n=mu.length,ex=[],i;for(i=0;i<n;i++)ex.push(mu[i]-rf);
+  var v=cMatVec(Sinv,ex),s=0;for(i=0;i<n;i++)s+=v[i];
+  if(Math.abs(s)<1e-12)return null;
+  var w=[];for(i=0;i<n;i++)w.push(v[i]/s);return w;
+}
+function cPortSigma(w,S){return Math.sqrt(Math.max(cDot(w,cMatVec(S,w)),0));}
+function cSharpe(w,mu,S,rf){var s=cPortSigma(w,S);return s<1e-12?0:(cDot(w,mu)-rf)/s;}
+function cGridWeights(n,step){ /* all simplex points on a grid */
+  var units=Math.round(1/step),out=[],cur=cZeros(n);
+  (function rec(i,rem){if(i===n-1){cur[i]=rem;out.push(cur.slice());return;}
+    for(var k=0;k<=rem;k++){cur[i]=k;rec(i+1,rem-k);}})(0,units);
+  var r=[],p,q;for(p=0;p<out.length;p++){var w=[];for(q=0;q<n;q++)w.push(out[p][q]/units);r.push(w);}
+  return r;
+}
+function cLongOnlyHull(S,mu,step){
+  var n=mu.length,grid=cGridWeights(n,step||0.05);
+  var pts=grid.map(function(w){var mp=cDot(w,mu);return {w:w,mu:mp,sig:cPortSigma(w,S)};});
+  var muMin=mu[0],muMax=mu[0],iMin=0,iMax=0,i;
+  for(i=1;i<n;i++){if(mu[i]<muMin){muMin=mu[i];iMin=i;}if(mu[i]>muMax){muMax=mu[i];iMax=i;}}
+  var NB=120,bins=new Array(NB),span=(muMax-muMin)||1;
+  for(i=0;i<pts.length;i++){var p=pts[i];
+    var b=Math.min(NB-1,Math.floor((p.mu-muMin)/span*(NB-1)));
+    if(!bins[b]||p.sig<bins[b].sig)bins[b]=p;}
+  var cand=[];for(i=0;i<NB;i++)if(bins[i])cand.push(bins[i]);
+  cand.sort(function(x,y){return x.mu-y.mu;});
+  var env=[],best=Infinity; /* non-dominated upper envelope, right to left */
+  for(i=cand.length-1;i>=0;i--)if(cand[i].sig<best){env.push(cand[i]);best=cand[i].sig;}
+  env.reverse();
+  function single(k){var w=cZeros(n);w[k]=1;return {w:w,mu:mu[k],sig:Math.sqrt(Math.max(S[k][k],0))};}
+  env[0]=single(iMin);env[env.length-1]=single(iMax); /* forced endpoints */
+  return {hull:env,grid:pts};
+}
+function cLongOnlyGmv(hull){var b=hull[0],i;for(i=1;i<hull.length;i++)if(hull[i].sig<b.sig)b=hull[i];return b;}
+function cLongOnlyTangency(hull,mu,S,rf){
+  var b=hull[0],bs=cSharpe(b.w,mu,S,rf),i;
+  for(i=1;i<hull.length;i++){var s=cSharpe(hull[i].w,mu,S,rf);if(s>bs){bs=s;b=hull[i];}}
+  return b;
+}
+// __CORE_END__
+/* ===== UI ===== */
+function $(id){return document.getElementById(id);}
+function esc(s){return String(s).replace(/[&<>"']/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];});}
+function toast(t){var el=$("toast");el.textContent=t;el.classList.add("show");setTimeout(function(){el.classList.remove("show");},1400);}
+function copyText(t){
+  function fb(){var ta=document.createElement("textarea");ta.value=t;document.body.appendChild(ta);ta.select();
+    try{document.execCommand("copy");toast("Copied ✓");}catch(e){}document.body.removeChild(ta);}
+  if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(t).then(function(){toast("Copied ✓");}).catch(fb);
+  else fb();
+}
+var PRESET={assets:[{name:"US Stocks",ret:9,vol:16},{name:"Bonds",ret:4,vol:5},{name:"Crypto-like",ret:25,vol:60}],
+  corr:[[1,0.10,0.30],[0.10,1,0.05],[0.30,0.05,1]],rf:2};
+var state={assets:[],corr:[],rf:2,mode:"short"};
+var lastGood=null,sel=null,plotted=[],markers=null,rtimer=null;
+function schedule(){clearTimeout(rtimer);rtimer=setTimeout(recompute,150);}
+
+/* --- inputs --- */
+function renderAssets(){
+  var tb=$("assetBody");tb.innerHTML="";
+  state.assets.forEach(function(a,i){
+    var tr=document.createElement("tr");
+    tr.innerHTML='<td><input type="text" aria-label="Asset '+(i+1)+' name"></td>'+
+      '<td><input type="number" step="0.1" inputmode="decimal" aria-label="Asset '+(i+1)+' expected return percent"></td>'+
+      '<td><input type="number" step="0.1" min="0" inputmode="decimal" aria-label="Asset '+(i+1)+' volatility percent"></td>'+
+      '<td><button class="xbtn" aria-label="Remove asset">×</button></td>';
+    var ins=tr.querySelectorAll("input");
+    ins[0].value=a.name;ins[1].value=a.ret;ins[2].value=a.vol;
+    ins[0].addEventListener("input",function(e){state.assets[i].name=e.target.value;schedule();});
+    ins[1].addEventListener("input",function(e){state.assets[i].ret=parseFloat(e.target.value);schedule();});
+    ins[2].addEventListener("input",function(e){state.assets[i].vol=parseFloat(e.target.value);schedule();});
+    var xb=tr.querySelector(".xbtn");
+    xb.disabled=state.assets.length<=2;
+    xb.onclick=function(){
+      if(state.assets.length<=2)return;
+      state.assets.splice(i,1);state.corr.splice(i,1);
+      state.corr.forEach(function(r){r.splice(i,1);});
+      renderAssets();renderCorr();schedule();
+    };
+    tb.appendChild(tr);
+  });
+  $("btnAdd").disabled=state.assets.length>=6;
+}
+function renderCorr(){
+  var g=$("corrGrid");g.innerHTML="";
+  var n=state.assets.length,i,j;
+  g.style.gridTemplateColumns="repeat("+(n+1)+",minmax(3.4rem,1fr))";
+  g.appendChild(mkHead(""));
+  for(j=0;j<n;j++)g.appendChild(mkHead(state.assets[j].name||("A"+(j+1))));
+  for(i=0;i<n;i++){
+    g.appendChild(mkHead(state.assets[i].name||("A"+(i+1))));
+    for(j=0;j<n;j++)g.appendChild(mkCorrCell(i,j));
+  }
+}
+function mkHead(t){var d=document.createElement("div");d.className="chead";d.textContent=t;return d;}
+function mkCorrCell(i,j){
+  var inp=document.createElement("input");
+  inp.type="number";inp.step="0.05";inp.min="-1";inp.max="1";inp.inputMode="decimal";
+  inp.setAttribute("aria-label","Correlation of asset "+(i+1)+" with asset "+(j+1));
+  inp.setAttribute("data-c",i+"-"+j);
+  if(i===j){inp.value="1.00";inp.readOnly=true;inp.className="cdiag";}
+  else{
+    inp.value=(+state.corr[i][j]).toFixed(2);
+    inp.addEventListener("input",function(e){
+      var v=parseFloat(e.target.value);if(isNaN(v))return;
+      v=Math.max(-1,Math.min(1,v));
+      state.corr[i][j]=v;state.corr[j][i]=v;
+      var mir=document.querySelector('[data-c="'+j+'-'+i+'"]');
+      if(mir&&mir!==inp)mir.value=v.toFixed(2);
+      schedule();
+    });
+  }
+  return inp;
+}
+
+/* --- compute --- */
+function recompute(){
+  var hint=$("inputHint"),warn=$("pdWarn"),i,n=state.assets.length;
+  var names=[],mu=[],vol=[],errs=[];
+  state.assets.forEach(function(a,k){
+    names.push((a.name||"").trim()||("Asset "+(k+1)));
+    if(isNaN(a.ret))errs.push("Row "+(k+1)+": expected return must be a number.");
+    if(!(a.vol>0))errs.push("Row "+(k+1)+": volatility must be greater than 0.");
+    mu.push((a.ret||0)/100);vol.push((a.vol||0)/100);
+  });
+  if(errs.length){hint.textContent=errs[0];draw();return;}
+  hint.textContent="";
+  var S=cCov(vol,state.corr);
+  if(!cIsPD(S)){warn.textContent="⚠ Correlation matrix is not valid (not positive-definite) — the curve shows the last valid result.";warn.hidden=false;draw();return;}
+  var Sinv=cMatInv(S);
+  if(!Sinv){warn.textContent="⚠ Covariance matrix is singular (e.g. two perfectly correlated assets) — the curve shows the last valid result.";warn.hidden=false;draw();return;}
+  warn.hidden=true;
+  var P=cFrontierParams(Sinv,mu),rf=state.rf/100;
+  var g={names:names,mu:mu,S:S,Sinv:Sinv,P:P,rf:rf};
+  if(state.mode==="short"){
+    var gm=cGmvWeights(P),gmMu=cGmvMu(P),tw=cTangencyWeights(Sinv,mu,rf);
+    g.gmv={w:gm,mu:gmMu,sig:cFrontierSigma(gmMu,P)};
+    g.tan=tw?{w:tw,mu:cDot(tw,mu),sig:cPortSigma(tw,S)}:null;
+  }else{
+    var lo=cLongOnlyHull(S,mu,0.05),gmL=cLongOnlyGmv(lo.hull),tnL=cLongOnlyTangency(lo.hull,mu,S,rf);
+    g.hull=lo.hull;
+    g.gmv={w:gmL.w,mu:gmL.mu,sig:gmL.sig};
+    g.tan={w:tnL.w,mu:tnL.mu,sig:tnL.sig};
+  }
+  lastGood=g;sel=null;
+  buildPlot();draw();selectDefault();
+}
+function buildPlot(){
+  plotted=[];if(!lastGood)return;
+  var g=lastGood;
+  if(state.mode==="short"){
+    var lo=Math.min.apply(null,g.mu),hi=Math.max.apply(null,g.mu),sp=Math.max(hi-lo,0.01);
+    var mlo=lo-0.35*sp,mhi=hi+0.9*sp,N=160,i;
+    for(i=0;i<N;i++){var mp=mlo+(mhi-mlo)*i/(N-1);
+      plotted.push({mu:mp,sig:cFrontierSigma(mp,g.P),w:cFrontierWeights(mp,g.Sinv,g.mu,g.P)});}
+  }else{
+    g.hull.forEach(function(p){plotted.push({mu:p.mu,sig:p.sig,w:p.w});});
+  }
+  markers={gmv:g.gmv,tan:g.tan,
+    assets:g.names.map(function(nm,i){return {name:nm,mu:g.mu[i],sig:Math.sqrt(Math.max(g.S[i][i],0))};})};
+}
+
+/* --- chart --- */
+var cv=$("chart"),ctx=cv.getContext("2d");
+var view={x0:0,x1:1,y0:0,y1:1,W:0,H:0,ml:60,mr:16,mt:16,mb:44};
+function X(v){return view.ml+(v-view.x0)/(view.x1-view.x0)*(view.W-view.ml-view.mr);}
+function Y(v){return view.H-view.mb-(v-view.y0)/(view.y1-view.y0)*(view.H-view.mt-view.mb);}
+function ticks(lo,hi,n){
+  var span=(hi-lo)||1,raw=span/n,mag=Math.pow(10,Math.floor(Math.log10(raw))),m=raw/mag;
+  var st=(m>=5?5:m>=2?2:m>=1?1:0.5)*mag,out=[],t=Math.ceil(lo/st)*st;
+  for(;t<=hi+1e-9;t+=st)out.push(+t.toFixed(10));
+  return out;
+}
+function draw(){
+  var wrap=cv.parentElement,cssW=wrap.clientWidth,cssH=Math.max(320,Math.round(cssW*9/16));
+  var dpr=window.devicePixelRatio||1;
+  cv.width=Math.round(cssW*dpr);cv.height=Math.round(cssH*dpr);
+  cv.style.width=cssW+"px";cv.style.height=cssH+"px";
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+  view.W=cssW;view.H=cssH;
+  ctx.clearRect(0,0,cssW,cssH);
+  if(!plotted.length||!markers)return;
+  var xs=[],ys=[],i;
+  plotted.forEach(function(p){xs.push(p.sig);ys.push(p.mu);p.px=0;p.py=0;});
+  markers.assets.forEach(function(a){xs.push(a.sig);ys.push(a.mu);});
+  if(markers.tan){xs.push(markers.gmv.sig,markers.tan.sig);ys.push(markers.gmv.mu,markers.tan.mu);}
+  var xMax=(Math.max.apply(null,xs)*1.07)||1;
+  var yLo=Math.min.apply(null,ys),yHi=Math.max.apply(null,ys);
+  var pad=Math.max((yHi-yLo)*0.14,0.004);yLo-=pad;yHi+=pad;
+  view.x0=0;view.x1=xMax;view.y0=yLo;view.y1=yHi;
+  /* grid + axes */
+  ctx.font="11px "+getComputedStyle(document.body).getPropertyValue("--sans");
+  ctx.fillStyle="#8a93a0";ctx.strokeStyle="#1c2128";ctx.lineWidth=1;
+  ticks(0,xMax,6).forEach(function(t){
+    var px=X(t);ctx.beginPath();ctx.moveTo(px,view.mt);ctx.lineTo(px,view.H-view.mb);ctx.stroke();
+    ctx.textAlign="center";ctx.fillText((t*100).toFixed(t<0.1?1:0)+"%",px,view.H-view.mb+18);
+  });
+  ticks(yLo,yHi,6).forEach(function(t){
+    var py=Y(t);ctx.beginPath();ctx.moveTo(view.ml,py);ctx.lineTo(view.W-view.mr,py);ctx.stroke();
+    ctx.textAlign="right";ctx.fillText((t*100).toFixed(t<0.1?1:0)+"%",view.ml-8,py+4);
+  });
+  ctx.textAlign="center";
+  ctx.fillText("volatility →",view.ml+(view.W-view.ml-view.mr)/2,view.H-6);
+  ctx.save();ctx.translate(14,view.mt+(view.H-view.mt-view.mb)/2);ctx.rotate(-Math.PI/2);
+  ctx.fillText("expected return →",0,0);ctx.restore();
+  /* frontier curve */
+  ctx.strokeStyle="#d2a24c";ctx.lineWidth=2.5;ctx.beginPath();
+  plotted.forEach(function(p,idx){p.px=X(p.sig);p.py=Y(p.mu);if(idx===0)ctx.moveTo(p.px,p.py);else ctx.lineTo(p.px,p.py);});
+  ctx.stroke();
+  /* assets */
+  ctx.fillStyle="#8a93a0";
+  markers.assets.forEach(function(a){ctx.beginPath();ctx.arc(X(a.sig),Y(a.mu),3.5,0,7);ctx.fill();});
+  /* markers */
+  var gmv=markers.gmv,tan=markers.tan;
+  ctx.fillStyle="#6fb3ad";ctx.beginPath();ctx.arc(X(gmv.sig),Y(gmv.mu),6,0,7);ctx.fill();
+  ctx.fillStyle="#0a0c0f";ctx.font="600 9px "+getComputedStyle(document.body).getPropertyValue("--sans");
+  ctx.textAlign="center";ctx.fillStyle="#8a93a0";
+  ctx.fillText("min-var",X(gmv.sig),Y(gmv.mu)-11);
+  if(tan){
+    var tx=X(tan.sig),ty=Y(tan.mu);
+    ctx.save();ctx.translate(tx,ty);ctx.rotate(Math.PI/4);ctx.fillStyle="#d2a24c";ctx.fillRect(-5,-5,10,10);ctx.restore();
+    ctx.fillStyle="#8a93a0";ctx.fillText("max Sharpe",tx,ty-12);
+  }
+  /* selection crosshair */
+  if(sel){
+    ctx.strokeStyle="rgba(210,162,76,.45)";ctx.setLineDash([4,4]);ctx.lineWidth=1;
+    ctx.beginPath();ctx.moveTo(sel.px,view.mt);ctx.lineTo(sel.px,view.H-view.mb);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(view.ml,sel.py);ctx.lineTo(view.W-view.mr,sel.py);ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle="#d2a24c";ctx.beginPath();ctx.arc(sel.px,sel.py,5,0,7);ctx.fill();
+  }
+}
+function nearestPt(mx,my){
+  var best=null,bd=1e18,i;
+  for(i=0;i<plotted.length;i++){var p=plotted[i],dx=p.px-mx,dy=p.py-my,d=dx*dx+dy*dy;if(d<bd){bd=d;best=p;}}
+  return best;
+}
+function showTip(){
+  var tip=$("tooltip");
+  if(!sel){tip.hidden=true;return;}
+  tip.hidden=false;
+  tip.innerHTML="<b>μ "+(sel.mu*100).toFixed(2)+"%</b> · σ "+(sel.sig*100).toFixed(2)+"%";
+  tip.style.left=sel.px+"px";tip.style.top=sel.py+"px";
+}
+cv.addEventListener("mousemove",function(e){
+  if(!plotted.length)return;
+  var r=cv.getBoundingClientRect();
+  sel=nearestPt(e.clientX-r.left,e.clientY-r.top);
+  draw();showTip();updateInspector();
+});
+cv.addEventListener("mouseleave",function(){$("tooltip").hidden=true;draw();});
+cv.addEventListener("touchstart",function(e){
+  if(!plotted.length)return;
+  var t=e.touches[0],r=cv.getBoundingClientRect();
+  sel=nearestPt(t.clientX-r.left,t.clientY-r.top);
+  draw();showTip();updateInspector();
+},{passive:true});
+
+/* --- inspector --- */
+function updateInspector(){
+  var s=$("inspStats"),b=$("wBars"),sum=$("sumLine");
+  if(!sel||!lastGood){s.textContent="Hover the curve to inspect a portfolio.";b.innerHTML="";sum.textContent="";return;}
+  var sh=cSharpe(sel.w,lastGood.mu,lastGood.S,lastGood.rf);
+  s.innerHTML="Expected return <b>"+(sel.mu*100).toFixed(2)+"%</b> · Volatility <b>"+(sel.sig*100).toFixed(2)+"%</b> · Sharpe <b>"+sh.toFixed(2)+"</b>";
+  var tot=0;b.innerHTML="";
+  lastGood.names.forEach(function(nm,i){
+    var pw=sel.w[i]*100;tot+=sel.w[i];
+    var row=document.createElement("div");row.className="wrow";
+    row.innerHTML='<span class="wn">'+esc(nm)+'</span>'+
+      '<span class="wbar"><span style="width:'+Math.max(0,Math.min(100,Math.abs(pw))).toFixed(1)+'%"></span></span>'+
+      '<span class="wp">'+pw.toFixed(2)+'%</span>';
+    b.appendChild(row);
+  });
+  sum.textContent="Weights sum to "+(tot*100).toFixed(2)+"% · display rounding ±0.02%";
+}
+function selectDefault(){
+  if(!markers||!markers.tan||!plotted.length){updateInspector();return;}
+  var m=markers.tan,best=plotted[0],bd=1e18;
+  plotted.forEach(function(p){var d=(p.mu-m.mu)*(p.mu-m.mu)+(p.sig-m.sig)*(p.sig-m.sig);if(d<bd){bd=d;best=p;}});
+  sel=best;draw();updateInspector();
+}
+$("btnCopy").onclick=function(){
+  if(!sel||!lastGood){toast("Hover the curve to select a portfolio first");return;}
+  var lines=["name,weight%"];
+  lastGood.names.forEach(function(nm,i){lines.push('"'+nm.replace(/"/g,'""')+'",'+(sel.w[i]*100).toFixed(2));});
+  copyText(lines.join("\n"));
+};
+
+/* --- wiring --- */
+$("btnAdd").onclick=function(){
+  if(state.assets.length>=6)return;
+  var n=state.assets.length+1;
+  state.assets.push({name:"Asset "+n,ret:8,vol:15});
+  state.corr.forEach(function(r){r.push(0);});
+  var nr=[];for(var i=0;i<=n;i++)nr.push(i===n?1:0);
+  state.corr.push(nr);
+  renderAssets();renderCorr();schedule();
+};
+$("btnReset").onclick=function(){
+  state.assets=PRESET.assets.map(function(a){return {name:a.name,ret:a.ret,vol:a.vol};});
+  state.corr=PRESET.corr.map(function(r){return r.slice();});
+  state.rf=PRESET.rf;state.mode="short";
+  $("rf").value=state.rf;
+  $("modeShort").classList.add("on");$("modeLong").classList.remove("on");
+  renderAssets();renderCorr();schedule();
+};
+$("rf").addEventListener("input",function(e){state.rf=parseFloat(e.target.value)||0;schedule();});
+$("modeShort").onclick=function(){state.mode="short";$("modeShort").classList.add("on");$("modeLong").classList.remove("on");schedule();};
+$("modeLong").onclick=function(){state.mode="long";$("modeLong").classList.add("on");$("modeShort").classList.remove("on");schedule();};
+window.addEventListener("resize",function(){clearTimeout(rtimer);rtimer=setTimeout(draw,120);});
+
+/* --- init --- */
+state.assets=PRESET.assets.map(function(a){return {name:a.name,ret:a.ret,vol:a.vol};});
+state.corr=PRESET.corr.map(function(r){return r.slice();});
+state.rf=PRESET.rf;
+renderAssets();renderCorr();
+recompute();
+</script>
+</body>
+</html>

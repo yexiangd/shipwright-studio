@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Flappy Flyer · Shipwright Studio</title>
+<meta name="description" content="Flappy Flyer is a free one-button arcade game: tap to flap a brass bird through shrinking pipe gaps, chase your best score, and rage responsibly — no downloads, nothing leaves your browser.">
+<link rel="canonical" href="https://shipwright-studio.pages.dev/lab/flappy-flyer/">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&display=swap" rel="stylesheet">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"WebApplication","name":"Flappy Flyer","url":"https://shipwright-studio.pages.dev/lab/flappy-flyer/","description":"Flappy Flyer is a free online game that lets you tap to flap a little brass bird through gaps in oncoming pipes — one point per pipe, with the gaps shrinking and the world speeding up as your score climbs. Runs entirely in your browser: no downloads, no accounts, nothing leaves your device.","applicationCategory":"GameApplication","operatingSystem":"Web","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"}}
+</script>
+<style>
+:root{--bg:#0a0c0f;--panel:#101318;--line:#1c2128;--txt:#e8e4da;--mut:#9aa3b2;--brass:#d2a24c;--red:#e0655f}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--txt);font-family:Fraunces,Georgia,serif;line-height:1.65;padding:2rem 1.2rem 4rem;max-width:960px;margin:0 auto}
+a{color:var(--brass)}
+.nav{display:flex;gap:1.2rem;font-size:.85rem;margin-bottom:1.2rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.nav a{color:var(--mut);text-decoration:none}
+.nav a:hover{color:var(--brass)}
+.eyebrow{font-size:.75rem;letter-spacing:.22em;text-transform:uppercase;color:var(--mut);font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+h1{font-weight:600;font-size:clamp(2.1rem,5vw,3rem);margin:.5rem 0 .7rem}
+.define{color:var(--mut);max-width:46rem;margin-bottom:1.8rem;font-size:1rem}
+.define strong{color:var(--txt)}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:1.4rem;margin-bottom:1.4rem}
+.cardlabel{font-size:.72rem;letter-spacing:.18em;text-transform:uppercase;color:var(--mut);margin-bottom:.8rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.ui{font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.game-card{display:flex;flex-direction:column;align-items:center}
+.stage{position:relative;width:100%;max-width:420px}
+canvas{display:block;width:100%;aspect-ratio:420/640;border-radius:12px;border:1px solid var(--line);background:#0a0c0f;touch-action:manipulation;cursor:pointer}
+.mutebtn{position:absolute;top:.6rem;right:.6rem;width:2.2rem;height:2.2rem;border-radius:50%;border:1px solid var(--line);background:rgba(10,12,15,.75);color:var(--mut);font-size:1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;touch-action:manipulation}
+.mutebtn:hover{color:var(--brass);border-color:var(--brass)}
+.panel{position:absolute;inset:auto 1rem 1rem 1rem;background:rgba(16,19,24,.96);border:1px solid var(--brass);border-radius:12px;padding:1.2rem 1.2rem 1.3rem;text-align:center;transform:translateY(12px);opacity:0;pointer-events:none;transition:opacity .3s,transform .3s}
+.panel.show{opacity:1;transform:translateY(0);pointer-events:auto}
+.panel h2{font-size:1.3rem;font-weight:600;margin-bottom:.2rem}
+.panel .finalscore{font-size:2.6rem;color:var(--brass);font-weight:600;line-height:1.1}
+.panel .bestline{color:var(--mut);font-size:.88rem;margin:.3rem 0 1rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.newbest{display:inline-block;color:#0a0c0f;background:var(--brass);font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif;font-size:.72rem;font-weight:600;letter-spacing:.14em;padding:.2rem .7rem;border-radius:999px;margin-bottom:.6rem}
+.btn{font-size:.9rem;border:1px solid var(--brass);background:transparent;color:var(--brass);border-radius:999px;padding:.6rem 1.8rem;cursor:pointer;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.btn:hover{background:rgba(210,162,76,.12)}
+.controls-hint{margin-top:.9rem;font-size:.82rem;color:var(--mut)}
+details.explain{border:1px solid var(--line);border-radius:10px;padding:.9rem 1.1rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif;font-size:.88rem;color:var(--mut)}
+details.explain summary{cursor:pointer;color:var(--txt);font-size:.95rem}
+details.explain p{margin-top:.6rem}
+details.explain code{font-family:ui-monospace,"JetBrains Mono",monospace;color:var(--brass);font-size:.82rem}
+footer{margin-top:2.5rem;font-size:.85rem;color:var(--mut);font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+</style>
+</head>
+<body>
+<nav class="nav"><a href="/">Shipwright Studio</a><a href="/ideas/">Idea Lab</a></nav>
+<p class="eyebrow">Lab · Arcade</p>
+<h1>Flappy Flyer</h1>
+<p class="define"><strong>Flappy Flyer is a free online game that</strong> lets you tap to flap a little brass bird through gaps in oncoming pipes — one point per pipe, with the gaps shrinking and the world speeding up as your score climbs. It runs entirely in your browser: no downloads, no accounts, no tracking.</p>
+
+<section class="card game-card">
+  <div class="stage">
+    <canvas id="game" role="img" aria-label="Flappy Flyer game: tap, click, or press Space to flap the brass bird through the gaps in the pipes"></canvas>
+    <button class="mutebtn" id="muteBtn" aria-label="Toggle sound">&#x1F50A;</button>
+    <div class="panel" id="panel" aria-live="polite">
+      <div id="nbBadge" style="display:none"><span class="newbest">NEW BEST</span></div>
+      <h2>Game over</h2>
+      <div class="finalscore" id="finalScore">0</div>
+      <p class="bestline">Best&nbsp;<span id="finalBest">0</span></p>
+      <button class="btn" id="againBtn">Fly again</button>
+    </div>
+  </div>
+  <p class="controls-hint ui">Tap / click / Space to flap · P pauses</p>
+</section>
+
+<section class="card">
+  <p class="cardlabel">How it works</p>
+  <p class="define" style="margin-bottom:1rem">Each tap sets the bird's velocity to a &minus;420 px/s upward impulse; gravity (1500 px/s&sup2;) takes over the instant you let go. Every pipe you clear is +1 — but the gap narrows from 165&nbsp;px to 112&nbsp;px and the world speeds up from 190 to 300&nbsp;px/s as your score climbs to 40. Rage responsibly.</p>
+  <details class="explain">
+    <summary>Difficulty numbers</summary>
+    <p>Gap and speed ramp linearly from score 0 to score 40, then hold:<br>
+    score 0 &rarr; gap <code>165&nbsp;px</code>, speed <code>190&nbsp;px/s</code> &middot;
+    10 &rarr; <code>151.75</code>, <code>217.5</code> &middot;
+    20 &rarr; <code>138.5</code>, <code>245</code> &middot;
+    30 &rarr; <code>125.25</code>, <code>272.5</code> &middot;
+    40+ &rarr; <code>112</code>, <code>300</code>.<br>
+    Physics: gravity <code>1500&nbsp;px/s&sup2;</code>, flap impulse <code>&minus;420&nbsp;px/s</code>, max fall <code>560&nbsp;px/s</code>, bird radius <code>14&nbsp;px</code>, pipe width <code>64&nbsp;px</code>, spawn every <code>1.5&nbsp;s</code>. Physics integrates in fixed <code>1/120&nbsp;s</code> substeps, so 60&nbsp;Hz and 120&nbsp;Hz displays produce identical trajectories.</p>
+  </details>
+</section>
+
+<footer>Built by Shipwright Studio · <a href="/ideas/">Idea Lab</a> · <a href="/">home</a></footer>
+
+<script>
+"use strict";
+/* ===== CORE-BEGIN ===== */
+/* Pure game logic: no DOM, no side effects — extracted for node testing. */
+var W=420, H=640, GROUND_H=56;
+var BIRD_X=90, BIRD_R=14, BIRD_START_Y=300;
+var PIPE_W=64, SPAWN_EVERY=1.5;
+var GRAVITY=1500, FLAP_VY=-420, MAX_FALL=560, FIXED=1/120;
+function physicsStep(vy, y, dt){
+  /* Semi-implicit Euler in fixed 1/120 s substeps: 60 Hz and 120 Hz callers
+     produce identical trajectories. Returns {vy, y}. */
+  var acc=Math.min(Math.max(dt,0),0.05);
+  while(acc>=FIXED){
+    vy=Math.min(vy+GRAVITY*FIXED, MAX_FALL);
+    y+=vy*FIXED;
+    acc-=FIXED;
+  }
+  return {vy:vy, y:y};
+}
+function flapImpulse(){ return FLAP_VY; }
+function difficulty(score){
+  var t=Math.min(Math.max(score,0),40)/40;
+  return { gap:165-(165-112)*t, speed:190+(300-190)*t };
+}
+function makePipe(x, gapCenter, gap){
+  return { x:x, gapCenter:gapCenter, gap:gap, passed:false };
+}
+function pipeRects(p, w, h){
+  var top={x:p.x, y:0, w:w, h:p.gapCenter-p.gap/2};
+  var bot={x:p.x, y:p.gapCenter+p.gap/2, w:w, h:h-(p.gapCenter+p.gap/2)};
+  return {top:top, bottom:bot};
+}
+function circleRect(cx, cy, r, rx, ry, rw, rh){
+  var nx=Math.max(rx, Math.min(cx, rx+rw));
+  var ny=Math.max(ry, Math.min(cy, ry+rh));
+  var dx=cx-nx, dy=cy-ny;
+  return dx*dx+dy*dy<=r*r;
+}
+function birdHitsPipe(cx, cy, r, p, w, h){
+  var rs=pipeRects(p, w, h);
+  return circleRect(cx, cy, r, rs.top.x, rs.top.y, rs.top.w, rs.top.h) ||
+         circleRect(cx, cy, r, rs.bottom.x, rs.bottom.y, rs.bottom.w, rs.bottom.h);
+}
+function tryScore(p, birdX, pipeW){
+  /* +1 exactly once: when the pipe's right edge passes the bird. */
+  if(!p.passed && p.x+pipeW<birdX){ p.passed=true; return true; }
+  return false;
+}
+function randGapCenter(gap, margin){
+  margin=margin||20;
+  var lo=gap/2+margin, hi=H-GROUND_H-gap/2-margin;
+  return lo+Math.random()*(hi-lo);
+}
+/* ===== CORE-END ===== */
+
+/* ===== UI ===== */
+var cv=document.getElementById("game");
+var ctx=cv.getContext("2d");
+var dpr=Math.min(window.devicePixelRatio||1, 2);
+cv.width=W*dpr; cv.height=H*dpr;
+ctx.setTransform(dpr,0,0,dpr,0,0);
+
+/* --- state --- */
+var state="ready"; /* ready | playing | paused | gameover */
+var bird={y:BIRD_START_Y, vy:0, wing:0};
+var pipes=[], score=0, spawnT=0, physAcc=0, dist=0;
+var floaters=[], readyT=0, newBestFlash=0, bestFlashShown=false;
+var dieT=0, deathAt=0, panelShown=false;
+var best=0;
+try{ best=parseInt(localStorage.getItem("flappy-flyer-best")||"0",10)||0; }catch(e){}
+function saveBest(){ try{ localStorage.setItem("flappy-flyer-best", String(best)); }catch(e){} }
+
+/* --- audio: tiny WebAudio blips, lazy init on first gesture --- */
+var AC=null, muted=false;
+function ensureAudio(){
+  if(muted) return null;
+  if(!AC){ try{ AC=new (window.AudioContext||window.webkitAudioContext)(); }catch(e){ return null; } }
+  if(AC && AC.state==="suspended") AC.resume();
+  return AC;
+}
+function blip(freq, dur, type, vol, slideTo){
+  var ac=ensureAudio(); if(!ac) return;
+  var t=ac.currentTime, o=ac.createOscillator(), g=ac.createGain();
+  o.type=type; o.frequency.setValueAtTime(freq, t);
+  if(slideTo) o.frequency.exponentialRampToValueAtTime(Math.max(slideTo,1), t+dur);
+  g.gain.setValueAtTime(vol, t);
+  g.gain.exponentialRampToValueAtTime(0.0001, t+dur);
+  o.connect(g); g.connect(ac.destination);
+  o.start(t); o.stop(t+dur+0.02);
+}
+function sfxFlap(){ blip(520,0.07,"square",0.045,300); }
+function sfxScore(){ blip(880,0.09,"sine",0.06); setTimeout(function(){blip(1318,0.12,"sine",0.06);},90); }
+function sfxHit(){ blip(140,0.28,"sawtooth",0.08,55); }
+document.getElementById("muteBtn").addEventListener("click", function(e){
+  e.stopPropagation();
+  muted=!muted;
+  this.innerHTML=muted?"&#x1F507;":"&#x1F50A;";
+  this.setAttribute("aria-label", muted?"Unmute sound":"Mute sound");
+  if(muted&&AC) AC.close().catch(function(){}), AC=null;
+});
+
+/* --- background: starfield + skyline, generated once --- */
+var stars=[], skyline=[];
+(function(){
+  for(var i=0;i<90;i++) stars.push({x:Math.random()*W, y:Math.random()*(H-GROUND_H),
+    r:Math.random()<0.75?1:1.8, sp:Math.random()<0.5?8:22, tw:Math.random()*6.28});
+  var x=0;
+  while(x<W){ var bw=24+Math.random()*40, bh=40+Math.random()*110;
+    skyline.push({x:x, w:bw, h:bh, win:Math.random()<0.5});
+    x+=bw+4+Math.random()*14; }
+})();
+
+/* --- drawing --- */
+function drawBackground(){
+  var g=ctx.createLinearGradient(0,0,0,H);
+  g.addColorStop(0,"#0a0c0f"); g.addColorStop(1,"#11141a");
+  ctx.fillStyle=g; ctx.fillRect(0,0,W,H);
+  var t=performance.now()/1000;
+  stars.forEach(function(s){
+    var sx=((s.x-dist*s.sp/190)%W+W)%W;
+    var a=0.35+0.35*Math.sin(t*2+s.tw);
+    ctx.fillStyle="rgba(232,228,218,"+a.toFixed(2)+")";
+    ctx.fillRect(sx, s.y, s.r, s.r);
+  });
+  /* faint distant skyline silhouette, slow parallax */
+  ctx.fillStyle="#0e1116";
+  skyline.forEach(function(b){
+    var bx=((b.x-dist*0.3)%(W+80)+(W+80))%(W+80)-40;
+    ctx.fillRect(bx, H-GROUND_H-b.h, b.w, b.h);
+    if(b.win){ ctx.fillStyle="rgba(210,162,76,0.10)";
+      ctx.fillRect(bx+4, H-GROUND_H-b.h+8, 5, 5); ctx.fillRect(bx+b.w-9, H-GROUND_H-b.h+8, 5, 5);
+      ctx.fillStyle="#0e1116"; }
+  });
+  /* ground */
+  ctx.fillStyle="#14171c"; ctx.fillRect(0,H-GROUND_H,W,GROUND_H);
+  ctx.fillStyle="#d2a24c"; ctx.fillRect(0,H-GROUND_H,W,2);
+}
+function drawPipe(p){
+  var rs=pipeRects(p, PIPE_W, H);
+  function col(x,y,w,h,capAt){
+    var g=ctx.createLinearGradient(x,0,x+w,0);
+    g.addColorStop(0,"#23272e"); g.addColorStop(0.5,"#4a515a"); g.addColorStop(1,"#23272e");
+    ctx.fillStyle=g; ctx.fillRect(x,y,w,h);
+    ctx.fillStyle="#15181d"; ctx.fillRect(x,y,2,h); ctx.fillRect(x+w-2,y,2,h);
+    if(capAt!==undefined){ ctx.fillStyle="#d2a24c"; ctx.fillRect(x-3,capAt-2,w+6,5); }
+  }
+  if(rs.top.h>0) col(rs.top.x, rs.top.y, rs.top.w, rs.top.h, rs.top.h);
+  if(rs.bottom.h>0) col(rs.bottom.x, rs.bottom.y, rs.bottom.w, rs.bottom.h, rs.bottom.y);
+}
+function drawBird(x, y, angle, wingT){
+  ctx.save(); ctx.translate(x,y); ctx.rotate(angle);
+  /* body */
+  ctx.fillStyle="#d2a24c";
+  ctx.beginPath(); ctx.arc(0,0,BIRD_R,0,6.2832); ctx.fill();
+  ctx.fillStyle="#0a0c0f"; ctx.globalAlpha=0.18;
+  ctx.beginPath(); ctx.arc(0,4,BIRD_R*0.75,0,6.2832); ctx.fill();
+  ctx.globalAlpha=1;
+  /* wing */
+  var flap=Math.sin(wingT*18)*4;
+  ctx.fillStyle="#8a6a2a";
+  ctx.beginPath(); ctx.ellipse(-6,-2,8,4.5,-0.5+flap*0.06,0,6.2832); ctx.fill();
+  /* eye */
+  ctx.fillStyle="#fff"; ctx.beginPath(); ctx.arc(6,-4,4.6,0,6.2832); ctx.fill();
+  ctx.fillStyle="#0a0c0f"; ctx.beginPath(); ctx.arc(7.4,-4,2.1,0,6.2832); ctx.fill();
+  /* beak */
+  ctx.fillStyle="#e07a3f";
+  ctx.beginPath(); ctx.moveTo(12,-1); ctx.lineTo(18,1.5); ctx.lineTo(12,4); ctx.closePath(); ctx.fill();
+  ctx.restore();
+}
+function drawHUD(){
+  ctx.textAlign="center"; ctx.textBaseline="top";
+  ctx.font="600 52px Fraunces, Georgia, serif";
+  ctx.shadowColor="rgba(0,0,0,0.6)"; ctx.shadowBlur=10;
+  ctx.fillStyle="#fff";
+  ctx.fillText(String(score), W/2, 18);
+  ctx.shadowBlur=0;
+  ctx.font="500 13px -apple-system,'Segoe UI',Inter,system-ui,sans-serif";
+  ctx.textAlign="left"; ctx.fillStyle="#9aa3b2";
+  ctx.fillText("BEST "+best, 14, 24);
+  if(newBestFlash>0){
+    ctx.textAlign="center"; ctx.fillStyle="#d2a24c";
+    ctx.globalAlpha=Math.min(1,newBestFlash*2);
+    ctx.font="600 15px -apple-system,'Segoe UI',Inter,system-ui,sans-serif";
+    ctx.fillText("NEW BEST", W/2, 84);
+    ctx.globalAlpha=1;
+  }
+}
+function drawFloaters(){
+  floaters.forEach(function(f){
+    ctx.textAlign="center"; ctx.fillStyle="#d2a24c";
+    ctx.globalAlpha=Math.max(0,1-f.t/0.8);
+    ctx.font="600 22px Fraunces, Georgia, serif";
+    ctx.fillText("+1", f.x, f.y-f.t*46);
+    ctx.globalAlpha=1;
+  });
+}
+function drawReady(){
+  drawBackground();
+  var by=BIRD_START_Y+Math.sin(readyT*3)*10;
+  drawBird(BIRD_X, by, -0.15, readyT);
+  drawHUD();
+  var a=0.55+0.45*Math.sin(readyT*4);
+  ctx.globalAlpha=a; ctx.textAlign="center"; ctx.fillStyle="#e8e4da";
+  ctx.font="600 26px Fraunces, Georgia, serif";
+  ctx.fillText("Tap to fly", W/2, H/2-40);
+  ctx.globalAlpha=1;
+}
+function drawPausedOverlay(){
+  ctx.fillStyle="rgba(10,12,15,0.55)"; ctx.fillRect(0,0,W,H);
+  ctx.textAlign="center"; ctx.fillStyle="#e8e4da";
+  ctx.font="600 28px Fraunces, Georgia, serif";
+  ctx.fillText("Paused", W/2, H/2-30);
+  ctx.font="400 15px -apple-system,'Segoe UI',Inter,system-ui,sans-serif";
+  ctx.fillStyle="#9aa3b2";
+  ctx.fillText("Tap to resume", W/2, H/2+8);
+}
+
+/* --- game flow --- */
+function reset(){
+  bird={y:BIRD_START_Y, vy:0, wing:0};
+  pipes=[]; score=0; spawnT=0; physAcc=0; dist=0;
+  floaters=[]; newBestFlash=0; bestFlashShown=false;
+  dieT=0; panelShown=false;
+  document.getElementById("panel").classList.remove("show");
+  document.getElementById("nbBadge").style.display="none";
+}
+function startRun(){
+  reset(); state="playing";
+}
+function die(){
+  state="gameover"; dieT=0; deathAt=performance.now();
+  sfxHit();
+  if(score>best){ best=score; saveBest(); bestFlashShown=true; }
+}
+function showPanel(){
+  panelShown=true;
+  document.getElementById("finalScore").textContent=String(score);
+  document.getElementById("finalBest").textContent=String(best);
+  document.getElementById("nbBadge").style.display=bestFlashShown?"block":"none";
+  document.getElementById("panel").classList.add("show");
+}
+function spawnPipe(){
+  var d=difficulty(score);
+  pipes.push(makePipe(W+10, randGapCenter(d.gap), d.gap));
+}
+function flapNow(){
+  bird.vy=flapImpulse();
+  bird.wing=0.35;
+  sfxFlap();
+}
+function step(dt){
+  var d=difficulty(score);
+  dist+=d.speed*dt;
+  /* pipes */
+  spawnT-=dt;
+  if(spawnT<=0){ spawnPipe(); spawnT=SPAWN_EVERY; }
+  for(var i=0;i<pipes.length;i++){
+    var p=pipes[i];
+    p.x-=d.speed*dt;
+    if(tryScore(p, BIRD_X, PIPE_W)){
+      score++;
+      floaters.push({x:BIRD_X+30, y:p.gapCenter, t:0});
+      sfxScore();
+      if(score>best && best>0 && !bestFlashShown){ newBestFlash=1.6; bestFlashShown=true; }
+    }
+  }
+  pipes=pipes.filter(function(p){ return p.x+PIPE_W>-20; });
+  /* bird */
+  var s=physicsStep(bird.vy, bird.y, dt);
+  bird.vy=s.vy; bird.y=s.y;
+  if(bird.y<BIRD_R){ bird.y=BIRD_R; if(bird.vy<0) bird.vy=0; } /* ceiling: clamp, no death */
+  bird.wing=Math.max(0,bird.wing-dt);
+  floaters.forEach(function(f){ f.t+=dt; });
+  floaters=floaters.filter(function(f){ return f.t<0.8; });
+  newBestFlash=Math.max(0,newBestFlash-dt);
+  /* collisions */
+  var dead=false;
+  if(bird.y+BIRD_R>=H-GROUND_H) dead=true;
+  for(var j=0;j<pipes.length && !dead;j++){
+    if(birdHitsPipe(BIRD_X, bird.y, BIRD_R, pipes[j], PIPE_W, H)) dead=true;
+  }
+  if(dead) die();
+}
+function stepDeath(dt){
+  dieT+=dt;
+  if(dieT<0.12) return; /* freeze */
+  var s=physicsStep(bird.vy, bird.y, dt);
+  bird.vy=Math.min(s.vy, MAX_FALL);
+  bird.y=s.y;
+  if(bird.y+BIRD_R>=H-GROUND_H){
+    bird.y=H-GROUND_H-BIRD_R;
+    if(!panelShown) showPanel();
+  }
+}
+function birdAngle(){
+  /* -25deg climbing .. +80deg diving (90 while tumbling to ground) */
+  if(state==="gameover"){
+    var target=1.5708;
+    var cur=bird._rot||-0.4;
+    cur+=(target-cur)*0.12;
+    bird._rot=cur; return cur;
+  }
+  var t=(bird.vy-FLAP_VY)/(MAX_FALL-FLAP_VY);
+  t=Math.max(0,Math.min(1,t));
+  return -0.4363+t*(1.3963+0.4363);
+}
+function draw(){
+  drawBackground();
+  pipes.forEach(drawPipe);
+  drawBird(BIRD_X, bird.y, birdAngle(), performance.now()/1000+(bird.wing>0?0.5:0));
+  drawFloaters();
+  drawHUD();
+}
+
+/* --- input --- */
+function onPress(){
+  ensureAudio();
+  if(state==="ready"){ startRun(); flapNow(); }
+  else if(state==="playing"){ flapNow(); }
+  else if(state==="paused"){ state="playing"; }
+  else if(state==="gameover"){
+    if(panelShown && performance.now()-deathAt>400) startRun();
+  }
+}
+cv.addEventListener("pointerdown", function(e){ e.preventDefault(); onPress(); });
+document.getElementById("againBtn").addEventListener("click", function(e){
+  e.stopPropagation(); ensureAudio(); startRun();
+});
+window.addEventListener("keydown", function(e){
+  if(e.code==="Space"||e.code==="ArrowUp"){ e.preventDefault(); onPress(); }
+  else if(e.code==="KeyP"){
+    if(state==="playing") state="paused";
+    else if(state==="paused") state="playing";
+  }
+});
+document.addEventListener("visibilitychange", function(){
+  if(document.hidden && state==="playing") state="paused";
+});
+
+/* --- main loop --- */
+var lastT=0;
+function frame(t){
+  requestAnimationFrame(frame);
+  var dt=t?Math.min((t-lastT)/1000,0.05):0;
+  lastT=t||0;
+  if(state==="ready"){ readyT+=dt; drawReady(); }
+  else if(state==="playing"){ step(dt); draw(); }
+  else if(state==="paused"){ draw(); drawPausedOverlay(); }
+  else if(state==="gameover"){ stepDeath(dt); draw(); }
+}
+requestAnimationFrame(frame);
+</script>
+</body>
+</html>
