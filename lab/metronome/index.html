@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Metronome · Shipwright Studio</title>
+<meta name="description" content="Free online metronome: set 30–240 BPM by slider, preset, or tap tempo, pick 2/4, 3/4, 4/4 or 6/8, and practise with an accented downbeat and a large visual pulse.">
+<link rel="canonical" href="https://shipwright-studio.pages.dev/lab/metronome/">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&display=swap" rel="stylesheet">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"WebApplication","name":"Metronome","url":"https://shipwright-studio.pages.dev/lab/metronome/","description":"Metronome is a free online tool that keeps time for musical practice with a precise Web Audio click, an accented downbeat, tap tempo, and a large visual pulse.","applicationCategory":"MusicApplication","operatingSystem":"Web","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"}}
+</script>
+<style>
+:root{--bg:#0a0c0f;--panel:#101318;--line:#1c2128;--txt:#e8e4da;--mut:#9aa3b2;--brass:#d2a24c;--dim:#2a2f38}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--txt);font-family:Fraunces,Georgia,serif;line-height:1.65;padding:2rem 1.2rem 4rem;max-width:960px;margin:0 auto}
+a{color:var(--brass)}
+.nav{display:flex;gap:1.2rem;font-size:.85rem;margin-bottom:1.2rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.nav a{color:var(--mut);text-decoration:none}
+.nav a:hover{color:var(--brass)}
+.eyebrow{font-size:.75rem;letter-spacing:.22em;text-transform:uppercase;color:var(--mut);font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+h1{font-weight:600;font-size:clamp(2.1rem,5vw,3rem);margin:.5rem 0 .7rem}
+.define{color:var(--mut);max-width:46rem;margin-bottom:1.8rem;font-size:1rem}
+.define strong{color:var(--txt)}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:1.4rem;margin-bottom:1.4rem;text-align:center}
+.cardlabel{font-size:.72rem;letter-spacing:.18em;text-transform:uppercase;color:var(--mut);margin-bottom:.8rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.ui{font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.pulse{width:11rem;height:11rem;margin:.6rem auto 1rem;border-radius:50%;background:var(--dim);border:2px solid var(--line);display:flex;align-items:center;justify-content:center;transition:background .12s,border-color .12s,transform .12s}
+.pulse .bpmbig{font-size:2.6rem;font-weight:600;line-height:1}
+.pulse.on{background:rgba(210,162,76,.28);border-color:var(--brass);transform:scale(1.06)}
+.pulse.on.accent{background:rgba(210,162,76,.5);border-color:var(--brass);transform:scale(1.12)}
+.dots{display:flex;gap:.6rem;justify-content:center;flex-wrap:wrap;margin:.8rem 0 .4rem}
+.dot{width:1.1rem;height:1.1rem;border-radius:50%;background:var(--dim);border:1px solid var(--line)}
+.dot.on{background:var(--brass);border-color:var(--brass)}
+.dot.on.accent{box-shadow:0 0 0 4px rgba(210,162,76,.25)}
+.beatline{font-size:.9rem;color:var(--mut);font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.statusline{font-size:.95rem;color:var(--txt);font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif;margin-top:.3rem}
+.controls{text-align:left}
+.bpmrow{display:flex;gap:1rem;align-items:center;flex-wrap:wrap;margin-bottom:1rem}
+.bpmrow label{font-size:.86rem;color:var(--mut);font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif;display:flex;align-items:center;gap:.45rem}
+input[type=number]{background:#08090c;border:1px solid var(--line);border-radius:10px;color:var(--txt);font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif;font-size:.95rem;padding:.55rem .8rem;width:6.5rem}
+input[type=range]{flex:1;min-width:12rem;accent-color:var(--brass)}
+input:focus{outline:none;border-color:var(--brass)}
+.btnrow{display:flex;gap:.6rem;flex-wrap:wrap;margin-bottom:1rem;align-items:center}
+.btnrow .rowlabel{font-size:.72rem;letter-spacing:.18em;text-transform:uppercase;color:var(--mut);width:100%;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.btn{font-size:.9rem;border:1px solid var(--line);background:transparent;color:var(--mut);border-radius:999px;padding:.55rem 1.2rem;cursor:pointer;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.btn:hover{color:var(--txt);border-color:var(--mut)}
+.btn.on{border-color:var(--brass);color:var(--brass);background:rgba(210,162,76,.08)}
+.btn.primary{border-color:var(--brass);color:var(--brass);font-size:1rem;padding:.7rem 2rem}
+.btn.primary:hover{background:rgba(210,162,76,.12)}
+.btn.tap.flash{background:rgba(210,162,76,.22);color:var(--brass);border-color:var(--brass)}
+.hintline{font-size:.8rem;color:var(--mut);min-height:1.2em;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+details.explain{border:1px solid var(--line);border-radius:10px;padding:.9rem 1.1rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif;font-size:.88rem;color:var(--mut);text-align:left}
+details.explain summary{cursor:pointer;color:var(--txt);font-size:.95rem}
+details.explain p{margin-top:.6rem}
+footer{margin-top:2.5rem;font-size:.85rem;color:var(--mut);font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif;text-align:center}
+@media(max-width:720px){.pulse{width:9rem;height:9rem}.btn{padding:.6rem 1rem}}
+</style>
+</head>
+<body>
+<nav class="nav"><a href="/">Shipwright Studio</a><a href="/ideas/">Idea Lab</a></nav>
+<p class="eyebrow">Lab · Music tools</p>
+<h1>Metronome</h1>
+<p class="define"><strong>Metronome is a free online tool that</strong> keeps time for musical practice with a precise Web Audio click, an accented downbeat, tap tempo, and a large visual pulse — from largo to prestissimo, with no downloads and nothing leaving your browser.</p>
+
+<section class="card" aria-label="Metronome pulse">
+  <p class="cardlabel">Now playing</p>
+  <div class="pulse" id="pulse"><span class="bpmbig" id="pulseBpm">110</span></div>
+  <div class="dots" id="dots" aria-label="Beats in the bar"></div>
+  <p class="beatline" id="beatline">Beat — of 4</p>
+  <p class="statusline" id="status">Stopped · 110 BPM · 4/4</p>
+</section>
+
+<section class="card controls" aria-label="Metronome controls">
+  <p class="cardlabel">Tempo</p>
+  <div class="bpmrow">
+    <input type="range" id="bpmSlider" min="30" max="240" value="110" aria-label="Tempo in beats per minute">
+    <label>BPM <input type="number" id="bpmInput" value="110" min="30" max="240" inputmode="numeric"></label>
+  </div>
+  <p class="hintline" id="bpmHint"></p>
+  <div class="btnrow" id="presetRow">
+    <span class="rowlabel">Presets</span>
+    <button class="btn" data-bpm="60">Largo 60</button>
+    <button class="btn" data-bpm="80">Andante 80</button>
+    <button class="btn on" data-bpm="110">Moderato 110</button>
+    <button class="btn" data-bpm="140">Allegro 140</button>
+    <button class="btn" data-bpm="180">Presto 180</button>
+  </div>
+  <div class="btnrow" id="sigRow">
+    <span class="rowlabel">Time signature</span>
+    <button class="btn" data-sig="2/4">2/4</button>
+    <button class="btn" data-sig="3/4">3/4</button>
+    <button class="btn on" data-sig="4/4">4/4</button>
+    <button class="btn" data-sig="6/8">6/8</button>
+  </div>
+  <div class="btnrow">
+    <button class="btn primary" id="btnStart">Start</button>
+    <button class="btn tap" id="btnTap">Tap tempo</button>
+    <button class="btn" id="btnMute" aria-pressed="false">Mute</button>
+  </div>
+  <p class="hintline">Press Space to start or stop. Sound starts only after you press Start or Space, because browsers block audio autoplay.</p>
+</section>
+
+<section class="card">
+  <details class="explain">
+    <summary>How does it keep time?</summary>
+    <p>Tap tempo takes the median interval between your recent taps, so one rushed or dragging tap does not skew the tempo. Once running, a lookahead scheduler checks every 25&nbsp;ms and queues each click against the audio clock 0.1&nbsp;seconds ahead, so the beat does not drift the way a plain timer would. BPM counts the numerator beats in each bar, so 6/8 gives six beats per bar with beat 1 accented.</p>
+  </details>
+</section>
+
+<footer>Built in the Shipwright Studio Lab · <a href="/ideas/">more experiments</a></footer>
+
+<script>
+"use strict";
+/* ===== Core (node-tested) ===== */
+function clampBpm(v){if(isNaN(v))return 110;return Math.max(30,Math.min(240,Math.floor(v)));}
+function bpmToIntervalMs(bpm){return 60000/bpm;}
+function bpmToIntervalSec(bpm){return 60/bpm;}
+function median(values){
+  var s=values.slice().sort(function(a,b){return a-b;});
+  var m=Math.floor(s.length/2);
+  return s.length%2?s[m]:(s[m-1]+s[m])/2;
+}
+function beatsPerBar(sig){return sig==="2/4"?2:sig==="3/4"?3:sig==="6/8"?6:4;}
+function isAccent(beatInBar,sig){return beatInBar%beatsPerBar(sig)===0;}
+function nextBeatInBar(beatInBar,sig){return (beatInBar+1)%beatsPerBar(sig);}
+/* Tap tempo: tapTimes are millisecond timestamps, oldest first. A gap
+   over 2000 ms resets the sequence; the caller keeps only recent taps. */
+function tapTempoBpm(tapTimes){
+  if(!tapTimes||tapTimes.length<2)return null;
+  var intervals=[];
+  for(var i=1;i<tapTimes.length;i++)intervals.push(tapTimes[i]-tapTimes[i-1]);
+  var med=median(intervals);
+  if(!(med>0))return null;
+  return clampBpm(60000/med);
+}
+/* ===== UI ===== */
+function $(id){return document.getElementById(id);}
+var bpm=110, sig="4/4", running=false, muted=false;
+var beatInBar=0, shownBeat=0, audioCtx=null, timerId=null, nextNoteTime=0, runId=0;
+var tapTimes=[];
+function updateStatus(){
+  $("pulseBpm").textContent=bpm;
+  $("status").textContent=(running?"Playing":"Stopped")+" · "+bpm+" BPM · "+sig+(muted?" · Muted":"");
+  $("beatline").textContent=running?("Beat "+(shownBeat+1)+" of "+beatsPerBar(sig)):("Beat — of "+beatsPerBar(sig));
+}
+function renderDots(){
+  var d=$("dots");d.innerHTML="";
+  for(var i=0;i<beatsPerBar(sig);i++){
+    var s=document.createElement("span");s.className="dot";s.setAttribute("aria-label","Beat "+(i+1));
+    d.appendChild(s);
+  }
+}
+function markActivePreset(){
+  document.querySelectorAll("#presetRow .btn").forEach(function(b){
+    b.classList.toggle("on",parseInt(b.getAttribute("data-bpm"),10)===bpm);
+  });
+}
+function setBpm(v,showClampHint){
+  var clamped=clampBpm(v);
+  if(showClampHint)$("bpmHint").textContent=(clamped!==Math.floor(v)&&!isNaN(v))?"BPM clamped to 30–240.":"";
+  bpm=clamped;
+  $("bpmSlider").value=bpm;$("bpmInput").value=bpm;
+  markActivePreset();updateStatus();
+}
+function setSig(s){
+  sig=s;beatInBar=0;
+  document.querySelectorAll("#sigRow .btn").forEach(function(b){
+    b.classList.toggle("on",b.getAttribute("data-sig")===sig);
+  });
+  renderDots();updateStatus();
+}
+function clickAt(time,accent){
+  if(muted)return;
+  var osc=audioCtx.createOscillator(),gain=audioCtx.createGain();
+  osc.type="sine";osc.frequency.value=accent?2000:1000;
+  gain.gain.setValueAtTime(0.25,time);
+  gain.gain.exponentialRampToValueAtTime(0.001,time+0.05);
+  osc.connect(gain);gain.connect(audioCtx.destination);
+  osc.start(time);osc.stop(time+0.06);
+}
+function pulseVisual(beat,accent,token){
+  if(!running||token!==runId)return;
+  shownBeat=beat; /* display only: never touch beatInBar, the scheduler counter */
+  var p=$("pulse");p.classList.remove("on","accent");
+  void p.offsetWidth; /* restart the visual state */
+  p.classList.add("on");if(accent)p.classList.add("accent");
+  var dots=document.querySelectorAll("#dots .dot");
+  dots.forEach(function(d,i){
+    d.classList.toggle("on",i===beat);
+    d.classList.toggle("accent",i===beat&&accent);
+  });
+  updateStatus();
+  setTimeout(function(){p.classList.remove("on","accent");},180);
+}
+function scheduler(){
+  if(!audioCtx)return;
+  while(nextNoteTime<audioCtx.currentTime+0.1){
+    (function(beat,time,token){
+      clickAt(time,isAccent(beat,sig));
+      var delay=Math.max(0,(time-audioCtx.currentTime)*1000);
+      setTimeout(function(){pulseVisual(beat,isAccent(beat,sig),token);},delay);
+    })(beatInBar,nextNoteTime,runId);
+    nextNoteTime+=bpmToIntervalSec(bpm);
+    beatInBar=nextBeatInBar(beatInBar,sig);
+  }
+}
+function start(){
+  if(!audioCtx)audioCtx=new (window.AudioContext||window.webkitAudioContext)();
+  if(audioCtx.state==="suspended")audioCtx.resume();
+  running=true;runId++;beatInBar=0;
+  nextNoteTime=audioCtx.currentTime+0.06;
+  timerId=setInterval(scheduler,25);
+  $("btnStart").textContent="Stop";renderDots();updateStatus();
+}
+function stop(){
+  running=false;if(timerId)clearInterval(timerId);timerId=null;
+  $("btnStart").textContent="Start";
+  document.querySelectorAll("#dots .dot").forEach(function(d){d.classList.remove("on","accent");});
+  $("pulse").classList.remove("on","accent");updateStatus();
+}
+function toggleStart(){if(running)stop();else start();}
+$("btnStart").onclick=toggleStart;
+$("btnMute").onclick=function(){
+  muted=!muted;
+  $("btnMute").textContent=muted?"Unmute":"Mute";
+  $("btnMute").setAttribute("aria-pressed",muted?"true":"false");
+  updateStatus();
+};
+$("bpmSlider").addEventListener("input",function(){setBpm(parseInt($("bpmSlider").value,10),false);});
+$("bpmInput").addEventListener("change",function(){
+  var v=parseInt($("bpmInput").value,10);
+  if(isNaN(v)){$("bpmInput").value=bpm;$("bpmHint").textContent="";return;}
+  setBpm(v,true);
+});
+document.querySelectorAll("#presetRow .btn").forEach(function(b){
+  b.onclick=function(){setBpm(parseInt(b.getAttribute("data-bpm"),10),false);};
+});
+document.querySelectorAll("#sigRow .btn").forEach(function(b){
+  b.onclick=function(){setSig(b.getAttribute("data-sig"));};
+});
+$("btnTap").onclick=function(){
+  var now=Date.now();
+  if(tapTimes.length&&now-tapTimes[tapTimes.length-1]>2000)tapTimes=[];
+  tapTimes.push(now);tapTimes=tapTimes.slice(-6);
+  var t=tapTempoBpm(tapTimes);
+  if(t!==null)setBpm(t,false);
+  var btn=$("btnTap");btn.classList.add("flash");
+  setTimeout(function(){btn.classList.remove("flash");},180);
+};
+document.addEventListener("keydown",function(e){
+  if(e.code!=="Space")return;
+  var tag=(e.target&&e.target.tagName)||"";
+  if(tag==="INPUT"||tag==="TEXTAREA"||tag==="BUTTON")return;
+  e.preventDefault();toggleStart();
+});
+renderDots();updateStatus();
+</script>
+</body>
+</html>

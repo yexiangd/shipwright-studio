@@ -1,5 +1,5 @@
 {
-  "updated": "2026-10-23",
+  "updated": "2026-10-24",
   "ideas": [
     {
       "id": "idea-000a",
@@ -511,7 +511,9 @@
       "tagline": "SHA-256/384/512 and friends, computed locally.",
       "priority": 77,
       "effort": "S",
-      "status": "todo"
+      "status": "done",
+      "url": "/lab/hash-generator/",
+      "shipped": "2026-10-24"
     },
     {
       "id": "idea-044",
@@ -937,7 +939,9 @@
       "tagline": "From largo to prestissimo, with visual pulse.",
       "priority": 77,
       "effort": "S",
-      "status": "todo"
+      "status": "done",
+      "url": "/lab/metronome/",
+      "shipped": "2026-10-24"
     },
     {
       "id": "idea-085",

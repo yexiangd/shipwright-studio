@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hash Lab · Shipwright Studio</title>
+<meta name="description" content="Free online SHA-1, SHA-256, SHA-384 and SHA-512 hash generator for text and files — computed locally in your browser, with hex and base64 output and a hash comparison check.">
+<link rel="canonical" href="https://shipwright-studio.pages.dev/lab/hash-generator/">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"WebApplication","name":"Hash Lab","url":"https://shipwright-studio.pages.dev/lab/hash-generator/","description":"Hash Lab is a free online tool that computes SHA-1, SHA-256, SHA-384 and SHA-512 digests for text or files, entirely in the browser, with hex and base64 output, one-click copy, and a hash comparison check.","applicationCategory":"DeveloperApplication","operatingSystem":"Web","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"}}
+</script>
+<style>
+:root{--bg:#0a0c0f;--panel:#101318;--line:#1c2128;--txt:#e8e4da;--mut:#9aa3b2;--brass:#d2a24c;--green:#6fbf73;--red:#e0655f}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--txt);font-family:Fraunces,Georgia,serif;line-height:1.65;padding:2rem 1.2rem 4rem;max-width:960px;margin:0 auto}
+a{color:var(--brass)}
+.nav{display:flex;gap:1.2rem;font-size:.85rem;margin-bottom:1.2rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.nav a{color:var(--mut);text-decoration:none}
+.nav a:hover{color:var(--brass)}
+.eyebrow{font-size:.75rem;letter-spacing:.22em;text-transform:uppercase;color:var(--mut);font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+h1{font-weight:600;font-size:clamp(2.1rem,5vw,3rem);margin:.5rem 0 .7rem}
+.define{color:var(--mut);max-width:46rem;margin-bottom:1.8rem;font-size:1rem}
+.define strong{color:var(--txt)}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:1.4rem;margin-bottom:1.4rem}
+.cardlabel{font-size:.72rem;letter-spacing:.18em;text-transform:uppercase;color:var(--mut);margin-bottom:.8rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.ui{font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.mono{font-family:"JetBrains Mono",ui-monospace,monospace}
+textarea{width:100%;background:#08090c;border:1px solid var(--line);border-radius:10px;color:var(--txt);font-family:"JetBrains Mono",ui-monospace,monospace;font-size:.9rem;padding:.8rem;min-height:7rem;resize:vertical}
+textarea:focus,input:focus{outline:none;border-color:var(--brass)}
+input[type=file]{position:absolute;width:1px;height:1px;opacity:0}
+.fileline{display:flex;gap:.7rem;align-items:center;flex-wrap:wrap;margin-top:.9rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif;font-size:.86rem;color:var(--mut)}
+.fileline .fname{color:var(--txt);word-break:break-all}
+.banner{font-size:.88rem;color:var(--red);min-height:1.2em;margin-top:.8rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.btn{font-size:.9rem;border:1px solid var(--brass);background:transparent;color:var(--brass);border-radius:999px;padding:.55rem 1.4rem;cursor:pointer;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.btn:hover{background:rgba(210,162,76,.12)}
+.btn.ghost{border-color:var(--line);color:var(--mut)}
+.btn.ghost:hover{color:var(--txt);border-color:var(--mut)}
+.btnrow{display:flex;gap:.7rem;flex-wrap:wrap;margin-top:1rem;align-items:center}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:999px;overflow:hidden;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.seg button{border:0;background:transparent;color:var(--mut);padding:.45rem 1.1rem;cursor:pointer;font-size:.86rem}
+.seg button.on{background:rgba(210,162,76,.15);color:var(--brass)}
+.drow{display:flex;gap:.8rem;align-items:flex-start;padding:.7rem 0;border-bottom:1px solid #12151b}
+.drow:last-child{border-bottom:0}
+.dlab{flex:0 0 5.2rem;font-family:"JetBrains Mono",ui-monospace,monospace;font-size:.82rem;color:var(--brass);padding-top:.2rem}
+.dval{flex:1;font-family:"JetBrains Mono",ui-monospace,monospace;font-size:.82rem;word-break:break-all;color:var(--txt);padding-top:.2rem}
+.cpbtn{flex:0 0 auto;font-size:.76rem;border:1px solid var(--line);background:transparent;color:var(--mut);border-radius:999px;padding:.3rem .9rem;cursor:pointer;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.cpbtn:hover{color:var(--brass);border-color:var(--brass)}
+.empty{color:var(--mut);font-size:.9rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.cmpinput{width:100%;background:#08090c;border:1px solid var(--line);border-radius:10px;color:var(--txt);font-family:"JetBrains Mono",ui-monospace,monospace;font-size:.85rem;padding:.7rem .9rem;margin-bottom:.7rem}
+.cmpresult{font-size:.95rem;margin-top:.9rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif;min-height:1.4em}
+.cmpresult.match{color:var(--green)}
+.cmpresult.nomatch{color:var(--red)}
+.cmpresult.err{color:var(--red)}
+.toast{position:fixed;bottom:1.4rem;left:50%;transform:translateX(-50%);background:var(--brass);color:#0a0c0f;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif;font-size:.88rem;padding:.55rem 1.3rem;border-radius:999px;opacity:0;pointer-events:none;transition:opacity .25s}
+.toast.show{opacity:1}
+details.explain{border:1px solid var(--line);border-radius:10px;padding:.9rem 1.1rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif;font-size:.88rem;color:var(--mut)}
+details.explain summary{cursor:pointer;color:var(--txt);font-size:.95rem}
+details.explain p{margin-top:.6rem}
+details.explain code{font-family:"JetBrains Mono",ui-monospace,monospace;color:var(--brass);font-size:.82rem}
+footer{margin-top:2.5rem;font-size:.85rem;color:var(--mut);font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+@media(max-width:720px){.btn{width:100%}.dlab{flex-basis:4.6rem}}
+</style>
+</head>
+<body>
+<nav class="nav"><a href="/">Shipwright Studio</a><a href="/ideas/">Idea Lab</a></nav>
+<p class="eyebrow">Lab · Developer tools</p>
+<h1>Hash Lab</h1>
+<p class="define"><strong>Hash Lab is a free online tool that</strong> computes SHA-1, SHA-256, SHA-384 and SHA-512 digests for text or files, entirely in your browser — nothing is uploaded, so your input never leaves your device.</p>
+
+<section class="card">
+  <p class="cardlabel">Input</p>
+  <textarea id="txt" placeholder="Type or paste text to hash…" aria-label="Text to hash"></textarea>
+  <div class="fileline">
+    <label class="btn ghost" for="file">Choose file</label>
+    <input type="file" id="file">
+    <span id="fileInfo">No file chosen — hashing a file hashes its bytes.</span>
+  </div>
+  <p class="banner" id="banner"></p>
+  <div class="btnrow">
+    <button class="btn" id="btnHash">Hash</button>
+    <button class="btn ghost" id="btnSample">Sample text</button>
+    <button class="btn ghost" id="btnClear">Clear</button>
+  </div>
+</section>
+
+<section class="card">
+  <p class="cardlabel">Digests — computed locally</p>
+  <div class="seg" role="group" aria-label="Output encoding">
+    <button id="segHex" class="on">Hex</button>
+    <button id="segB64">Base64</button>
+  </div>
+  <div id="results" style="margin-top:.6rem">
+    <p class="empty">No digest yet — enter text or choose a file and press Hash.</p>
+  </div>
+  <div class="btnrow" id="copyAllRow" style="display:none">
+    <button class="btn" id="btnCopyAll">Copy all</button>
+  </div>
+</section>
+
+<section class="card">
+  <p class="cardlabel">Compare two hashes</p>
+  <input class="cmpinput" id="cmpA" placeholder="First hash" aria-label="First hash">
+  <input class="cmpinput" id="cmpB" placeholder="Second hash" aria-label="Second hash">
+  <button class="btn" id="btnCompare">Compare</button>
+  <p class="cmpresult" id="cmpResult"></p>
+</section>
+
+<section class="card">
+  <details class="explain">
+    <summary>Why no MD5?</summary>
+    <p>MD5 is not exposed by the Web Crypto API, so this tool only offers the SHA family — SHA-1, SHA-256, SHA-384 and SHA-512. Hashing is one-way: the same input always produces the same digest, and the digest cannot be turned back into the input. That is what makes a digest useful for verifying a file or a password check, and useless for recovering the original.</p>
+  </details>
+</section>
+
+<div class="toast" id="toast"></div>
+
+<footer>Built in the Shipwright Studio Lab · <a href="/ideas/">more experiments</a></footer>
+
+<script>
+"use strict";
+/* ===== Core (node-tested) ===== */
+var ALGOS=["SHA-1","SHA-256","SHA-384","SHA-512"];
+function bytesToHex(buf){
+  var b=new Uint8Array(buf),s="";
+  for(var i=0;i<b.length;i++)s+=("0"+b[i].toString(16)).slice(-2);
+  return s;
+}
+function bytesToBase64(buf){
+  var b=new Uint8Array(buf),s="";
+  for(var i=0;i<b.length;i++)s+=String.fromCharCode(b[i]);
+  return btoa(s);
+}
+function formatDigest(buf,encoding){return encoding==="base64"?bytesToBase64(buf):bytesToHex(buf);}
+function normHash(s){return s.trim().toLowerCase().replace(/\s+/g,"");}
+function hashesEqual(a,b){
+  var na=normHash(a),nb=normHash(b);
+  if(!na||!nb)return null;
+  return na===nb;
+}
+function fileSizeLabel(n){
+  if(n<1024)return n+" B";
+  if(n<1048576)return (n/1024).toFixed(1)+" KB";
+  return (n/1048576).toFixed(2)+" MB";
+}
+/* ===== UI ===== */
+function $(id){return document.getElementById(id);}
+var encoding="hex",digests=null,hasResult=false,fileBytes=null,fileName="";
+function toast(t){var el=$("toast");el.textContent=t;el.classList.add("show");
+  setTimeout(function(){el.classList.remove("show");},1500);}
+function copyText(t){
+  function fb(){var ta=document.createElement("textarea");ta.value=t;document.body.appendChild(ta);ta.select();
+    try{document.execCommand("copy");toast("Copied ✓");}catch(e){}document.body.removeChild(ta);}
+  if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(t).then(function(){toast("Copied ✓");}).catch(fb);
+  else fb();
+}
+function setBanner(t){$("banner").textContent=t||"";}
+function render(){
+  var box=$("results");
+  if(!digests){box.innerHTML='<p class="empty">No digest yet — enter text or choose a file and press Hash.</p>';
+    $("copyAllRow").style.display="none";return;}
+  var html="";
+  ALGOS.forEach(function(a){
+    html+='<div class="drow"><span class="dlab">'+a+'</span><span class="dval">'+formatDigest(digests[a],encoding)+'</span><button class="cpbtn" data-algo="'+a+'">Copy</button></div>';
+  });
+  box.innerHTML=html;
+  $("copyAllRow").style.display="flex";
+  box.querySelectorAll(".cpbtn").forEach(function(b){
+    b.onclick=function(){copyText(formatDigest(digests[b.getAttribute("data-algo")],encoding));};
+  });
+}
+function hashBytes(data){
+  if(!window.crypto||!crypto.subtle){setBanner("Web Crypto is unavailable in this browser or context — hashing needs a secure context (HTTPS or localhost).");return;}
+  var jobs=ALGOS.map(function(a){return crypto.subtle.digest(a,data).then(function(d){return [a,d];});});
+  Promise.all(jobs).then(function(pairs){
+    digests={};pairs.forEach(function(p){digests[p[0]]=p[1];});
+    hasResult=true;setBanner("");render();
+  }).catch(function(e){setBanner("Hashing failed: "+(e&&e.message?e.message:e));digests=null;render();});
+}
+function doHash(){
+  var text=$("txt").value;
+  if(fileBytes!==null){hashBytes(fileBytes);return;}
+  if(!text){setBanner("Enter some text or choose a file first.");return;}
+  hashBytes(new TextEncoder().encode(text));
+}
+$("btnHash").onclick=doHash;
+$("txt").addEventListener("input",function(){
+  if(hasResult&&$("txt").value)hashBytes(new TextEncoder().encode($("txt").value));
+});
+$("btnSample").onclick=function(){
+  $("txt").value="The quick brown fox jumps over the lazy dog";
+  fileBytes=null;fileName="";$("file").value="";$("fileInfo").textContent="No file chosen — hashing a file hashes its bytes.";
+  doHash();
+};
+$("btnClear").onclick=function(){
+  $("txt").value="";fileBytes=null;fileName="";$("file").value="";
+  $("fileInfo").textContent="No file chosen — hashing a file hashes its bytes.";
+  digests=null;hasResult=false;setBanner("");render();
+  $("cmpA").value="";$("cmpB").value="";$("cmpResult").textContent="";$("cmpResult").className="cmpresult";
+};
+$("file").addEventListener("change",function(){
+  var f=$("file").files[0];
+  if(!f){fileBytes=null;fileName="";$("fileInfo").textContent="No file chosen — hashing a file hashes its bytes.";return;}
+  fileName=f.name;
+  $("fileInfo").innerHTML='File: <span class="fname"></span> ('+fileSizeLabel(f.size)+')';
+  $("fileInfo").querySelector(".fname").textContent=fileName;
+  var reader=new FileReader();
+  reader.onload=function(){fileBytes=reader.result;setBanner("");doHash();};
+  reader.onerror=function(){fileBytes=null;digests=null;hasResult=false;render();
+    setBanner("Could not read file “"+fileName+"” — please try another file.");};
+  reader.readAsArrayBuffer(f);
+});
+function setSeg(enc){
+  encoding=enc;
+  $("segHex").classList.toggle("on",enc==="hex");
+  $("segB64").classList.toggle("on",enc==="base64");
+  render();
+}
+$("segHex").onclick=function(){setSeg("hex");};
+$("segB64").onclick=function(){setSeg("base64");};
+$("btnCopyAll").onclick=function(){
+  copyText(ALGOS.map(function(a){return a+": "+formatDigest(digests[a],encoding);}).join("\n"));
+};
+$("btnCompare").onclick=function(){
+  var r=hashesEqual($("cmpA").value,$("cmpB").value),el=$("cmpResult");
+  if(r===null){el.textContent="Enter both hashes to compare.";el.className="cmpresult err";}
+  else if(r){el.textContent="✓ Match — the two hashes are identical.";el.className="cmpresult match";}
+  else{el.textContent="✗ No match — the two hashes differ.";el.className="cmpresult nomatch";}
+};
+</script>
+</body>
+</html>

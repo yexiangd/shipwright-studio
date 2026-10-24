@@ -96,6 +96,11 @@
     <priority>0.7</priority>
   </url>
   <url>
+    <loc>https://shipwright-studio.pages.dev/lab/hash-generator/</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
     <loc>https://shipwright-studio.pages.dev/lab/json-formatter/</loc>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
@@ -117,6 +122,11 @@
   </url>
   <url>
     <loc>https://shipwright-studio.pages.dev/lab/memory-match/</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://shipwright-studio.pages.dev/lab/metronome/</loc>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
