@@ -67,6 +67,8 @@ AI 搜索不看排名看"可引用性"。打法：
 
 ## 运行日志
 
+- **2026-10-25**：Phase 3-① `llms.txt` 持续维护 —— "Recent additions" 更新为今日新上线的两个实验（Trading Journal：免费在线交易日志工具，记录多空交易后自动算出胜率、盈亏比、期望值、平均盈亏与总盈亏，本地存储 + CSV 导出，全本地计算；Pong vs AI：免费在线乒乓游戏，1972 年经典对战三档 AI、鼠标/触屏/键盘控制、先得 7 分获胜，全浏览器运行），实验总数 54→56；移除较早的 Connect Four vs AI / URL Codec 条目以控制长度（保留最近 10 条）。另：当日两个 lab 新页（trading-journal、pong）均按构建 checklist 自带 canonical/title/description/quotable 定义段/WebApplication JSON-LD（每页恰 1 个 h1、无 mailto、无密钥痕迹、回链 /ideas/；seo-check.py 本地 59 页全通过；trading-journal 核心统计经 node 校验——样本 6 笔总盈亏 $176、胜率 0.6、盈亏比 ≈3.3158、期望值 ≈29.3333、空单与空集边界正确；pong 核心物理经 node 校验——挡板反弹方向、墙壁反弹、得分判定、AI 速度档位与边界钳制、球速递增与封顶均通过）；sitemap 经 `generate-sitemap.py` 重生成为 58 个 URL（CI 在 push 后也会重生成）。跳过：og 社交卡片（待用户拍板，见 §5）、GSC 验证（需人工）、Lighthouse 性能基线（Phase 1-⑤，按季度节奏）。下一步候选：Lighthouse 性能基线（Phase 1-⑤）或 og 社交卡片（等用户拍板）。
+
 - **2026-10-21**：Phase 3-① `llms.txt` 持续维护 —— "Recent additions" 更新为今日新上线的两个实验（Tip & Split：免费在线账单分摊工具，逐道菜点选分摊到人、加小费/税费后每人应付金额精确到分、可一键复制群发总结，全本地计算；Risk of Ruin Simulator：免费在线赌局风险模拟器，输入资金/注码/胜率/赔率即见数千条蒙特卡洛权益曲线下的爆仓概率、带凯利准则提示，教育演示、仅模拟数据），实验总数 46→48；移除较早的 Sudoku / Pairs Trading Lab 条目以控制长度（保留最近 10 条）。另：当日两个 lab 新页（tip-splitter、ruin-simulator）均按构建 checklist 自带 canonical/title/description/quotable 定义段/WebApplication JSON-LD（每页恰 1 个 h1、无 mailto、无密钥痕迹、回链 /ideas/；seo-check.py 本地 51 页全通过；tip-splitter 核心分账逻辑经 node 校验——示例晚餐 5 菜 4 人 20% 小费+税 $9.63：分项 $165.03 分毫不差，$10 三人 18%+税 $2.47 舍入压力测试 4.76/4.76/4.75 精确对齐，构建中修了每人分项和与显示总额差 1 分的边界（尾差并入小费分项，已回写 spec）；ruin-simulator 模拟引擎经 node 校验——注码增大时爆仓概率单调上升、零优势公平博弈收敛于经典理论值、期望终值与固定注码闭式解一致）；sitemap 经 `generate-sitemap.py` 重生成为 50 个 URL（CI 在 push 后也会重生成）。跳过：og 社交卡片（待用户拍板，见 §5）、GSC 验证（需人工）、Lighthouse 性能基线（Phase 1-⑤，按季度节奏）。下一步候选：Lighthouse 性能基线（Phase 1-⑤）或 og 社交卡片（等用户拍板）。
 
 

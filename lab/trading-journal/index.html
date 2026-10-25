@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Trading Journal · Shipwright Studio</title>
+<meta name="description" content="Free online trading journal: log your trades and instantly see total P&L, win rate, profit factor, and expectancy — all computed in your browser, nothing uploaded.">
+<link rel="canonical" href="https://shipwright-studio.pages.dev/lab/trading-journal/">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&display=swap" rel="stylesheet">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"WebApplication","name":"Trading Journal","url":"https://shipwright-studio.pages.dev/lab/trading-journal/","description":"Trading Journal is a free online tool that logs trades and auto-computes win rate, profit factor, expectancy, and total P&L, with everything stored locally in your browser.","applicationCategory":"FinanceApplication","operatingSystem":"Web","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"}}
+</script>
+<style>
+:root{--bg:#0a0c0f;--panel:#101318;--line:#1c2128;--txt:#e8e4da;--mut:#9aa3b2;--brass:#d2a24c;--dim:#2a2f38;--green:#4caf7d;--red:#e0655a}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--txt);font-family:Fraunces,Georgia,serif;line-height:1.65;padding:2rem 1.2rem 4rem;max-width:960px;margin:0 auto}
+a{color:var(--brass)}
+.nav{display:flex;gap:1.2rem;font-size:.85rem;margin-bottom:1.2rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.nav a{color:var(--mut);text-decoration:none}
+.nav a:hover{color:var(--brass)}
+.eyebrow{font-size:.75rem;letter-spacing:.22em;text-transform:uppercase;color:var(--mut);font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+h1{font-weight:600;font-size:clamp(2.1rem,5vw,3rem);margin:.5rem 0 .7rem}
+.define{color:var(--mut);max-width:46rem;margin-bottom:1.8rem;font-size:1rem}
+.define strong{color:var(--txt)}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:1.4rem;margin-bottom:1.4rem}
+.cardlabel{font-size:.72rem;letter-spacing:.18em;text-transform:uppercase;color:var(--mut);margin-bottom:.8rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.ui{font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:.8rem}
+.stat{background:#08090c;border:1px solid var(--line);border-radius:10px;padding:.8rem 1rem}
+.stat .k{font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;color:var(--mut);font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.stat .v{font-size:1.35rem;font-weight:600;margin-top:.15rem}
+.stat .v.pos{color:var(--green)}
+.stat .v.neg{color:var(--red)}
+.stat .v.brass{color:var(--brass)}
+.emptynote{font-size:.88rem;color:var(--mut);font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif;margin-top:.9rem}
+.formgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:.8rem}
+.field{display:flex;flex-direction:column;gap:.3rem}
+.field label{font-size:.82rem;color:var(--mut);font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.field.wide{grid-column:1/-1}
+input,select{background:#08090c;border:1px solid var(--line);border-radius:10px;color:var(--txt);font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif;font-size:.95rem;padding:.55rem .8rem;width:100%}
+input:focus,select:focus{outline:none;border-color:var(--brass)}
+.seg{display:flex;gap:.5rem}
+.seg button{flex:1;font-size:.9rem;border:1px solid var(--line);background:transparent;color:var(--mut);border-radius:10px;padding:.55rem .8rem;cursor:pointer;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.seg button.on{border-color:var(--brass);color:var(--brass);background:rgba(210,162,76,.08)}
+.btnrow{display:flex;gap:.6rem;flex-wrap:wrap;margin-top:1rem;align-items:center}
+.btn{font-size:.9rem;border:1px solid var(--line);background:transparent;color:var(--mut);border-radius:999px;padding:.55rem 1.2rem;cursor:pointer;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.btn:hover{color:var(--txt);border-color:var(--mut)}
+.btn.primary{border-color:var(--brass);color:var(--brass)}
+.btn.primary:hover{background:rgba(210,162,76,.12)}
+.btn.danger{border-color:var(--red);color:var(--red)}
+.btn:disabled{opacity:.4;cursor:default}
+.btn:disabled:hover{color:var(--mut);border-color:var(--line)}
+.msgline{font-size:.85rem;min-height:1.2em;margin-top:.8rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.msgline.err{color:var(--red)}
+.msgline.ok{color:var(--green)}
+.tablewrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif;font-size:.88rem;min-width:34rem}
+th{color:var(--mut);text-align:left;font-weight:600;font-size:.75rem;letter-spacing:.1em;text-transform:uppercase;padding:.5rem .6rem;border-bottom:1px solid var(--line);white-space:nowrap}
+td{padding:.55rem .6rem;border-bottom:1px solid var(--line);white-space:nowrap}
+td.note{white-space:normal;max-width:12rem}
+.pos{color:var(--green)}
+.neg{color:var(--red)}
+.del{background:transparent;border:1px solid var(--line);color:var(--mut);border-radius:999px;padding:.25rem .7rem;cursor:pointer;font-size:.8rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.del:hover{color:var(--red);border-color:var(--red)}
+.emptyrow td{text-align:center;color:var(--mut);padding:1.2rem}
+details.explain{border:1px solid var(--line);border-radius:10px;padding:.9rem 1.1rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif;font-size:.88rem;color:var(--mut)}
+details.explain summary{cursor:pointer;color:var(--txt);font-size:.95rem}
+details.explain p{margin-top:.6rem}
+.disclaimer{font-size:.85rem;color:var(--mut);font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif;margin-bottom:1.4rem}
+footer{margin-top:2.5rem;font-size:.85rem;color:var(--mut);font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif;text-align:center}
+@media(max-width:720px){.stats{grid-template-columns:repeat(2,1fr)}.formgrid{grid-template-columns:1fr}.stat .v{font-size:1.15rem}}
+</style>
+</head>
+<body>
+<nav class="nav"><a href="/">Shipwright Studio</a><a href="/ideas/">Idea Lab</a></nav>
+<p class="eyebrow">Lab · Finance tools</p>
+<h1>Trading Journal</h1>
+<p class="define"><strong>Trading Journal is a free online tool that</strong> logs your trades and auto-computes win rate, profit factor, expectancy, and total P&amp;L — with every trade stored locally in your browser and nothing ever uploaded.</p>
+
+<section class="card" aria-label="Performance statistics">
+  <p class="cardlabel">Performance</p>
+  <div class="stats" id="stats"></div>
+  <p class="emptynote" id="emptyNote">No trades yet — add your first trade below, or load sample trades to see the stats in action.</p>
+</section>
+
+<section class="card" aria-label="Add a trade">
+  <p class="cardlabel">Add a trade</p>
+  <form id="tradeForm" novalidate>
+    <div class="formgrid">
+      <div class="field">
+        <label for="fDate">Date</label>
+        <input type="date" id="fDate" required>
+      </div>
+      <div class="field">
+        <label for="fSymbol">Symbol</label>
+        <input type="text" id="fSymbol" placeholder="e.g. AAPL" maxlength="12" required>
+      </div>
+      <div class="field">
+        <label>Direction</label>
+        <div class="seg" id="dirSeg" role="group" aria-label="Direction">
+          <button type="button" data-dir="long" class="on">Long</button>
+          <button type="button" data-dir="short">Short</button>
+        </div>
+      </div>
+      <div class="field">
+        <label for="fEntry">Entry price</label>
+        <input type="number" id="fEntry" min="0" step="any" inputmode="decimal" required>
+      </div>
+      <div class="field">
+        <label for="fExit">Exit price</label>
+        <input type="number" id="fExit" min="0" step="any" inputmode="decimal" required>
+      </div>
+      <div class="field">
+        <label for="fQty">Quantity</label>
+        <input type="number" id="fQty" min="0" step="any" inputmode="decimal" required>
+      </div>
+      <div class="field wide">
+        <label for="fNote">Note (optional)</label>
+        <input type="text" id="fNote" placeholder="Why you took the trade…" maxlength="120">
+      </div>
+    </div>
+    <div class="btnrow">
+      <button type="submit" class="btn primary">Add trade</button>
+    </div>
+    <p class="msgline" id="formMsg" role="status"></p>
+  </form>
+</section>
+
+<section class="card" aria-label="Journal actions">
+  <div class="btnrow" style="margin-top:0">
+    <button class="btn" id="btnSample">Load sample trades</button>
+    <button class="btn" id="btnExport">Export CSV</button>
+    <button class="btn danger" id="btnClear">Clear all</button>
+  </div>
+</section>
+
+<section class="card" aria-label="Trade log">
+  <p class="cardlabel">Trade log</p>
+  <div class="tablewrap">
+    <table>
+      <thead>
+        <tr><th>Date</th><th>Symbol</th><th>Dir</th><th>Entry</th><th>Exit</th><th>Qty</th><th>P&amp;L</th><th>Note</th><th></th></tr>
+      </thead>
+      <tbody id="tradeRows"></tbody>
+    </table>
+  </div>
+</section>
+
+<section class="card">
+  <details class="explain">
+    <summary>How are the stats calculated?</summary>
+    <p><strong>Win rate</strong> is winning trades divided by decided trades (wins plus losses; break-even trades count in neither). <strong>Profit factor</strong> is gross profit divided by gross loss — above 1 means winners outweigh losers. <strong>Expectancy</strong> is average P&amp;L per trade: what one trade is worth on average across the whole journal. P&amp;L here is gross per-trade profit — no commissions, fees, or taxes are included.</p>
+  </details>
+</section>
+
+<p class="disclaimer">This is a personal journal tool, not financial advice. Figures are gross P&amp;L only and exclude commissions, fees, and taxes.</p>
+
+<footer>Built in the Shipwright Studio Lab · <a href="/ideas/">more experiments</a></footer>
+
+<script>
+"use strict";
+/* ===== Core (node-tested) ===== */
+function tradePnl(t){
+  var diff = t.direction === "short" ? (t.entry - t.exit) : (t.exit - t.entry);
+  return diff * t.qty;
+}
+function computeStats(trades){
+  var s = {count: trades.length, total: 0, wins: 0, losses: 0,
+    grossProfit: 0, grossLoss: 0, best: null, worst: null};
+  trades.forEach(function(t){
+    var p = tradePnl(t);
+    s.total += p;
+    if (p > 0) { s.wins++; s.grossProfit += p; }
+    else if (p < 0) { s.losses++; s.grossLoss += -p; }
+    if (s.best === null || p > s.best) s.best = p;
+    if (s.worst === null || p < s.worst) s.worst = p;
+  });
+  var decided = s.wins + s.losses;
+  s.winRate = decided > 0 ? s.wins / decided : null;
+  s.profitFactor = s.grossLoss > 0 ? s.grossProfit / s.grossLoss : null;
+  s.expectancy = s.count > 0 ? s.total / s.count : null;
+  s.avgWin = s.wins > 0 ? s.grossProfit / s.wins : null;
+  s.avgLoss = s.losses > 0 ? -(s.grossLoss / s.losses) : null;
+  return s;
+}
+function csvEscape(v){
+  var s = String(v);
+  return /[",\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
+}
+function tradesToCsv(trades){
+  var lines = ["date,symbol,direction,entry,exit,quantity,pnl,note"];
+  trades.forEach(function(t){
+    lines.push([t.date, t.symbol, t.direction, t.entry, t.exit, t.qty,
+      tradePnl(t).toFixed(2), t.note || ""].map(csvEscape).join(","));
+  });
+  return lines.join("\n") + "\n";
+}
+function isValidTrade(t){
+  return !!t.date && !!t.symbol && (t.direction === "long" || t.direction === "short")
+    && isFinite(t.entry) && t.entry > 0
+    && isFinite(t.exit) && t.exit > 0
+    && isFinite(t.qty) && t.qty > 0;
+}
+/* ===== UI ===== */
+var KEY = "tj-trades-v1";
+var trades = [];
+var direction = "long";
+function $(id){ return document.getElementById(id); }
+function todayStr(){
+  var d = new Date();
+  return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0")
+    + "-" + String(d.getDate()).padStart(2, "0");
+}
+function load(){
+  try {
+    var raw = localStorage.getItem(KEY);
+    if (!raw) return;
+    var parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed)) return;
+    trades = parsed.filter(isValidTrade);
+  } catch (e) { trades = []; }
+}
+function save(){
+  try { localStorage.setItem(KEY, JSON.stringify(trades)); } catch (e) {}
+}
+function fmtMoney(v){
+  if (v === null || v === undefined) return "—";
+  var sign = v < 0 ? "-" : "";
+  return sign + "$" + Math.abs(v).toFixed(2);
+}
+function moneyClass(v){
+  if (v === null || v === undefined || v === 0) return "";
+  return v > 0 ? "pos" : "neg";
+}
+function renderStats(){
+  var s = computeStats(trades);
+  var tiles = [
+    ["Total P&L", fmtMoney(s.count ? s.total : null), moneyClass(s.count ? s.total : null)],
+    ["Trades", String(s.count), "brass"],
+    ["Win rate", s.winRate === null ? "—" : (s.winRate * 100).toFixed(1) + "%", "brass"],
+    ["Profit factor", s.profitFactor === null ? "—" : s.profitFactor.toFixed(2), "brass"],
+    ["Expectancy", fmtMoney(s.expectancy), moneyClass(s.expectancy)],
+    ["Avg win", fmtMoney(s.avgWin), moneyClass(s.avgWin)],
+    ["Avg loss", fmtMoney(s.avgLoss), moneyClass(s.avgLoss)],
+    ["Best trade", fmtMoney(s.best), moneyClass(s.best)],
+    ["Worst trade", fmtMoney(s.worst), moneyClass(s.worst)]
+  ];
+  $("stats").innerHTML = tiles.map(function(t){
+    return '<div class="stat"><div class="k">' + t[0] + '</div><div class="v ' + t[2] + '">' + t[1] + "</div></div>";
+  }).join("");
+  $("emptyNote").style.display = s.count ? "none" : "block";
+  $("btnExport").disabled = s.count === 0;
+  $("btnSample").style.display = s.count ? "none" : "inline-block";
+}
+function renderRows(){
+  var body = $("tradeRows");
+  if (!trades.length) {
+    body.innerHTML = '<tr class="emptyrow"><td colspan="9">No trades logged yet.</td></tr>';
+    return;
+  }
+  var sorted = trades.slice().sort(function(a, b){
+    return (b.date + b.id) > (a.date + a.id) ? 1 : -1;
+  });
+  body.innerHTML = sorted.map(function(t){
+    var p = tradePnl(t);
+    var note = (t.note || "").replace(/&/g, "&amp;").replace(/</g, "&lt;");
+    var sym = t.symbol.replace(/&/g, "&amp;").replace(/</g, "&lt;");
+    return "<tr><td>" + t.date + "</td><td>" + sym + "</td><td>" + t.direction
+      + "</td><td>" + t.entry + "</td><td>" + t.exit + "</td><td>" + t.qty
+      + '</td><td class="' + moneyClass(p) + '">' + fmtMoney(p) + "</td>"
+      + '<td class="note">' + note + "</td>"
+      + '<td><button class="del" data-id="' + t.id + '">Delete</button></td></tr>';
+  }).join("");
+  body.querySelectorAll(".del").forEach(function(b){
+    b.onclick = function(){
+      trades = trades.filter(function(t){ return t.id !== b.getAttribute("data-id"); });
+      save(); renderAll(); setMsg("Trade deleted.", "ok");
+    };
+  });
+}
+function renderAll(){ renderStats(); renderRows(); }
+function setMsg(text, cls){
+  var m = $("formMsg");
+  m.textContent = text;
+  m.className = "msgline" + (cls ? " " + cls : "");
+}
+function setDirection(d){
+  direction = d;
+  document.querySelectorAll("#dirSeg button").forEach(function(b){
+    b.classList.toggle("on", b.getAttribute("data-dir") === d);
+  });
+}
+document.querySelectorAll("#dirSeg button").forEach(function(b){
+  b.onclick = function(){ setDirection(b.getAttribute("data-dir")); };
+});
+$("tradeForm").addEventListener("submit", function(e){
+  e.preventDefault();
+  var t = {
+    id: Date.now().toString(36) + Math.random().toString(36).slice(2, 7),
+    date: $("fDate").value,
+    symbol: $("fSymbol").value.trim().toUpperCase(),
+    direction: direction,
+    entry: parseFloat($("fEntry").value),
+    exit: parseFloat($("fExit").value),
+    qty: parseFloat($("fQty").value),
+    note: $("fNote").value.trim()
+  };
+  if (!t.date) { setMsg("Please pick a date.", "err"); return; }
+  if (!t.symbol) { setMsg("Please enter a symbol.", "err"); return; }
+  if (!(t.entry > 0)) { setMsg("Entry price must be a positive number.", "err"); return; }
+  if (!(t.exit > 0)) { setMsg("Exit price must be a positive number.", "err"); return; }
+  if (!(t.qty > 0)) { setMsg("Quantity must be a positive number.", "err"); return; }
+  trades.push(t);
+  save(); renderAll();
+  $("fSymbol").value = ""; $("fEntry").value = ""; $("fExit").value = "";
+  $("fQty").value = ""; $("fNote").value = ""; $("fDate").value = todayStr();
+  setMsg("Trade added.", "ok");
+});
+$("btnSample").onclick = function(){
+  if (trades.length) return;
+  trades = [
+    {id: "s1", date: "2026-10-05", symbol: "AAPL", direction: "long", entry: 240, exit: 252, qty: 10, note: "Breakout retest"},
+    {id: "s2", date: "2026-10-08", symbol: "TSLA", direction: "short", entry: 260, exit: 248, qty: 5, note: "Failed rally"},
+    {id: "s3", date: "2026-10-12", symbol: "NVDA", direction: "long", entry: 180, exit: 175, qty: 8, note: "Stopped out"},
+    {id: "s4", date: "2026-10-15", symbol: "MSFT", direction: "long", entry: 510, exit: 528, qty: 4, note: "Earnings drift"},
+    {id: "s5", date: "2026-10-19", symbol: "SPY", direction: "short", entry: 590, exit: 596, qty: 6, note: "Early short"},
+    {id: "s6", date: "2026-10-22", symbol: "AMD", direction: "long", entry: 210, exit: 210, qty: 10, note: "Scratched"}
+  ];
+  save(); renderAll(); setMsg("Sample trades loaded.", "ok");
+};
+$("btnExport").onclick = function(){
+  if (!trades.length) return;
+  var blob = new Blob([tradesToCsv(trades)], {type: "text/csv"});
+  var a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "trading-journal.csv";
+  a.click();
+  URL.revokeObjectURL(a.href);
+};
+$("btnClear").onclick = function(){
+  if (!trades.length) return;
+  if (!confirm("Delete all " + trades.length + " trade(s)? This cannot be undone.")) return;
+  trades = [];
+  save(); renderAll(); setMsg("Journal cleared.", "ok");
+};
+$("fDate").value = todayStr();
+load(); renderAll();
+</script>
+</body>
+</html>

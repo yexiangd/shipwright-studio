@@ -171,6 +171,11 @@
     <priority>0.7</priority>
   </url>
   <url>
+    <loc>https://shipwright-studio.pages.dev/lab/pong/</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
     <loc>https://shipwright-studio.pages.dev/lab/position-size-calculator/</loc>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
@@ -237,6 +242,11 @@
   </url>
   <url>
     <loc>https://shipwright-studio.pages.dev/lab/tip-splitter/</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://shipwright-studio.pages.dev/lab/trading-journal/</loc>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>

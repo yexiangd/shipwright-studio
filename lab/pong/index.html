@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pong vs AI · Shipwright Studio</title>
+<meta name="description" content="Free online Pong vs AI: defend your paddle against a three-level computer opponent, first to 7 wins, with mouse, touch, or keyboard controls.">
+<link rel="canonical" href="https://shipwright-studio.pages.dev/lab/pong/">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&display=swap" rel="stylesheet">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"WebApplication","name":"Pong vs AI","url":"https://shipwright-studio.pages.dev/lab/pong/","description":"Pong vs AI is a free online game that revives the 1972 arcade original against a three-level computer opponent, first to 7 points wins.","applicationCategory":"GameApplication","operatingSystem":"Web","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"}}
+</script>
+<style>
+:root{--bg:#0a0c0f;--panel:#101318;--line:#1c2128;--txt:#e8e4da;--mut:#9aa3b2;--brass:#d2a24c;--dim:#2a2f38}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--txt);font-family:Fraunces,Georgia,serif;line-height:1.65;padding:2rem 1.2rem 4rem;max-width:960px;margin:0 auto}
+a{color:var(--brass)}
+.nav{display:flex;gap:1.2rem;font-size:.85rem;margin-bottom:1.2rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.nav a{color:var(--mut);text-decoration:none}
+.nav a:hover{color:var(--brass)}
+.eyebrow{font-size:.75rem;letter-spacing:.22em;text-transform:uppercase;color:var(--mut);font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+h1{font-weight:600;font-size:clamp(2.1rem,5vw,3rem);margin:.5rem 0 .7rem}
+.define{color:var(--mut);max-width:46rem;margin-bottom:1.8rem;font-size:1rem}
+.define strong{color:var(--txt)}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:1.4rem;margin-bottom:1.4rem;text-align:center}
+.cardlabel{font-size:.72rem;letter-spacing:.18em;text-transform:uppercase;color:var(--mut);margin-bottom:.8rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.ui{font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.scoreboard{display:flex;justify-content:center;gap:2.5rem;margin-bottom:1rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.scoreboard .side{font-size:.85rem;color:var(--mut)}
+.scoreboard .num{font-size:2.4rem;font-weight:600;color:var(--txt);line-height:1.1;font-family:Fraunces,Georgia,serif}
+.scoreboard .num.you{color:var(--brass)}
+.gamewrap{position:relative;max-width:720px;margin:0 auto}
+canvas{display:block;width:100%;height:auto;background:#08090c;border:1px solid var(--line);border-radius:10px;touch-action:none;cursor:pointer}
+.overlay{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.6rem;background:rgba(8,9,12,.72);border-radius:10px;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.overlay.hidden{display:none}
+.overlay .big{font-family:Fraunces,Georgia,serif;font-size:1.7rem;color:var(--brass)}
+.overlay .sub{font-size:.9rem;color:var(--mut)}
+.controls{text-align:left}
+.btnrow{display:flex;gap:.6rem;flex-wrap:wrap;margin-bottom:1rem;align-items:center}
+.btnrow .rowlabel{font-size:.72rem;letter-spacing:.18em;text-transform:uppercase;color:var(--mut);width:100%;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.btn{font-size:.9rem;border:1px solid var(--line);background:transparent;color:var(--mut);border-radius:999px;padding:.55rem 1.2rem;cursor:pointer;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.btn:hover{color:var(--txt);border-color:var(--mut)}
+.btn.on{border-color:var(--brass);color:var(--brass);background:rgba(210,162,76,.08)}
+.btn.primary{border-color:var(--brass);color:var(--brass);font-size:1rem;padding:.7rem 2rem}
+.btn.primary:hover{background:rgba(210,162,76,.12)}
+.statusline{font-size:.95rem;color:var(--txt);font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif;margin-top:.3rem}
+.hintline{font-size:.8rem;color:var(--mut);min-height:1.2em;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+details.explain{border:1px solid var(--line);border-radius:10px;padding:.9rem 1.1rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif;font-size:.88rem;color:var(--mut);text-align:left}
+details.explain summary{cursor:pointer;color:var(--txt);font-size:.95rem}
+details.explain p{margin-top:.6rem}
+footer{margin-top:2.5rem;font-size:.85rem;color:var(--mut);font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif;text-align:center}
+@media(max-width:720px){.btn{padding:.6rem 1rem}.scoreboard{gap:1.5rem}.keyhint{display:none}}
+</style>
+</head>
+<body>
+<nav class="nav"><a href="/">Shipwright Studio</a><a href="/ideas/">Idea Lab</a></nav>
+<p class="eyebrow">Lab · Game</p>
+<h1>Pong vs AI</h1>
+<p class="define"><strong>Pong vs AI is a free online game that</strong> revives the 1972 arcade original against a three-level computer opponent — defend your paddle, return the ball, and be the first to 7 points, with nothing to download and nothing leaving your browser.</p>
+
+<section class="card" aria-label="Pong game">
+  <p class="cardlabel">First to 7 wins</p>
+  <div class="scoreboard">
+    <div><div class="side">You</div><div class="num you" id="scoreYou">0</div></div>
+    <div><div class="side">AI</div><div class="num" id="scoreAi">0</div></div>
+  </div>
+  <div class="gamewrap">
+    <canvas id="game" width="720" height="400" aria-label="Pong game canvas"></canvas>
+    <div class="overlay" id="overlay">
+      <p class="big" id="overlayBig">Press Start</p>
+      <p class="sub" id="overlaySub">First to 7 wins</p>
+      <button class="btn primary" id="btnOverlay" type="button">Start</button>
+    </div>
+  </div>
+</section>
+
+<section class="card controls" aria-label="Pong controls">
+  <p class="cardlabel">Match</p>
+  <div class="btnrow" id="diffRow">
+    <span class="rowlabel">AI difficulty</span>
+    <button class="btn" data-diff="easy">Easy</button>
+    <button class="btn on" data-diff="medium">Medium</button>
+    <button class="btn" data-diff="hard">Hard</button>
+  </div>
+  <div class="btnrow">
+    <button class="btn primary" id="btnStart" type="button">Start</button>
+    <button class="btn" id="btnRestart" type="button">Restart</button>
+  </div>
+  <p class="statusline" id="status">Rally 0 · Ball speed 360 px/s</p>
+  <p class="statusline" id="bestline"></p>
+  <p class="hintline keyhint">Move with mouse, touch drag, ArrowUp / ArrowDown, or W / S. Press P or Esc to pause.</p>
+</section>
+
+<section class="card">
+  <details class="explain">
+    <summary>How to play</summary>
+    <p>Move your paddle (left) with the mouse, a touch drag, or the ArrowUp / ArrowDown and W / S keys. The ball bounces off the top and bottom walls; where it strikes your paddle steers it — hit near the top edge to send it up, near the bottom edge to send it down. Miss the ball and the AI scores. First to 7 wins. The ball gets slightly faster on every paddle hit, so long rallies escalate. Easy reacts slowly and mistracks the ball, Medium is steady, and Hard tracks fast with almost no error.</p>
+  </details>
+</section>
+
+<footer>Built in the Shipwright Studio Lab · <a href="/ideas/">more experiments</a></footer>
+
+<script>
+"use strict";
+/* ===== Core (node-tested) ===== */
+var W=720, H=400, PADDLE_W=12, PADDLE_H=80, BALL_R=8;
+var BASE_SPEED=360, SPEED_GAIN=1.05, MAX_SPEED=650, WIN_SCORE=7;
+var AI_LEVELS={
+  easy:{maxSpeed:200,error:28,returnSpeed:120},
+  medium:{maxSpeed:320,error:14,returnSpeed:180},
+  hard:{maxSpeed:470,error:4,returnSpeed:260}
+};
+function clamp(v,lo,hi){return Math.max(lo,Math.min(hi,v));}
+/* Paddle bounce: hitPos in [-1,1] (-1 = top edge, +1 = bottom edge).
+   Returns velocity for the given direction (+1 right, -1 left). */
+function bounceVelocity(hitPos,speed,dir){
+  var p=clamp(hitPos,-1,1);
+  var angle=p*(Math.PI/3); /* max 60 degrees off horizontal */
+  return {vx:dir*Math.cos(angle)*speed, vy:Math.sin(angle)*speed};
+}
+function speedAfterHit(speed){return Math.min(MAX_SPEED,speed*SPEED_GAIN);}
+/* Wall bounce: returns flipped vy when the ball touches top/bottom. */
+function wallBounce(y,vy){
+  if(y-BALL_R<=0&&vy<0)return -vy;
+  if(y+BALL_R>=H&&vy>0)return -vy;
+  return vy;
+}
+/* Scoring: 'you' when the ball passes the AI side, 'ai' when it passes yours. */
+function scorer(x){
+  if(x-BALL_R>W)return "you";
+  if(x+BALL_R<0)return "ai";
+  return null;
+}
+function isWin(score){return score>=WIN_SCORE;}
+/* AI step: moves toward targetY (ball + error offset) at the level's
+   max speed; when the ball moves away, drifts to centre at returnSpeed. */
+function aiStep(aiY,ballY,ballVx,error,level,dt){
+  var target=ballVx>0?ballY+error:H/2;
+  var speed=ballVx>0?level.maxSpeed:level.returnSpeed;
+  var diff=target-(aiY+PADDLE_H/2);
+  var move=clamp(diff,-speed*dt,speed*dt);
+  return clamp(aiY+move,0,H-PADDLE_H);
+}
+function serveVelocity(dir,angle){
+  return {vx:dir*Math.cos(angle)*BASE_SPEED, vy:Math.sin(angle)*BASE_SPEED};
+}
+/* ===== UI ===== */
+function $(id){return document.getElementById(id);}
+var canvas=$("game"), ctx=canvas.getContext("2d");
+var state="idle"; /* idle | playing | paused | over */
+var difficulty="medium", aiError=0;
+var playerY=(H-PADDLE_H)/2, aiY=(H-PADDLE_H)/2;
+var ball={x:W/2,y:H/2,vx:0,vy:0,speed:BASE_SPEED};
+var scoreYou=0, scoreAi=0, rally=0, serveAt=0;
+var keys={}, rafId=null, lastTime=0;
+function bestKey(){return "pong-best-"+difficulty;}
+function readBest(){
+  try{var raw=localStorage.getItem(bestKey());return raw?JSON.parse(raw):null;}
+  catch(e){return null;}
+}
+function renderBest(){
+  var b=readBest();
+  $("bestline").textContent=b?("Best vs "+difficulty.charAt(0).toUpperCase()+difficulty.slice(1)+": "+b.you+"–"+b.ai):("Best vs "+difficulty.charAt(0).toUpperCase()+difficulty.slice(1)+": —");
+}
+function saveBestIfBetter(){
+  if(scoreYou<=scoreAi)return; /* only a player win counts */
+  var b=readBest(), margin=scoreYou-scoreAi;
+  if(!b||margin>(b.you-b.ai)){
+    try{localStorage.setItem(bestKey(),JSON.stringify({you:scoreYou,ai:scoreAi}));}catch(e){}
+  }
+}
+function showOverlay(big,sub,btnLabel){
+  $("overlayBig").textContent=big;$("overlaySub").textContent=sub;
+  $("btnOverlay").textContent=btnLabel;$("overlay").classList.remove("hidden");
+}
+function hideOverlay(){$("overlay").classList.add("hidden");}
+function updateHud(){
+  $("scoreYou").textContent=scoreYou;$("scoreAi").textContent=scoreAi;
+  $("status").textContent="Rally "+rally+" · Ball speed "+Math.round(ball.speed)+" px/s";
+}
+function draw(){
+  ctx.fillStyle="#08090c";ctx.fillRect(0,0,W,H);
+  ctx.strokeStyle="#2a2f38";ctx.setLineDash([12,14]);ctx.beginPath();
+  ctx.moveTo(W/2,0);ctx.lineTo(W/2,H);ctx.stroke();ctx.setLineDash([]);
+  ctx.fillStyle="#e8e4da";
+  ctx.fillRect(16,playerY,PADDLE_W,PADDLE_H);
+  ctx.fillRect(W-16-PADDLE_W,aiY,PADDLE_W,PADDLE_H);
+  ctx.fillStyle="#d2a24c";ctx.beginPath();
+  ctx.arc(ball.x,ball.y,BALL_R,0,Math.PI*2);ctx.fill();
+}
+function resetBall(dir){
+  ball.x=W/2;ball.y=H/2;ball.speed=BASE_SPEED;rally=0;
+  var angle=(Math.random()*0.6-0.3); /* gentle serve angle */
+  var v=serveVelocity(dir,angle);ball.vx=v.vx;ball.vy=v.vy;
+  aiError=(Math.random()*2-1)*AI_LEVELS[difficulty].error;
+}
+function startMatch(){
+  scoreYou=0;scoreAi=0;playerY=(H-PADDLE_H)/2;aiY=(H-PADDLE_H)/2;
+  resetBall(Math.random()<0.5?-1:1);
+  state="playing";serveAt=performance.now()+800;
+  hideOverlay();$("btnStart").textContent="Pause";
+  updateHud();renderBest();draw();
+  if(!rafId){lastTime=performance.now();rafId=requestAnimationFrame(loop);}
+}
+function endMatch(playerWon){
+  state="over";saveBestIfBetter();
+  showOverlay(playerWon?"You win!":"AI wins",scoreYou+" – "+scoreAi,"Play again");
+  $("btnStart").textContent="Start";updateHud();renderBest();
+}
+function togglePause(){
+  if(state==="playing"){
+    state="paused";showOverlay("Paused","Press Resume or P to continue","Resume");
+    $("btnStart").textContent="Resume";
+  } else if(state==="paused"){
+    state="playing";hideOverlay();$("btnStart").textContent="Pause";
+    lastTime=performance.now();
+  }
+}
+function scorePoint(who){
+  if(who==="you")scoreYou++;else scoreAi++;
+  updateHud();
+  if(isWin(who==="you"?scoreYou:scoreAi)){endMatch(who==="you");return;}
+  resetBall(who==="you"?1:-1); /* serve toward the player who just conceded */
+  serveAt=performance.now()+800;
+}
+function step(dt){
+  /* Player keys */
+  var keySpeed=520;
+  if(keys.ArrowUp||keys.KeyW)playerY=clamp(playerY-keySpeed*dt,0,H-PADDLE_H);
+  if(keys.ArrowDown||keys.KeyS)playerY=clamp(playerY+keySpeed*dt,0,H-PADDLE_H);
+  /* AI */
+  aiY=aiStep(aiY,ball.y,ball.vx,aiError,AI_LEVELS[difficulty],dt);
+  if(performance.now()<serveAt)return; /* pause between points */
+  ball.x+=ball.vx*dt;ball.y+=ball.vy*dt;
+  ball.vy=wallBounce(ball.y,ball.vy);
+  if(ball.y-BALL_R<0)ball.y=BALL_R;
+  if(ball.y+BALL_R>H)ball.y=H-BALL_R;
+  /* Player paddle (left) */
+  if(ball.vx<0&&ball.x-BALL_R<=16+PADDLE_W&&ball.x-BALL_R>=16
+     &&ball.y>=playerY&&ball.y<=playerY+PADDLE_H){
+    var hit=(ball.y-(playerY+PADDLE_H/2))/(PADDLE_H/2);
+    ball.speed=speedAfterHit(ball.speed);rally++;
+    var v=bounceVelocity(hit,ball.speed,1);ball.vx=v.vx;ball.vy=v.vy;
+    ball.x=16+PADDLE_W+BALL_R;
+  }
+  /* AI paddle (right) */
+  if(ball.vx>0&&ball.x+BALL_R>=W-16-PADDLE_W&&ball.x+BALL_R<=W-16
+     &&ball.y>=aiY&&ball.y<=aiY+PADDLE_H){
+    var hit2=(ball.y-(aiY+PADDLE_H/2))/(PADDLE_H/2);
+    ball.speed=speedAfterHit(ball.speed);rally++;
+    var v2=bounceVelocity(hit2,ball.speed,-1);ball.vx=v2.vx;ball.vy=v2.vy;
+    ball.x=W-16-PADDLE_W-BALL_R;
+    aiError=(Math.random()*2-1)*AI_LEVELS[difficulty].error; /* fresh error each rally */
+  }
+  var s=scorer(ball.x);
+  if(s)scorePoint(s);
+  updateHud();
+}
+function loop(now){
+  var dt=Math.min(0.05,(now-lastTime)/1000);lastTime=now;
+  if(state==="playing")step(dt);
+  draw();
+  rafId=requestAnimationFrame(loop);
+}
+canvas.addEventListener("pointermove",function(e){
+  var r=canvas.getBoundingClientRect();
+  var y=(e.clientY-r.top)*(H/r.height);
+  playerY=clamp(y-PADDLE_H/2,0,H-PADDLE_H);
+  if(state==="playing")draw();
+});
+canvas.addEventListener("pointerdown",function(e){
+  var r=canvas.getBoundingClientRect();
+  var y=(e.clientY-r.top)*(H/r.height);
+  playerY=clamp(y-PADDLE_H/2,0,H-PADDLE_H);
+});
+document.addEventListener("keydown",function(e){
+  if(e.code==="KeyP"||e.code==="Escape"){togglePause();return;}
+  if(["ArrowUp","ArrowDown","Space"].indexOf(e.code)>=0)e.preventDefault();
+  keys[e.code]=true;
+});
+document.addEventListener("keyup",function(e){keys[e.code]=false;});
+$("btnStart").onclick=function(){
+  if(state==="idle"||state==="over")startMatch();
+  else togglePause();
+};
+$("btnOverlay").onclick=function(){
+  if(state==="idle"||state==="over")startMatch();
+  else if(state==="paused")togglePause();
+};
+$("btnRestart").onclick=function(){startMatch();};
+document.querySelectorAll("#diffRow .btn").forEach(function(b){
+  b.onclick=function(){
+    difficulty=b.getAttribute("data-diff");
+    document.querySelectorAll("#diffRow .btn").forEach(function(x){
+      x.classList.toggle("on",x===b);
+    });
+    renderBest();
+  };
+});
+updateHud();renderBest();draw();
+</script>
+</body>
+</html>

@@ -1,5 +1,5 @@
 {
-  "updated": "2026-10-24",
+  "updated": "2026-10-25",
   "ideas": [
     {
       "id": "idea-000a",
@@ -237,7 +237,9 @@
       "tagline": "The 1972 original, with a smarter opponent.",
       "priority": 76,
       "effort": "S",
-      "status": "todo"
+      "status": "done",
+      "url": "/lab/pong/",
+      "shipped": "2026-10-25"
     },
     {
       "id": "idea-019",
@@ -1267,7 +1269,9 @@
       "tagline": "Log trades; auto-computes win rate, profit factor, expectancy.",
       "priority": 77,
       "effort": "L",
-      "status": "todo"
+      "status": "done",
+      "url": "/lab/trading-journal/",
+      "shipped": "2026-10-25"
     },
     {
       "id": "idea-115",
