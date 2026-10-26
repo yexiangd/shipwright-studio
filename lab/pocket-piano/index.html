@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pocket Piano · Shipwright Studio</title>
+<meta name="description" content="Pocket Piano is a free online piano with two octaves, sustain, four voices, and keyboard playing — no download needed.">
+<link rel="canonical" href="https://shipwright-studio.pages.dev/lab/pocket-piano/">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&display=swap" rel="stylesheet">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"WebApplication","name":"Pocket Piano","url":"https://shipwright-studio.pages.dev/lab/pocket-piano/","description":"Pocket Piano is a free online tool that plays a two-octave piano in the browser with sustain, four voices, and computer-keyboard playing.","applicationCategory":"MusicApplication","operatingSystem":"Web","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"}}
+</script>
+<style>
+:root{--bg:#0a0c0f;--panel:#101318;--line:#1c2128;--txt:#e8e4da;--mut:#9aa3b2;--brass:#d2a24c;--dim:#2a2f38}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--txt);font-family:Fraunces,Georgia,serif;line-height:1.65;padding:2rem 1.2rem 4rem;max-width:960px;margin:0 auto}
+a{color:var(--brass)}
+.nav{display:flex;gap:1.2rem;font-size:.85rem;margin-bottom:1.2rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.nav a{color:var(--mut);text-decoration:none}
+.nav a:hover{color:var(--brass)}
+.eyebrow{font-size:.75rem;letter-spacing:.22em;text-transform:uppercase;color:var(--mut);font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+h1{font-weight:600;font-size:clamp(2.1rem,5vw,3rem);margin:.5rem 0 .7rem}
+.define{color:var(--mut);max-width:46rem;margin-bottom:1.8rem;font-size:1rem}
+.define strong{color:var(--txt)}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:1.4rem;margin-bottom:1.4rem}
+.cardlabel{font-size:.72rem;letter-spacing:.18em;text-transform:uppercase;color:var(--mut);margin-bottom:.8rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.ui{font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.rangelabel{text-align:center;font-size:.95rem;color:var(--txt);margin-bottom:.8rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.rangelabel span{color:var(--brass)}
+.keyboard{position:relative;display:flex;height:220px;touch-action:none;user-select:none;-webkit-user-select:none}
+.white{flex:1 1 0;background:#f2ede2;border:1px solid #1c2128;border-radius:0 0 8px 8px;color:#333;cursor:pointer;display:flex;align-items:flex-end;justify-content:center;padding-bottom:.7rem;font-size:.78rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.black{position:absolute;top:0;width:4.6%;height:58%;background:#14161a;border:1px solid #000;border-radius:0 0 6px 6px;color:#9aa3b2;cursor:pointer;display:flex;align-items:flex-end;justify-content:center;padding-bottom:.5rem;font-size:.68rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif;z-index:2;transform:translateX(-50%)}
+.white.playing{background:var(--brass);color:#0a0c0f}
+.black.playing{background:var(--brass);color:#0a0c0f}
+.btnrow{display:flex;gap:.6rem;flex-wrap:wrap;margin-bottom:1rem;align-items:center}
+.btnrow .rowlabel{font-size:.72rem;letter-spacing:.18em;text-transform:uppercase;color:var(--mut);width:100%;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.btn{font-size:.9rem;border:1px solid var(--line);background:transparent;color:var(--mut);border-radius:999px;padding:.55rem 1.2rem;cursor:pointer;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.btn:hover{color:var(--txt);border-color:var(--mut)}
+.btn.on{border-color:var(--brass);color:var(--brass);background:rgba(210,162,76,.08)}
+.btn.primary{border-color:var(--brass);color:var(--brass)}
+.btn.primary:hover{background:rgba(210,162,76,.12)}
+input[type=range]{width:220px;max-width:100%;accent-color:var(--brass)}
+.notice{display:none;font-size:.9rem;color:var(--brass);margin-top:.8rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.notice.show{display:block}
+.chips{display:flex;gap:.5rem;flex-wrap:wrap;min-height:2.2rem;align-items:center}
+.chip{border:1px solid var(--brass);color:var(--brass);border-radius:999px;padding:.25rem .8rem;font-size:.85rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.empty{color:var(--mut);font-size:.9rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+details.explain{border:1px solid var(--line);border-radius:10px;padding:.9rem 1.1rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif;font-size:.88rem;color:var(--mut);text-align:left}
+details.explain summary{cursor:pointer;color:var(--txt);font-size:.95rem}
+details.explain p{margin-top:.6rem}
+footer{margin-top:2.5rem;font-size:.85rem;color:var(--mut);font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif;text-align:center}
+@media(max-width:720px){.keyboard{height:180px}.black{font-size:0}.white{font-size:.68rem}.black{width:5.4%}}
+</style>
+</head>
+<body>
+<nav class="nav"><a href="/">Shipwright Studio</a><a href="/ideas/">Idea Lab</a></nav>
+<p class="eyebrow">Lab · Music</p>
+<h1>Pocket Piano</h1>
+<p class="define"><strong>Pocket Piano is a free online tool that</strong> plays a two-octave piano right in your browser — press the keys with mouse, touch, or your computer keyboard, hold notes with sustain, and switch voices, with nothing to download and nothing leaving your browser.</p>
+
+<section class="card" aria-label="Piano keyboard">
+  <p class="cardlabel">Two octaves · click, tap, or type</p>
+  <p class="rangelabel">Range: <span id="rangeLabel">C4 – B5</span> · Sustain: <span id="sustainLabel">Off</span></p>
+  <div class="keyboard" id="keyboard" role="group" aria-label="Piano keyboard"></div>
+  <p class="notice" id="audioNotice">Audio is not supported in this browser, so the keys cannot sound — the keyboard still displays.</p>
+</section>
+
+<section class="card" aria-label="Piano controls">
+  <p class="cardlabel">Controls</p>
+  <div class="btnrow">
+    <span class="rowlabel">Sustain</span>
+    <button class="btn" id="btnSustain" type="button" aria-pressed="false">Sustain: Off</button>
+  </div>
+  <div class="btnrow" id="octRow">
+    <span class="rowlabel">Octave</span>
+    <button class="btn" id="btnOctDown" type="button">Octave down</button>
+    <button class="btn" id="btnOctUp" type="button">Octave up</button>
+  </div>
+  <div class="btnrow" id="voiceRow">
+    <span class="rowlabel">Voice</span>
+    <button class="btn on" data-voice="sine">Sine</button>
+    <button class="btn" data-voice="triangle">Triangle</button>
+    <button class="btn" data-voice="square">Square</button>
+    <button class="btn" data-voice="sawtooth">Sawtooth</button>
+  </div>
+  <div class="btnrow">
+    <span class="rowlabel">Volume</span>
+    <input type="range" id="volume" min="0" max="100" value="70" aria-label="Volume">
+    <span class="ui" id="volumeLabel">70%</span>
+  </div>
+  <div class="btnrow">
+    <span class="rowlabel">Demo tune</span>
+    <button class="btn primary" id="btnDemo" type="button">Play demo tune</button>
+    <button class="btn" id="btnDemoStop" type="button">Stop</button>
+  </div>
+</section>
+
+<section class="card" aria-label="Last notes played">
+  <p class="cardlabel">Last notes played</p>
+  <div class="chips" id="chips"><span class="empty" id="emptyMsg">Play a key — your recent notes will appear here.</span></div>
+  <div class="btnrow" style="margin-top:1rem;margin-bottom:0">
+    <button class="btn" id="btnClear" type="button">Clear notes</button>
+  </div>
+</section>
+
+<section class="card">
+  <details class="explain">
+    <summary>How to play</summary>
+    <p>Click or tap the keys, or type on your computer keyboard: A=C, W=C#, S=D, E=D#, D=E, F=F, T=F#, G=G, Y=G#, H=A, U=A#, J=B, K=C (next octave), O=C#, L=D, P=D#, ;=E (next octave). The keyboard map follows the current base octave, so Octave up moves every typed note up with the displayed keys. Sustain Off stops a note about 0.15 seconds after you lift; Sustain On lets it ring for about 1.5 seconds, so chords overlap. The demo tune plays the opening of "Ode to Joy" in the current base octave.</p>
+  </details>
+</section>
+
+<footer>Built by Shipwright Studio · <a href="/ideas/">more experiments</a></footer>
+
+<script>
+"use strict";
+/* CORE-START */
+var NOTE_NAMES=["C","C#","D","D#","E","F","F#","G","G#","A","A#","B"];
+function midiToFreq(midi){return 440*Math.pow(2,(midi-69)/12);}
+function noteName(midi){return NOTE_NAMES[((midi%12)+12)%12]+(Math.floor(midi/12)-1);}
+function isBlackMidi(midi){var p=((midi%12)+12)%12;return p===1||p===3||p===6||p===8||p===10;}
+function buildScale(baseOctave){
+  var base=(baseOctave+1)*12; /* C of baseOctave: C4 = 60 */
+  var notes=[];
+  for(var i=0;i<24;i++){var m=base+i;notes.push({midi:m,name:noteName(m),black:isBlackMidi(m)});}
+  return notes;
+}
+var KEY_MAP={KeyA:0,KeyW:1,KeyS:2,KeyE:3,KeyD:4,KeyF:5,KeyT:6,KeyG:7,KeyY:8,KeyH:9,KeyU:10,KeyJ:11,KeyK:12,KeyO:13,KeyL:14,KeyP:15,Semicolon:16};
+function releaseTime(sustainOn){return sustainOn?1.5:0.15;}
+var DEMO_OFFSETS=[4,4,5,7,7,5,4,2,0,0,2,4,4,2,2]; /* Ode to Joy opening, relative to C */
+/* CORE-END */
+function $(id){return document.getElementById(id);}
+var baseOctave=4, sustainOn=false, voice="sine", volume=0.7;
+var ctx=null, master=null, audioFailed=false;
+var active={}; /* sourceId -> {osc,gain,midi} */
+var visualCount={}; /* midi -> count of active sources */
+var lastNotes=[];
+var demoTimers=[], demoPlaying=false, demoSources=[];
+function ensureAudio(){
+  if(ctx){if(ctx.state==="suspended"){ctx.resume().catch(function(){});}return true;}
+  try{
+    var AC=window.AudioContext||window.webkitAudioContext;
+    if(!AC)throw new Error("no AudioContext");
+    ctx=new AC();master=ctx.createGain();master.gain.value=volume;master.connect(ctx.destination);
+  }catch(e){audioFailed=true;$("audioNotice").classList.add("show");return false;}
+  return true;
+}
+function keyEl(midi){return document.querySelector('[data-midi="'+midi+'"]');}
+function markPlaying(midi,on){
+  visualCount[midi]=(visualCount[midi]||0)+(on?1:-1);
+  if(visualCount[midi]<0)visualCount[midi]=0;
+  var el=keyEl(midi);if(el)el.classList.toggle("playing",visualCount[midi]>0);
+}
+function pushNote(midi){
+  lastNotes.push(noteName(midi));if(lastNotes.length>12)lastNotes=lastNotes.slice(-12);
+  renderChips();
+}
+function renderChips(){
+  var box=$("chips");
+  if(!lastNotes.length){box.innerHTML='<span class="empty" id="emptyMsg">Play a key — your recent notes will appear here.</span>';return;}
+  box.innerHTML=lastNotes.map(function(n){return '<span class="chip">'+n+'</span>';}).join("");
+}
+function noteOn(midi,sourceId){
+  if(active[sourceId])return;
+  if(!ensureAudio())return;
+  var osc=ctx.createOscillator(),gain=ctx.createGain();
+  osc.type=voice;osc.frequency.value=midiToFreq(midi);
+  var peak=volume*0.6;
+  gain.gain.setValueAtTime(0,ctx.currentTime);
+  gain.gain.linearRampToValueAtTime(peak,ctx.currentTime+0.005);
+  osc.connect(gain);gain.connect(master);osc.start();
+  active[sourceId]={osc:osc,gain:gain,midi:midi};
+  markPlaying(midi,true);pushNote(midi);
+}
+function noteOff(sourceId){
+  var v=active[sourceId];if(!v)return;delete active[sourceId];
+  markPlaying(v.midi,false);
+  if(!ctx)return;
+  var t=ctx.currentTime,rel=releaseTime(sustainOn);
+  try{
+    v.gain.gain.cancelScheduledValues(t);
+    v.gain.gain.setValueAtTime(Math.max(v.gain.gain.value,0.0001),t);
+    v.gain.gain.linearRampToValueAtTime(0,t+rel);
+    v.osc.stop(t+rel+0.05);
+  }catch(e){try{v.osc.stop();}catch(e2){}}
+}
+function renderKeyboard(){
+  var notes=buildScale(baseOctave),kb=$("keyboard");kb.innerHTML="";
+  var whiteW=100/14,whiteIdx=0;
+  notes.forEach(function(n){
+    var el=document.createElement("div");
+    if(!n.black){
+      el.className="white";el.textContent=n.name;el.dataset.midi=n.midi;
+      el.setAttribute("role","button");el.setAttribute("aria-label","Play "+n.name);
+      kb.appendChild(el);whiteIdx++;
+    }else{
+      el.className="black";el.textContent=n.name;el.dataset.midi=n.midi;
+      el.setAttribute("role","button");el.setAttribute("aria-label","Play "+n.name);
+      /* Black key sits on the boundary after whiteIdx whites. */
+      el.style.left=(whiteIdx*whiteW)+"%";
+      kb.appendChild(el);
+    }
+  });
+  $("rangeLabel").textContent=notes[0].name+" – "+notes[notes.length-1].name;
+}
+function setSustain(on){
+  sustainOn=on;
+  $("btnSustain").textContent=on?"Sustain: On":"Sustain: Off";
+  $("btnSustain").classList.toggle("on",on);
+  $("btnSustain").setAttribute("aria-pressed",on?"true":"false");
+  $("sustainLabel").textContent=on?"On":"Off";
+}
+function stopDemo(){
+  demoTimers.forEach(function(t){clearTimeout(t);});demoTimers=[];
+  demoSources.slice().forEach(function(s){noteOff(s);});demoSources=[];
+  demoPlaying=false;$("btnDemo").textContent="Play demo tune";
+}
+function playDemo(){
+  if(demoPlaying){stopDemo();return;}
+  if(!ensureAudio())return;
+  demoPlaying=true;$("btnDemo").textContent="Playing…";
+  var base=(baseOctave+1)*12;
+  DEMO_OFFSETS.forEach(function(off,i){
+    var t=setTimeout(function(){
+      var src="demo-"+i;demoSources.push(src);noteOn(base+off,src);
+      var t2=setTimeout(function(){noteOff(src);},320);demoTimers.push(t2);
+    },i*360);
+    demoTimers.push(t);
+  });
+  demoTimers.push(setTimeout(function(){stopDemo();},DEMO_OFFSETS.length*360+400));
+}
+$("keyboard").addEventListener("pointerdown",function(e){
+  var el=e.target.closest("[data-midi]");if(!el)return;
+  e.preventDefault();
+  noteOn(parseInt(el.dataset.midi,10),"ptr-"+e.pointerId);
+});
+function endPointer(e){
+  noteOff("ptr-"+e.pointerId);
+}
+$("keyboard").addEventListener("pointerup",endPointer);
+$("keyboard").addEventListener("pointercancel",endPointer);
+$("keyboard").addEventListener("pointerleave",function(e){
+  var el=e.target.closest&&e.target.closest("[data-midi]");if(el)noteOff("ptr-"+e.pointerId);
+});
+document.addEventListener("keydown",function(e){
+  if(!(e.code in KEY_MAP)||e.repeat)return;
+  var midi=(baseOctave+1)*12+KEY_MAP[e.code];
+  noteOn(midi,"key-"+e.code);
+});
+document.addEventListener("keyup",function(e){
+  if(e.code in KEY_MAP)noteOff("key-"+e.code);
+});
+$("btnSustain").onclick=function(){setSustain(!sustainOn);};
+$("btnOctDown").onclick=function(){if(baseOctave>3){baseOctave--;renderKeyboard();}};
+$("btnOctUp").onclick=function(){if(baseOctave<5){baseOctave++;renderKeyboard();}};
+document.querySelectorAll("#voiceRow .btn").forEach(function(b){
+  b.onclick=function(){
+    voice=b.getAttribute("data-voice");
+    document.querySelectorAll("#voiceRow .btn").forEach(function(x){x.classList.toggle("on",x===b);});
+  };
+});
+$("volume").oninput=function(){
+  volume=parseInt(this.value,10)/100;
+  $("volumeLabel").textContent=this.value+"%";
+  if(master)master.gain.value=volume;
+};
+$("btnDemo").onclick=function(){playDemo();};
+$("btnDemoStop").onclick=function(){stopDemo();};
+$("btnClear").onclick=function(){lastNotes=[];renderChips();};
+renderKeyboard();renderChips();setSustain(false);
+</script>
+</body>
+</html>

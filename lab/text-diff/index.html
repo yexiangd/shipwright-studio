@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Text Diff · Shipwright Studio</title>
+<meta name="description" content="Free online text diff: compare two texts side by side with line and word-level highlighting, no sign-up and nothing leaving your browser.">
+<link rel="canonical" href="https://shipwright-studio.pages.dev/lab/text-diff/">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&display=swap" rel="stylesheet">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"WebApplication","name":"Text Diff","url":"https://shipwright-studio.pages.dev/lab/text-diff/","description":"Text Diff is a free online tool that compares two texts side by side, highlighting added, removed, and changed lines and the exact words that changed inside them.","applicationCategory":"DeveloperApplication","operatingSystem":"Web","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"}}
+</script>
+<style>
+:root{--bg:#0a0c0f;--panel:#101318;--line:#1c2128;--txt:#e8e4da;--mut:#9aa3b2;--brass:#d2a24c;--dim:#2a2f38;--red:#ff7a7a;--green:#7ddb8a}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--txt);font-family:Fraunces,Georgia,serif;line-height:1.65;padding:2rem 1.2rem 4rem;max-width:1100px;margin:0 auto}
+a{color:var(--brass)}
+.nav{display:flex;gap:1.2rem;font-size:.85rem;margin-bottom:1.2rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.nav a{color:var(--mut);text-decoration:none}
+.nav a:hover{color:var(--brass)}
+.eyebrow{font-size:.75rem;letter-spacing:.22em;text-transform:uppercase;color:var(--mut);font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+h1{font-weight:600;font-size:clamp(2.1rem,5vw,3rem);margin:.5rem 0 .7rem}
+.define{color:var(--mut);max-width:46rem;margin-bottom:1.8rem;font-size:1rem}
+.define strong{color:var(--txt)}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:1.4rem;margin-bottom:1.4rem}
+.cardlabel{font-size:.72rem;letter-spacing:.18em;text-transform:uppercase;color:var(--mut);margin-bottom:.8rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.ui{font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.inputgrid{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem}
+.inputgrid label{display:block;font-size:.85rem;color:var(--mut);margin-bottom:.4rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+textarea{width:100%;min-height:180px;background:#08090c;color:var(--txt);border:1px solid var(--line);border-radius:10px;padding:.8rem;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.9rem;line-height:1.6;resize:vertical}
+textarea:focus{outline:1px solid var(--brass);border-color:var(--brass)}
+.btnrow{display:flex;gap:.6rem;flex-wrap:wrap;align-items:center;margin-bottom:.8rem}
+.btn{font-size:.9rem;border:1px solid var(--line);background:transparent;color:var(--mut);border-radius:999px;padding:.55rem 1.2rem;cursor:pointer;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.btn:hover{color:var(--txt);border-color:var(--mut)}
+.btn.primary{border-color:var(--brass);color:var(--brass)}
+.btn.primary:hover{background:rgba(210,162,76,.12)}
+.check{font-size:.9rem;color:var(--mut);font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif;display:flex;align-items:center;gap:.4rem;cursor:pointer}
+.summaryline{font-size:.95rem;color:var(--txt);font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.summaryline .add{color:var(--green)}
+.summaryline .del{color:var(--red)}
+.summaryline .chg{color:var(--brass)}
+.statusline{font-size:.85rem;color:var(--mut);min-height:1.2em;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.legend{display:flex;gap:1.2rem;flex-wrap:wrap;font-size:.8rem;color:var(--mut);margin-bottom:.8rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.legend span{display:flex;align-items:center;gap:.35rem}
+.swatch{display:inline-block;width:.8rem;height:.8rem;border-radius:3px}
+.swatch.add{background:rgba(125,219,138,.18);border:1px solid rgba(125,219,138,.4)}
+.swatch.del{background:rgba(255,122,122,.18);border:1px solid rgba(255,122,122,.4)}
+.swatch.chg{background:rgba(210,162,76,.18);border:1px solid rgba(210,162,76,.4)}
+.diffwrap{overflow-x:auto}
+.diffgrid{min-width:640px;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.88rem;line-height:1.7}
+.diffrow{display:grid;grid-template-columns:2.8em 1fr 2.8em 1fr;border-bottom:1px solid #161a20}
+.diffrow .num{color:#5c6470;text-align:right;padding:.15rem .5rem .15rem 0;user-select:none}
+.diffrow .cell{padding:.15rem .6rem;white-space:pre-wrap;word-break:break-word;min-height:1.7em}
+.diffrow .cell.blank{background:#0c0e12}
+.diffrow.add .cell.right{background:rgba(125,219,138,.08)}
+.diffrow.del .cell.left{background:rgba(255,122,122,.08)}
+.diffrow.chg .cell.left{background:rgba(210,162,76,.06)}
+.diffrow.chg .cell.right{background:rgba(210,162,76,.06)}
+.wdel{background:rgba(255,122,122,.28);color:#ffb3b3;border-radius:3px;padding:0 1px}
+.wadd{background:rgba(125,219,138,.28);color:#c4f5cb;border-radius:3px;padding:0 1px}
+.emptyhint{color:var(--mut);font-size:.95rem;padding:1rem 0;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+details.explain{border:1px solid var(--line);border-radius:10px;padding:.9rem 1.1rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif;font-size:.88rem;color:var(--mut);text-align:left}
+details.explain summary{cursor:pointer;color:var(--txt);font-size:.95rem}
+details.explain p{margin-top:.6rem}
+footer{margin-top:2.5rem;font-size:.85rem;color:var(--mut);font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif;text-align:center}
+@media(max-width:720px){.inputgrid{grid-template-columns:1fr}textarea{min-height:140px}}
+</style>
+</head>
+<body>
+<nav class="nav"><a href="/">Shipwright Studio</a><a href="/ideas/">Idea Lab</a></nav>
+<p class="eyebrow">Lab · Devtool</p>
+<h1>Text Diff</h1>
+<p class="define"><strong>Text Diff is a free online tool that</strong> compares two texts side by side, highlighting added, removed, and changed lines — and the exact words that changed inside them — with nothing to install and nothing leaving your browser.</p>
+
+<section class="card" aria-label="Text inputs">
+  <p class="cardlabel">Compare two texts</p>
+  <div class="inputgrid">
+    <div>
+      <label for="orig">Original</label>
+      <textarea id="orig" spellcheck="false" placeholder="Paste the original text here…"></textarea>
+    </div>
+    <div>
+      <label for="rev">Revised</label>
+      <textarea id="rev" spellcheck="false" placeholder="Paste the revised text here…"></textarea>
+    </div>
+  </div>
+  <div class="btnrow">
+    <button class="btn primary" id="btnCompare" type="button">Compare</button>
+    <label class="check"><input type="checkbox" id="chkWs"> Ignore whitespace</label>
+    <button class="btn" id="btnSample" type="button">Sample text</button>
+    <button class="btn" id="btnCopy" type="button">Copy summary</button>
+    <button class="btn" id="btnClear" type="button">Clear</button>
+  </div>
+  <p class="summaryline" id="summary">0 lines added · 0 removed · 0 changed · 0 words changed · 0 unchanged</p>
+  <p class="statusline" id="status">Enter text on both sides and press Compare — or load the sample.</p>
+</section>
+
+<section class="card" aria-label="Diff result">
+  <p class="cardlabel">Result</p>
+  <div class="legend">
+    <span><span class="swatch add"></span> Added</span>
+    <span><span class="swatch del"></span> Removed</span>
+    <span><span class="swatch chg"></span> Changed (words highlighted)</span>
+    <span>Unchanged rows are uncoloured.</span>
+  </div>
+  <div class="diffwrap"><div class="diffgrid" id="diff"></div></div>
+</section>
+
+<section class="card">
+  <details class="explain">
+    <summary>How it works</summary>
+    <p>Lines are aligned with a longest-common-subsequence (LCS) diff, so a line inserted in the middle of a document shows up as one added row instead of shifting every line after it into false changes. Paired changed lines are then diffed again at the word level (also LCS), so only the edited words are coloured. Ignore whitespace compares lines after trimming and collapsing whitespace runs, while the displayed text keeps its original spacing. Everything runs locally in your browser — your text is never sent anywhere.</p>
+  </details>
+</section>
+
+<footer>Built in the Shipwright Studio Lab · <a href="/ideas/">more experiments</a></footer>
+
+<script>
+"use strict";
+/* ===== Core (node-tested) ===== */
+function splitLines(text){return text===""?[]:text.split("\n");}
+function normalizeLine(line){return line.trim().replace(/\s+/g," ");}
+function tokenizeWords(line){
+  var m=line.match(/\s+|[^\s]+/g);
+  return m?m:[];
+}
+/* Generic LCS diff over two arrays. eq(a,b) decides equality.
+   Returns an op list: {t:"eq"|"del"|"ins", a: index into A, b: index into B}. */
+function lcsOps(A,B,eq){
+  var n=A.length, m=B.length;
+  var dp=[];
+  for(var i=0;i<=n;i++){dp[i]=[];for(var j=0;j<=m;j++)dp[i][j]=0;}
+  for(var i=n-1;i>=0;i--)for(var j=m-1;j>=0;j--)
+    dp[i][j]=eq(A[i],B[j])?dp[i+1][j+1]+1:Math.max(dp[i+1][j],dp[i][j+1]);
+  var ops=[], i=0, j=0;
+  while(i<n&&j<m){
+    if(eq(A[i],B[j])){ops.push({t:"eq",a:i,b:j});i++;j++;}
+    else if(dp[i+1][j]>=dp[i][j+1]){ops.push({t:"del",a:i,b:-1});i++;}
+    else{ops.push({t:"ins",a:-1,b:j});j++;}
+  }
+  while(i<n){ops.push({t:"del",a:i,b:-1});i++;}
+  while(j<m){ops.push({t:"ins",a:-1,b:j});j++;}
+  return ops;
+}
+/* Word diff for one paired changed line. Returns {left: htmlToken list,
+   right: htmlToken list} where each token is {text, changed}.
+   ignoreWs: whitespace tokens compare equal to each other. */
+function wordDiff(oldLine,newLine,ignoreWs){
+  function eq(a,b){
+    if(ignoreWs&&/^\s+$/.test(a)&&/^\s+$/.test(b))return true;
+    return a===b;
+  }
+  var A=tokenizeWords(oldLine), B=tokenizeWords(newLine);
+  var ops=lcsOps(A,B,eq);
+  var left=[], right=[];
+  ops.forEach(function(op){
+    if(op.t==="eq"){left.push({text:A[op.a],changed:false});right.push({text:B[op.b],changed:false});}
+    else if(op.t==="del")left.push({text:A[op.a],changed:true});
+    else right.push({text:B[op.b],changed:true});
+  });
+  return {left:left,right:right};
+}
+/* Full line diff. Returns rows:
+   {type:"eq"|"add"|"del"|"chg", aLine, bLine, aText, bText,
+    aTokens, bTokens} plus counts {added, removed, changed, words, unchanged}. */
+function diffTexts(origText,revText,ignoreWs){
+  var A=splitLines(origText), B=splitLines(revText);
+  function eq(a,b){
+    return ignoreWs?normalizeLine(a)===normalizeLine(b):a===b;
+  }
+  var ops=lcsOps(A,B,eq);
+  var rows=[], counts={added:0,removed:0,changed:0,words:0,unchanged:0};
+  var i=0;
+  while(i<ops.length){
+    var op=ops[i];
+    if(op.t==="eq"){
+      rows.push({type:"eq",aLine:op.a+1,bLine:op.b+1,aText:A[op.a],bText:B[op.b]});
+      counts.unchanged++;i++;
+    } else {
+      /* Collect a contiguous change block (dels and inss, any order). */
+      var dels=[], inss=[];
+      while(i<ops.length&&ops[i].t!=="eq"){
+        if(ops[i].t==="del")dels.push(ops[i]);else inss.push(ops[i]);
+        i++;
+      }
+      var pairs=Math.min(dels.length,inss.length);
+      for(var k=0;k<pairs;k++){
+        var wd=wordDiff(A[dels[k].a],B[inss[k].b],ignoreWs);
+        var w=0;
+        wd.left.forEach(function(t){if(t.changed&&! /^\s+$/.test(t.text))w++;});
+        wd.right.forEach(function(t){if(t.changed&&! /^\s+$/.test(t.text))w++;});
+        counts.words+=w;counts.changed++;
+        rows.push({type:"chg",aLine:dels[k].a+1,bLine:inss[k].b+1,
+          aText:A[dels[k].a],bText:B[inss[k].b],aTokens:wd.left,bTokens:wd.right});
+      }
+      for(var d=pairs;d<dels.length;d++){
+        counts.removed++;
+        rows.push({type:"del",aLine:dels[d].a+1,bLine:null,aText:A[dels[d].a],bText:""});
+      }
+      for(var s=pairs;s<inss.length;s++){
+        counts.added++;
+        rows.push({type:"add",aLine:null,bLine:inss[s].b+1,aText:"",bText:B[inss[s].b]});
+      }
+    }
+  }
+  return {rows:rows,counts:counts};
+}
+function summaryText(c){
+  return "Text Diff summary: "+c.added+" lines added, "+c.removed+" removed, "+
+    c.changed+" changed, "+c.words+" words changed, "+c.unchanged+" unchanged";
+}
+/* ===== UI ===== */
+function $(id){return document.getElementById(id);}
+function esc(s){
+  return s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+}
+function tokensHtml(tokens,cls){
+  return tokens.map(function(t){
+    return t.changed?'<span class="'+cls+'">'+esc(t.text)+"</span>":esc(t.text);
+  }).join("");
+}
+function render(){
+  var orig=$("orig").value, rev=$("rev").value;
+  var ignoreWs=$("chkWs").checked;
+  var diffEl=$("diff");
+  if(orig===""&&rev===""){
+    $("summary").innerHTML="0 lines added · 0 removed · 0 changed · 0 words changed · 0 unchanged";
+    $("status").textContent="Enter text on both sides and press Compare — or load the sample.";
+    diffEl.innerHTML='<p class="emptyhint">Nothing to compare yet.</p>';
+    return;
+  }
+  var result=diffTexts(orig,rev,ignoreWs);
+  var c=result.counts;
+  $("summary").innerHTML=
+    '<span class="add">'+c.added+" lines added</span> · "+
+    '<span class="del">'+c.removed+" removed</span> · "+
+    '<span class="chg">'+c.changed+" changed</span> · "+
+    c.words+" words changed · "+c.unchanged+" unchanged";
+  if(c.added===0&&c.removed===0&&c.changed===0&&c.words===0){
+    $("status").textContent="No differences found — the two texts are identical.";
+  } else {
+    $("status").textContent="Differences found — see the highlighted rows below.";
+  }
+  var html="";
+  result.rows.forEach(function(r){
+    var leftHtml, rightHtml;
+    if(r.type==="chg"){
+      leftHtml=tokensHtml(r.aTokens,"wdel");
+      rightHtml=tokensHtml(r.bTokens,"wadd");
+    } else {
+      leftHtml=esc(r.aText);rightHtml=esc(r.bText);
+    }
+    html+='<div class="diffrow '+r.type+'">'+
+      '<span class="num">'+(r.aLine===null?"":r.aLine)+"</span>"+
+      '<span class="cell left'+(r.type==="add"?" blank":"")+'">'+leftHtml+"</span>"+
+      '<span class="num">'+(r.bLine===null?"":r.bLine)+"</span>"+
+      '<span class="cell right'+(r.type==="del"?" blank":"")+'">'+rightHtml+"</span></div>";
+  });
+  diffEl.innerHTML=html;
+}
+var SAMPLE_ORIG=[
+  "The quick brown fox jumps over the lazy dog.",
+  "Pack my box with five dozen liquor jugs.",
+  "How vexingly quick daft zebras jump!",
+  "Bright vixens jump; dozy fowl quack.",
+  "Waltz, bad nymph, for quick jigs vex."
+].join("\n");
+var SAMPLE_REV=[
+  "The quick red fox jumps over the lazy dog.",
+  "Pack my box with five dozen liquor jugs.",
+  "Bright vixens jump; dozy fowl quack.",
+  "Sphinx of black quartz, judge my vow.",
+  "Waltz, bad nymph, for quick jigs vex."
+].join("\n");
+var debounce=null;
+function scheduleRender(){
+  if(debounce)clearTimeout(debounce);
+  debounce=setTimeout(render,250);
+}
+$("orig").addEventListener("input",scheduleRender);
+$("rev").addEventListener("input",scheduleRender);
+$("chkWs").addEventListener("change",render);
+$("btnCompare").onclick=function(){render();};
+$("btnSample").onclick=function(){
+  $("orig").value=SAMPLE_ORIG;$("rev").value=SAMPLE_REV;render();
+  $("status").textContent="Sample loaded — one changed line, one added line, one removed line.";
+};
+$("btnClear").onclick=function(){
+  $("orig").value="";$("rev").value="";render();
+};
+$("btnCopy").onclick=function(){
+  var orig=$("orig").value, rev=$("rev").value;
+  var c=diffTexts(orig,rev,$("chkWs").checked).counts;
+  var text=summaryText(c);
+  function done(ok){
+    $("status").textContent=ok?"Summary copied to clipboard.":
+      "Could not copy — select the summary text manually.";
+  }
+  if(navigator.clipboard&&navigator.clipboard.writeText){
+    navigator.clipboard.writeText(text).then(function(){done(true);},function(){done(false);});
+  } else {
+    try{
+      var ta=document.createElement("textarea");
+      ta.value=text;document.body.appendChild(ta);ta.select();
+      var ok=document.execCommand("copy");document.body.removeChild(ta);done(ok);
+    }catch(e){done(false);}
+  }
+};
+render();
+</script>
+</body>
+</html>

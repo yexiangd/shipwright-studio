@@ -166,6 +166,11 @@
     <priority>0.7</priority>
   </url>
   <url>
+    <loc>https://shipwright-studio.pages.dev/lab/pocket-piano/</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
     <loc>https://shipwright-studio.pages.dev/lab/pomodoro/</loc>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
@@ -227,6 +232,11 @@
   </url>
   <url>
     <loc>https://shipwright-studio.pages.dev/lab/tetris/</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://shipwright-studio.pages.dev/lab/text-diff/</loc>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>

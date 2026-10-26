@@ -1,5 +1,5 @@
 {
-  "updated": "2026-10-25",
+  "updated": "2026-10-26",
   "ideas": [
     {
       "id": "idea-000a",
@@ -525,7 +525,9 @@
       "tagline": "Side-by-side diff with word-level highlighting.",
       "priority": 76,
       "effort": "M",
-      "status": "todo"
+      "status": "done",
+      "url": "/lab/text-diff/",
+      "shipped": "2026-10-26"
     },
     {
       "id": "idea-045",
@@ -953,7 +955,9 @@
       "tagline": "A playable piano in your browser, with sustain.",
       "priority": 76,
       "effort": "M",
-      "status": "todo"
+      "status": "done",
+      "url": "/lab/pocket-piano/",
+      "shipped": "2026-10-26"
     },
     {
       "id": "idea-086",
