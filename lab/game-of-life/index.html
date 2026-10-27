@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Game of Life · Shipwright Studio</title>
+<meta name="description" content="Free online Game of Life: paint Conway's cellular automaton, run famous patterns like the Gosper Glider Gun, and watch life emerge — no sign-up, nothing leaves your browser.">
+<link rel="canonical" href="https://shipwright-studio.pages.dev/lab/game-of-life/">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&display=swap" rel="stylesheet">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"WebApplication","name":"Game of Life","url":"https://shipwright-studio.pages.dev/lab/game-of-life/","description":"Game of Life is a free online tool that lets you paint Conway's cellular automaton, run it at any speed, and load famous patterns like gliders and the Gosper Glider Gun.","applicationCategory":"GameApplication","operatingSystem":"Web","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"}}
+</script>
+<style>
+:root{--bg:#0a0c0f;--panel:#101318;--line:#1c2128;--txt:#e8e4da;--mut:#9aa3b2;--brass:#d2a24c;--dim:#2a2f38}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--txt);font-family:Fraunces,Georgia,serif;line-height:1.65;padding:2rem 1.2rem 4rem;max-width:1100px;margin:0 auto}
+a{color:var(--brass)}
+.nav{display:flex;gap:1.2rem;font-size:.85rem;margin-bottom:1.2rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.nav a{color:var(--mut);text-decoration:none}
+.nav a:hover{color:var(--brass)}
+.eyebrow{font-size:.75rem;letter-spacing:.22em;text-transform:uppercase;color:var(--mut);font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+h1{font-weight:600;font-size:clamp(2.1rem,5vw,3rem);margin:.5rem 0 .7rem}
+.define{color:var(--mut);max-width:46rem;margin-bottom:1.8rem;font-size:1rem}
+.define strong{color:var(--txt)}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:1.4rem;margin-bottom:1.4rem}
+.cardlabel{font-size:.72rem;letter-spacing:.18em;text-transform:uppercase;color:var(--mut);margin-bottom:.8rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.ui{font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.btnrow{display:flex;gap:.6rem;flex-wrap:wrap;align-items:center;margin-bottom:.8rem}
+.btn{font-size:.9rem;border:1px solid var(--line);background:transparent;color:var(--mut);border-radius:999px;padding:.55rem 1.2rem;cursor:pointer;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif;min-height:44px}
+.btn:hover{color:var(--txt);border-color:var(--mut)}
+.btn.primary{border-color:var(--brass);color:var(--brass)}
+.btn.primary:hover{background:rgba(210,162,76,.12)}
+.btn.active{background:rgba(210,162,76,.15);color:var(--brass);border-color:var(--brass)}
+.check,.sliderlabel{font-size:.9rem;color:var(--mut);font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif;display:flex;align-items:center;gap:.4rem;cursor:pointer}
+.sliderlabel input[type=range]{accent-color:var(--brass);cursor:pointer}
+.sliderlabel output{color:var(--txt);min-width:3.2em}
+.statsline{font-size:.95rem;color:var(--txt);font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.statsline b{color:var(--brass)}
+.statusline{font-size:.85rem;color:var(--mut);min-height:1.2em;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+canvas#board{display:block;width:100%;height:auto;background:#08090c;border:1px solid var(--line);border-radius:10px;touch-action:none;cursor:crosshair}
+.hint{font-size:.85rem;color:var(--mut);margin-top:.8rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.presetrow{display:flex;gap:.6rem;flex-wrap:wrap;margin-top:1rem}
+details.explain{border:1px solid var(--line);border-radius:10px;padding:.9rem 1.1rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif;font-size:.88rem;color:var(--mut);text-align:left}
+details.explain summary{cursor:pointer;color:var(--txt);font-size:.95rem}
+details.explain p{margin-top:.6rem}
+footer{margin-top:2.5rem;font-size:.85rem;color:var(--mut);font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif;text-align:center}
+</style>
+</head>
+<body>
+<nav class="nav"><a href="/">Shipwright Studio</a><a href="/ideas/">Idea Lab</a></nav>
+<p class="eyebrow">Lab · Game</p>
+<h1>Game of Life</h1>
+<p class="define"><strong>Game of Life is a free online tool that</strong> lets you paint Conway's cellular automaton, run it at any speed, and load famous patterns like gliders and the Gosper Glider Gun — with nothing to install and nothing leaving your browser.</p>
+
+<section class="card" aria-label="Simulation controls">
+  <p class="cardlabel">Controls</p>
+  <div class="btnrow">
+    <button class="btn primary" id="btnPlay" type="button">Play</button>
+    <button class="btn" id="btnStep" type="button">Step</button>
+    <button class="btn" id="btnClear" type="button">Clear</button>
+    <button class="btn" id="btnRandom" type="button">Randomise</button>
+    <label class="sliderlabel">Density <input type="range" id="rngDensity" min="10" max="50" value="25"> <output id="outDensity">25%</output></label>
+  </div>
+  <div class="btnrow">
+    <label class="sliderlabel">Speed <input type="range" id="rngSpeed" min="1" max="20" value="8"> <output id="outSpeed">8 / sec</output></label>
+    <label class="check"><input type="checkbox" id="chkWrap" checked> Wrap around edges</label>
+    <span class="ui" style="display:flex;gap:.4rem;flex-wrap:wrap">
+      <button class="btn active" id="btnPaint" type="button">Paint</button>
+      <button class="btn" id="btnErase" type="button">Erase</button>
+    </span>
+  </div>
+  <p class="statsline" id="stats">Generation <b>0</b> · <b>0</b> live cells</p>
+  <p class="statusline" id="status">Empty board — paint some cells, load a pattern, or randomise.</p>
+</section>
+
+<section class="card" aria-label="Game board">
+  <p class="cardlabel">Board — 48 × 32</p>
+  <canvas id="board" width="960" height="640" aria-label="Game of Life board. Drag to paint or erase; tap a cell to toggle it."></canvas>
+  <div class="presetrow" role="group" aria-label="Pattern presets">
+    <button class="btn" data-preset="glider" type="button">Glider</button>
+    <button class="btn" data-preset="blinker" type="button">Blinker</button>
+    <button class="btn" data-preset="toad" type="button">Toad</button>
+    <button class="btn" data-preset="beacon" type="button">Beacon</button>
+    <button class="btn" data-preset="pulsar" type="button">Pulsar</button>
+    <button class="btn" data-preset="gun" type="button">Gosper Glider Gun</button>
+  </div>
+  <p class="hint">Drag to paint or erase · tap a cell to toggle it · gliders wrap around the edges when wrap-around is on.</p>
+</section>
+
+<section class="card">
+  <details class="explain">
+    <summary>How it works</summary>
+    <p>Every cell follows two rules each generation: a live cell survives with 2 or 3 live neighbours, otherwise it dies; a dead cell comes alive with exactly 3 live neighbours. That is all — yet gliders crawl, blinkers blink, and the Gosper Glider Gun fires a new glider every 30 generations, forever. With wrap-around on, the board is a torus: neighbours wrap across the edges, so a glider that flies off one side re-enters on the other. With it off, the edges are dead borders. Everything runs locally in your browser — your board is never sent anywhere.</p>
+  </details>
+</section>
+
+<footer>Built in the Shipwright Studio Lab · <a href="/ideas/">more experiments</a></footer>
+
+<script>
+"use strict";
+/* ===== Core (node-tested) ===== */
+var COLS = 48, ROWS = 32;
+function createGrid(){ return new Uint8Array(COLS * ROWS); }
+function idx(x, y){ return y * COLS + x; }
+function countLive(g){
+  var n = 0;
+  for (var i = 0; i < g.length; i++) n += g[i];
+  return n;
+}
+/* One Conway step (B3/S23), double-buffered. wrap=true makes the board
+   toroidal; wrap=false treats out-of-bounds neighbours as dead. */
+function stepGrid(g, wrap){
+  var next = new Uint8Array(COLS * ROWS);
+  for (var y = 0; y < ROWS; y++){
+    for (var x = 0; x < COLS; x++){
+      var n = 0;
+      for (var dy = -1; dy <= 1; dy++){
+        for (var dx = -1; dx <= 1; dx++){
+          if (dx === 0 && dy === 0) continue;
+          var nx = x + dx, ny = y + dy;
+          if (wrap){
+            nx = (nx + COLS) % COLS;
+            ny = (ny + ROWS) % ROWS;
+          } else if (nx < 0 || nx >= COLS || ny < 0 || ny >= ROWS){
+            continue;
+          }
+          n += g[idx(nx, ny)];
+        }
+      }
+      var alive = g[idx(x, y)];
+      next[idx(x, y)] = (alive ? (n === 2 || n === 3) : (n === 3)) ? 1 : 0;
+    }
+  }
+  return next;
+}
+/* Pattern cell lists, relative coordinates. */
+var PATTERNS = {
+  glider: [[1,0],[2,1],[0,2],[1,2],[2,2]],
+  blinker: [[0,0],[1,0],[2,0]],
+  toad: [[1,0],[2,0],[3,0],[0,1],[1,1],[2,1]],
+  beacon: [[0,0],[1,0],[0,1],[1,1],[2,2],[3,2],[2,3],[3,3]],
+  pulsar: [
+    [2,0],[3,0],[4,0],[8,0],[9,0],[10,0],
+    [0,2],[5,2],[7,2],[12,2],
+    [0,3],[5,3],[7,3],[12,3],
+    [0,4],[5,4],[7,4],[12,4],
+    [2,5],[3,5],[4,5],[8,5],[9,5],[10,5],
+    [2,7],[3,7],[4,7],[8,7],[9,7],[10,7],
+    [0,8],[5,8],[7,8],[12,8],
+    [0,9],[5,9],[7,9],[12,9],
+    [0,10],[5,10],[7,10],[12,10],
+    [2,12],[3,12],[4,12],[8,12],[9,12],[10,12]
+  ],
+  gun: [
+    [24,0],
+    [22,1],[24,1],
+    [12,2],[13,2],[20,2],[21,2],[34,2],[35,2],
+    [11,3],[15,3],[20,3],[21,3],[34,3],[35,3],
+    [0,4],[1,4],[10,4],[16,4],[20,4],[21,4],
+    [0,5],[1,5],[10,5],[14,5],[16,5],[17,5],[22,5],[24,5],
+    [10,6],[16,6],[24,6],
+    [11,7],[15,7],
+    [12,8],[13,8]
+  ]
+};
+/* Return a fresh grid with the pattern centred. */
+function patternGrid(cells){
+  var g = createGrid();
+  var maxX = 0, maxY = 0;
+  cells.forEach(function(c){ if (c[0] > maxX) maxX = c[0]; if (c[1] > maxY) maxY = c[1]; });
+  var ox = Math.floor((COLS - (maxX + 1)) / 2);
+  var oy = Math.floor((ROWS - (maxY + 1)) / 2);
+  cells.forEach(function(c){ g[idx(c[0] + ox, c[1] + oy)] = 1; });
+  return g;
+}
+function gridsEqual(a, b){
+  if (a.length !== b.length) return false;
+  for (var i = 0; i < a.length; i++) if (a[i] !== b[i]) return false;
+  return true;
+}
+/* ===== UI (browser only; skipped under node) ===== */
+if (typeof document !== "undefined"){
+  var grid = createGrid();
+  var generation = 0;
+  var playing = false;
+  var timer = null;
+  var brush = 1; /* 1 = paint, 0 = erase */
+  var canvas = document.getElementById("board");
+  var ctx = canvas.getContext("2d");
+  var CELL = 20;
+  function $(id){ return document.getElementById(id); }
+  function draw(){
+    ctx.fillStyle = "#08090c";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.strokeStyle = "#1c2128";
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    for (var x = 0; x <= COLS; x++){ ctx.moveTo(x * CELL + 0.5, 0); ctx.lineTo(x * CELL + 0.5, canvas.height); }
+    for (var y = 0; y <= ROWS; y++){ ctx.moveTo(0, y * CELL + 0.5); ctx.lineTo(canvas.width, y * CELL + 0.5); }
+    ctx.stroke();
+    ctx.fillStyle = "#d2a24c";
+    for (var yy = 0; yy < ROWS; yy++){
+      for (var xx = 0; xx < COLS; xx++){
+        if (grid[idx(xx, yy)]) ctx.fillRect(xx * CELL + 2, yy * CELL + 2, CELL - 4, CELL - 4);
+      }
+    }
+  }
+  function refreshStats(){
+    $("stats").innerHTML = "Generation <b>" + generation + "</b> · <b>" + countLive(grid) + "</b> live cells";
+  }
+  function setStatus(msg){ $("status").textContent = msg; }
+  function stepOnce(){
+    grid = stepGrid(grid, $("chkWrap").checked);
+    generation++;
+    draw();
+    refreshStats();
+  }
+  function stopTimer(){
+    if (timer){ clearInterval(timer); timer = null; }
+  }
+  function restartTimer(){
+    stopTimer();
+    if (!playing) return;
+    var perSec = parseInt($("rngSpeed").value, 10);
+    timer = setInterval(stepOnce, Math.round(1000 / perSec));
+  }
+  function setPlaying(p){
+    playing = p;
+    $("btnPlay").textContent = playing ? "Pause" : "Play";
+    if (playing){ restartTimer(); setStatus("Playing — paint while it runs, or pause to inspect."); }
+    else { stopTimer(); setStatus("Paused — press Play, Step, or paint more cells."); }
+  }
+  function pauseForLoad(msg){
+    if (playing) setPlaying(false);
+    setStatus(msg);
+  }
+  $("btnPlay").onclick = function(){ setPlaying(!playing); };
+  $("btnStep").onclick = function(){
+    if (playing) setPlaying(false);
+    stepOnce();
+    if (countLive(grid) === 0) setStatus("Stepped — the board is empty.");
+  };
+  $("btnClear").onclick = function(){
+    grid = createGrid();
+    generation = 0;
+    draw(); refreshStats();
+    setStatus("Cleared — paint some cells, load a pattern, or randomise.");
+  };
+  $("btnRandom").onclick = function(){
+    var density = parseInt($("rngDensity").value, 10) / 100;
+    grid = createGrid();
+    for (var i = 0; i < grid.length; i++) grid[i] = Math.random() < density ? 1 : 0;
+    generation = 0;
+    draw(); refreshStats();
+    pauseForLoad("Random board at " + $("rngDensity").value + "% density — press Play.");
+  };
+  $("rngDensity").oninput = function(){ $("outDensity").textContent = $("rngDensity").value + "%"; };
+  $("rngSpeed").oninput = function(){
+    $("outSpeed").textContent = $("rngSpeed").value + " / sec";
+    restartTimer();
+  };
+  $("btnPaint").onclick = function(){
+    brush = 1;
+    $("btnPaint").classList.add("active");
+    $("btnErase").classList.remove("active");
+  };
+  $("btnErase").onclick = function(){
+    brush = 0;
+    $("btnErase").classList.add("active");
+    $("btnPaint").classList.remove("active");
+  };
+  var presetNames = {glider:"Glider", blinker:"Blinker", toad:"Toad", beacon:"Beacon", pulsar:"Pulsar", gun:"Gosper Glider Gun"};
+  document.querySelectorAll("[data-preset]").forEach(function(btn){
+    btn.onclick = function(){
+      grid = patternGrid(PATTERNS[btn.getAttribute("data-preset")]);
+      generation = 0;
+      draw(); refreshStats();
+      pauseForLoad(presetNames[btn.getAttribute("data-preset")] + " loaded — press Play to watch it run.");
+    };
+  });
+  /* Painting: drag applies the brush; a tap with no drag toggles. */
+  var painting = false, moved = false, lastCell = null;
+  function cellFromEvent(e){
+    var r = canvas.getBoundingClientRect();
+    var x = Math.floor((e.clientX - r.left) / r.width * COLS);
+    var y = Math.floor((e.clientY - r.top) / r.height * ROWS);
+    if (x < 0) x = 0; if (x >= COLS) x = COLS - 1;
+    if (y < 0) y = 0; if (y >= ROWS) y = ROWS - 1;
+    return {x: x, y: y};
+  }
+  function applyBrush(c){
+    grid[idx(c.x, c.y)] = brush;
+    draw(); refreshStats();
+  }
+  canvas.addEventListener("pointerdown", function(e){
+    e.preventDefault();
+    canvas.setPointerCapture(e.pointerId);
+    painting = true; moved = false;
+    lastCell = cellFromEvent(e);
+  });
+  canvas.addEventListener("pointermove", function(e){
+    if (!painting) return;
+    var c = cellFromEvent(e);
+    if (!lastCell || c.x !== lastCell.x || c.y !== lastCell.y) moved = true;
+    lastCell = c;
+    applyBrush(c);
+  });
+  function endPointer(e){
+    if (!painting) return;
+    painting = false;
+    if (!moved && lastCell){
+      grid[idx(lastCell.x, lastCell.y)] = grid[idx(lastCell.x, lastCell.y)] ? 0 : 1;
+      draw(); refreshStats();
+    }
+    lastCell = null;
+  }
+  canvas.addEventListener("pointerup", endPointer);
+  canvas.addEventListener("pointercancel", endPointer);
+  /* Start with a glider so the page is alive on first sight. */
+  grid = patternGrid(PATTERNS.glider);
+  draw(); refreshStats();
+  setStatus("Glider loaded — press Play to watch it glide.");
+}
+</script>
+</body>
+</html>

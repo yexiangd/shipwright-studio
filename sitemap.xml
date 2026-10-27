@@ -81,7 +81,17 @@
     <priority>0.7</priority>
   </url>
   <url>
+    <loc>https://shipwright-studio.pages.dev/lab/funding-arbitrage/</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
     <loc>https://shipwright-studio.pages.dev/lab/game-2048/</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://shipwright-studio.pages.dev/lab/game-of-life/</loc>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>

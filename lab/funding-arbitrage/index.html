@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Funding Rate Arbitrage Calc · Shipwright Studio</title>
+<meta name="description" content="Free online cash-and-carry calculator: work out perp funding, annualised rate, fees, breakeven and net P&amp;L for a long-spot, short-perp trade.">
+<link rel="canonical" href="https://shipwright-studio.pages.dev/lab/funding-arbitrage/">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&display=swap" rel="stylesheet">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"WebApplication","name":"Funding Rate Arbitrage Calc","url":"https://shipwright-studio.pages.dev/lab/funding-arbitrage/","description":"Funding Rate Arbitrage Calc is a free online tool that calculates perp funding, annualised funding rate, fees, breakeven and net P&L for a cash-and-carry trade of long spot and short perp.","applicationCategory":"FinanceApplication","operatingSystem":"Web","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"}}
+</script>
+<style>
+:root{--bg:#0a0c0f;--panel:#101318;--line:#1c2128;--txt:#e8e4da;--mut:#9aa3b2;--brass:#d2a24c;--green:#7ddb8a;--red:#ff7a7a}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--txt);font-family:Fraunces,Georgia,serif;line-height:1.65;padding:2rem 1.2rem 4rem;max-width:1100px;margin:0 auto}
+a{color:var(--brass)}
+.nav{display:flex;gap:1.2rem;font-size:.85rem;margin-bottom:1.2rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.nav a{color:var(--mut);text-decoration:none}
+.nav a:hover{color:var(--brass)}
+.eyebrow{font-size:.75rem;letter-spacing:.22em;text-transform:uppercase;color:var(--mut);font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+h1{font-weight:600;font-size:clamp(2.1rem,5vw,3rem);margin:.5rem 0 .7rem}
+.define{color:var(--mut);max-width:46rem;margin-bottom:1.8rem;font-size:1rem}
+.define strong{color:var(--txt)}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:1.4rem;margin-bottom:1.4rem}
+.cardlabel{font-size:.72rem;letter-spacing:.18em;text-transform:uppercase;color:var(--mut);margin-bottom:.8rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.ui{font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.inputgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;margin-bottom:1rem}
+.inputgrid label{display:block;font-size:.85rem;color:var(--mut);margin-bottom:.4rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+input,select{width:100%;background:#08090c;color:var(--txt);border:1px solid var(--line);border-radius:10px;padding:.7rem .8rem;font-size:.95rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+input:focus,select:focus{outline:1px solid var(--brass);border-color:var(--brass)}
+input.invalid{border-color:var(--red);outline:1px solid var(--red)}
+.btnrow{display:flex;gap:.6rem;flex-wrap:wrap;align-items:center;margin-bottom:.8rem}
+.btn{font-size:.9rem;border:1px solid var(--line);background:transparent;color:var(--mut);border-radius:999px;padding:.55rem 1.2rem;cursor:pointer;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif;min-height:44px}
+.btn:hover{color:var(--txt);border-color:var(--mut)}
+.btn.primary{border-color:var(--brass);color:var(--brass)}
+.btn.primary:hover{background:rgba(210,162,76,.12)}
+.statusline{font-size:.85rem;color:var(--mut);min-height:1.2em;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.statusline.error{color:var(--red)}
+.note{font-size:.85rem;color:var(--mut);font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:.8rem;margin-top:1rem}
+.stat{background:#08090c;border:1px solid var(--line);border-radius:10px;padding:.9rem 1rem}
+.stat .k{font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;color:var(--mut);font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.stat .v{font-size:1.25rem;font-weight:600;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif;margin-top:.2rem}
+.pos{color:var(--green)}.neg{color:var(--red)}.neu{color:var(--txt)}
+table{width:100%;border-collapse:collapse;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif;font-size:.92rem}
+th{color:var(--mut);text-align:left;font-weight:400;border-bottom:1px solid var(--line);padding:.5rem .4rem}
+td{padding:.55rem .4rem;border-bottom:1px solid #161a20}
+.bar-row{display:flex;align-items:center;gap:.7rem;margin:.5rem 0;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif;font-size:.85rem}
+.bar-row .lbl{width:5.5rem;color:var(--mut);flex-shrink:0}
+.bar-track{flex:1;background:#08090c;border:1px solid var(--line);border-radius:999px;height:14px;overflow:hidden}
+.bar-fill{height:100%;background:var(--brass)}
+.bar-fill.negfill{background:var(--red)}
+.bar-row .val{width:7.5rem;text-align:right}
+details.explain{border:1px solid var(--line);border-radius:10px;padding:.9rem 1.1rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif;font-size:.88rem;color:var(--mut);text-align:left}
+details.explain summary{cursor:pointer;color:var(--txt);font-size:.95rem}
+details.explain p{margin-top:.6rem}
+.disclaimer{font-size:.85rem;color:var(--mut);font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif;margin-top:1rem}
+footer{margin-top:2.5rem;font-size:.85rem;color:var(--mut);font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif;text-align:center}
+@media(max-width:720px){.inputgrid{grid-template-columns:1fr}.stats{grid-template-columns:1fr}.bar-row .val{width:6rem}}
+</style>
+</head>
+<body>
+<nav class="nav"><a href="/">Shipwright Studio</a><a href="/ideas/">Idea Lab</a></nav>
+<p class="eyebrow">Lab · Devtool</p>
+<h1>Funding Rate Arbitrage Calc</h1>
+<p class="define"><strong>Funding Rate Arbitrage Calc is a free online tool that</strong> calculates perp funding, annualised funding rate, fees, breakeven and net P&amp;L for a cash-and-carry trade — long spot, short perp — from prices and a funding rate you enter yourself.</p>
+
+<section class="card" aria-label="Cash-and-carry inputs">
+  <p class="cardlabel">Cash-and-carry trade</p>
+  <div class="inputgrid">
+    <div><label for="spot">Spot price (USD)</label><input id="spot" type="number" min="0" step="any" value="90000"></div>
+    <div><label for="perp">Perp price (USD)</label><input id="perp" type="number" min="0" step="any" value="90100"></div>
+    <div><label for="notional">Position notional (USD)</label><input id="notional" type="number" min="0" step="any" value="100000"></div>
+    <div><label for="rate">Funding rate (% per interval)</label><input id="rate" type="number" step="any" value="0.01"></div>
+    <div><label for="interval">Funding interval</label>
+      <select id="interval"><option value="1">Every 1 hour</option><option value="4">Every 4 hours</option><option value="8" selected>Every 8 hours</option></select>
+    </div>
+    <div><label for="days">Holding period (days)</label><input id="days" type="number" min="0" step="any" value="30"></div>
+    <div><label for="spotFee">Spot fee (%)</label><input id="spotFee" type="number" min="0" step="any" value="0.05"></div>
+    <div><label for="perpFee">Perp fee (%)</label><input id="perpFee" type="number" min="0" step="any" value="0.05"></div>
+  </div>
+  <div class="btnrow">
+    <button class="btn primary" id="btnMild" type="button">Mild: +0.01% / 8h</button>
+    <button class="btn" id="btnStrong" type="button">Strong: +0.10% / 8h</button>
+    <button class="btn" id="btnNeg" type="button">Negative: −0.03% / 8h</button>
+    <button class="btn" id="btnReset" type="button">Reset defaults</button>
+  </div>
+  <p class="statusline" id="status"></p>
+  <div id="results" style="display:none">
+    <div class="stats" id="stats"></div>
+    <p class="note" style="margin-top:1rem">Sign convention: positive funding means longs pay shorts, so the short perp leg receives funding and funding P&amp;L is positive. Negative funding reverses the flow — the short leg pays.</p>
+    <p class="note">Headline net P&amp;L is funding-only (cumulative funding minus fees). Basis gain is conditional: it is only realised if the perp converges to the spot price at exit.</p>
+  </div>
+</section>
+
+<section class="card" aria-label="Breakeven" id="beCard" style="display:none">
+  <p class="cardlabel">Breakeven</p>
+  <p class="ui" id="beDays"></p>
+  <p class="ui" id="beRate"></p>
+</section>
+
+<section class="card" aria-label="Cumulative funding over time" id="cumCard" style="display:none">
+  <p class="cardlabel">Cumulative funding over time</p>
+  <table><thead><tr><th>Horizon</th><th>Cumulative funding</th><th>Net after fees</th></tr></thead><tbody id="cumBody"></tbody></table>
+  <div id="bars" style="margin-top:1rem"></div>
+  <p class="note">Bars are scaled to the largest absolute cumulative value shown. Red bars are payments (negative funding), not receipts.</p>
+</section>
+
+<section class="card">
+  <details class="explain">
+    <summary>How it works</summary>
+    <p>Cash-and-carry means holding the same exposure in two places: long the spot asset and short the perpetual contract. If the perp trades above spot, that gap is the basis. While you hold the pair, funding is exchanged between longs and shorts at each interval: when the funding rate is positive, longs pay shorts, so your short leg collects; when it is negative, your short leg pays.</p>
+    <p>The maths on this page: basis = perp − spot; funding per interval = notional × funding rate; funding per day = per-interval funding × (24 ÷ interval hours); annualised rate = funding rate × intervals per day × 365; cumulative funding = daily funding × holding days; fees = notional × (spot fee % + perp fee %). Headline net P&amp;L = cumulative funding − fees. If the perp converges to spot when you exit, you also gain basis × quantity, where quantity = notional ÷ spot price.</p>
+    <p class="disclaimer"><strong>Educational demo only — not trading advice.</strong> All funding rates here are entered by you; this page fetches no live market data, places no trades, and ignores leverage, margin, liquidation, slippage, and exit-price moves. Real funding rates change every interval and can flip sign without warning.</p>
+  </details>
+</section>
+
+<footer>Built in the Shipwright Studio Lab · <a href="/ideas/">more experiments</a></footer>
+
+<script>
+"use strict";
+/* ===== Core (node-tested) ===== */
+function calcFunding(inp){
+  var spot=inp.spot, perp=inp.perp, notional=inp.notional;
+  var ratePct=inp.ratePct, intervalHours=inp.intervalHours, days=inp.days;
+  var spotFeePct=inp.spotFeePct, perpFeePct=inp.perpFeePct;
+  var basis=perp-spot;
+  var basisPct=spot>0?(basis/spot)*100:0;
+  var qty=spot>0?notional/spot:0;
+  var perInterval=notional*(ratePct/100);
+  var intervalsPerDay=24/intervalHours;
+  var daily=perInterval*intervalsPerDay;
+  var annualisedPct=ratePct*intervalsPerDay*365;
+  var cumulative=daily*days;
+  var feeTotal=notional*((spotFeePct+perpFeePct)/100);
+  var net=cumulative-feeTotal;
+  var basisGain=basis*qty;
+  var netIfConverges=net+basisGain;
+  var intervalsHeld=intervalsPerDay*days;
+  var breakevenDays=(daily>0)?feeTotal/daily:null;
+  var breakevenRatePct=(days>0&&intervalsHeld>0)?(feeTotal/(notional*intervalsHeld))*100:null;
+  return {basis:basis,basisPct:basisPct,qty:qty,perInterval:perInterval,
+    daily:daily,annualisedPct:annualisedPct,cumulative:cumulative,
+    feeTotal:feeTotal,net:net,basisGain:basisGain,netIfConverges:netIfConverges,
+    breakevenDays:breakevenDays,breakevenRatePct:breakevenRatePct};
+}
+function horizonsFor(days){
+  var list=[1,7,14,30];
+  if(list.indexOf(days)===-1)list.push(days);
+  list.sort(function(a,b){return a-b;});
+  return list;
+}
+/* ===== UI ===== */
+function $(id){return document.getElementById(id);}
+function num(id){var v=parseFloat($(id).value);return isNaN(v)?NaN:v;}
+function fmtUSD(v){var sign=v<0?"−":"";return sign+"$"+Math.abs(v).toLocaleString("en-GB",{minimumFractionDigits:2,maximumFractionDigits:2});}
+function fmtPct(v){return (v<0?"−":"")+Math.abs(v).toFixed(2)+"%";}
+function fmtNum(v){return v.toLocaleString("en-GB",{minimumFractionDigits:4,maximumFractionDigits:4});}
+function cls(v){return v>0?"pos":(v<0?"neg":"neu");}
+function tile(label,value,className){return '<div class="stat"><div class="k">'+label+'</div><div class="v '+className+'">'+value+"</div></div>";}
+var DEFAULTS={spot:90000,perp:90100,notional:100000,rate:0.01,interval:"8",days:30,spotFee:0.05,perpFee:0.05};
+function setDefaults(){Object.keys(DEFAULTS).forEach(function(k){$(k).value=DEFAULTS[k];});}
+function render(){
+  var spot=num("spot"), perp=num("perp"), notional=num("notional"),
+      rate=num("rate"), days=num("days"), spotFee=num("spotFee"), perpFee=num("perpFee");
+  var intervalHours=parseFloat($("interval").value);
+  var fields=["spot","perp","notional","rate","days","spotFee","perpFee"];
+  fields.forEach(function(f){$(f).classList.remove("invalid");});
+  var bad=[];
+  if(isNaN(spot)||spot<=0)bad.push("spot");
+  if(isNaN(perp)||perp<=0)bad.push("perp");
+  if(isNaN(notional)||notional<=0)bad.push("notional");
+  if(isNaN(rate))bad.push("rate");
+  if(isNaN(days)||days<0)bad.push("days");
+  if(isNaN(spotFee)||spotFee<0)bad.push("spotFee");
+  if(isNaN(perpFee)||perpFee<0)bad.push("perpFee");
+  if(bad.length>0){
+    bad.forEach(function(f){$(f).classList.add("invalid");});
+    $("status").className="statusline error";
+    if(bad.some(function(f){return ["spot","perp","notional","rate","days","spotFee","perpFee"].indexOf(f)===-1;})){
+      $("status").textContent="Fill in every field to see the funding math.";
+    } else if(isNaN(spot)||isNaN(perp)||isNaN(notional)||isNaN(rate)||isNaN(days)||isNaN(spotFee)||isNaN(perpFee)){
+      $("status").textContent="Fill in every field to see the funding math.";
+    } else {
+      $("status").textContent="Check the highlighted fields: prices and notional must be above zero, and days and fees must not be negative.";
+    }
+    ["results","beCard","cumCard"].forEach(function(id){$(id).style.display="none";});
+    return;
+  }
+  var r=calcFunding({spot:spot,perp:perp,notional:notional,ratePct:rate,
+    intervalHours:intervalHours,days:days,spotFeePct:spotFee,perpFeePct:perpFee});
+  $("status").className="statusline";
+  $("status").textContent="Live — change any input and every figure updates.";
+  $("results").style.display="block";
+  $("stats").innerHTML=
+    tile("Basis",fmtUSD(r.basis),cls(r.basis))+
+    tile("Basis %",fmtPct(r.basisPct),cls(r.basisPct))+
+    tile("Implied quantity",fmtNum(r.qty)+" coins","neu")+
+    tile("Funding / interval",fmtUSD(r.perInterval),cls(r.perInterval))+
+    tile("Funding / day",fmtUSD(r.daily),cls(r.daily))+
+    tile("Annualised funding",fmtPct(r.annualisedPct),cls(r.annualisedPct))+
+    tile("Cumulative funding ("+days+"d)",fmtUSD(r.cumulative),cls(r.cumulative))+
+    tile("Total fees",fmtUSD(r.feeTotal),"neu")+
+    tile("Net P&L (funding − fees)",fmtUSD(r.net),cls(r.net))+
+    tile("Basis gain if converges",fmtUSD(r.basisGain),cls(r.basisGain))+
+    tile("Net if basis converges",fmtUSD(r.netIfConverges),cls(r.netIfConverges));
+  $("beCard").style.display="block";
+  $("beDays").textContent=(r.breakevenDays===null)
+    ?"Days to cover fees: never — funding is zero or negative at this rate, so it never covers the fees."
+    :"Days to cover fees: "+r.breakevenDays.toFixed(1)+" days of funding at this rate.";
+  $("beRate").textContent=(r.breakevenRatePct===null)
+    ?"Breakeven funding rate: no holding period, so no funding is collected."
+    :"Breakeven funding rate: "+r.breakevenRatePct.toFixed(4)+"% per interval over "+days+" days exactly covers the fees.";
+  $("cumCard").style.display="block";
+  var hs=horizonsFor(days);
+  var rows=hs.map(function(h){
+    var cum=r.daily*h, netH=cum-r.feeTotal;
+    return {h:h,cum:cum,net:netH};
+  });
+  $("cumBody").innerHTML=rows.map(function(row){
+    return "<tr><td>"+row.h+(row.h===days?" days (your holding)":" days")+"</td><td class='"+cls(row.cum)+"'>"+fmtUSD(row.cum)+"</td><td class='"+cls(row.net)+"'>"+fmtUSD(row.net)+"</td></tr>";
+  }).join("");
+  var maxAbs=Math.max.apply(null,rows.map(function(row){return Math.abs(row.cum);}))||1;
+  $("bars").innerHTML=rows.map(function(row){
+    var pct=(Math.abs(row.cum)/maxAbs*100).toFixed(1);
+    return '<div class="bar-row"><span class="lbl">'+row.h+"d</span><span class='bar-track'><span class='bar-fill"+(row.cum<0?" negfill":"")+"' style='width:"+pct+"%'></span></span><span class='val "+cls(row.cum)+"'>"+fmtUSD(row.cum)+"</span></div>";
+  }).join("");
+}
+["spot","perp","notional","rate","interval","days","spotFee","perpFee"].forEach(function(id){
+  $(id).addEventListener("input",render);
+  $(id).addEventListener("change",render);
+});
+function preset(rate,interval){$("rate").value=rate;$("interval").value=String(interval);render();}
+$("btnMild").onclick=function(){preset(0.01,8);};
+$("btnStrong").onclick=function(){preset(0.10,8);};
+$("btnNeg").onclick=function(){preset(-0.03,8);};
+$("btnReset").onclick=function(){setDefaults();render();};
+render();
+</script>
+</body>
+</html>

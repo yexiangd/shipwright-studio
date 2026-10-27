@@ -1,5 +1,5 @@
 {
-  "updated": "2026-10-26",
+  "updated": "2026-10-27",
   "ideas": [
     {
       "id": "idea-000a",
@@ -259,7 +259,9 @@
       "tagline": "Conway's cellular automaton, paintable and mesmerizing.",
       "priority": 75,
       "effort": "M",
-      "status": "todo"
+      "status": "done",
+      "url": "/lab/game-of-life/",
+      "shipped": "2026-10-27"
     },
     {
       "id": "idea-021",
@@ -1285,7 +1287,9 @@
       "tagline": "Perp funding rate math for cash-and-carry trades.",
       "priority": 76,
       "effort": "S",
-      "status": "todo"
+      "status": "done",
+      "url": "/lab/funding-arbitrage/",
+      "shipped": "2026-10-27"
     },
     {
       "id": "idea-116",
