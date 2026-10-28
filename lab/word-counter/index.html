@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Word Counter · Shipwright Studio</title>
+<meta name="description" content="Free online word counter — paste text to see words, characters, sentences, paragraphs, reading time and keyword density instantly, all computed in your browser.">
+<link rel="canonical" href="https://shipwright-studio.pages.dev/lab/word-counter/">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"WebApplication","name":"Word Counter","url":"https://shipwright-studio.pages.dev/lab/word-counter/","description":"Word Counter is a free online tool that counts words, characters, sentences and paragraphs in any pasted text, estimates reading and speaking time, and shows keyword density — all computed locally in the browser.","applicationCategory":"UtilitiesApplication","operatingSystem":"Web","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"}}
+</script>
+<style>
+:root{--bg:#0a0c0f;--panel:#101318;--line:#1c2128;--txt:#e8e4da;--mut:#9aa3b2;--brass:#d2a24c;--red:#e0655f}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--txt);font-family:Fraunces,Georgia,serif;line-height:1.65;padding:2rem 1.2rem 4rem;max-width:960px;margin:0 auto}
+a{color:var(--brass)}
+.nav{display:flex;gap:1.2rem;font-size:.85rem;margin-bottom:1.2rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.nav a{color:var(--mut);text-decoration:none}
+.nav a:hover{color:var(--brass)}
+.eyebrow{font-size:.75rem;letter-spacing:.22em;text-transform:uppercase;color:var(--mut);font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+h1{font-weight:600;font-size:clamp(2.1rem,5vw,3rem);margin:.5rem 0 .7rem}
+.define{color:var(--mut);max-width:46rem;margin-bottom:1.8rem;font-size:1rem}
+.define strong{color:var(--txt)}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:1.4rem;margin-bottom:1.4rem}
+.cardlabel{font-size:.72rem;letter-spacing:.18em;text-transform:uppercase;color:var(--mut);margin-bottom:.8rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.ui{font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.mono{font-family:"JetBrains Mono",ui-monospace,monospace}
+textarea{width:100%;background:#08090c;border:1px solid var(--line);border-radius:10px;color:var(--txt);font-family:"JetBrains Mono",ui-monospace,monospace;font-size:.9rem;padding:.8rem;min-height:11rem;resize:vertical}
+textarea:focus{outline:none;border-color:var(--brass)}
+.btn{font-size:.9rem;border:1px solid var(--brass);background:transparent;color:var(--brass);border-radius:999px;padding:.55rem 1.4rem;cursor:pointer;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.btn:hover{background:rgba(210,162,76,.12)}
+.btn.ghost{border-color:var(--line);color:var(--mut)}
+.btn.ghost:hover{color:var(--txt);border-color:var(--mut)}
+.btnrow{display:flex;gap:.7rem;flex-wrap:wrap;margin-top:1rem;align-items:center}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:.9rem}
+@media(max-width:640px){.stats{grid-template-columns:repeat(2,1fr)}}
+.tile{background:#08090c;border:1px solid var(--line);border-radius:10px;padding:1rem}
+.tile .n{font-family:"JetBrains Mono",ui-monospace,monospace;font-size:1.7rem;color:var(--brass);line-height:1.2}
+.tile .l{font-size:.78rem;color:var(--mut);font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif;margin-top:.2rem}
+.row{display:flex;justify-content:space-between;gap:1rem;padding:.55rem 0;border-bottom:1px solid #12151b;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif;font-size:.92rem}
+.row:last-child{border-bottom:0}
+.row .k{color:var(--mut)}
+.row .v{font-family:"JetBrains Mono",ui-monospace,monospace}
+.row .v.over{color:var(--red)}
+table{width:100%;border-collapse:collapse;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif;font-size:.9rem}
+th{color:var(--mut);text-align:left;font-weight:400;font-size:.78rem;padding:.4rem .5rem;border-bottom:1px solid var(--line)}
+td{padding:.5rem;border-bottom:1px solid #12151b}
+td.num{font-family:"JetBrains Mono",ui-monospace,monospace;text-align:right}
+.bar{height:6px;background:#1c2128;border-radius:3px;overflow:hidden;min-width:80px}
+.bar i{display:block;height:100%;background:var(--brass)}
+.empty{color:var(--mut);font-size:.9rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.msg{font-size:.88rem;color:var(--mut);min-height:1.2em;margin-top:.8rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.msg.err{color:var(--red)}
+.msg.ok{color:var(--brass)}
+label.toggle{font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif;font-size:.88rem;color:var(--mut);display:flex;gap:.5rem;align-items:center;cursor:pointer}
+details.explain{border:1px solid var(--line);border-radius:10px;padding:.9rem 1.1rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif;font-size:.88rem;color:var(--mut)}
+details.explain summary{cursor:pointer;color:var(--txt);font-size:.95rem}
+footer{margin-top:2.5rem;color:var(--mut);font-size:.85rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+</style>
+</head>
+<body>
+<nav class="nav"><a href="/">Shipwright Studio</a><a href="/ideas/">Lab</a></nav>
+<p class="eyebrow">Lab — Writing tools</p>
+<h1>Word Counter</h1>
+<p class="define"><strong>Word Counter is a free online tool that</strong> counts words, characters, sentences and paragraphs in any text you paste or type, estimates how long it takes to read or speak, and shows which keywords you use most — all computed locally in your browser, with nothing sent anywhere.</p>
+
+<div class="card">
+<p class="cardlabel">Your text</p>
+<textarea id="text" placeholder="Type or paste your text here…" aria-label="Text to count"></textarea>
+<div class="btnrow">
+<button class="btn ghost" id="btnSample">Load sample</button>
+<button class="btn ghost" id="btnClear">Clear</button>
+<button class="btn" id="btnCopy">Copy summary</button>
+</div>
+<p class="msg" id="msg"></p>
+</div>
+
+<div class="card">
+<p class="cardlabel">Counts</p>
+<div class="stats">
+<div class="tile"><div class="n" id="cWords">0</div><div class="l">Words</div></div>
+<div class="tile"><div class="n" id="cChars">0</div><div class="l">Characters (with spaces)</div></div>
+<div class="tile"><div class="n" id="cCharsNo">0</div><div class="l">Characters (no spaces)</div></div>
+<div class="tile"><div class="n" id="cSent">0</div><div class="l">Sentences</div></div>
+<div class="tile"><div class="n" id="cPara">0</div><div class="l">Paragraphs</div></div>
+<div class="tile"><div class="n" id="cLines">0</div><div class="l">Lines</div></div>
+</div>
+</div>
+
+<div class="card">
+<p class="cardlabel">Time &amp; averages</p>
+<div class="row"><span class="k">Reading time (200 wpm)</span><span class="v" id="tRead">—</span></div>
+<div class="row"><span class="k">Speaking time (130 wpm)</span><span class="v" id="tSpeak">—</span></div>
+<div class="row"><span class="k">Average word length</span><span class="v" id="aWord">—</span></div>
+<div class="row"><span class="k">Average sentence length</span><span class="v" id="aSent">—</span></div>
+<div class="row"><span class="k">Longest word</span><span class="v" id="aLong">—</span></div>
+</div>
+
+<div class="card">
+<p class="cardlabel">Keyword density (top 10)</p>
+<label class="toggle"><input type="checkbox" id="chkStop" checked> Exclude common stopwords</label>
+<div style="overflow-x:auto;margin-top:.8rem">
+<table id="kwTable">
+<thead><tr><th>Word</th><th style="text-align:right">Count</th><th style="text-align:right">Density</th><th>Share</th></tr></thead>
+<tbody id="kwBody"></tbody>
+</table>
+</div>
+<p class="empty" id="kwEmpty">Type or paste text to see keyword density.</p>
+</div>
+
+<div class="card">
+<p class="cardlabel">Common caps</p>
+<div class="row"><span class="k">Short post (280 characters)</span><span class="v" id="cap280">0 / 280</span></div>
+<div class="row"><span class="k">Long caption (2,200 characters)</span><span class="v" id="cap2200">0 / 2,200</span></div>
+</div>
+
+<details class="explain"><summary>How it works</summary>
+<p style="margin-top:.6rem">A word is a run of characters separated by spaces. A sentence ends at a full stop, exclamation mark or question mark; a final fragment without a terminator still counts as one sentence. Paragraphs are blocks of text separated by blank lines. Reading time assumes 200 words per minute and speaking time 130 words per minute. Keyword density counts each word as a share of all words; words shorter than three letters and, by default, common stopwords like "the" and "and" are left out of the table.</p>
+</details>
+
+<footer>Built by Shipwright Studio · <a href="/ideas/">Back to the Lab</a></footer>
+
+<script>
+var STOPWORDS = {};
+"a,an,the,and,or,but,if,of,at,by,for,with,about,as,into,like,through,after,over,between,out,against,during,without,before,under,around,among,to,from,in,on,of,at,is,are,was,were,be,been,being,have,has,had,do,does,did,will,would,shall,should,can,could,may,might,must,i,you,he,she,it,we,they,my,your,his,her,its,our,their,this,that,these,those,am,an,the".split(",").forEach(function(w){STOPWORDS[w]=1;});
+var SAMPLE = "The quick brown fox jumps over the lazy dog. The dog watches the fox, and the fox keeps running. A good story, like a good run, needs rhythm: short bursts, long strides, and a finish worth remembering.";
+function $(id){return document.getElementById(id);}
+function fmtTime(words, wpm){
+  if(!words) return "—";
+  var secs = Math.round(words / wpm * 60);
+  if(secs < 60) return secs + " sec";
+  return Math.floor(secs / 60) + " min " + (secs % 60) + " sec";
+}
+function analyse(text){
+  var words = text.trim() ? text.trim().split(/\s+/) : [];
+  var chars = text.length;
+  var charsNo = text.replace(/\s/g, "").length;
+  var sentences = 0;
+  if(text.trim()){
+    var m = text.match(/[^.!?]+[.!?]+/g);
+    sentences = m ? m.length : 0;
+    var tail = text.replace(/[^.!?]+[.!?]+/g, "").trim();
+    if(tail) sentences += 1;
+  }
+  var paras = text.trim() ? text.split(/\n\s*\n/).filter(function(b){return b.trim();}).length : 0;
+  var lines = text ? text.split("\n").length : 0;
+  var letters = 0, longest = "";
+  words.forEach(function(w){
+    var clean = w.replace(/[^A-Za-z0-9]/g, "");
+    letters += clean.length;
+    if(clean.length > longest.replace(/[^A-Za-z0-9]/g, "").length) longest = clean;
+  });
+  return {words: words.length, chars: chars, charsNo: charsNo, sentences: sentences,
+    paras: paras, lines: lines,
+    avgWord: words.length ? (letters / words.length) : 0,
+    avgSent: sentences ? (words.length / sentences) : 0, longest: longest, wordList: words};
+}
+function keywords(wordList, total, excludeStop){
+  var counts = {};
+  wordList.forEach(function(w){
+    var t = w.toLowerCase().replace(/^[^a-z0-9]+|[^a-z0-9]+$/g, "");
+    if(t.length < 3) return;
+    if(excludeStop && STOPWORDS[t]) return;
+    counts[t] = (counts[t] || 0) + 1;
+  });
+  var rows = Object.keys(counts).map(function(k){
+    return {word: k, count: counts[k], pct: total ? counts[k] / total * 100 : 0};
+  });
+  rows.sort(function(a, b){return b.count - a.count || (a.word < b.word ? -1 : 1);});
+  return rows.slice(0, 10);
+}
+function render(){
+  var text = $("text").value, a = analyse(text);
+  $("cWords").textContent = a.words;
+  $("cChars").textContent = a.chars;
+  $("cCharsNo").textContent = a.charsNo;
+  $("cSent").textContent = a.sentences;
+  $("cPara").textContent = a.paras;
+  $("cLines").textContent = a.lines;
+  $("tRead").textContent = fmtTime(a.words, 200);
+  $("tSpeak").textContent = fmtTime(a.words, 130);
+  $("aWord").textContent = a.words ? a.avgWord.toFixed(1) + " chars" : "—";
+  $("aSent").textContent = a.sentences ? a.avgSent.toFixed(1) + " words" : "—";
+  $("aLong").textContent = a.longest || "—";
+  var rows = keywords(a.wordList, a.words, $("chkStop").checked);
+  var body = $("kwBody"); body.innerHTML = "";
+  $("kwEmpty").style.display = rows.length ? "none" : "block";
+  rows.forEach(function(r){
+    var tr = document.createElement("tr");
+    var tdW = document.createElement("td"); tdW.textContent = r.word;
+    var tdC = document.createElement("td"); tdC.className = "num"; tdC.textContent = r.count;
+    var tdP = document.createElement("td"); tdP.className = "num"; tdP.textContent = r.pct.toFixed(1) + "%";
+    var tdB = document.createElement("td");
+    var bar = document.createElement("div"); bar.className = "bar";
+    var fill = document.createElement("i"); fill.style.width = Math.min(100, r.pct * 2) + "%";
+    bar.appendChild(fill); tdB.appendChild(bar);
+    tr.appendChild(tdW); tr.appendChild(tdC); tr.appendChild(tdP); tr.appendChild(tdB);
+    body.appendChild(tr);
+  });
+  function cap(el, limit){
+    el.textContent = a.chars + " / " + limit.toLocaleString("en-GB");
+    el.classList.toggle("over", a.chars > limit);
+  }
+  cap($("cap280"), 280); cap($("cap2200"), 2200);
+}
+$("text").addEventListener("input", render);
+$("chkStop").addEventListener("change", render);
+$("btnSample").onclick = function(){ $("text").value = SAMPLE; render(); };
+$("btnClear").onclick = function(){ $("text").value = ""; render(); $("msg").textContent = ""; };
+$("btnCopy").onclick = function(){
+  var a = analyse($("text").value);
+  var summary = a.words + " words, " + a.chars + " characters, " + a.sentences +
+    " sentences · ~" + fmtTime(a.words, 200) + " read";
+  function done(){ $("msg").textContent = "Copied summary to clipboard."; $("msg").className = "msg ok"; }
+  function fail(){ $("msg").textContent = "Could not copy — your browser blocked clipboard access."; $("msg").className = "msg err"; }
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(summary).then(done, fail);
+  } else { fail(); }
+};
+render();
+</script>
+</body>
+</html>

@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gas Fee Dashboard · Shipwright Studio</title>
+<meta name="description" content="Free online gas fee dashboard — compare slow, standard and fast gas prices across six chains and estimate transfer and swap costs in dollars, from clearly labelled demo data.">
+<link rel="canonical" href="https://shipwright-studio.pages.dev/lab/gas-tracker/">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"WebApplication","name":"Gas Fee Dashboard","url":"https://shipwright-studio.pages.dev/lab/gas-tracker/","description":"Gas Fee Dashboard is a free online tool that shows slow, standard and fast gas prices across six blockchains with a congestion meter and estimated transfer and swap costs in dollars, using clearly labelled demo data.","applicationCategory":"FinanceApplication","operatingSystem":"Web","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"}}
+</script>
+<style>
+:root{--bg:#0a0c0f;--panel:#101318;--line:#1c2128;--txt:#e8e4da;--mut:#9aa3b2;--brass:#d2a24c;--green:#6fbf73;--red:#e0655f}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--txt);font-family:Fraunces,Georgia,serif;line-height:1.65;padding:2rem 1.2rem 4rem;max-width:960px;margin:0 auto}
+a{color:var(--brass)}
+.nav{display:flex;gap:1.2rem;font-size:.85rem;margin-bottom:1.2rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.nav a{color:var(--mut);text-decoration:none}
+.nav a:hover{color:var(--brass)}
+.eyebrow{font-size:.75rem;letter-spacing:.22em;text-transform:uppercase;color:var(--mut);font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+h1{font-weight:600;font-size:clamp(2.1rem,5vw,3rem);margin:.5rem 0 .7rem}
+.define{color:var(--mut);max-width:46rem;margin-bottom:1.8rem;font-size:1rem}
+.define strong{color:var(--txt)}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:1.4rem;margin-bottom:1.4rem}
+.cardlabel{font-size:.72rem;letter-spacing:.18em;text-transform:uppercase;color:var(--mut);margin-bottom:.8rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.ui{font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.mono{font-family:"JetBrains Mono",ui-monospace,monospace}
+.banner{background:rgba(210,162,76,.12);border:1px solid var(--brass);border-radius:10px;padding:.8rem 1rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif;font-size:.88rem;margin-bottom:1.4rem}
+.btn{font-size:.9rem;border:1px solid var(--brass);background:transparent;color:var(--brass);border-radius:999px;padding:.55rem 1.4rem;cursor:pointer;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.btn:hover{background:rgba(210,162,76,.12)}
+.btn.ghost{border-color:var(--line);color:var(--mut)}
+.btn.ghost:hover{color:var(--txt);border-color:var(--mut)}
+.btnrow{display:flex;gap:.7rem;flex-wrap:wrap;align-items:center}
+.meta{font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif;font-size:.86rem;color:var(--mut)}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:.9rem}
+@media(max-width:700px){.grid{grid-template-columns:1fr}}
+.chain{background:#08090c;border:1px solid var(--line);border-radius:12px;padding:1rem;cursor:pointer;text-align:left;color:var(--txt);font-family:inherit;width:100%}
+.chain:hover{border-color:var(--mut)}
+.chain.sel{border-color:var(--brass)}
+.chain h2{font-size:1.05rem;font-weight:600}
+.chain .tok{font-size:.8rem;color:var(--mut);font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.tiers{display:flex;gap:.8rem;margin-top:.7rem}
+.tier{flex:1}
+.tier .t{font-size:.72rem;letter-spacing:.12em;text-transform:uppercase;color:var(--mut);font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.tier .v{font-family:"JetBrains Mono",ui-monospace,monospace;font-size:1.05rem}
+.tier .v.fast{color:var(--brass)}
+.cbar{height:8px;background:#1c2128;border-radius:4px;overflow:hidden;margin-top:.8rem}
+.cbar i{display:block;height:100%}
+.cbarlabel{font-size:.78rem;color:var(--mut);font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif;margin-top:.3rem}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:999px;overflow:hidden;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.seg button{border:0;background:transparent;color:var(--mut);padding:.45rem 1.1rem;cursor:pointer;font-size:.86rem}
+.seg button.on{background:rgba(210,162,76,.15);color:var(--brass)}
+.row{display:flex;justify-content:space-between;gap:1rem;padding:.55rem 0;border-bottom:1px solid #12151b;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif;font-size:.92rem}
+.row:last-child{border-bottom:0}
+.row .k{color:var(--mut)}
+.row .v{font-family:"JetBrains Mono",ui-monospace,monospace}
+.rank{font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif;font-size:.92rem}
+.rank ol{padding-left:1.3rem}
+.rank li{padding:.3rem 0}
+.rank .cost{font-family:"JetBrains Mono",ui-monospace,monospace;color:var(--brass)}
+label.toggle{font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif;font-size:.88rem;color:var(--mut);display:flex;gap:.5rem;align-items:center;cursor:pointer}
+details.explain{border:1px solid var(--line);border-radius:10px;padding:.9rem 1.1rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif;font-size:.88rem;color:var(--mut)}
+details.explain summary{cursor:pointer;color:var(--txt);font-size:.95rem}
+footer{margin-top:2.5rem;color:var(--mut);font-size:.85rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+</style>
+</head>
+<body>
+<nav class="nav"><a href="/">Shipwright Studio</a><a href="/ideas/">Lab</a></nav>
+<p class="eyebrow">Lab — Web3 tools</p>
+<h1>Gas Fee Dashboard</h1>
+<p class="define"><strong>Gas Fee Dashboard is a free online tool that</strong> shows slow, standard and fast gas prices across six blockchains, with a congestion meter and estimated transfer and swap costs in dollars — using clearly labelled demo data, so you can learn how gas markets work without connecting a wallet or spending anything.</p>
+
+<div class="banner">Demo data — these prices are simulated, not live network data. No wallet, no real transaction, nothing leaves this page.</div>
+
+<div class="card">
+<div class="btnrow">
+<button class="btn" id="btnBlock">Simulate new block</button>
+<button class="btn ghost" id="btnReset">Reset demo</button>
+<label class="toggle"><input type="checkbox" id="chkAuto" checked> Auto-tick every 30s</label>
+</div>
+<p class="meta" style="margin-top:.8rem">Block <span class="mono" id="blockNo">#1</span> · Last updated <span id="lastUpdated"></span> · Click a chain card to inspect it below.</p>
+</div>
+
+<div class="card">
+<p class="cardlabel">Gas prices by chain (gwei)</p>
+<div class="grid" id="chainGrid"></div>
+</div>
+
+<div class="card">
+<p class="cardlabel">Cost estimator — <span id="selName">Ethereum</span></p>
+<div class="btnrow" style="margin-bottom:1rem">
+<span class="ui" style="font-size:.88rem;color:var(--mut)">Speed:</span>
+<span class="seg">
+<button id="tierSlow">Slow</button><button id="tierStd" class="on">Standard</button><button id="tierFast">Fast</button>
+</span>
+</div>
+<div class="row"><span class="k">Gas price (<span id="tierLabel">standard</span>)</span><span class="v" id="estGwei">—</span></div>
+<div class="row"><span class="k">Base fee + priority fee</span><span class="v" id="estSplit">—</span></div>
+<div class="row"><span class="k">Transfer (21,000 gas)</span><span class="v" id="costTransfer">—</span></div>
+<div class="row"><span class="k">Token transfer (65,000 gas)</span><span class="v" id="costToken">—</span></div>
+<div class="row"><span class="k">Swap (150,000 gas)</span><span class="v" id="costSwap">—</span></div>
+</div>
+
+<div class="card">
+<p class="cardlabel">Cheapest swap right now (standard tier)</p>
+<div class="rank"><ol id="rankList"></ol></div>
+</div>
+
+<details class="explain"><summary>How gas works</summary>
+<p style="margin-top:.6rem">Every blockchain transaction pays for computation in units called gas. The gas price — usually quoted in gwei, a billionth of the native token — is what you pay per unit, so total fee = gas used × gas price. Since the London upgrade, Ethereum-style chains split the price into a base fee set by the network and a priority fee (tip) you add to jump the queue. Layer-2 chains batch many transactions together, which is why their gas prices look tiny next to Ethereum's. The numbers on this page are fixed demo values with a small simulated random walk — they illustrate the mechanics, not today's market.</p>
+</details>
+
+<footer>Built by Shipwright Studio · <a href="/ideas/">Back to the Lab</a></footer>
+
+<script>
+var SNAPSHOT = [
+  {name: "Ethereum", token: "ETH", price: 3200, slow: 12, std: 18, fast: 28, cong: 72},
+  {name: "Arbitrum", token: "ETH", price: 3200, slow: 0.08, std: 0.12, fast: 0.25, cong: 41},
+  {name: "Optimism", token: "ETH", price: 3200, slow: 0.10, std: 0.15, fast: 0.30, cong: 38},
+  {name: "Base", token: "ETH", price: 3200, slow: 0.06, std: 0.10, fast: 0.20, cong: 45},
+  {name: "Polygon", token: "POL", price: 0.42, slow: 25, std: 40, fast: 70, cong: 55},
+  {name: "BNB Chain", token: "BNB", price: 980, slow: 1.0, std: 1.5, fast: 3.0, cong: 48}
+];
+var chains = JSON.parse(JSON.stringify(SNAPSHOT));
+var selected = 0, tier = "std", blockNo = 1, timer = null;
+function $(id){return document.getElementById(id);}
+function fmtGwei(g){ return (g < 1 ? g.toFixed(2) : g.toFixed(1)) + " gwei"; }
+function fmtUsd(x){ return "$" + (x < 0.01 ? x.toFixed(4) : x.toFixed(2)); }
+function costUsd(gasUsed, gwei, tokenPrice){ return gasUsed * gwei * 1e-9 * tokenPrice; }
+function congColor(c){ return c < 40 ? "#6fbf73" : (c < 70 ? "#d2a24c" : "#e0655f"); }
+function tierKey(t){ return t === "slow" ? "slow" : (t === "fast" ? "fast" : "std"); }
+function render(){
+  var grid = $("chainGrid"); grid.innerHTML = "";
+  chains.forEach(function(c, i){
+    var b = document.createElement("button");
+    b.className = "chain" + (i === selected ? " sel" : "");
+    b.setAttribute("aria-label", "Select " + c.name);
+    var h = document.createElement("h2"); h.textContent = c.name;
+    var tok = document.createElement("div"); tok.className = "tok";
+    tok.textContent = c.token + " $" + c.price.toLocaleString("en-GB");
+    var tiers = document.createElement("div"); tiers.className = "tiers";
+    [["Slow", c.slow, ""], ["Standard", c.std, ""], ["Fast", c.fast, "fast"]].forEach(function(t){
+      var d = document.createElement("div"); d.className = "tier";
+      var lt = document.createElement("div"); lt.className = "t"; lt.textContent = t[0];
+      var v = document.createElement("div"); v.className = "v" + (t[2] ? " " + t[2] : ""); v.textContent = fmtGwei(t[1]);
+      d.appendChild(lt); d.appendChild(v); tiers.appendChild(d);
+    });
+    var bar = document.createElement("div"); bar.className = "cbar";
+    var fill = document.createElement("i"); fill.style.width = c.cong + "%"; fill.style.background = congColor(c.cong);
+    bar.appendChild(fill);
+    var lab = document.createElement("div"); lab.className = "cbarlabel";
+    lab.textContent = "Congestion " + c.cong + "%";
+    b.appendChild(h); b.appendChild(tok); b.appendChild(tiers); b.appendChild(bar); b.appendChild(lab);
+    b.onclick = function(){ selected = i; render(); };
+    grid.appendChild(b);
+  });
+  var c = chains[selected], g = c[tierKey(tier)];
+  $("selName").textContent = c.name;
+  $("tierLabel").textContent = tier === "slow" ? "slow" : (tier === "fast" ? "fast" : "standard");
+  $("estGwei").textContent = fmtGwei(g);
+  var base = g * 0.8, prio = g - base;
+  $("estSplit").textContent = fmtGwei(base) + " + " + fmtGwei(prio) + " tip";
+  $("costTransfer").textContent = fmtUsd(costUsd(21000, g, c.price));
+  $("costToken").textContent = fmtUsd(costUsd(65000, g, c.price));
+  $("costSwap").textContent = fmtUsd(costUsd(150000, g, c.price));
+  ["tierSlow", "tierStd", "tierFast"].forEach(function(id, idx){
+    $(id).classList.toggle("on", ["slow", "std", "fast"][idx] === tier);
+  });
+  var ranked = chains.map(function(ch){
+    return {name: ch.name, cost: costUsd(150000, ch.std, ch.price)};
+  }).sort(function(a, b){ return a.cost - b.cost; });
+  var list = $("rankList"); list.innerHTML = "";
+  ranked.forEach(function(r){
+    var li = document.createElement("li");
+    li.innerHTML = "";
+    var nm = document.createElement("span"); nm.textContent = r.name + " — ";
+    var co = document.createElement("span"); co.className = "cost"; co.textContent = fmtUsd(r.cost);
+    li.appendChild(nm); li.appendChild(co); list.appendChild(li);
+  });
+  $("blockNo").textContent = "#" + blockNo;
+}
+function stamp(){ $("lastUpdated").textContent = new Date().toLocaleTimeString("en-GB"); }
+function simulate(){
+  chains.forEach(function(c){
+    var oldStd = c.std;
+    ["slow", "std", "fast"].forEach(function(k){
+      var factor = 1 + (Math.random() * 0.2 - 0.1);
+      c[k] = Math.max(0.1, Math.round(c[k] * factor * 100) / 100);
+    });
+    var delta = c.std >= oldStd ? 2 : -2;
+    c.cong = Math.max(5, Math.min(98, c.cong + delta));
+  });
+  blockNo += 1; stamp(); render();
+}
+function resetDemo(){
+  chains = JSON.parse(JSON.stringify(SNAPSHOT));
+  selected = 0; tier = "std"; blockNo = 1; stamp(); render();
+}
+function setAuto(){
+  if(timer) clearInterval(timer);
+  if($("chkAuto").checked) timer = setInterval(simulate, 30000);
+}
+$("btnBlock").onclick = simulate;
+$("btnReset").onclick = resetDemo;
+$("chkAuto").addEventListener("change", setAuto);
+$("tierSlow").onclick = function(){ tier = "slow"; render(); };
+$("tierStd").onclick = function(){ tier = "std"; render(); };
+$("tierFast").onclick = function(){ tier = "fast"; render(); };
+stamp(); render(); setAuto();
+</script>
+</body>
+</html>

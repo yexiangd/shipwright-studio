@@ -1,5 +1,5 @@
 {
-  "updated": "2026-10-27",
+  "updated": "2026-10-28",
   "ideas": [
     {
       "id": "idea-000a",
@@ -539,7 +539,9 @@
       "tagline": "Words, characters, reading time, keyword density.",
       "priority": 75,
       "effort": "S",
-      "status": "todo"
+      "status": "done",
+      "url": "/lab/word-counter/",
+      "shipped": "2026-10-28"
     },
     {
       "id": "idea-046",
@@ -1299,7 +1301,9 @@
       "tagline": "Gas price gauges across chains (demo data).",
       "priority": 75,
       "effort": "M",
-      "status": "todo"
+      "status": "done",
+      "url": "/lab/gas-tracker/",
+      "shipped": "2026-10-28"
     },
     {
       "id": "idea-117",
