@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Maze Lab · Shipwright Studio</title>
+<meta name="description" content="Free online maze generator and A* solver — generate a perfect maze and watch the A* algorithm find the shortest path, step by step, in your browser.">
+<link rel="canonical" href="https://shipwright-studio.pages.dev/lab/maze-lab/">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"WebApplication","name":"Maze Lab","url":"https://shipwright-studio.pages.dev/lab/maze-lab/","description":"Maze Lab is a free online tool that generates perfect mazes and animates the A* search algorithm solving them, showing visited cells, the search frontier and the shortest path.","applicationCategory":"EducationalApplication","operatingSystem":"Web","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"}}
+</script>
+<style>
+:root{--bg:#0a0c0f;--panel:#101318;--line:#1c2128;--txt:#e8e4da;--mut:#9aa3b2;--brass:#d2a24c;--green:#7fb069;--red:#e0655f;--visit:#2a3340;--front:#3d4a5c}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--txt);font-family:Fraunces,Georgia,serif;line-height:1.65;padding:2rem 1.2rem 4rem;max-width:960px;margin:0 auto}
+a{color:var(--brass)}
+.nav{display:flex;gap:1.2rem;font-size:.85rem;margin-bottom:1.2rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.nav a{color:var(--mut);text-decoration:none}.nav a:hover{color:var(--brass)}
+.eyebrow{font-size:.75rem;letter-spacing:.22em;text-transform:uppercase;color:var(--mut);font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+h1{font-weight:600;font-size:clamp(2.1rem,5vw,3rem);margin:.5rem 0 .7rem}
+.define{color:var(--mut);max-width:46rem;margin-bottom:1.8rem;font-size:1rem}.define strong{color:var(--txt)}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:1.4rem;margin-bottom:1.4rem}
+.cardlabel{font-size:.72rem;letter-spacing:.18em;text-transform:uppercase;color:var(--mut);margin-bottom:.8rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.ui{font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.btn{font-size:.9rem;border:1px solid var(--brass);background:transparent;color:var(--brass);border-radius:999px;padding:.55rem 1.4rem;cursor:pointer;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.btn:hover{background:rgba(210,162,76,.12)}.btn:disabled{opacity:.4;cursor:default}
+.btn.ghost{border-color:var(--line);color:var(--mut)}.btn.ghost:hover{color:var(--txt);border-color:var(--mut)}
+.btnrow{display:flex;gap:.7rem;flex-wrap:wrap;align-items:center}
+select{background:#08090c;color:var(--txt);border:1px solid var(--line);border-radius:8px;padding:.5rem;font-size:.9rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+label{font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif;font-size:.88rem;color:var(--mut)}
+canvas{display:block;width:100%;max-width:640px;margin:0 auto;background:#08090c;border:1px solid var(--line);border-radius:10px}
+.legend{display:flex;gap:1rem;flex-wrap:wrap;justify-content:center;margin-top:.9rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif;font-size:.82rem;color:var(--mut)}
+.legend i{display:inline-block;width:.8rem;height:.8rem;border-radius:2px;vertical-align:-1px;margin-right:.3rem}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:.9rem}
+@media(max-width:640px){.stats{grid-template-columns:repeat(2,1fr)}}
+.tile{background:#08090c;border:1px solid var(--line);border-radius:10px;padding:1rem}
+.tile .n{font-family:"JetBrains Mono",ui-monospace,monospace;font-size:1.5rem;color:var(--brass);line-height:1.2}
+.tile .l{font-size:.78rem;color:var(--mut);font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif;margin-top:.2rem}
+details.explain{border:1px solid var(--line);border-radius:10px;padding:.9rem 1.1rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif;font-size:.88rem;color:var(--mut)}
+details.explain summary{cursor:pointer;color:var(--txt);font-size:.95rem}
+footer{margin-top:2.5rem;color:var(--mut);font-size:.85rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+</style>
+</head>
+<body>
+<nav class="nav"><a href="/">Shipwright Studio</a><a href="/ideas/">Lab</a></nav>
+<p class="eyebrow">Lab — Games &amp; algorithms</p>
+<h1>Maze Lab</h1>
+<p class="define"><strong>Maze Lab is a free online tool that</strong> generates a perfect maze and animates the A* search algorithm solving it — watch the frontier flood the maze, dead ends get pruned, and the shortest path snap into view, all in your browser.</p>
+
+<div class="card">
+<p class="cardlabel">Controls</p>
+<div class="btnrow">
+<label>Maze size <select id="size"><option value="15">Small · 15 × 15</option><option value="21" selected>Medium · 21 × 21</option><option value="31">Large · 31 × 31</option></select></label>
+<label>Speed <select id="speed"><option value="90">Slow</option><option value="35" selected>Normal</option><option value="8">Fast</option></select></label>
+<button class="btn ghost" id="btnNew">New maze</button>
+<button class="btn" id="btnSolve">Solve</button>
+<button class="btn ghost" id="btnInstant">Solve instantly</button>
+<button class="btn ghost" id="btnClear">Clear solution</button>
+</div>
+</div>
+
+<div class="card">
+<p class="cardlabel">Maze</p>
+<canvas id="maze" width="640" height="640" aria-label="Generated maze"></canvas>
+<div class="legend">
+<span><i style="background:#7fb069"></i>Start</span>
+<span><i style="background:#e0655f"></i>Goal</span>
+<span><i style="background:#2a3340"></i>Visited</span>
+<span><i style="background:#3d4a5c"></i>Frontier</span>
+<span><i style="background:#d2a24c"></i>Shortest path</span>
+</div>
+</div>
+
+<div class="card">
+<p class="cardlabel">Results</p>
+<div class="stats">
+<div class="tile"><div class="n" id="sSize">21 × 21</div><div class="l">Maze size</div></div>
+<div class="tile"><div class="n" id="sVisited">0</div><div class="l">Cells visited</div></div>
+<div class="tile"><div class="n" id="sPath">—</div><div class="l">Path length (steps)</div></div>
+<div class="tile"><div class="n" id="sState">Ready</div><div class="l">Status</div></div>
+</div>
+</div>
+
+<details class="explain"><summary>How A* works</summary>
+<p style="margin-top:.6rem">A* scores every candidate cell as <strong style="color:var(--txt)">f = g + h</strong>: <em>g</em> is the steps already taken from the start, <em>h</em> is the Manhattan distance (up/down/left/right steps, ignoring walls) to the goal. At each step it expands the lowest-f cell on the frontier. Because h never overestimates the true remaining distance, the first time A* reaches the goal it has found a shortest path — everything else it visited was the price of proving it.</p>
+</details>
+
+<footer>Built by Shipwright Studio · <a href="/ideas/">Back to the Lab</a></footer>
+
+<script>
+"use strict";
+// Pure logic (also exercised by node tests): walls per cell as [N,E,S,W].
+function generateMaze(cols, rows, rng) {
+  rng = rng || Math.random;
+  var cells = [];
+  for (var i = 0; i < cols * rows; i++) cells.push({ walls: [true, true, true, true], seen: false });
+  var idx = function (x, y) { return y * cols + x; };
+  var stack = [[0, 0]]; cells[0].seen = true;
+  var dirs = [[0, -1, 0, 2], [1, 0, 1, 3], [0, 1, 2, 0], [-1, 0, 3, 1]]; // dx,dy,wall,opposite
+  while (stack.length) {
+    var cur = stack[stack.length - 1], cx = cur[0], cy = cur[1];
+    var options = [];
+    for (var d = 0; d < 4; d++) {
+      var nx = cx + dirs[d][0], ny = cy + dirs[d][1];
+      if (nx >= 0 && nx < cols && ny >= 0 && ny < rows && !cells[idx(nx, ny)].seen) options.push(d);
+    }
+    if (!options.length) { stack.pop(); continue; }
+    var d = options[Math.floor(rng() * options.length)];
+    var nx2 = cx + dirs[d][0], ny2 = cy + dirs[d][1];
+    cells[idx(cx, cy)].walls[dirs[d][2]] = false;
+    cells[idx(nx2, ny2)].walls[dirs[d][3]] = false;
+    cells[idx(nx2, ny2)].seen = true;
+    stack.push([nx2, ny2]);
+  }
+  return cells;
+}
+function astar(cells, cols, rows) {
+  var idx = function (x, y) { return y * cols + x; };
+  var h = function (x, y) { return Math.abs(x - (cols - 1)) + Math.abs(y - (rows - 1)); };
+  var open = [{ x: 0, y: 0, g: 0, f: h(0, 0) }];
+  var came = {}, gScore = {}; gScore[idx(0, 0)] = 0;
+  var closed = {}, visitedOrder = [], frontierSnap = [];
+  var dirs = [[0, -1, 0], [1, 0, 1], [0, 1, 2], [-1, 0, 3]];
+  while (open.length) {
+    var bi = 0;
+    for (var i = 1; i < open.length; i++) if (open[i].f < open[bi].f) bi = i;
+    var cur = open.splice(bi, 1)[0];
+    if (closed[idx(cur.x, cur.y)]) continue;
+    closed[idx(cur.x, cur.y)] = true;
+    visitedOrder.push([cur.x, cur.y]);
+    frontierSnap.push(open.map(function (o) { return [o.x, o.y]; }));
+    if (cur.x === cols - 1 && cur.y === rows - 1) {
+      var path = [[cur.x, cur.y]], key = idx(cur.x, cur.y);
+      while (came[key] !== undefined) { key = came[key]; path.unshift([key % cols, Math.floor(key / cols)]); }
+      return { visitedOrder: visitedOrder, frontierSnap: frontierSnap, path: path };
+    }
+    for (var d = 0; d < 4; d++) {
+      if (cells[idx(cur.x, cur.y)].walls[dirs[d][2]]) continue;
+      var nx = cur.x + dirs[d][0], ny = cur.y + dirs[d][1];
+      if (nx < 0 || nx >= cols || ny < 0 || ny >= rows || closed[idx(nx, ny)]) continue;
+      var ng = cur.g + 1;
+      if (gScore[idx(nx, ny)] === undefined || ng < gScore[idx(nx, ny)]) {
+        gScore[idx(nx, ny)] = ng; came[idx(nx, ny)] = idx(cur.x, cur.y);
+        open.push({ x: nx, y: ny, g: ng, f: ng + h(nx, ny) });
+      }
+    }
+  }
+  return { visitedOrder: visitedOrder, frontierSnap: frontierSnap, path: [] };
+}
+
+if (typeof document !== "undefined") {
+  var canvas = document.getElementById("maze"), ctx = canvas.getContext("2d");
+  var cols = 21, rows = 21, cells = generateMaze(cols, rows);
+  var solution = null, timer = null, step = 0, running = false;
+  var btnSolve = document.getElementById("btnSolve"), btnNew = document.getElementById("btnNew"),
+      btnInstant = document.getElementById("btnInstant"), btnClear = document.getElementById("btnClear");
+
+  function draw(visited, frontier, path) {
+    var cw = canvas.width / cols, ch = canvas.height / rows;
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = "#08090c"; ctx.fillRect(0, 0, canvas.width, canvas.height);
+    function fillCell(x, y, col) { ctx.fillStyle = col; ctx.fillRect(x * cw + 1, y * ch + 1, cw - 2, ch - 2); }
+    (visited || []).forEach(function (c) { fillCell(c[0], c[1], "#2a3340"); });
+    (frontier || []).forEach(function (c) { fillCell(c[0], c[1], "#3d4a5c"); });
+    (path || []).forEach(function (c) { fillCell(c[0], c[1], "#d2a24c"); });
+    fillCell(0, 0, "#7fb069"); fillCell(cols - 1, rows - 1, "#e0655f");
+    ctx.strokeStyle = "#c9cdd6"; ctx.lineWidth = 2; ctx.beginPath();
+    for (var y = 0; y < rows; y++) for (var x = 0; x < cols; x++) {
+      var w = cells[y * cols + x].walls, px = x * cw, py = y * ch;
+      if (w[0]) { ctx.moveTo(px, py); ctx.lineTo(px + cw, py); }
+      if (w[1]) { ctx.moveTo(px + cw, py); ctx.lineTo(px + cw, py + ch); }
+      if (w[2]) { ctx.moveTo(px, py + ch); ctx.lineTo(px + cw, py + ch); }
+      if (w[3]) { ctx.moveTo(px, py); ctx.lineTo(px, py + ch); }
+    }
+    ctx.stroke();
+  }
+  function setState(s) { document.getElementById("sState").textContent = s; }
+  function stopAnim() { if (timer) { clearInterval(timer); timer = null; } running = false; btnSolve.disabled = false; btnNew.disabled = false; btnInstant.disabled = false; }
+  function fresh() {
+    stopAnim(); solution = null; step = 0;
+    document.getElementById("sSize").textContent = cols + " × " + rows;
+    document.getElementById("sVisited").textContent = "0";
+    document.getElementById("sPath").textContent = "—"; setState("Ready"); draw([], [], []);
+  }
+  document.getElementById("size").addEventListener("change", function (e) {
+    cols = rows = parseInt(e.target.value, 10); cells = generateMaze(cols, rows); fresh();
+  });
+  btnNew.addEventListener("click", function () { cells = generateMaze(cols, rows); fresh(); });
+  btnClear.addEventListener("click", fresh);
+  btnSolve.addEventListener("click", function () {
+    stopAnim(); solution = astar(cells, cols, rows); step = 0; running = true;
+    btnSolve.disabled = true; btnNew.disabled = true; btnInstant.disabled = true; setState("Searching…");
+    var speed = parseInt(document.getElementById("speed").value, 10);
+    timer = setInterval(function () {
+      if (step >= solution.visitedOrder.length) {
+        stopAnim(); draw(solution.visitedOrder, [], solution.path);
+        document.getElementById("sVisited").textContent = solution.visitedOrder.length;
+        document.getElementById("sPath").textContent = solution.path.length ? (solution.path.length - 1) : "—";
+        setState(solution.path.length ? "Solved" : "No path"); return;
+      }
+      draw(solution.visitedOrder.slice(0, step + 1), solution.frontierSnap[step], []);
+      document.getElementById("sVisited").textContent = step + 1; step++;
+    }, speed);
+  });
+  btnInstant.addEventListener("click", function () {
+    stopAnim(); solution = astar(cells, cols, rows);
+    draw(solution.visitedOrder, [], solution.path);
+    document.getElementById("sVisited").textContent = solution.visitedOrder.length;
+    document.getElementById("sPath").textContent = solution.path.length ? (solution.path.length - 1) : "—";
+    setState(solution.path.length ? "Solved" : "No path");
+  });
+  fresh();
+}
+</script>
+</body>
+</html>

@@ -1,5 +1,5 @@
 {
-  "updated": "2026-10-28",
+  "updated": "2026-10-29",
   "ideas": [
     {
       "id": "idea-000a",
@@ -249,7 +249,9 @@
       "tagline": "Generate mazes, watch A* solve them live.",
       "priority": 74,
       "effort": "M",
-      "status": "todo"
+      "status": "done",
+      "url": "/lab/maze-lab/",
+      "shipped": "2026-10-29"
     },
     {
       "id": "idea-020",
@@ -551,7 +553,9 @@
       "tagline": "Every status code, explained like a human.",
       "priority": 74,
       "effort": "S",
-      "status": "todo"
+      "status": "done",
+      "url": "/lab/http-status/",
+      "shipped": "2026-10-29"
     },
     {
       "id": "idea-047",

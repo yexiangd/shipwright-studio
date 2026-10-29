@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HTTP Status Guide · Shipwright Studio</title>
+<meta name="description" content="Free online HTTP status code guide — every common status code explained in plain English, with what causes it and what to do, plus a quiz to learn them.">
+<link rel="canonical" href="https://shipwright-studio.pages.dev/lab/http-status/">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"WebApplication","name":"HTTP Status Guide","url":"https://shipwright-studio.pages.dev/lab/http-status/","description":"HTTP Status Guide is a free online tool that explains common HTTP status codes in plain English — what each code means, when you will see it, and what to do about it — with a quiz to test yourself.","applicationCategory":"DeveloperApplication","operatingSystem":"Web","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"}}
+</script>
+<style>
+:root{--bg:#0a0c0f;--panel:#101318;--line:#1c2128;--txt:#e8e4da;--mut:#9aa3b2;--brass:#d2a24c;--green:#7fb069;--red:#e0655f;--blue:#7aa2d6;--amber:#d2a24c}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--txt);font-family:Fraunces,Georgia,serif;line-height:1.65;padding:2rem 1.2rem 4rem;max-width:960px;margin:0 auto}
+a{color:var(--brass)}
+.nav{display:flex;gap:1.2rem;font-size:.85rem;margin-bottom:1.2rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.nav a{color:var(--mut);text-decoration:none}.nav a:hover{color:var(--brass)}
+.eyebrow{font-size:.75rem;letter-spacing:.22em;text-transform:uppercase;color:var(--mut);font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+h1{font-weight:600;font-size:clamp(2.1rem,5vw,3rem);margin:.5rem 0 .7rem}
+.define{color:var(--mut);max-width:46rem;margin-bottom:1.8rem;font-size:1rem}.define strong{color:var(--txt)}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:1.4rem;margin-bottom:1.4rem}
+.cardlabel{font-size:.72rem;letter-spacing:.18em;text-transform:uppercase;color:var(--mut);margin-bottom:.8rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.ui{font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+input[type=text]{width:100%;background:#08090c;border:1px solid var(--line);border-radius:10px;color:var(--txt);font-size:1rem;padding:.8rem}
+input[type=text]:focus{outline:none;border-color:var(--brass)}
+.chips{display:flex;gap:.5rem;flex-wrap:wrap;margin-top:.9rem}
+.chip{font-size:.85rem;border:1px solid var(--line);background:transparent;color:var(--mut);border-radius:999px;padding:.4rem 1rem;cursor:pointer;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.chip.on{border-color:var(--brass);color:var(--brass)}
+.btn{font-size:.9rem;border:1px solid var(--brass);background:transparent;color:var(--brass);border-radius:999px;padding:.55rem 1.4rem;cursor:pointer;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.btn:hover{background:rgba(210,162,76,.12)}
+.btn.ghost{border-color:var(--line);color:var(--mut)}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:.9rem}
+@media(max-width:820px){.grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:560px){.grid{grid-template-columns:1fr}}
+.codecard{background:#08090c;border:1px solid var(--line);border-radius:12px;padding:1rem;cursor:pointer;text-align:left}
+.codecard:hover{border-color:var(--brass)}
+.codecard .top{display:flex;align-items:center;gap:.6rem}
+.badge{font-family:"JetBrains Mono",ui-monospace,monospace;font-weight:500;font-size:1.05rem;padding:.15rem .55rem;border-radius:6px}
+.b1{background:#2a3340;color:#c9d4e3}.b2{background:#1d3324;color:#7fb069}.b3{background:#1e2a3d;color:#7aa2d6}.b4{background:#332a15;color:#d2a24c}.b5{background:#331d1d;color:#e0655f}
+.codecard h2{font-size:1rem;font-weight:600}
+.mean{font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif;font-size:.88rem;color:var(--mut);margin-top:.4rem}
+.detail{display:none;margin-top:.7rem;border-top:1px solid var(--line);padding-top:.7rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif;font-size:.88rem;color:var(--mut)}
+.codecard.open .detail{display:block}
+.detail b{color:var(--txt);font-weight:500}
+.copybtn{margin-top:.7rem;font-size:.82rem;border:1px solid var(--line);background:transparent;color:var(--mut);border-radius:999px;padding:.35rem 1rem;cursor:pointer}
+.copybtn:hover{color:var(--brass);border-color:var(--brass)}
+.count{font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif;font-size:.9rem;color:var(--mut);margin-bottom:1rem}
+.empty{color:var(--mut);font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.qchoices{display:grid;grid-template-columns:repeat(2,1fr);gap:.7rem;margin-top:1rem}
+@media(max-width:560px){.qchoices{grid-template-columns:1fr}}
+.qbtn{font-family:"JetBrains Mono",ui-monospace,monospace;font-size:1.05rem;background:#08090c;border:1px solid var(--line);color:var(--txt);border-radius:10px;padding:.8rem;cursor:pointer}
+.qbtn:hover{border-color:var(--brass)}
+.qbtn.correct{border-color:#7fb069;color:#7fb069}.qbtn.wrong{border-color:#e0655f;color:#e0655f}
+.msg{font-size:.88rem;color:var(--mut);min-height:1.2em;margin-top:.8rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.msg.ok{color:#7fb069}.msg.err{color:#e0655f}
+.legend{font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif;font-size:.88rem;color:var(--mut)}
+.legend b{color:var(--txt);font-weight:500}
+details.explain{border:1px solid var(--line);border-radius:10px;padding:.9rem 1.1rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif;font-size:.88rem;color:var(--mut)}
+details.explain summary{cursor:pointer;color:var(--txt);font-size:.95rem}
+footer{margin-top:2.5rem;color:var(--mut);font-size:.85rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+</style>
+</head>
+<body>
+<nav class="nav"><a href="/">Shipwright Studio</a><a href="/ideas/">Lab</a></nav>
+<p class="eyebrow">Lab — Developer tools</p>
+<h1>HTTP Status Guide</h1>
+<p class="define"><strong>HTTP Status Guide is a free online tool that</strong> explains every common HTTP status code in plain English — what it means, when you will see it, and what to do about it — so a bare number like 403 stops being a mystery.</p>
+
+<div class="card legend"><p class="cardlabel">The five classes</p>
+<p><b>1xx</b> — Hold on, still working. &nbsp;<b>2xx</b> — Success. &nbsp;<b>3xx</b> — Go somewhere else. &nbsp;<b>4xx</b> — Your request is the problem. &nbsp;<b>5xx</b> — The server is the problem.</p>
+</div>
+
+<div class="card">
+<p class="cardlabel">Find a code</p>
+<input type="text" id="search" placeholder="Search by code, name or keyword — try “login”, “redirect”, “rate”… " aria-label="Search status codes">
+<div class="chips" id="chips">
+<button class="chip on" data-cls="all">All</button>
+<button class="chip" data-cls="1">1xx Informational</button>
+<button class="chip" data-cls="2">2xx Success</button>
+<button class="chip" data-cls="3">3xx Redirection</button>
+<button class="chip" data-cls="4">4xx Client error</button>
+<button class="chip" data-cls="5">5xx Server error</button>
+</div>
+</div>
+
+<p class="count" id="count"></p>
+<div class="grid" id="grid"></div>
+<p class="empty" id="empty" style="display:none">No codes match — try a different search.</p>
+
+<div class="card" style="margin-top:1.4rem">
+<p class="cardlabel">Quiz — guess the code</p>
+<p class="ui" id="qText">Press “Quiz me” to start.</p>
+<div class="qchoices" id="qChoices"></div>
+<p class="msg" id="qMsg"></p>
+<div style="display:flex;gap:.7rem;flex-wrap:wrap;margin-top:.6rem">
+<button class="btn" id="btnQuiz">Quiz me</button>
+<button class="btn ghost" id="btnNext" style="display:none">New question</button>
+<span class="ui" id="qScore" style="align-self:center;color:var(--mut);font-size:.9rem"></span>
+</div>
+</div>
+
+<details class="explain"><summary>How to read a status code</summary>
+<p style="margin-top:.6rem">The first digit is the class: 1xx means "working on it", 2xx means "done", 3xx means "look over there", 4xx means "you sent something wrong", 5xx means "something broke on our side". The other two digits are the specific case. When debugging, that first digit alone usually tells you whose desk the problem belongs on.</p>
+</details>
+
+<footer>Built by Shipwright Studio · <a href="/ideas/">Back to the Lab</a></footer>
+
+<script>
+"use strict";
+var CODES = [
+[100,"Continue","1","Keep going — the server got your headers and is waiting for the body.","Sent before a large upload when the client asked “is it OK to send this?”.","Wait for the go-ahead, then send the body; most clients handle this automatically."],
+[101,"Switching Protocols","1","The server agrees to switch to a different protocol.","The start of a WebSocket handshake.","Nothing to fix — the connection upgrades from here."],
+[103,"Early Hints","1","Some headers are coming early, before the full response.","A server sending preload hints for stylesheets or scripts.","Start fetching the hinted resources; the real response follows."],
+[200,"OK","2","It worked — here is what you asked for.","The normal success response for GET, POST and most other requests.","Nothing to do. If the body looks wrong, the bug is in the data, not the status."],
+[201,"Created","2","It worked, and something new now exists.","A successful POST that created a resource, like a new user or order.","Read the Location header for the new resource's URL."],
+[202,"Accepted","2","Received, but not finished yet.","A job queued for background processing, like a video transcode.","Poll the job endpoint or wait for the webhook; do not resend."],
+[204,"No Content","2","It worked, and there is deliberately nothing to show.","A successful DELETE, or a form save with no page to return.","Treat empty body as success, not as an error."],
+[206,"Partial Content","2","Here is just the part you asked for.","Video seeking, resumable downloads, and range requests.","Combine ranges by their Content-Range headers."],
+[301,"Moved Permanently","3","This lives somewhere else now, for good.","An old URL replaced by a new one, or http upgraded to https.","Update bookmarks and links; search engines will follow the new URL."],
+[302,"Found","3","This lives somewhere else for now.","Temporary redirects, often after a login or a short campaign URL.","Follow the Location header, but keep the old URL — it may come back."],
+[303,"See Other","3","Done — now go look at this other page.","After a form POST, redirecting to a result page so refresh does not resubmit.","Follow with a GET to the Location URL."],
+[304,"Not Modified","3","Nothing changed since you last fetched this.","A browser revalidating a cached page with If-Modified-Since or ETag.","Serve from cache; this is a success, not a failure."],
+[307,"Temporary Redirect","3","Go over there instead, but keep the method and body.","A temporary redirect that must preserve POST data, unlike 302 in old clients.","Repeat the exact same request at the Location URL."],
+[308,"Permanent Redirect","3","This lives somewhere else now, and keep the method too.","The strict permanent version of 307, common in API version moves.","Update the stored URL and repeat the same request there."],
+[400,"Bad Request","4","The server could not understand the request.","Malformed JSON, a missing required field, or an invalid query value.","Check the request body and parameters against the API docs; read the error message."],
+[401,"Unauthorized","4","You need to log in first (despite the name, it means unauthenticated).","A missing, expired, or invalid auth token.","Log in, refresh the token, and retry with a valid Authorization header."],
+[403,"Forbidden","4","You are logged in, but you are not allowed to do this.","A valid user hitting an admin endpoint, or a file with wrong permissions.","Check roles and permissions; logging in again will not help."],
+[404,"Not Found","4","Nothing lives at this URL.","A typo, a deleted page, or an ID that does not exist.","Check the URL and ID; if it was deleted, it is gone, not hidden."],
+[405,"Method Not Allowed","4","This URL exists, but not for that verb.","Sending POST to a read-only endpoint, or DELETE where only GET is allowed.","Check the Allow header for the verbs this URL accepts."],
+[408,"Request Timeout","4","You took too long to send the request.","A slow client or a stalled upload on a flaky connection.","Retry; if it repeats, shrink the payload or fix the connection."],
+[409,"Conflict","4","Your change clashes with the current state.","Two edits to the same record, or creating a username that now exists.","Fetch the latest state, resolve the clash, and retry."],
+[410,"Gone","4","This used to exist and is deliberately gone.","A permanently removed page, stricter than 404.","Stop linking to it; unlike 404, it will not come back."],
+[411,"Length Required","4","Tell me how big the body is before sending it.","A POST without a Content-Length header to a strict server.","Add Content-Length (or use chunked encoding if the server accepts it)."],
+[412,"Precondition Failed","4","The condition you set is no longer true.","An If-Match update against a version that has since changed.","Re-fetch, get the new ETag, and retry with it."],
+[413,"Content Too Large","4","Your payload is bigger than the server allows.","An oversized file upload or a huge JSON body.","Shrink, compress, or chunk the payload; check the server's limit."],
+[414,"URI Too Long","4","The URL itself is too long.","Stuffing a huge filter or token list into query parameters.","Move the data into a POST body or shorten the parameters."],
+[415,"Unsupported Media Type","4","The server does not accept this kind of body.","Posting XML to a JSON-only API, or a wrong Content-Type header.","Set the Content-Type the API documents."],
+[418,"I'm a Teapot","4","A joke code — the server refuses to brew coffee.","An April Fools' RFC that stuck around; some APIs return it playfully.","Laugh, then check the real error: no teapot is actually involved."],
+[422,"Unprocessable Content","4","The syntax is fine, but the content does not make sense.","A well-formed JSON body that fails validation, like an end date before a start date.","Fix the field values, not the JSON formatting."],
+[429,"Too Many Requests","4","Slow down — you have hit the rate limit.","Bursting past an API's per-minute quota.","Back off, honour Retry-After, and retry later; do not hammer."],
+[451,"Unavailable For Legal Reasons","4","This content is blocked for legal reasons.","A page removed by court order or regional law.","Nothing a retry fixes; serve a different region or a legal notice."],
+[500,"Internal Server Error","5","Something broke on the server, and it is not telling you what.","An unhandled exception, a crashed worker, a bad deploy.","Server side: check logs. Client side: retry once, then report it."],
+[501,"Not Implemented","5","The server does not know how to do that.","A method or feature the server has never supported.","Use a supported method, or ask the API owner to implement it."],
+[502,"Bad Gateway","5","The middleman got an invalid reply from upstream.","A proxy or load balancer talking to a crashed app server.","Usually transient: retry. If it persists, the upstream service is down."],
+[503,"Service Unavailable","5","The server is temporarily unable to cope.","Overload, maintenance, or a restart in progress.","Retry after a pause, honouring Retry-After if present."],
+[504,"Gateway Timeout","5","The middleman waited too long for upstream.","An upstream service hanging under load or a deadlocked query.","Retry; if it persists, the upstream is too slow or down."]
+];
+function clsOf(c) { return String(c[0])[0]; }
+function filterCodes(query, cls, rng) {
+  // Whitespace-insensitive so "login" also matches cards that say "log in".
+  var q = (query || "").trim().toLowerCase().replace(/\s+/g, "");
+  return CODES.filter(function (c) {
+    if (cls !== "all" && clsOf(c) !== cls) return false;
+    if (!q) return true;
+    return (c[0] + " " + c[1] + " " + c[3] + " " + c[4] + " " + c[5]).toLowerCase().replace(/\s+/g, "").indexOf(q) !== -1;
+  });
+}
+function makeQuiz(prevCode, rng) {
+  rng = rng || Math.random;
+  var pool = CODES.filter(function (c) { return c[0] !== prevCode; });
+  var answer = pool[Math.floor(rng() * pool.length)];
+  var distract = [];
+  while (distract.length < 3) {
+    var d = CODES[Math.floor(rng() * CODES.length)];
+    if (d[0] !== answer[0] && distract.indexOf(d[0]) === -1) distract.push(d[0]);
+  }
+  var choices = distract.concat([answer[0]]);
+  for (var i = choices.length - 1; i > 0; i--) { var j = Math.floor(rng() * (i + 1)); var t = choices[i]; choices[i] = choices[j]; choices[j] = t; }
+  return { answer: answer, choices: choices };
+}
+
+if (typeof document !== "undefined") {
+  var grid = document.getElementById("grid"), countEl = document.getElementById("count"),
+      emptyEl = document.getElementById("empty"), searchEl = document.getElementById("search"), curCls = "all";
+  function render() {
+    var list = filterCodes(searchEl.value, curCls);
+    countEl.textContent = "Showing " + list.length + " of " + CODES.length + " codes";
+    emptyEl.style.display = list.length ? "none" : "block";
+    grid.innerHTML = "";
+    list.forEach(function (c) {
+      var card = document.createElement("div"); card.className = "codecard"; card.tabIndex = 0;
+      card.innerHTML = '<div class="top"><span class="badge b' + clsOf(c) + '">' + c[0] + '</span><h2>' + c[1] + '</h2></div>' +
+        '<p class="mean">' + c[3] + '</p>' +
+        '<div class="detail"><p><b>When you\u2019ll see it:</b> ' + c[4] + '</p><p><b>What to do:</b> ' + c[5] + '</p>' +
+        '<button class="copybtn">Copy summary</button> <span class="msg" style="display:inline"></span></div>';
+      card.addEventListener("click", function (e) {
+        if (e.target.className === "copybtn") return;
+        card.classList.toggle("open");
+      });
+      card.querySelector(".copybtn").addEventListener("click", function (ev) {
+        ev.stopPropagation();
+        var msg = card.querySelector(".detail .msg");
+        var text = c[0] + " " + c[1] + " — " + c[3];
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(text).then(function () { msg.textContent = "Copied"; msg.className = "msg ok"; },
+            function () { msg.textContent = "Copy failed"; msg.className = "msg err"; });
+        } else { msg.textContent = "Clipboard unavailable"; msg.className = "msg err"; }
+      });
+      grid.appendChild(card);
+    });
+  }
+  searchEl.addEventListener("input", render);
+  document.getElementById("chips").addEventListener("click", function (e) {
+    if (e.target.className.indexOf("chip") === -1) return;
+    document.querySelectorAll(".chip").forEach(function (b) { b.classList.remove("on"); });
+    e.target.classList.add("on"); curCls = e.target.getAttribute("data-cls"); render();
+  });
+  // Quiz
+  var prev = null, correct = 0, total = 0, current = null, answered = false;
+  var qText = document.getElementById("qText"), qChoices = document.getElementById("qChoices"),
+      qMsg = document.getElementById("qMsg"), qScore = document.getElementById("qScore");
+  function ask() {
+    current = makeQuiz(prev); prev = current.answer[0]; answered = false;
+    qText.textContent = "Which code means: “" + current.answer[3] + "”?";
+    qMsg.textContent = ""; qMsg.className = "msg"; qChoices.innerHTML = "";
+    document.getElementById("btnNext").style.display = "none";
+    current.choices.forEach(function (code) {
+      var b = document.createElement("button"); b.className = "qbtn"; b.textContent = code;
+      b.addEventListener("click", function () {
+        if (answered) return; answered = true; total++;
+        if (code === current.answer[0]) { correct++; b.classList.add("correct"); qMsg.textContent = "Correct — " + code + " " + current.answer[1] + "."; qMsg.className = "msg ok"; }
+        else { b.classList.add("wrong"); qMsg.textContent = "Not quite — that was " + current.answer[0] + " " + current.answer[1] + "."; qMsg.className = "msg err";
+          Array.prototype.forEach.call(qChoices.children, function (x) { if (parseInt(x.textContent, 10) === current.answer[0]) x.classList.add("correct"); }); }
+        qScore.textContent = "Score: " + correct + " / " + total;
+        document.getElementById("btnNext").style.display = "inline-block";
+      });
+      qChoices.appendChild(b);
+    });
+  }
+  document.getElementById("btnQuiz").addEventListener("click", ask);
+  document.getElementById("btnNext").addEventListener("click", ask);
+  render();
+}
+</script>
+</body>
+</html>
