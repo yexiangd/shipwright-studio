@@ -1,5 +1,5 @@
 {
-  "updated": "2026-10-29",
+  "updated": "2026-10-30",
   "ideas": [
     {
       "id": "idea-000a",
@@ -975,7 +975,9 @@
       "tagline": "Finger-drumming with synthesized kits.",
       "priority": 74,
       "effort": "S",
-      "status": "todo"
+      "status": "done",
+      "url": "/lab/drum-pad/",
+      "shipped": "2026-10-30"
     },
     {
       "id": "idea-087",
@@ -1317,7 +1319,9 @@
       "tagline": "Checksum and format validation for EVM addresses.",
       "priority": 74,
       "effort": "S",
-      "status": "todo"
+      "status": "done",
+      "url": "/lab/address-validator/",
+      "shipped": "2026-10-30"
     },
     {
       "id": "idea-118",

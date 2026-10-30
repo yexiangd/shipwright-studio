@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Wallet Address Validator · Shipwright Studio</title>
+<meta name="description" content="Free online wallet address validator — check an Ethereum address format and its EIP-55 checksum before you send, all computed locally.">
+<link rel="canonical" href="https://shipwright-studio.pages.dev/lab/address-validator/">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"WebApplication","name":"Wallet Address Validator","url":"https://shipwright-studio.pages.dev/lab/address-validator/","description":"Wallet Address Validator is a free online tool that checks whether an Ethereum wallet address is well-formed and whether its mixed-case checksum follows EIP-55, all computed locally in your browser.","applicationCategory":"FinanceApplication","operatingSystem":"Web","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"}}
+</script>
+<style>
+:root{--bg:#0a0c0f;--panel:#101318;--line:#1c2128;--txt:#e8e4da;--mut:#9aa3b2;--brass:#d2a24c;--green:#7fb069;--amber:#d2a24c;--red:#e0655f}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--txt);font-family:Fraunces,Georgia,serif;line-height:1.65;padding:2rem 1.2rem 4rem;max-width:960px;margin:0 auto}
+a{color:var(--brass)}
+.nav{display:flex;gap:1.2rem;font-size:.85rem;margin-bottom:1.2rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.nav a{color:var(--mut);text-decoration:none}.nav a:hover{color:var(--brass)}
+.eyebrow{font-size:.75rem;letter-spacing:.22em;text-transform:uppercase;color:var(--mut);font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+h1{font-weight:600;font-size:clamp(2.1rem,5vw,3rem);margin:.5rem 0 .7rem}
+.define{color:var(--mut);max-width:46rem;margin-bottom:1.8rem;font-size:1rem}.define strong{color:var(--txt)}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:1.4rem;margin-bottom:1.4rem}
+.cardlabel{font-size:.72rem;letter-spacing:.18em;text-transform:uppercase;color:var(--mut);margin-bottom:.8rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.ui{font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.mono{font-family:"JetBrains Mono",ui-monospace,monospace}
+input.addr{width:100%;background:#08090c;color:var(--txt);border:1px solid var(--line);border-radius:10px;padding:.8rem 1rem;font-size:.95rem;font-family:"JetBrains Mono",ui-monospace,monospace}
+input.addr:focus{outline:2px solid var(--brass);border-color:var(--brass)}
+.btn{font-size:.9rem;border:1px solid var(--brass);background:transparent;color:var(--brass);border-radius:999px;padding:.55rem 1.2rem;cursor:pointer;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.btn:hover{background:rgba(210,162,76,.12)}.btn.ghost{border-color:var(--line);color:var(--mut)}.btn.ghost:hover{color:var(--txt);border-color:var(--mut)}
+.btnrow{display:flex;gap:.7rem;flex-wrap:wrap;align-items:center;margin-top:.9rem}
+.verdict{border-radius:12px;padding:1.1rem 1.3rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.verdict.neutral{border:1px solid var(--line);color:var(--mut)}
+.verdict.green{border:1px solid var(--green);color:var(--txt)}.verdict.green b{color:var(--green)}
+.verdict.amber{border:1px solid var(--amber);color:var(--txt)}.verdict.amber b{color:var(--amber)}
+.verdict.red{border:1px solid var(--red);color:var(--txt)}.verdict.red b{color:var(--red)}
+.verdict p{font-size:.9rem;color:var(--mut);margin-top:.3rem}
+.rules{list-style:none;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif;font-size:.92rem}
+.rules li{padding:.45rem 0;border-bottom:1px solid var(--line);display:flex;gap:.6rem}
+.rules li:last-child{border-bottom:0}
+.ok{color:var(--green)}.bad{color:var(--red)}.dim{color:var(--mut)}
+.statgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:.9rem}
+@media(max-width:640px){.statgrid{grid-template-columns:repeat(2,1fr)}}
+.tile{background:#08090c;border:1px solid var(--line);border-radius:10px;padding:1rem}
+.tile .n{font-family:"JetBrains Mono",ui-monospace,monospace;font-size:1.2rem;color:var(--brass);word-break:break-all}
+.tile .l{font-size:.78rem;color:var(--mut);font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif;margin-top:.2rem}
+.checksumbox{background:#08090c;border:1px solid var(--line);border-radius:10px;padding:1rem;display:flex;gap:.8rem;flex-wrap:wrap;align-items:center;justify-content:space-between}
+.checksumbox code{font-family:"JetBrains Mono",ui-monospace,monospace;font-size:.9rem;word-break:break-all}
+details.explain{border:1px solid var(--line);border-radius:10px;padding:.9rem 1.1rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif;font-size:.88rem;color:var(--mut)}
+details.explain summary{cursor:pointer;color:var(--txt);font-size:.95rem}
+footer{margin-top:2.5rem;color:var(--mut);font-size:.85rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+</style>
+</head>
+<body>
+<nav class="nav"><a href="/">Shipwright Studio</a><a href="/ideas/">Lab</a></nav>
+<p class="eyebrow">Lab — Web3 tool</p>
+<h1>Wallet Address Validator</h1>
+<p class="define"><strong>Wallet Address Validator is a free online tool that</strong> checks whether an Ethereum wallet address is well-formed and whether its mixed-case checksum follows EIP-55 — so you can catch a typo before funds go to the wrong place, all computed locally in your browser.</p>
+
+<div class="card">
+<p class="cardlabel">Address to check</p>
+<input class="addr" id="addr" type="text" value="" placeholder="0x…" autocomplete="off" spellcheck="false" aria-label="Wallet address">
+<div class="btnrow">
+<button class="btn ghost" data-sample="0x5aAeb6053F3E94C9b9A09f33669435E7Ef1BeAed">Checksummed sample</button>
+<button class="btn ghost" data-sample="0x5aaeb6053f3e94c9b9a09f33669435e7ef1beaed">Lowercase twin</button>
+<button class="btn ghost" data-sample="0x5aaeb6053f3e94c9b9a09f33669435e7ef1beae">Too short</button>
+<button class="btn ghost" data-sample="0x5aaeb6053F3E94C9b9A09f33669435E7Ef1BeAed">Bad checksum</button>
+<button class="btn ghost" id="btnClear">Clear</button>
+</div>
+<p class="ui" style="color:var(--mut);font-size:.85rem;margin-top:.8rem">Nothing leaves this page: no lookup, no balance check, no network request. This checks the format only — it cannot tell you whether an address belongs to anyone.</p>
+</div>
+
+<div class="card">
+<p class="cardlabel">Verdict</p>
+<div class="verdict neutral" id="verdict"><b>Paste an address above.</b><p>Validation runs on every keystroke.</p></div>
+</div>
+
+<div class="card">
+<p class="cardlabel">Rule checks</p>
+<ul class="rules" id="rules"></ul>
+</div>
+
+<div class="card" id="detailsCard" style="display:none">
+<p class="cardlabel">Checksummed address</p>
+<div class="checksumbox"><code id="checksummed"></code><button class="btn" id="btnCopy">Copy</button></div>
+<div class="statgrid" style="margin-top:1rem">
+<div class="tile"><div class="n" id="stPrefix">—</div><div class="l">Prefix</div></div>
+<div class="tile"><div class="n" id="stLen">—</div><div class="l">Hex characters</div></div>
+<div class="tile"><div class="n" id="stCase">—</div><div class="l">Case pattern</div></div>
+<div class="tile"><div class="n" id="stLetters">—</div><div class="l">Letters checked</div></div>
+</div>
+</div>
+
+<details class="explain"><summary>What is EIP-55?</summary>
+<p>EIP-55 turns an address's letter casing into a checksum. Take the lowercase hex address, hash it with Keccak-256, and capitalise each letter whose matching hash nibble is 8 or higher. A wallet that understands EIP-55 can then spot a mistyped letter: change one letter's case and the checksum no longer matches. All-lowercase or all-uppercase addresses are still valid addresses — they simply carry no checksum protection, so a typo in them is harder to catch. This page implements Keccak-256 directly, with no libraries and no network calls.</p>
+</details>
+
+<footer>Built by Shipwright Studio · <a href="/ideas/">More experiments in the Lab</a></footer>
+
+<script>
+// ---- Keccak-256 (dependency-free, verified against published vectors) ----
+const RC=[0x0000000000000001n,0x0000000000008082n,0x800000000000808an,0x8000000080008000n,0x000000000000808bn,0x0000000080000001n,0x8000000080008081n,0x8000000000008009n,0x000000000000008an,0x0000000000000088n,0x0000000080008009n,0x000000008000000an,0x000000008000808bn,0x800000000000008bn,0x8000000000008089n,0x8000000000008003n,0x8000000000008002n,0x8000000000000080n,0x000000000000800an,0x800000008000000an,0x8000000080008081n,0x8000000000008080n,0x0000000080000001n,0x8000000080008008n];
+const ROT=[[0,36,3,41,18],[1,44,10,45,2],[62,6,43,15,61],[28,55,25,21,56],[27,20,39,8,14]];
+const MASK64=(1n<<64n)-1n;
+function rotl(x,n){n=BigInt(n);return n===0n?x:((x<<n)|(x>>(64n-n)))&MASK64;}
+function keccakF(s){
+  for(let r=0;r<24;r++){
+    const C=[],D=[];
+    for(let x=0;x<5;x++) C[x]=s[x]^s[x+5]^s[x+10]^s[x+15]^s[x+20];
+    for(let x=0;x<5;x++) D[x]=C[(x+4)%5]^rotl(C[(x+1)%5],1);
+    for(let x=0;x<5;x++) for(let y=0;y<5;y++) s[x+5*y]^=D[x];
+    const B=new Array(25);
+    for(let x=0;x<5;x++) for(let y=0;y<5;y++) B[y+5*((2*x+3*y)%5)]=rotl(s[x+5*y],ROT[x][y]);
+    for(let x=0;x<5;x++) for(let y=0;y<5;y++) s[x+5*y]=B[x+5*y]^((~B[(x+1)%5+5*y])&B[(x+2)%5+5*y]);
+    s[0]^=RC[r];
+  }
+}
+function keccak256Hex(str){
+  const bytes=[]; for(let i=0;i<str.length;i++) bytes.push(str.charCodeAt(i)&0xff);
+  const rate=136, s=new Array(25).fill(0n); let off=0;
+  while(bytes.length-off>=rate){
+    for(let i=0;i<rate;i++) s[Math.floor(i/8)]^=BigInt(bytes[off+i])<<BigInt((i%8)*8);
+    keccakF(s); off+=rate;
+  }
+  const rem=bytes.slice(off), block=new Array(rate).fill(0);
+  rem.forEach(function(b,i){ block[i]=b; });
+  block[rem.length]^=0x01; block[rate-1]^=0x80;
+  for(let i=0;i<rate;i++) s[Math.floor(i/8)]^=BigInt(block[i])<<BigInt((i%8)*8);
+  keccakF(s);
+  let out='';
+  for(let i=0;i<32;i++) out+=((s[Math.floor(i/8)]>>BigInt((i%8)*8))&0xffn).toString(16).padStart(2,'0');
+  return out;
+}
+function toChecksum(addr){
+  const a=addr.toLowerCase().replace(/^0x/,'');
+  const h=keccak256Hex(a); let r='0x';
+  for(let i=0;i<a.length;i++) r+=parseInt(h[i],16)>=8?a[i].toUpperCase():a[i];
+  return r;
+}
+// ---- Validation ----
+const input=document.getElementById('addr');
+const verdictEl=document.getElementById('verdict');
+const rulesEl=document.getElementById('rules');
+const detailsCard=document.getElementById('detailsCard');
+function ruleRow(pass,label,detail){
+  const li=document.createElement('li');
+  li.innerHTML='<span class="'+(pass?'ok':'bad')+'">'+(pass?'✓':'✗')+'</span><span>'+label+'</span><span class="dim">'+detail+'</span>';
+  rulesEl.appendChild(li);
+}
+function validate(){
+  const raw=input.value.trim();
+  rulesEl.innerHTML='';
+  if(raw===''){
+    verdictEl.className='verdict neutral';
+    verdictEl.innerHTML='<b>Paste an address above.</b><p>Validation runs on every keystroke.</p>';
+    detailsCard.style.display='none'; return;
+  }
+  const hasPrefix=/^0x/i.test(raw);
+  const body=hasPrefix?raw.slice(2):raw;
+  const hexOnly=/^[0-9a-fA-F]*$/.test(body);
+  const rightLen=body.length===40;
+  const formatOK=hasPrefix&&hexOnly&&rightLen;
+  ruleRow(hasPrefix,'Starts with 0x',hasPrefix?'present':'missing or wrong prefix');
+  ruleRow(hexOnly,'Only hex characters (0–9, a–f)',hexOnly?'all '+body.length+' characters are hex':'contains a non-hex character');
+  ruleRow(rightLen,'Exactly 40 hex characters','found '+body.length);
+  if(!formatOK){
+    verdictEl.className='verdict red';
+    verdictEl.innerHTML='<b>Invalid address.</b><p>Fix the failing rules above — this address cannot be used as-is.</p>';
+    detailsCard.style.display='none'; return;
+  }
+  const checksummed=toChecksum(raw);
+  const isChecksum=raw===checksummed;
+  const isLower=body===body.toLowerCase();
+  const isUpper=body===body.toUpperCase();
+  const letters=body.replace(/[^a-fA-F]/g,'').length;
+  const casePattern=isLower?'all lowercase':isUpper?'all uppercase':'mixed case';
+  ruleRow(true,'Format is valid','40 hex characters after 0x');
+  document.getElementById('checksummed').textContent=checksummed;
+  document.getElementById('stPrefix').textContent='0x';
+  document.getElementById('stLen').textContent='40';
+  document.getElementById('stCase').textContent=casePattern;
+  document.getElementById('stLetters').textContent=letters+' letters';
+  detailsCard.style.display='block';
+  if(isChecksum){
+    verdictEl.className='verdict green';
+    verdictEl.innerHTML='<b>Valid — EIP-55 checksum matches.</b><p>This address is well-formed and its casing matches its checksum. Safe to use as pasted.</p>';
+  } else if(isLower||isUpper){
+    verdictEl.className='verdict amber';
+    verdictEl.innerHTML='<b>Valid format — no checksum.</b><p>This '+casePattern+' address is well-formed, but carries no EIP-55 checksum protection. Double-check it character by character, or use the checksummed version below.</p>';
+  } else {
+    verdictEl.className='verdict red';
+    verdictEl.innerHTML='<b>Invalid — checksum mismatch.</b><p>The mixed casing does not match the EIP-55 checksum, so at least one letter is mistyped. Do not send to this address — use the corrected version below and verify it with the sender.</p>';
+  }
+}
+input.addEventListener('input',validate);
+document.querySelectorAll('[data-sample]').forEach(function(b){
+  b.addEventListener('click',function(){ input.value=b.getAttribute('data-sample'); validate(); input.focus(); });
+});
+document.getElementById('btnClear').addEventListener('click',function(){ input.value=''; validate(); input.focus(); });
+document.getElementById('btnCopy').addEventListener('click',function(){
+  const text=document.getElementById('checksummed').textContent;
+  const done=function(){ const btn=document.getElementById('btnCopy'); btn.textContent='Copied ✓'; setTimeout(function(){ btn.textContent='Copy'; },1500); };
+  if(navigator.clipboard&&navigator.clipboard.writeText){ navigator.clipboard.writeText(text).then(done).catch(done); }
+  else { const ta=document.createElement('textarea'); ta.value=text; document.body.appendChild(ta); ta.select(); try{document.execCommand('copy');}catch(e){} document.body.removeChild(ta); done(); }
+});
+validate();
+</script>
+</body>
+</html>

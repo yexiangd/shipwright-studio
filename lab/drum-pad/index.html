@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Drum Pad · Shipwright Studio</title>
+<meta name="description" content="Free online drum pad — tap nine synthesized drums, switch between three kits, and loop a 16-step beat, all in your browser.">
+<link rel="canonical" href="https://shipwright-studio.pages.dev/lab/drum-pad/">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"WebApplication","name":"Drum Pad","url":"https://shipwright-studio.pages.dev/lab/drum-pad/","description":"Drum Pad is a free online tool that lets you play nine synthesized drum sounds, switch between three drum kits, and loop a 16-step beat, all in your browser.","applicationCategory":"MultimediaApplication","operatingSystem":"Web","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"}}
+</script>
+<style>
+:root{--bg:#0a0c0f;--panel:#101318;--line:#1c2128;--txt:#e8e4da;--mut:#9aa3b2;--brass:#d2a24c;--green:#7fb069;--red:#e0655f}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--txt);font-family:Fraunces,Georgia,serif;line-height:1.65;padding:2rem 1.2rem 4rem;max-width:960px;margin:0 auto}
+a{color:var(--brass)}
+.nav{display:flex;gap:1.2rem;font-size:.85rem;margin-bottom:1.2rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.nav a{color:var(--mut);text-decoration:none}.nav a:hover{color:var(--brass)}
+.eyebrow{font-size:.75rem;letter-spacing:.22em;text-transform:uppercase;color:var(--mut);font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+h1{font-weight:600;font-size:clamp(2.1rem,5vw,3rem);margin:.5rem 0 .7rem}
+.define{color:var(--mut);max-width:46rem;margin-bottom:1.8rem;font-size:1rem}.define strong{color:var(--txt)}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:1.4rem;margin-bottom:1.4rem}
+.cardlabel{font-size:.72rem;letter-spacing:.18em;text-transform:uppercase;color:var(--mut);margin-bottom:.8rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.ui{font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.btn{font-size:.9rem;border:1px solid var(--brass);background:transparent;color:var(--brass);border-radius:999px;padding:.55rem 1.4rem;cursor:pointer;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.btn:hover{background:rgba(210,162,76,.12)}.btn.ghost{border-color:var(--line);color:var(--mut)}.btn.ghost:hover{color:var(--txt);border-color:var(--mut)}
+.btnrow{display:flex;gap:.7rem;flex-wrap:wrap;align-items:center}
+select{background:#08090c;color:var(--txt);border:1px solid var(--line);border-radius:8px;padding:.5rem;font-size:.9rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+label{font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif;font-size:.88rem;color:var(--mut)}
+input[type=range]{accent-color:var(--brass);vertical-align:middle}
+.pads{display:grid;grid-template-columns:repeat(3,1fr);gap:.8rem}
+.pad{border:1px solid var(--line);background:#08090c;border-radius:14px;padding:1.1rem .6rem;cursor:pointer;text-align:center;transition:background .08s,border-color .08s,transform .08s;user-select:none;-webkit-tap-highlight-color:transparent}
+.pad:hover{border-color:var(--brass)}
+.pad.hit{background:rgba(210,162,76,.25);border-color:var(--brass);transform:scale(.97)}
+.pad .n{font-size:1.05rem;font-weight:600}
+.pad .k{font-family:"JetBrains Mono",ui-monospace,monospace;font-size:.75rem;color:var(--mut);margin-top:.2rem}
+.pad .d{font-size:.75rem;color:var(--mut);font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+#now{font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif;font-size:.9rem;color:var(--mut);margin-top:.9rem;min-height:1.4em}
+#now b{color:var(--brass)}
+.seqwrap{overflow-x:auto;padding-bottom:.3rem}
+.seq{display:grid;grid-template-columns:6.5rem repeat(16,2rem) 3rem;gap:.25rem;align-items:center;min-width:44rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif;font-size:.82rem}
+.seq .rowlabel{color:var(--mut);white-space:nowrap}
+.seq .step{width:2rem;height:2rem;border:1px solid var(--line);background:#08090c;border-radius:6px;cursor:pointer;padding:0}
+.seq .step.on{background:var(--brass);border-color:var(--brass)}
+.seq .step.playing{outline:2px solid #fff;outline-offset:1px}
+.seq .step.beat{border-color:#3a4150}
+.seq .mute{border:1px solid var(--line);background:transparent;color:var(--mut);border-radius:999px;padding:.25rem .4rem;cursor:pointer;font-size:.75rem}
+.seq .mute.muted{color:var(--red);border-color:var(--red)}
+.seq.mutedrow .rowlabel{opacity:.4}
+details.explain{border:1px solid var(--line);border-radius:10px;padding:.9rem 1.1rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif;font-size:.88rem;color:var(--mut)}
+details.explain summary{cursor:pointer;color:var(--txt);font-size:.95rem}
+footer{margin-top:2.5rem;color:var(--mut);font-size:.85rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+@media(max-width:640px){.pads{gap:.6rem}.pad{padding:.9rem .3rem}}
+</style>
+</head>
+<body>
+<nav class="nav"><a href="/">Shipwright Studio</a><a href="/ideas/">Lab</a></nav>
+<p class="eyebrow">Lab — Music toy</p>
+<h1>Drum Pad</h1>
+<p class="define"><strong>Drum Pad is a free online tool that</strong> turns your keyboard into a nine-piece drum kit — tap the pads, switch kits, and loop a 16-step beat, all synthesized live in your browser with no samples to download.</p>
+
+<div class="card">
+<p class="cardlabel">Kit &amp; transport</p>
+<div class="btnrow">
+<label>Kit <select id="kit"><option value="boombap">Boom Bap</option><option value="electronic">Electronic</option><option value="lofi">Lo-Fi</option></select></label>
+<button class="btn" id="btnPlay">▶ Play loop</button>
+<button class="btn ghost" id="btnTap">Tap tempo</button>
+<label>BPM <input type="range" id="bpm" min="60" max="180" value="96"> <span id="bpmVal">96</span></label>
+<label>Volume <input type="range" id="vol" min="0" max="100" value="80"></label>
+<button class="btn ghost" id="btnClear">Clear pattern</button>
+</div>
+<p id="now">Tap a pad to play. Keys A–L trigger the pads; Space plays or stops the loop.</p>
+</div>
+
+<div class="card">
+<p class="cardlabel">Pads — click, tap, or use keys A S D F G H J K L</p>
+<div class="pads" id="pads"></div>
+</div>
+
+<div class="card">
+<p class="cardlabel">16-step sequencer</p>
+<div class="seqwrap"><div class="seq" id="seq"></div></div>
+<p class="ui" style="color:var(--mut);font-size:.85rem;margin-top:.8rem">Click a step to toggle it. The highlighted column is the step now playing. Mute silences a row without erasing it.</p>
+</div>
+
+<details class="explain"><summary>How it works</summary>
+<p>Every sound is synthesized with the WebAudio API — no audio files are loaded. Kick and Tom are pitched sine drops, Snare and Clap are filtered noise bursts, hats and Shaker are high-passed noise, Rim is a short square blip, and Crash is long decaying noise. Each kit retunes pitch, decay and filter settings, so the same pad sounds punchy, glassy or dusty depending on the kit. Your pattern lives only in this page; nothing is uploaded or saved to a server.</p>
+</details>
+
+<footer>Built by Shipwright Studio · <a href="/ideas/">More experiments in the Lab</a></footer>
+
+<script>
+const PADS=[
+ {id:'kick',name:'Kick',key:'A',desc:'Deep thump'},
+ {id:'snare',name:'Snare',key:'S',desc:'Crack'},
+ {id:'clap',name:'Clap',key:'D',desc:'Hand clap'},
+ {id:'hatc',name:'Closed Hat',key:'F',desc:'Tick'},
+ {id:'hato',name:'Open Hat',key:'G',desc:'Sizzle'},
+ {id:'tom',name:'Tom',key:'H',desc:'Round boom'},
+ {id:'rim',name:'Rim',key:'J',desc:'Click'},
+ {id:'crash',name:'Crash',key:'K',desc:'Wash'},
+ {id:'shaker',name:'Shaker',key:'L',desc:'Shh'}
+];
+// Per-kit tuning: pitch multiplier, decay multiplier, filter multiplier, gain.
+const KITS={
+ boombap:{pitch:1.0,decay:1.0,filter:1.0,gain:1.0},
+ electronic:{pitch:1.25,decay:0.7,filter:1.6,gain:0.9},
+ lofi:{pitch:0.85,decay:1.4,filter:0.6,gain:0.85}
+};
+let ctx=null, master=null, noiseBuf=null, audioOK=true;
+function ensureAudio(){
+  if(ctx) { if(ctx.state==='suspended') ctx.resume(); return true; }
+  try{
+    ctx=new (window.AudioContext||window.webkitAudioContext)();
+    master=ctx.createGain(); master.gain.value=document.getElementById('vol').value/100; master.connect(ctx.destination);
+    noiseBuf=ctx.createBuffer(1,ctx.sampleRate*1.5,ctx.sampleRate);
+    const d=noiseBuf.getChannelData(0);
+    for(let i=0;i<d.length;i++) d[i]=Math.random()*2-1;
+  }catch(e){ audioOK=false; return false; }
+  return true;
+}
+function env(g,t,peak,decay){
+  g.gain.setValueAtTime(0.0001,t);
+  g.gain.exponentialRampToValueAtTime(peak,t+0.005);
+  g.gain.exponentialRampToValueAtTime(0.0001,t+decay);
+}
+function tone(type,f0,f1,dur,peak){
+  const t=ctx.currentTime, o=ctx.createOscillator(), g=ctx.createGain();
+  o.type=type; o.frequency.setValueAtTime(f0,t);
+  if(f1!==null) o.frequency.exponentialRampToValueAtTime(Math.max(20,f1),t+dur*0.7);
+  env(g,t,peak,dur); o.connect(g); g.connect(master); o.start(t); o.stop(t+dur+0.05);
+}
+function noise(filterType,freq,dur,peak,q){
+  const t=ctx.currentTime, s=ctx.createBufferSource(); s.buffer=noiseBuf;
+  const f=ctx.createBiquadFilter(); f.type=filterType; f.frequency.value=freq; f.Q.value=q||0.8;
+  const g=ctx.createGain(); env(g,t,peak,dur);
+  s.connect(f); f.connect(g); g.connect(master); s.start(t); s.stop(t+dur+0.05);
+}
+function playPad(id){
+  const k=KITS[document.getElementById('kit').value];
+  if(!ensureAudio()){
+    document.getElementById('now').innerHTML='WebAudio is unavailable in this browser — pads still flash, but no sound can play.';
+    flash(id); return;
+  }
+  const P=k.pitch, D=k.decay, F=k.filter, G=k.gain;
+  if(id==='kick') tone('sine',160*P,45*P,0.28*D,0.9*G);
+  else if(id==='snare'){ noise('bandpass',1800*F,0.18*D,0.7*G); tone('triangle',190*P,120*P,0.1*D,0.4*G); }
+  else if(id==='clap'){ noise('bandpass',1100*F,0.05,0.6*G); setTimeout(function(){ if(ctx) noise('bandpass',1100*F,0.22*D,0.6*G); },35); }
+  else if(id==='hatc') noise('highpass',7500*F,0.05*D,0.4*G);
+  else if(id==='hato') noise('highpass',7000*F,0.32*D,0.4*G);
+  else if(id==='tom') tone('sine',200*P,90*P,0.3*D,0.8*G);
+  else if(id==='rim') tone('square',1750*P,null,0.04,0.35*G);
+  else if(id==='crash') noise('highpass',5200*F,1.1*D,0.5*G);
+  else if(id==='shaker') noise('bandpass',6000*F,0.09*D,0.35*G);
+  flash(id);
+  const pad=PADS.find(function(p){return p.id===id;});
+  document.getElementById('now').innerHTML='Last played: <b>'+pad.name+'</b> — '+pad.desc+'.';
+}
+function flash(id){
+  const el=document.querySelector('[data-pad="'+id+'"]');
+  if(!el) return;
+  el.classList.add('hit'); setTimeout(function(){ el.classList.remove('hit'); },140);
+}
+// Pads UI
+const padsEl=document.getElementById('pads');
+PADS.forEach(function(p){
+  const b=document.createElement('button');
+  b.className='pad'; b.setAttribute('data-pad',p.id); b.setAttribute('aria-label','Play '+p.name);
+  b.innerHTML='<div class="n">'+p.name+'</div><div class="k">'+p.key+'</div><div class="d">'+p.desc+'</div>';
+  b.addEventListener('pointerdown',function(e){ e.preventDefault(); playPad(p.id); });
+  padsEl.appendChild(b);
+});
+// Sequencer state
+const pattern=PADS.map(function(){ return new Array(16).fill(false); });
+const muted=PADS.map(function(){ return false; });
+const seqEl=document.getElementById('seq');
+const stepBtns=[];
+PADS.forEach(function(p,ri){
+  const lab=document.createElement('div'); lab.className='rowlabel'; lab.textContent=p.name; seqEl.appendChild(lab);
+  stepBtns[ri]=[];
+  for(let s=0;s<16;s++){
+    const b=document.createElement('button');
+    b.className='step'+(s%4===0?' beat':''); b.setAttribute('aria-label',p.name+' step '+(s+1));
+    b.addEventListener('click',function(){ pattern[ri][s]=!pattern[ri][s]; b.classList.toggle('on',pattern[ri][s]); });
+    seqEl.appendChild(b); stepBtns[ri][s]=b;
+  }
+  const m=document.createElement('button'); m.className='mute'; m.textContent='Mute';
+  m.addEventListener('click',function(){
+    muted[ri]=!muted[ri]; m.classList.toggle('muted',muted[ri]); m.textContent=muted[ri]?'Unmute':'Mute';
+    seqEl.classList.toggle('mutedrow',false);
+  });
+  seqEl.appendChild(m);
+});
+let playing=false, step=0, timer=null, lastTap=0;
+function stepDur(){ return 60/parseInt(document.getElementById('bpm').value,10)/4; }
+function tick(){
+  for(let ri=0;ri<PADS.length;ri++){
+    stepBtns[ri].forEach(function(b){ b.classList.remove('playing'); });
+    stepBtns[ri][step].classList.add('playing');
+    if(pattern[ri][step] && !muted[ri]) playPad(PADS[ri].id);
+  }
+  document.getElementById('now').innerHTML='Playing — step <b>'+(step+1)+'</b> of 16 at <b>'+document.getElementById('bpm').value+' BPM</b>.';
+  step=(step+1)%16;
+}
+function setPlaying(on){
+  if(on && !ensureAudio()){
+    document.getElementById('now').innerHTML='WebAudio is unavailable in this browser — the sequencer cannot play sound.';
+    return;
+  }
+  playing=on;
+  document.getElementById('btnPlay').textContent=playing?'■ Stop loop':'▶ Play loop';
+  if(playing){ step=0; tick(); timer=setInterval(tick,stepDur()*1000); }
+  else if(timer){ clearInterval(timer); timer=null;
+    stepBtns.forEach(function(row){ row.forEach(function(b){ b.classList.remove('playing'); }); });
+  }
+}
+document.getElementById('btnPlay').addEventListener('click',function(){ setPlaying(!playing); });
+document.getElementById('bpm').addEventListener('input',function(e){
+  document.getElementById('bpmVal').textContent=e.target.value;
+  if(playing && timer){ clearInterval(timer); timer=setInterval(tick,stepDur()*1000); }
+});
+document.getElementById('vol').addEventListener('input',function(e){
+  if(master) master.gain.value=e.target.value/100;
+});
+document.getElementById('btnTap').addEventListener('click',function(){
+  const now=Date.now();
+  if(lastTap && now-lastTap<2000){
+    const bpm=Math.round(60000/(now-lastTap));
+    if(bpm>=60 && bpm<=180){
+      document.getElementById('bpm').value=bpm; document.getElementById('bpmVal').textContent=bpm;
+      if(playing && timer){ clearInterval(timer); timer=setInterval(tick,stepDur()*1000); }
+    }
+  }
+  lastTap=now;
+});
+document.getElementById('btnClear').addEventListener('click',function(){
+  pattern.forEach(function(row,ri){ row.fill(false); stepBtns[ri].forEach(function(b){ b.classList.remove('on'); }); });
+  document.getElementById('now').innerHTML='Pattern cleared — tap steps to build a new beat.';
+});
+document.addEventListener('keydown',function(e){
+  if(e.repeat) return;
+  const pad=PADS.find(function(p){ return p.key===e.key.toUpperCase(); });
+  if(pad){ playPad(pad.id); return; }
+  if(e.code==='Space' && e.target===document.body){ e.preventDefault(); setPlaying(!playing); }
+});
+</script>
+</body>
+</html>
