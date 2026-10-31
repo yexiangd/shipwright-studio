@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Easing Visualizer · Shipwright Studio</title>
+<meta name="description" content="Free online easing visualizer — drag cubic-bezier control points, watch the curve animate, and copy the CSS for your transition.">
+<link rel="canonical" href="https://shipwright-studio.pages.dev/lab/easing-visualizer/">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"WebApplication","name":"Easing Visualizer","url":"https://shipwright-studio.pages.dev/lab/easing-visualizer/","description":"Easing Visualizer is a free online tool that lets you drag cubic-bezier control points, preview the animation, and copy the CSS for your transition.","applicationCategory":"DeveloperApplication","operatingSystem":"Web","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"}}
+</script>
+<style>
+:root{--bg:#0a0c0f;--panel:#101318;--line:#1c2128;--txt:#e8e4da;--mut:#9aa3b2;--brass:#d2a24c;--green:#7fb069;--red:#e0655f}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--txt);font-family:Fraunces,Georgia,serif;line-height:1.65;padding:2rem 1.2rem 4rem;max-width:960px;margin:0 auto}
+a{color:var(--brass)}
+.nav{display:flex;gap:1.2rem;font-size:.85rem;margin-bottom:1.2rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.nav a{color:var(--mut);text-decoration:none}.nav a:hover{color:var(--brass)}
+.eyebrow{font-size:.75rem;letter-spacing:.22em;text-transform:uppercase;color:var(--mut);font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+h1{font-weight:600;font-size:clamp(2.1rem,5vw,3rem);margin:.5rem 0 .7rem}
+.define{color:var(--mut);max-width:46rem;margin-bottom:1.8rem;font-size:1rem}.define strong{color:var(--txt)}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:1.4rem;margin-bottom:1.4rem}
+.cardlabel{font-size:.72rem;letter-spacing:.18em;text-transform:uppercase;color:var(--mut);margin-bottom:.8rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.ui{font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.mono{font-family:"JetBrains Mono",ui-monospace,monospace}
+.btn{font-size:.9rem;border:1px solid var(--line);background:transparent;color:var(--txt);border-radius:999px;padding:.5rem 1.1rem;cursor:pointer;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.btn:hover{border-color:var(--brass);color:var(--brass)}.btn.active{border-color:var(--brass);color:var(--brass);background:rgba(210,162,76,.12)}
+.btn.brass{border-color:var(--brass);color:var(--brass)}
+.btnrow{display:flex;gap:.6rem;flex-wrap:wrap;align-items:center}
+input[type=range]{width:220px;accent-color:var(--brass)}
+.readout{font-size:1.15rem;margin-top:1rem}.readout .mono{color:var(--brass)}
+svg.chart{width:100%;height:auto;display:block;background:#08090c;border:1px solid var(--line);border-radius:10px}
+.handle{cursor:grab;fill:var(--brass);stroke:#0a0c0f;stroke-width:2}
+.handle:active{cursor:grabbing}
+.track{position:relative;height:14px;background:#08090c;border:1px solid var(--line);border-radius:999px;margin:1rem 0 .4rem;overflow:visible}
+.track .box{position:absolute;top:50%;width:26px;height:26px;margin:-13px 0 0 -13px;border-radius:6px;background:var(--brass)}
+.prog{font-size:.9rem;color:var(--mut)}
+.lane{margin:.7rem 0}
+.lane .lname{font-size:.8rem;color:var(--mut);width:110px;display:inline-block}
+.lane .ltrack{position:relative;display:inline-block;width:calc(100% - 120px);height:10px;background:#08090c;border:1px solid var(--line);border-radius:999px;vertical-align:middle}
+.lane .dot{position:absolute;top:50%;width:14px;height:14px;margin:-7px 0 0 -7px;border-radius:50%;background:var(--brass)}
+pre.snip{background:#08090c;border:1px solid var(--line);border-radius:10px;padding:1rem;overflow-x:auto;font-size:.92rem}
+.explain{font-size:.92rem;color:var(--mut)}.explain li{margin:.4rem 0}
+footer{margin-top:2.5rem;color:var(--mut);font-size:.85rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+@media(max-width:640px){.lane .lname{width:92px}.lane .ltrack{width:calc(100% - 100px)}input[type=range]{width:100%}}
+</style>
+</head>
+<body>
+<nav class="nav"><a href="/">Shipwright Studio</a><a href="/ideas/">Lab</a></nav>
+<p class="eyebrow">Lab — Developer tool</p>
+<h1>Easing Visualizer</h1>
+<p class="define"><strong>Easing Visualizer is a free online tool that</strong> lets you drag cubic-bezier control points, preview the animation, and copy the CSS for your transition — so you can feel a timing curve before you ship it.</p>
+
+<div class="card">
+<p class="cardlabel">Presets</p>
+<div class="btnrow" id="presets"></div>
+<p class="ui" style="margin-top:1rem;display:flex;gap:1rem;flex-wrap:wrap;align-items:center">
+<label>Duration: <span class="mono" id="durLabel">1.0s</span></label>
+<input type="range" id="dur" min="0.3" max="3" step="0.1" value="1">
+<button class="btn brass" id="playBtn">▶ Play</button>
+</p>
+</div>
+
+<div class="card">
+<p class="cardlabel">Curve editor — drag the brass points</p>
+<svg class="chart" id="chart" viewBox="0 0 340 340" role="img" aria-label="Cubic-bezier curve chart with draggable control points">
+<line x1="30" y1="240" x2="310" y2="240" stroke="#1c2128" stroke-width="1"/>
+<line x1="30" y1="170" x2="310" y2="170" stroke="#1c2128" stroke-width="1" stroke-dasharray="4 4"/>
+<line x1="30" y1="100" x2="310" y2="100" stroke="#1c2128" stroke-width="1"/>
+<line x1="30" y1="30" x2="310" y2="30" stroke="#1c2128" stroke-width="1" stroke-dasharray="4 4"/>
+<line x1="30" y1="310" x2="310" y2="310" stroke="#1c2128" stroke-width="1" stroke-dasharray="4 4"/>
+<line id="arm1" x1="30" y1="240" x2="100" y2="200" stroke="#d2a24c" stroke-width="1" stroke-dasharray="4 4" opacity="0.6"/>
+<line id="arm2" x1="310" y1="100" x2="240" y2="140" stroke="#d2a24c" stroke-width="1" stroke-dasharray="4 4" opacity="0.6"/>
+<path id="curve" fill="none" stroke="#d2a24c" stroke-width="2.5" d=""/>
+<circle id="dot" r="6" fill="#e8e4da" stroke="#0a0c0f" stroke-width="2"/>
+<circle id="p1" class="handle" r="11" data-pt="1" tabindex="0" aria-label="Control point 1"/>
+<circle id="p2" class="handle" r="11" data-pt="2" tabindex="0" aria-label="Control point 2"/>
+<text x="30" y="258" fill="#9aa3b2" font-size="11" font-family="monospace">0</text>
+<text x="298" y="258" fill="#9aa3b2" font-size="11" font-family="monospace">1</text>
+<text x="12" y="104" fill="#9aa3b2" font-size="11" font-family="monospace">1</text>
+</svg>
+<p class="readout ui">Current curve: <span class="mono" id="bezLabel">cubic-bezier(0.25, 0.10, 0.25, 1.00)</span></p>
+</div>
+
+<div class="card">
+<p class="cardlabel">Preview</p>
+<div class="track"><div class="box" id="box"></div></div>
+<p class="prog ui">Progress: <span class="mono" id="progLabel">0%</span> · time: <span class="mono" id="timeLabel">0.00s</span></p>
+</div>
+
+<div class="card">
+<p class="cardlabel">Race — all presets over the same duration</p>
+<div id="lanes"></div>
+<p class="ui" style="margin-top:.8rem"><button class="btn brass" id="raceBtn">▶ Race all</button></p>
+</div>
+
+<div class="card">
+<p class="cardlabel">CSS snippet</p>
+<pre class="snip mono" id="snippet">transition: all 1.0s cubic-bezier(0.25, 0.10, 0.25, 1.00);</pre>
+<p class="ui"><button class="btn brass" id="copyBtn">Copy CSS</button></p>
+</div>
+
+<div class="card">
+<p class="cardlabel">How it works</p>
+<ul class="explain ui">
+<li><b style="color:var(--txt)">P1 and P2</b> are the two control points of a cubic-bezier curve. Their x positions set <em>when</em> the motion accelerates; their y positions set <em>how far</em> it has travelled.</li>
+<li><b style="color:var(--txt)">Y may exceed 0–1.</b> A y above 1 makes the animation overshoot its target and settle back — that is what gives ease-out-back its springy feel.</li>
+<li><b style="color:var(--txt)">Bounce is not a cubic-bezier.</b> A true bounce needs several direction changes, which one bezier curve cannot express — use keyframes for that.</li>
+</ul>
+</div>
+
+<footer>Built by Shipwright Studio · <a href="/ideas/">Back to the Lab</a></footer>
+
+<script>
+var PRESETS=[
+ {name:'linear',v:[0,0,1,1]},
+ {name:'ease',v:[0.25,0.10,0.25,1]},
+ {name:'ease-in',v:[0.42,0,1,1]},
+ {name:'ease-out',v:[0,0,0.58,1]},
+ {name:'ease-in-out',v:[0.42,0,0.58,1]},
+ {name:'ease-out-back',v:[0.34,1.56,0.64,1]}
+];
+var cp=[0.25,0.10,0.25,1.00];
+function bezCoord(t,a,b){var u=1-t;return 3*u*u*t*a+3*u*t*t*b+t*t*t;}
+function bezDeriv(t,a,b){var u=1-t;return 3*u*u*a+6*u*t*(b-a)+3*t*t*(1-b);}
+function easeAt(x,v){
+  if(x<=0)return 0; if(x>=1)return 1;
+  var t=x;
+  for(var i=0;i<8;i++){var xt=bezCoord(t,v[0],v[2])-x; if(Math.abs(xt)<1e-6)break; var d=bezDeriv(t,v[0],v[2]); if(Math.abs(d)<1e-6)break; t-=xt/d;}
+  if(t<0||t>1){var lo=0,hi=1; for(var j=0;j<20;j++){var mid=(lo+hi)/2; if(bezCoord(mid,v[0],v[2])<x)lo=mid; else hi=mid;} t=(lo+hi)/2;}
+  return bezCoord(t,v[1],v[3]);
+}
+function X(v){return 30+v*280;}
+function Y(v){return 310-(v+0.5)*140;}
+function fmt(n){return n.toFixed(2);}
+function draw(){
+  var d='';
+  for(var i=0;i<=60;i++){var t=i/60; var x=bezCoord(t,cp[0],cp[2]), y=bezCoord(t,cp[1],cp[3]); d+=(i===0?'M':'L')+X(x).toFixed(1)+' '+Y(y).toFixed(1)+' ';}
+  document.getElementById('curve').setAttribute('d',d);
+  document.getElementById('p1').setAttribute('cx',X(cp[0])); document.getElementById('p1').setAttribute('cy',Y(cp[1]));
+  document.getElementById('p2').setAttribute('cx',X(cp[2])); document.getElementById('p2').setAttribute('cy',Y(cp[3]));
+  document.getElementById('arm1').setAttribute('x2',X(cp[0])); document.getElementById('arm1').setAttribute('y2',Y(cp[1]));
+  document.getElementById('arm2').setAttribute('x1',X(cp[2])); document.getElementById('arm2').setAttribute('y1',Y(cp[3]));
+  document.getElementById('arm2').setAttribute('x2',310); document.getElementById('arm2').setAttribute('y2',100);
+  document.getElementById('bezLabel').textContent='cubic-bezier('+fmt(cp[0])+', '+fmt(cp[1])+', '+fmt(cp[2])+', '+fmt(cp[3])+')';
+  var dur=parseFloat(document.getElementById('dur').value);
+  document.getElementById('snippet').textContent='transition: all '+dur.toFixed(1)+'s cubic-bezier('+fmt(cp[0])+', '+fmt(cp[1])+', '+fmt(cp[2])+', '+fmt(cp[3])+');';
+  setDot(0);
+}
+function setDot(u){
+  var e=easeAt(u,cp);
+  document.getElementById('dot').setAttribute('cx',X(u)); document.getElementById('dot').setAttribute('cy',Y(e));
+  document.getElementById('box').style.left=(Math.max(0,Math.min(100,e*100)))+'%';
+  document.getElementById('progLabel').textContent=Math.round(e*100)+'%';
+}
+var presetsEl=document.getElementById('presets');
+PRESETS.forEach(function(p,i){
+  var b=document.createElement('button'); b.className='btn'+(p.name==='ease'?' active':''); b.textContent=p.name;
+  b.addEventListener('click',function(){
+    cp=p.v.slice();
+    presetsEl.querySelectorAll('.btn').forEach(function(x){x.classList.remove('active');});
+    b.classList.add('active'); draw();
+  });
+  presetsEl.appendChild(b);
+});
+var lanesEl=document.getElementById('lanes');
+var laneDots=[];
+PRESETS.forEach(function(p){
+  var row=document.createElement('div'); row.className='lane ui';
+  var nm=document.createElement('span'); nm.className='lname'; nm.textContent=p.name;
+  var tr=document.createElement('span'); tr.className='ltrack';
+  var dt=document.createElement('span'); dt.className='dot'; dt.style.left='0%';
+  tr.appendChild(dt); row.appendChild(nm); row.appendChild(tr); lanesEl.appendChild(row);
+  laneDots.push(dt);
+});
+function animate(setter){
+  var dur=parseFloat(document.getElementById('dur').value)*1000;
+  var start=null;
+  function frame(ts){
+    if(!start)start=ts;
+    var u=Math.min(1,(ts-start)/dur);
+    setter(u);
+    document.getElementById('timeLabel').textContent=(u*parseFloat(document.getElementById('dur').value)).toFixed(2)+'s';
+    if(u<1)requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+}
+document.getElementById('playBtn').addEventListener('click',function(){ animate(setDot); });
+document.getElementById('raceBtn').addEventListener('click',function(){
+  animate(function(u){
+    PRESETS.forEach(function(p,i){ var e=easeAt(u,p.v); laneDots[i].style.left=(Math.max(0,Math.min(100,e*100)))+'%'; });
+    setDot(u);
+  });
+});
+document.getElementById('dur').addEventListener('input',function(){
+  document.getElementById('durLabel').textContent=parseFloat(this.value).toFixed(1)+'s'; draw();
+});
+document.getElementById('copyBtn').addEventListener('click',function(){
+  var text=document.getElementById('snippet').textContent; var btn=this;
+  var done=function(){ btn.textContent='Copied ✓'; setTimeout(function(){ btn.textContent='Copy CSS'; },1500); };
+  if(navigator.clipboard&&navigator.clipboard.writeText){ navigator.clipboard.writeText(text).then(done).catch(done); }
+  else { var ta=document.createElement('textarea'); ta.value=text; document.body.appendChild(ta); ta.select(); try{document.execCommand('copy');}catch(e){} document.body.removeChild(ta); done(); }
+});
+var chart=document.getElementById('chart');
+var dragPt=0;
+function ptFromEvent(ev){
+  var r=chart.getBoundingClientRect();
+  var vx=(ev.clientX-r.left)/r.width*340, vy=(ev.clientY-r.top)/r.height*340;
+  var x=Math.max(0,Math.min(1,(vx-30)/280));
+  var y=Math.max(-0.5,Math.min(1.5,(310-vy)/140-0.5));
+  return [Math.round(x*100)/100, Math.round(y*100)/100];
+}
+function attachHandle(el,idx){
+  el.addEventListener('pointerdown',function(ev){ dragPt=idx; el.setPointerCapture(ev.pointerId); var p=ptFromEvent(ev); cp[(idx-1)*2]=p[0]; cp[(idx-1)*2+1]=p[1]; draw(); });
+  el.addEventListener('pointermove',function(ev){ if(dragPt!==idx)return; var p=ptFromEvent(ev); cp[(idx-1)*2]=p[0]; cp[(idx-1)*2+1]=p[1]; draw(); });
+  el.addEventListener('pointerup',function(){ dragPt=0; });
+}
+attachHandle(document.getElementById('p1'),1);
+attachHandle(document.getElementById('p2'),2);
+draw();
+</script>
+</body>
+</html>

@@ -1,5 +1,5 @@
 {
-  "updated": "2026-10-30",
+  "updated": "2026-10-31",
   "ideas": [
     {
       "id": "idea-000a",
@@ -565,7 +565,9 @@
       "tagline": "See cubic-bezier curves move, copy the CSS.",
       "priority": 73,
       "effort": "S",
-      "status": "todo"
+      "status": "done",
+      "url": "/lab/easing-visualizer/",
+      "shipped": "2026-10-31"
     },
     {
       "id": "idea-048",
@@ -1331,7 +1333,9 @@
       "tagline": "Cliff and linear unlock schedules as timelines.",
       "priority": 73,
       "effort": "S",
-      "status": "todo"
+      "status": "done",
+      "url": "/lab/vesting-visualizer/",
+      "shipped": "2026-10-31"
     },
     {
       "id": "idea-119",

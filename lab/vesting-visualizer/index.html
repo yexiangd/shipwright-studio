@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Token Vesting Visualizer · Shipwright Studio</title>
+<meta name="description" content="Free online token vesting visualizer — enter a cliff and linear unlock schedule and see exactly when tokens unlock, month by month.">
+<link rel="canonical" href="https://shipwright-studio.pages.dev/lab/vesting-visualizer/">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"WebApplication","name":"Token Vesting Visualizer","url":"https://shipwright-studio.pages.dev/lab/vesting-visualizer/","description":"Token Vesting Visualizer is a free online tool that turns a token unlock schedule with a cliff and linear vesting into a timeline showing exactly how many tokens unlock each month.","applicationCategory":"FinanceApplication","operatingSystem":"Web","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"}}
+</script>
+<style>
+:root{--bg:#0a0c0f;--panel:#101318;--line:#1c2128;--txt:#e8e4da;--mut:#9aa3b2;--brass:#d2a24c;--green:#7fb069;--red:#e0655f}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--txt);font-family:Fraunces,Georgia,serif;line-height:1.65;padding:2rem 1.2rem 4rem;max-width:960px;margin:0 auto}
+a{color:var(--brass)}
+.nav{display:flex;gap:1.2rem;font-size:.85rem;margin-bottom:1.2rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.nav a{color:var(--mut);text-decoration:none}.nav a:hover{color:var(--brass)}
+.eyebrow{font-size:.75rem;letter-spacing:.22em;text-transform:uppercase;color:var(--mut);font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+h1{font-weight:600;font-size:clamp(2.1rem,5vw,3rem);margin:.5rem 0 .7rem}
+.define{color:var(--mut);max-width:46rem;margin-bottom:1.8rem;font-size:1rem}.define strong{color:var(--txt)}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:1.4rem;margin-bottom:1.4rem}
+.cardlabel{font-size:.72rem;letter-spacing:.18em;text-transform:uppercase;color:var(--mut);margin-bottom:.8rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.ui{font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.mono{font-family:"JetBrains Mono",ui-monospace,monospace}
+.btn{font-size:.9rem;border:1px solid var(--line);background:transparent;color:var(--txt);border-radius:999px;padding:.5rem 1.1rem;cursor:pointer;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.btn:hover{border-color:var(--brass);color:var(--brass)}.btn.brass{border-color:var(--brass);color:var(--brass)}
+.btnrow{display:flex;gap:.6rem;flex-wrap:wrap;align-items:center}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem}
+@media(max-width:640px){.grid{grid-template-columns:1fr}.statgrid{grid-template-columns:repeat(2,1fr)!important}}
+label.f{font-size:.85rem;color:var(--mut);display:block}
+label.f input{width:100%;margin-top:.3rem;background:#08090c;color:var(--txt);border:1px solid var(--line);border-radius:10px;padding:.7rem .9rem;font-size:.95rem;font-family:"JetBrains Mono",ui-monospace,monospace}
+label.f input:focus{outline:2px solid var(--brass);border-color:var(--brass)}
+svg.chart{width:100%;height:auto;display:block;background:#08090c;border:1px solid var(--line);border-radius:10px}
+input[type=range].month{width:100%;accent-color:var(--brass)}
+.statgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:.9rem;margin-top:1rem}
+.tile{background:#08090c;border:1px solid var(--line);border-radius:10px;padding:1rem}
+.tile .n{font-family:"JetBrains Mono",ui-monospace,monospace;font-size:1.15rem;color:var(--brass);word-break:break-all}
+.tile .l{font-size:.78rem;color:var(--mut);margin-top:.2rem}
+table{width:100%;border-collapse:collapse;font-size:.9rem}
+th,td{text-align:right;padding:.45rem .6rem;border-bottom:1px solid var(--line)}
+th:first-child,td:first-child{text-align:left}
+th{color:var(--mut);font-weight:500}
+tr.sel td{background:rgba(210,162,76,.12)}
+.tablewrap{max-height:320px;overflow:auto}
+.note{font-size:.85rem;color:var(--mut);margin-top:.6rem}
+pre.sum{background:#08090c;border:1px solid var(--line);border-radius:10px;padding:1rem;white-space:pre-wrap;font-size:.92rem}
+.explain{font-size:.92rem;color:var(--mut)}.explain li{margin:.4rem 0}
+footer{margin-top:2.5rem;color:var(--mut);font-size:.85rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+</style>
+</head>
+<body>
+<nav class="nav"><a href="/">Shipwright Studio</a><a href="/ideas/">Lab</a></nav>
+<p class="eyebrow">Lab — Web3 tool</p>
+<h1>Token Vesting Visualizer</h1>
+<p class="define"><strong>Token Vesting Visualizer is a free online tool that</strong> turns a token unlock schedule with a cliff and linear vesting into a timeline — so you can see exactly how many tokens unlock each month, and when the last token frees up.</p>
+
+<div class="card">
+<p class="cardlabel">Presets</p>
+<div class="btnrow" id="presets">
+<button class="btn" data-preset="team">Team</button>
+<button class="btn" data-preset="investor">Investor</button>
+<button class="btn" data-preset="advisor">Advisor</button>
+</div>
+</div>
+
+<div class="card">
+<p class="cardlabel">Schedule</p>
+<div class="grid ui">
+<label class="f">Total tokens<input id="total" type="number" min="1" value="1000000"></label>
+<label class="f">TGE unlock (%)<input id="tge" type="number" min="0" max="100" step="0.1" value="0"></label>
+<label class="f">Cliff (months)<input id="cliff" type="number" min="0" max="120" value="12"></label>
+<label class="f">Linear vesting (months)<input id="vesting" type="number" min="1" max="120" value="36"></label>
+<label class="f">Start date<input id="start" type="date" value="2026-01-01"></label>
+</div>
+<p class="note ui" id="clampNote"></p>
+</div>
+
+<div class="card">
+<p class="cardlabel">Cumulative unlock curve</p>
+<svg class="chart" id="chart" viewBox="0 0 660 340" role="img" aria-label="Cumulative token unlock curve over time">
+<line id="gridBase" x1="50" y1="300" x2="640" y2="300" stroke="#1c2128" stroke-width="1"/>
+<path id="curve" fill="none" stroke="#d2a24c" stroke-width="2.5" d=""/>
+<line id="cliffLine" x1="50" y1="20" x2="50" y2="300" stroke="#e0655f" stroke-width="1" stroke-dasharray="4 4"/>
+<text id="cliffLabel" x="50" y="14" fill="#e0655f" font-size="11" font-family="monospace">cliff</text>
+<circle id="marker" r="6" fill="#e8e4da" stroke="#0a0c0f" stroke-width="2"/>
+<text id="xLabel" x="50" y="325" fill="#9aa3b2" font-size="11" font-family="monospace">Month 0</text>
+<text x="600" y="325" fill="#9aa3b2" font-size="11" font-family="monospace" id="xEnd">Month 48</text>
+<text x="8" y="304" fill="#9aa3b2" font-size="11" font-family="monospace">0%</text>
+<text x="8" y="24" fill="#9aa3b2" font-size="11" font-family="monospace">100%</text>
+</svg>
+</div>
+
+<div class="card">
+<p class="cardlabel">Explore by month</p>
+<p class="ui" style="display:flex;gap:1rem;align-items:center;flex-wrap:wrap">
+<label>Month: <span class="mono" id="monthLabel">12</span></label>
+<input type="range" class="month" id="month" min="0" max="48" value="12">
+</p>
+<div class="statgrid ui">
+<div class="tile"><div class="n" id="stUnlocked">0</div><div class="l">Tokens unlocked</div></div>
+<div class="tile"><div class="n" id="stPct">0%</div><div class="l">Percent unlocked</div></div>
+<div class="tile"><div class="n" id="stLocked">1,000,000</div><div class="l">Still locked</div></div>
+<div class="tile"><div class="n" id="stDate">—</div><div class="l">Unlock date</div></div>
+</div>
+</div>
+
+<div class="card">
+<p class="cardlabel">Monthly unlock table</p>
+<div class="tablewrap">
+<table class="ui">
+<thead><tr><th>Month</th><th>Date</th><th>Unlocked this month</th><th>Cumulative</th><th>Cumulative %</th></tr></thead>
+<tbody id="tbody"></tbody>
+</table>
+</div>
+<p class="note ui">Final month is adjusted for rounding so the table sums to exactly the total supply.</p>
+</div>
+
+<div class="card">
+<p class="cardlabel">Summary</p>
+<pre class="sum mono" id="summary"></pre>
+<p class="ui" style="margin-top:.8rem"><button class="btn brass" id="copyBtn">Copy summary</button></p>
+</div>
+
+<div class="card">
+<p class="cardlabel">How it works</p>
+<ul class="explain ui">
+<li><b style="color:var(--txt)">TGE unlock</b> frees a slice on day one. <b style="color:var(--txt)">Cliff</b> means nothing further unlocks until that month passes. After the cliff, the rest unlocks in equal monthly slices over the vesting period.</li>
+<li><b style="color:var(--txt)">Why the curve is flat, then straight:</b> flat during the cliff, then a straight line while equal slices vest, then flat again at 100%.</li>
+<li><b style="color:var(--txt)">Rounding:</b> monthly slices are rounded for display; the final month absorbs any remainder so the total is exact.</li>
+</ul>
+</div>
+
+<footer>Built by Shipwright Studio · <a href="/ideas/">Back to the Lab</a></footer>
+
+<script>
+var PRESETS={
+ team:{total:1000000,tge:0,cliff:12,vesting:36},
+ investor:{total:1000000,tge:10,cliff:6,vesting:18},
+ advisor:{total:1000000,tge:0,cliff:3,vesting:12}
+};
+function read(){
+  var total=Math.max(1,parseFloat(document.getElementById('total').value)||1000000);
+  var tge=Math.max(0,Math.min(100,parseFloat(document.getElementById('tge').value)||0));
+  var cliff=Math.max(0,Math.min(120,Math.round(parseFloat(document.getElementById('cliff').value)||0)));
+  var vesting=Math.max(1,Math.min(120,Math.round(parseFloat(document.getElementById('vesting').value)||36)));
+  var note='';
+  if(parseFloat(document.getElementById('tge').value)>100||parseFloat(document.getElementById('tge').value)<0)note='TGE % was clamped to 0–100. ';
+  if(parseFloat(document.getElementById('vesting').value)<1)note+='Vesting was clamped to at least 1 month.';
+  document.getElementById('clampNote').textContent=note;
+  return {total:total,tge:tge/100,cliff:cliff,vesting:vesting};
+}
+function cumFrac(m,s){
+  if(m<=0)return s.tge;
+  if(m<=s.cliff)return s.tge;
+  if(m>=s.cliff+s.vesting)return 1;
+  return s.tge+(1-s.tge)*(m-s.cliff)/s.vesting;
+}
+function fmtInt(n){return Math.round(n).toLocaleString('en-US');}
+function addMonths(dateStr,months){
+  var d=new Date(dateStr+'T00:00:00');
+  if(isNaN(d.getTime()))return '—';
+  var y=d.getFullYear(), mo=d.getMonth()+months;
+  var nd=new Date(y+Math.floor(mo/12), mo%12, d.getDate());
+  return nd.toISOString().slice(0,10);
+}
+function render(){
+  var s=read();
+  var totalMonths=s.cliff+s.vesting;
+  var slider=document.getElementById('month');
+  slider.max=totalMonths;
+  var m=Math.min(totalMonths,parseInt(slider.value,10)||0);
+  slider.value=m;
+  document.getElementById('monthLabel').textContent=m;
+  document.getElementById('xEnd').textContent='Month '+totalMonths;
+  var W=590, H=280, X0=50, Y0=300;
+  var px=function(mm){return X0+mm/totalMonths*W;};
+  var py=function(f){return Y0-f*H;};
+  var d='';
+  for(var mm=0;mm<=totalMonths;mm++){ d+=(mm===0?'M':'L')+px(mm).toFixed(1)+' '+py(cumFrac(mm,s)).toFixed(1)+' '; }
+  document.getElementById('curve').setAttribute('d',d);
+  var cx=px(s.cliff);
+  document.getElementById('cliffLine').setAttribute('x1',cx); document.getElementById('cliffLine').setAttribute('x2',cx);
+  document.getElementById('cliffLabel').setAttribute('x',Math.min(cx,600));
+  var f=cumFrac(m,s);
+  document.getElementById('marker').setAttribute('cx',px(m)); document.getElementById('marker').setAttribute('cy',py(f));
+  document.getElementById('xLabel').textContent='Month 0';
+  document.getElementById('stUnlocked').textContent=fmtInt(s.total*f);
+  document.getElementById('stPct').textContent=(f*100).toFixed(1)+'%';
+  document.getElementById('stLocked').textContent=fmtInt(s.total*(1-f));
+  document.getElementById('stDate').textContent=addMonths(document.getElementById('start').value,m);
+  var tb=document.getElementById('tbody'); tb.innerHTML='';
+  var prev=0;
+  for(var i=0;i<=totalMonths;i++){
+    var cum=Math.round(s.total*cumFrac(i,s));
+    if(i===totalMonths)cum=s.total;
+    var inc=cum-prev; prev=cum;
+    var tr=document.createElement('tr'); if(i===m)tr.className='sel';
+    tr.innerHTML='<td>'+i+'</td><td>'+addMonths(document.getElementById('start').value,i)+'</td><td>'+fmtInt(inc)+'</td><td>'+fmtInt(cum)+'</td><td>'+(cum/s.total*100).toFixed(1)+'%</td>';
+    tb.appendChild(tr);
+  }
+  document.getElementById('summary').textContent=
+    'Token vesting schedule: '+fmtInt(s.total)+' tokens, '+(s.tge*100).toFixed(1)+'% unlocked at TGE, '+
+    s.cliff+'-month cliff, then linear vesting over '+s.vesting+' months (fully unlocked at month '+totalMonths+').\n'+
+    'At month '+m+' ('+addMonths(document.getElementById('start').value,m)+'): '+fmtInt(s.total*f)+' tokens unlocked ('+(f*100).toFixed(1)+'%), '+fmtInt(s.total*(1-f))+' still locked.';
+}
+document.querySelectorAll('#presets [data-preset]').forEach(function(b){
+  b.addEventListener('click',function(){
+    var p=PRESETS[b.getAttribute('data-preset')];
+    document.getElementById('total').value=p.total;
+    document.getElementById('tge').value=p.tge;
+    document.getElementById('cliff').value=p.cliff;
+    document.getElementById('vesting').value=p.vesting;
+    render();
+  });
+});
+['total','tge','cliff','vesting','start'].forEach(function(id){
+  document.getElementById(id).addEventListener('input',render);
+});
+document.getElementById('month').addEventListener('input',render);
+document.getElementById('copyBtn').addEventListener('click',function(){
+  var text=document.getElementById('summary').textContent; var btn=this;
+  var done=function(){ btn.textContent='Copied ✓'; setTimeout(function(){ btn.textContent='Copy summary'; },1500); };
+  if(navigator.clipboard&&navigator.clipboard.writeText){ navigator.clipboard.writeText(text).then(done).catch(done); }
+  else { var ta=document.createElement('textarea'); ta.value=text; document.body.appendChild(ta); ta.select(); try{document.execCommand('copy');}catch(e){} document.body.removeChild(ta); done(); }
+});
+render();
+</script>
+</body>
+</html>
