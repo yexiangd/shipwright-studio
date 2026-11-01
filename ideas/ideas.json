@@ -1,5 +1,5 @@
 {
-  "updated": "2026-10-31",
+  "updated": "2026-11-01",
   "ideas": [
     {
       "id": "idea-000a",
@@ -273,7 +273,9 @@
       "tagline": "Best of five against a suspiciously lucky bot.",
       "priority": 72,
       "effort": "S",
-      "status": "todo"
+      "status": "done",
+      "url": "/lab/rock-paper-scissors/",
+      "shipped": "2026-11-01"
     },
     {
       "id": "idea-022",
@@ -577,7 +579,9 @@
       "tagline": "Layer gradients, preview, export CSS.",
       "priority": 72,
       "effort": "S",
-      "status": "todo"
+      "status": "done",
+      "url": "/lab/gradient-studio/",
+      "shipped": "2026-11-01"
     },
     {
       "id": "idea-049",

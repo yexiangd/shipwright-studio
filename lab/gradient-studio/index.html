@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gradient Studio · Shipwright Studio</title>
+<meta name="description" content="Free online gradient studio — layer colours, set the angle, preview live, and copy the CSS.">
+<link rel="canonical" href="https://shipwright-studio.pages.dev/lab/gradient-studio/">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"WebApplication","name":"Gradient Studio","url":"https://shipwright-studio.pages.dev/lab/gradient-studio/","description":"Gradient Studio is a free online tool that lets you layer gradient colours, set the angle, preview the result live, and copy the CSS.","applicationCategory":"DeveloperApplication","operatingSystem":"Web","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"}}
+</script>
+<style>
+:root{--bg:#0a0c0f;--panel:#101318;--line:#1c2128;--txt:#e8e4da;--mut:#9aa3b2;--brass:#d2a24c}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--txt);font-family:Fraunces,Georgia,serif;line-height:1.65;padding:2rem 1.2rem 4rem;max-width:960px;margin:0 auto}
+a{color:var(--brass)}
+.nav{display:flex;gap:1.2rem;font-size:.85rem;margin-bottom:1.2rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.nav a{color:var(--mut);text-decoration:none}.nav a:hover{color:var(--brass)}
+.eyebrow{font-size:.75rem;letter-spacing:.22em;text-transform:uppercase;color:var(--mut);font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+h1{font-weight:600;font-size:clamp(2.1rem,5vw,3rem);margin:.5rem 0 .7rem}
+.define{color:var(--mut);max-width:46rem;margin-bottom:1.8rem}.define strong{color:var(--txt)}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:1.4rem;margin-bottom:1.4rem}
+.cardlabel{font-size:.72rem;letter-spacing:.18em;text-transform:uppercase;color:var(--mut);margin-bottom:.8rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.ui{font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.mono{font-family:"JetBrains Mono",ui-monospace,monospace}
+.btn{font-size:.9rem;border:1px solid var(--line);background:transparent;color:var(--txt);border-radius:999px;padding:.5rem 1.1rem;cursor:pointer;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.btn:hover{border-color:var(--brass);color:var(--brass)}.btn.active{border-color:var(--brass);color:var(--brass);background:rgba(210,162,76,.12)}
+.btn.brass{border-color:var(--brass);color:var(--brass)}
+.btn:disabled{opacity:.45;cursor:default}
+.btnrow{display:flex;gap:.6rem;flex-wrap:wrap;align-items:center}
+#preview{height:240px;border-radius:10px;border:1px solid var(--line);display:flex;align-items:flex-end;padding:1rem}
+#preview span{background:rgba(0,0,0,.45);padding:.3rem .7rem;border-radius:999px;font-size:.85rem}
+input[type=range]{width:220px;accent-color:var(--brass)}
+input[type=color]{width:44px;height:36px;border:1px solid var(--line);border-radius:8px;background:#08090c;padding:2px;cursor:pointer}
+.stoprow{display:flex;gap:.8rem;align-items:center;flex-wrap:wrap;padding:.6rem 0;border-bottom:1px solid var(--line)}
+.stoprow:last-child{border-bottom:0}
+pre.snip{background:#08090c;border:1px solid var(--line);border-radius:10px;padding:1rem;overflow-x:auto;font-size:.92rem;white-space:pre-wrap;word-break:break-all}
+.explain{font-size:.92rem;color:var(--mut)}.explain li{margin:.4rem 0}
+footer{margin-top:2.5rem;color:var(--mut);font-size:.85rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+@media(max-width:640px){input[type=range]{width:100%}#preview{height:190px}}
+</style>
+</head>
+<body>
+<nav class="nav"><a href="/">Shipwright Studio</a><a href="/ideas/">Lab</a></nav>
+<p class="eyebrow">Lab — Developer tool</p>
+<h1>Gradient Studio</h1>
+<p class="define"><strong>Gradient Studio is a free online tool that</strong> lets you layer gradient colours, set the angle, preview the result live, and copy the exact CSS — no design app needed.</p>
+
+<div class="card">
+<p class="cardlabel">Live preview</p>
+<div id="preview" role="img" aria-label="Live gradient preview"><span class="ui" id="previewName">Sunset</span></div>
+</div>
+
+<div class="card">
+<p class="cardlabel">Type &amp; angle</p>
+<div class="btnrow">
+<button class="btn active" id="typeLinear">Linear</button>
+<button class="btn" id="typeRadial">Radial</button>
+<button class="btn" id="randomBtn">🎲 Random gradient</button>
+</div>
+<p class="ui" style="margin-top:1rem;display:flex;gap:1rem;flex-wrap:wrap;align-items:center" id="angleRow">
+<label>Angle: <span class="mono" id="angleLabel">135°</span></label>
+<input type="range" id="angle" min="0" max="360" step="1" value="135">
+</p>
+<p class="cardlabel" style="margin-top:1.2rem">Presets</p>
+<div class="btnrow" id="presets"></div>
+</div>
+
+<div class="card">
+<p class="cardlabel">Colour stops — 2 to 5, rendered in position order</p>
+<div id="stops"></div>
+<div class="btnrow" style="margin-top:1rem">
+<button class="btn" id="addStop">+ Add stop</button>
+</div>
+</div>
+
+<div class="card">
+<p class="cardlabel">CSS</p>
+<pre class="snip mono" id="cssOut"></pre>
+<div class="btnrow" style="margin-top:1rem">
+<button class="btn brass" id="copyCss">Copy CSS</button>
+<button class="btn" id="copyValue">Copy gradient only</button>
+<span class="ui" id="copied" style="color:var(--brass);font-size:.9rem"></span>
+</div>
+</div>
+
+<div class="card">
+<p class="cardlabel">How to use it</p>
+<ul class="explain">
+<li>Adjust colours, positions, and angle — the preview and the CSS update together.</li>
+<li>Paste the copied declaration into any stylesheet, e.g. on a hero, button, or card.</li>
+<li>Everything runs in your browser; no colours or gradients are uploaded anywhere.</li>
+</ul>
+</div>
+
+<footer>Built by Shipwright Studio · <a href="/ideas/">Back to the Lab</a></footer>
+
+<script>
+function sortedStops(stops){return stops.slice().sort((a,b)=>a.pos-b.pos);}
+function gradientValue(type,angle,stops){const s=sortedStops(stops).map(x=>x.color+" "+x.pos+"%").join(", ");return type==="linear"?"linear-gradient("+angle+"deg, "+s+")":"radial-gradient(circle, "+s+")";}
+function gradientCSS(type,angle,stops){return "background: "+gradientValue(type,angle,stops)+";";}
+const PRESETS={
+  "Sunset":{type:"linear",angle:135,stops:[{color:"#ff7e5f",pos:0},{color:"#feb47b",pos:50},{color:"#ffd194",pos:100}]},
+  "Ocean":{type:"linear",angle:160,stops:[{color:"#0575e6",pos:0},{color:"#021b79",pos:100}]},
+  "Forest":{type:"linear",angle:135,stops:[{color:"#134e5e",pos:0},{color:"#71b280",pos:100}]},
+  "Neon":{type:"linear",angle:90,stops:[{color:"#ff00cc",pos:0},{color:"#333399",pos:100}]},
+  "Royal":{type:"radial",angle:135,stops:[{color:"#8e2de2",pos:0},{color:"#4a00e0",pos:100}]},
+  "Peach":{type:"linear",angle:135,stops:[{color:"#ff9a8b",pos:0},{color:"#ff6a88",pos:55},{color:"#ff99ac",pos:100}]}
+};
+let state=JSON.parse(JSON.stringify(PRESETS["Sunset"]));let presetName="Sunset";
+function clampPos(v){return Math.max(0,Math.min(100,Math.round(v)));}
+function render(){
+  document.getElementById("preview").style.background=gradientValue(state.type,state.angle,state.stops);
+  document.getElementById("previewName").textContent=presetName;
+  document.getElementById("cssOut").textContent=gradientCSS(state.type,state.angle,state.stops);
+  document.getElementById("typeLinear").className="btn"+(state.type==="linear"?" active":"");
+  document.getElementById("typeRadial").className="btn"+(state.type==="radial"?" active":"");
+  document.getElementById("angleLabel").textContent=state.angle+"°";
+  document.getElementById("angle").value=state.angle;
+  document.getElementById("angleRow").style.opacity=state.type==="linear"?"1":"0.4";
+  document.getElementById("addStop").disabled=state.stops.length>=5;
+  const wrap=document.getElementById("stops");
+  wrap.innerHTML="";
+  state.stops.forEach((s,i)=>{
+    const row=document.createElement("div");row.className="stoprow ui";
+    row.innerHTML='<input type="color" value="'+s.color+'" aria-label="Stop '+(i+1)+' colour">'+
+      '<span class="mono">'+s.color.toUpperCase()+'</span>'+
+      '<label>Position: <span class="mono">'+s.pos+'%</span></label>'+
+      '<input type="range" min="0" max="100" step="1" value="'+s.pos+'">'+
+      '<button class="btn" '+(state.stops.length<=2?"disabled":"")+'>Remove</button>';
+    const col=row.querySelector('input[type=color]');
+    const rng=row.querySelector('input[type=range]');
+    const rm=row.querySelector("button");
+    col.addEventListener("input",()=>{if(/^#[0-9a-fA-F]{6}$/.test(col.value)){s.color=col.value;presetName="Custom";}render();});
+    rng.addEventListener("input",()=>{s.pos=clampPos(Number(rng.value));presetName="Custom";render();});
+    rm.addEventListener("click",()=>{if(state.stops.length>2){state.stops.splice(i,1);presetName="Custom";render();}});
+    wrap.appendChild(row);
+  });
+}
+const presetsEl=document.getElementById("presets");
+Object.keys(PRESETS).forEach(name=>{
+  const b=document.createElement("button");b.className="btn";b.textContent=name;
+  b.addEventListener("click",()=>{state=JSON.parse(JSON.stringify(PRESETS[name]));presetName=name;render();});
+  presetsEl.appendChild(b);
+});
+document.getElementById("typeLinear").addEventListener("click",()=>{state.type="linear";render();});
+document.getElementById("typeRadial").addEventListener("click",()=>{state.type="radial";render();});
+document.getElementById("angle").addEventListener("input",e=>{state.angle=Number(e.target.value);presetName="Custom";render();});
+document.getElementById("addStop").addEventListener("click",()=>{if(state.stops.length<5){state.stops.push({color:"#ffffff",pos:50});presetName="Custom";render();}});
+document.getElementById("randomBtn").addEventListener("click",()=>{
+  const cols=["#ff7e5f","#feb47b","#0575e6","#021b79","#134e5e","#71b280","#ff00cc","#333399","#8e2de2","#ffd194","#ff9a8b","#00c9a7"];
+  const n=2+Math.floor(Math.random()*3);
+  const picked=cols.slice().sort(()=>Math.random()-0.5).slice(0,n);
+  state={type:Math.random()<0.5?"linear":"radial",angle:Math.floor(Math.random()*361),
+    stops:picked.map((c,i)=>({color:c,pos:n===1?0:Math.round(i*100/(n-1))}))};
+  presetName="Random";render();
+});
+function flash(msg){const el=document.getElementById("copied");el.textContent=msg;setTimeout(()=>{el.textContent="";},2000);}
+async function copyText(t,msg){try{await navigator.clipboard.writeText(t);}catch(e){const ta=document.createElement("textarea");ta.value=t;document.body.appendChild(ta);ta.select();document.execCommand("copy");ta.remove();}flash(msg);}
+document.getElementById("copyCss").addEventListener("click",()=>copyText(gradientCSS(state.type,state.angle,state.stops),"Copied!"));
+document.getElementById("copyValue").addEventListener("click",()=>copyText(gradientValue(state.type,state.angle,state.stops),"Copied!"));
+render();
+</script>
+</body>
+</html>

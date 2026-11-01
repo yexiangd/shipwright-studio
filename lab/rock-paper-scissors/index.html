@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Rock Paper Scissors · Shipwright Studio</title>
+<meta name="description" content="Free online rock paper scissors — play a best-of-five match against a bot that learns your favourite move.">
+<link rel="canonical" href="https://shipwright-studio.pages.dev/lab/rock-paper-scissors/">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"WebApplication","name":"Rock Paper Scissors","url":"https://shipwright-studio.pages.dev/lab/rock-paper-scissors/","description":"Rock Paper Scissors is a free online tool that lets you play a best-of-five match against a bot that counters your most-played move.","applicationCategory":"GameApplication","operatingSystem":"Web","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"}}
+</script>
+<style>
+:root{--bg:#0a0c0f;--panel:#101318;--line:#1c2128;--txt:#e8e4da;--mut:#9aa3b2;--brass:#d2a24c;--green:#7fb069;--red:#e0655f}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--txt);font-family:Fraunces,Georgia,serif;line-height:1.65;padding:2rem 1.2rem 4rem;max-width:960px;margin:0 auto}
+a{color:var(--brass)}
+.nav{display:flex;gap:1.2rem;font-size:.85rem;margin-bottom:1.2rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.nav a{color:var(--mut);text-decoration:none}.nav a:hover{color:var(--brass)}
+.eyebrow{font-size:.75rem;letter-spacing:.22em;text-transform:uppercase;color:var(--mut);font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+h1{font-weight:600;font-size:clamp(2.1rem,5vw,3rem);margin:.5rem 0 .7rem}
+.define{color:var(--mut);max-width:46rem;margin-bottom:1.8rem}.define strong{color:var(--txt)}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:1.4rem;margin-bottom:1.4rem}
+.cardlabel{font-size:.72rem;letter-spacing:.18em;text-transform:uppercase;color:var(--mut);margin-bottom:.8rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.ui{font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.mono{font-family:"JetBrains Mono",ui-monospace,monospace}
+.btn{font-size:1rem;border:1px solid var(--line);background:transparent;color:var(--txt);border-radius:999px;padding:.6rem 1.2rem;cursor:pointer;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.btn:hover{border-color:var(--brass);color:var(--brass)}
+.btn.brass{border-color:var(--brass);color:var(--brass)}
+.btn:disabled{opacity:.45;cursor:default}
+.btnrow{display:flex;gap:.6rem;flex-wrap:wrap;align-items:center}
+.score{display:flex;gap:1rem;text-align:center}
+.score div{flex:1;background:#08090c;border:1px solid var(--line);border-radius:10px;padding:.8rem .4rem}
+.score .n{font-size:2rem;line-height:1.1}.score .l{font-size:.75rem;color:var(--mut);letter-spacing:.12em;text-transform:uppercase}
+.dots{display:flex;gap:.4rem;margin-top:.8rem}.dots span{width:14px;height:14px;border-radius:50%;border:1px solid var(--line);background:#08090c}
+.dots span.you{background:var(--brass);border-color:var(--brass)}.dots span.bot{background:var(--red);border-color:var(--red)}
+.pick{font-size:1.3rem;padding:1rem 1.4rem}
+.result{font-size:1.15rem}.result .win{color:var(--green)}.result .lose{color:var(--red)}
+.note{color:var(--mut);font-size:.92rem;margin-top:.4rem}
+.hist{list-style:none}.hist li{padding:.45rem 0;border-bottom:1px solid var(--line);font-size:.95rem}.hist li:last-child{border-bottom:0}
+.explain{font-size:.92rem;color:var(--mut)}.explain li{margin:.4rem 0}
+footer{margin-top:2.5rem;color:var(--mut);font-size:.85rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+@media(max-width:640px){.pick{width:100%}.score .n{font-size:1.6rem}}
+</style>
+</head>
+<body>
+<nav class="nav"><a href="/">Shipwright Studio</a><a href="/ideas/">Lab</a></nav>
+<p class="eyebrow">Lab — Game</p>
+<h1>Rock Paper Scissors</h1>
+<p class="define"><strong>Rock Paper Scissors is a free online tool that</strong> lets you play a best-of-five match against a bot that counters your most-played move — first to 3 round wins takes the match, all in your browser.</p>
+
+<div class="card">
+<p class="cardlabel">Score — first to 3 wins</p>
+<div class="score">
+<div><div class="n" id="youScore">0</div><div class="l">You</div><div class="dots" id="youDots"><span></span><span></span><span></span></div></div>
+<div><div class="n" id="tieScore">0</div><div class="l">Ties</div><div style="height:14px;margin-top:.8rem;color:var(--mut);font-size:.8rem">ties don't count</div></div>
+<div><div class="n" id="botScore">0</div><div class="l">Bot</div><div class="dots" id="botDots"><span></span><span></span><span></span></div></div>
+</div>
+</div>
+
+<div class="card">
+<p class="cardlabel">Pick a move — or press R, P, S</p>
+<div class="btnrow">
+<button class="btn pick" data-move="rock">✊ Rock</button>
+<button class="btn pick" data-move="paper">✋ Paper</button>
+<button class="btn pick" data-move="scissors">✌️ Scissors</button>
+</div>
+<p class="result" id="result" style="margin-top:1rem">Pick a move to start the match.</p>
+<p class="note" id="botNote">The bot starts out guessing at random.</p>
+</div>
+
+<div class="card">
+<p class="cardlabel">Round history</p>
+<ul class="hist" id="history"><li>No rounds yet — pick a move.</li></ul>
+</div>
+
+<div class="card">
+<p class="cardlabel">Lifetime stats</p>
+<p class="ui" id="stats">Rounds: 0 · Win rate: — · Streak: 0 · Best streak: 0</p>
+<div class="btnrow" style="margin-top:1rem">
+<button class="btn brass" id="newMatch">New match</button>
+<button class="btn" id="resetStats">Reset stats</button>
+</div>
+</div>
+
+<div class="card">
+<p class="cardlabel">How the bot works</p>
+<ul class="explain">
+<li>The bot is openly "suspiciously lucky": 60% of the time it plays the move that beats your most-played move so far; the other 40% it picks at random.</li>
+<li>Ties in most-played count are broken in the order rock, then paper, then scissors.</li>
+<li>Nothing leaves your browser — stats live in localStorage only.</li>
+</ul>
+</div>
+
+<footer>Built by Shipwright Studio · <a href="/ideas/">Back to the Lab</a></footer>
+
+<script>
+const MOVES=["rock","paper","scissors"];
+function beats(a){return a==="rock"?"scissors":a==="paper"?"rock":"paper";}
+function counterMove(m){return m==="rock"?"paper":m==="paper"?"scissors":"rock";}
+function winner(player,bot){if(player===bot)return 0;return beats(player)===bot?1:-1;}
+function mostPlayed(history){const c={rock:0,paper:0,scissors:0};history.forEach(h=>c[h.player]++);let best="rock";for(const m of MOVES){if(c[m]>c[best])best=m;}return best;}
+function botPick(history,rand){if(!history.length||rand()>=0.6)return MOVES[Math.floor(rand()*3)];return counterMove(mostPlayed(history));}
+const LABEL={rock:"✊ Rock",paper:"✋ Paper",scissors:"✌️ Scissors"};
+let match={you:0,bot:0,ties:0,history:[],over:false};
+let stats={rounds:0,wins:0,streak:0,best:0};
+try{const s=JSON.parse(localStorage.getItem("rps-stats")||"null");if(s)stats=s;}catch(e){}
+function save(){try{localStorage.setItem("rps-stats",JSON.stringify(stats));}catch(e){}}
+function render(){
+  document.getElementById("youScore").textContent=match.you;
+  document.getElementById("botScore").textContent=match.bot;
+  document.getElementById("tieScore").textContent=match.ties;
+  document.querySelectorAll("#youDots span").forEach((d,i)=>d.className=i<match.you?"you":"");
+  document.querySelectorAll("#botDots span").forEach((d,i)=>d.className=i<match.bot?"bot":"");
+  document.querySelectorAll(".pick").forEach(b=>b.disabled=match.over);
+  const rate=stats.rounds?Math.round(100*stats.wins/stats.rounds)+"%":"—";
+  document.getElementById("stats").textContent="Rounds: "+stats.rounds+" · Win rate: "+rate+" · Streak: "+stats.streak+" · Best streak: "+stats.best;
+  const h=document.getElementById("history");
+  if(!match.history.length){h.innerHTML="<li>No rounds yet — pick a move.</li>";return;}
+  h.innerHTML=match.history.slice().reverse().map(r=>"<li>Round "+r.n+": you "+LABEL[r.player]+" vs bot "+LABEL[r.bot]+" — "+r.text+"</li>").join("");
+}
+function play(player){
+  if(match.over)return;
+  const bot=botPick(match.history,Math.random);
+  const w=winner(player,bot);
+  const n=match.history.length+1;
+  let text,note;
+  if(w===1){match.you++;text="You win the round";stats.wins++;stats.streak++;stats.best=Math.max(stats.best,stats.streak);}
+  else if(w===-1){match.bot++;text="Bot wins the round";stats.streak=0;}
+  else{match.ties++;text="Tie — replay the round";stats.streak=0;}
+  stats.rounds++;save();
+  match.history.push({n:n,player:player,bot:bot,text:text});
+  if(match.you===3||match.bot===3){
+    match.over=true;
+    const won=match.you===3;
+    document.getElementById("result").innerHTML=(won?'<span class="win">You win the match!</span>':'<span class="lose">Bot wins the match.</span>')+" Final score "+match.you+"–"+match.bot+".";
+  } else {
+    document.getElementById("result").textContent="Round "+n+": you "+LABEL[player]+" vs bot "+LABEL[bot]+" — "+text+".";
+  }
+  note=match.history.length?("Bot note: your most-played move so far is "+mostPlayed(match.history)+", so the bot leans toward "+counterMove(mostPlayed(match.history))+"."):"The bot starts out guessing at random.";
+  document.getElementById("botNote").textContent=note;
+  render();
+}
+document.querySelectorAll(".pick").forEach(b=>b.addEventListener("click",()=>play(b.dataset.move)));
+document.addEventListener("keydown",e=>{const k=e.key.toLowerCase();if(k==="r")play("rock");else if(k==="p")play("paper");else if(k==="s")play("scissors");});
+document.getElementById("newMatch").addEventListener("click",()=>{match={you:0,bot:0,ties:0,history:[],over:false};document.getElementById("result").textContent="New match — pick a move.";document.getElementById("botNote").textContent="The bot starts out guessing at random.";render();});
+document.getElementById("resetStats").addEventListener("click",()=>{stats={rounds:0,wins:0,streak:0,best:0};save();render();});
+render();
+</script>
+</body>
+</html>
