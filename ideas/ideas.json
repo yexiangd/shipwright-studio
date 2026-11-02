@@ -1,5 +1,5 @@
 {
-  "updated": "2026-11-01",
+  "updated": "2026-11-02",
   "ideas": [
     {
       "id": "idea-000a",
@@ -993,7 +993,9 @@
       "tagline": "Rain, static, and brown noise for deep work.",
       "priority": 72,
       "effort": "S",
-      "status": "todo"
+      "status": "done",
+      "url": "/lab/white-noise/",
+      "shipped": "2026-11-02"
     },
     {
       "id": "idea-088",
@@ -1349,7 +1351,9 @@
       "tagline": "Concentrated liquidity ranges and fee simulator.",
       "priority": 72,
       "effort": "L",
-      "status": "todo"
+      "status": "done",
+      "url": "/lab/lp-simulator/",
+      "shipped": "2026-11-02"
     },
     {
       "id": "idea-120",

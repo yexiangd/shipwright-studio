@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>White Noise · Shipwright Studio</title>
+<meta name="description" content="Free online white noise mixer — blend white, pink, brown, rain and ocean sounds, generated live in your browser, with a sleep timer.">
+<link rel="canonical" href="https://shipwright-studio.pages.dev/lab/white-noise/">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"WebApplication","name":"White Noise","url":"https://shipwright-studio.pages.dev/lab/white-noise/","description":"White Noise is a free online tool that mixes ambient sounds — white, pink and brown noise, rain and ocean — generated live in your browser, with per-sound volumes and a sleep timer.","applicationCategory":"MultimediaApplication","operatingSystem":"Web","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"}}
+</script>
+<style>
+:root{--bg:#0a0c0f;--panel:#101318;--line:#1c2128;--txt:#e8e4da;--mut:#9aa3b2;--brass:#d2a24c}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--txt);font-family:Fraunces,Georgia,serif;line-height:1.65;padding:2rem 1.2rem 4rem;max-width:960px;margin:0 auto}
+a{color:var(--brass)}
+.nav{display:flex;gap:1.2rem;font-size:.85rem;margin-bottom:1.2rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.nav a{color:var(--mut);text-decoration:none}.nav a:hover{color:var(--brass)}
+.eyebrow{font-size:.75rem;letter-spacing:.22em;text-transform:uppercase;color:var(--mut);font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+h1{font-weight:600;font-size:clamp(2.1rem,5vw,3rem);margin:.5rem 0 .7rem}
+.define{color:var(--mut);max-width:46rem;margin-bottom:1.8rem}.define strong{color:var(--txt)}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:1.4rem;margin-bottom:1.4rem}
+.cardlabel{font-size:.72rem;letter-spacing:.18em;text-transform:uppercase;color:var(--mut);margin-bottom:.8rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.ui{font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.btn{font-size:.9rem;border:1px solid var(--line);background:transparent;color:var(--txt);border-radius:999px;padding:.5rem 1.1rem;cursor:pointer;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.btn:hover{border-color:var(--brass);color:var(--brass)}.btn.active{border-color:var(--brass);color:var(--brass);background:rgba(210,162,76,.12)}
+.btn.brass{border-color:var(--brass);color:var(--brass);font-size:1rem;padding:.7rem 1.6rem}
+.btn:disabled{opacity:.45;cursor:default}
+.btnrow{display:flex;gap:.6rem;flex-wrap:wrap;align-items:center}
+input[type=range]{width:100%;accent-color:var(--brass)}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem}
+.sound{border:1px solid var(--line);border-radius:12px;padding:1.1rem;background:#0d1014}
+.sound.on{border-color:var(--brass)}
+.sound h2{font-size:1.15rem;margin-bottom:.2rem}
+.sound p{font-size:.85rem;color:var(--mut);margin-bottom:.9rem;min-height:2.6em}
+.sound .volrow{display:flex;gap:.7rem;align-items:center;margin-top:.8rem;font-size:.8rem;color:var(--mut)}
+.sound .volrow span{min-width:2.4em;text-align:right}
+#masterRow{display:flex;gap:1.2rem;align-items:center;flex-wrap:wrap}
+#countdown{font-size:1.1rem;color:var(--brass)}
+#timerNote{font-size:.85rem;color:var(--mut);min-height:1.4em}
+#meter{width:100%;height:90px;border:1px solid var(--line);border-radius:10px;background:#08090c}
+.explain{font-size:.92rem;color:var(--mut)}.explain li{margin:.4rem 0}
+footer{margin-top:2.5rem;color:var(--mut);font-size:.85rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+@media(max-width:640px){.grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<nav class="nav"><a href="/">Shipwright Studio</a><a href="/ideas/">Lab</a></nav>
+<p class="eyebrow">Lab — App</p>
+<h1>White Noise</h1>
+<p class="define"><strong>White Noise is a free online tool that</strong> mixes ambient sounds for focus and sleep — white, pink and brown noise, rain and ocean — generated live in your browser, with per-sound volumes and a sleep timer. No audio files, no account, nothing leaves the page.</p>
+
+<div class="card" id="masterCard">
+<p class="cardlabel">Master control</p>
+<div id="masterRow">
+<button class="btn brass" id="playBtn" disabled>▶ Play</button>
+<div style="flex:1;min-width:180px"><label class="ui" style="font-size:.85rem;color:var(--mut)" for="masterVol">Master volume</label>
+<input type="range" id="masterVol" min="0" max="100" value="70"></div>
+<div class="ui"><span id="countdown"></span></div>
+</div>
+<div class="btnrow ui" style="margin-top:1rem">
+<span style="font-size:.85rem;color:var(--mut)">Sleep timer:</span>
+<button class="btn timerBtn" data-min="0">Off</button>
+<button class="btn timerBtn" data-min="15">15 min</button>
+<button class="btn timerBtn" data-min="30">30 min</button>
+<button class="btn timerBtn" data-min="60">60 min</button>
+</div>
+<p class="ui" id="timerNote">Pick a sound below, then press Play. Press Space to pause or resume.</p>
+</div>
+
+<div class="grid" id="soundGrid"></div>
+
+<div class="card">
+<p class="cardlabel">Level meter</p>
+<canvas id="meter" width="880" height="90" aria-label="Live sound level meter"></canvas>
+</div>
+
+<div class="card">
+<p class="cardlabel">Presets</p>
+<div class="btnrow">
+<button class="btn" id="presetFocus">Focus — pink + brown</button>
+<button class="btn" id="presetSleep">Sleep — brown + rain</button>
+<button class="btn" id="presetStorm">Storm — rain + ocean</button>
+</div>
+</div>
+
+<div class="card">
+<p class="cardlabel">How it works</p>
+<ul class="explain">
+<li><strong style="color:var(--txt)">White noise</strong> — equal energy at every frequency; bright and hissy, the best masker for sharp sounds like voices and keyboards.</li>
+<li><strong style="color:var(--txt)">Pink noise</strong> — softer than white: energy falls as frequency rises, so it sounds like steady rainfall and feels less harsh over long sessions.</li>
+<li><strong style="color:var(--txt)">Brown noise</strong> — deeper still, most energy in the bass; the rumble people reach for to sleep or to drown out low traffic hum.</li>
+<li><strong style="color:var(--txt)">Rain &amp; ocean</strong> — filtered noise shaped to patter and swell. Every sound here is synthesised live with the Web Audio API; nothing is streamed or downloaded.</li>
+<li>Note: browsers may pause audio when this tab is backgrounded on mobile. Keep the tab in the foreground for uninterrupted playback.</li>
+</ul>
+</div>
+
+<footer>Built by <a href="/">Shipwright Studio</a> · <a href="/ideas/">More Lab experiments</a></footer>
+
+<script>
+"use strict";
+const SOUNDS=[
+ {id:"white",name:"White",desc:"Bright, even hiss. The classic masker.",kind:"white"},
+ {id:"pink",name:"Pink",desc:"Softer, rainfall-like. Easy for long sessions.",kind:"pink"},
+ {id:"brown",name:"Brown",desc:"Deep bass rumble. The sleep favourite.",kind:"brown"},
+ {id:"rain",name:"Rain",desc:"Pattering rain on a window.",kind:"rain"},
+ {id:"ocean",name:"Ocean",desc:"Slow waves rolling in and out.",kind:"ocean"}
+];
+const state={on:{},vol:{white:60,pink:60,brown:60,rain:60,ocean:60},playing:false,timerMin:0,remain:0};
+let ctx=null,master=null,analyser=null,nodes={},rainTimer=null;
+
+function makeNoiseBuffer(kind){
+  const len=ctx.sampleRate*2,buf=ctx.createBuffer(1,len,ctx.sampleRate),d=buf.getChannelData(0);
+  if(kind==="white"){for(let i=0;i<len;i++)d[i]=Math.random()*2-1;}
+  else if(kind==="pink"){let b0=0,b1=0,b2=0,b3=0,b4=0,b5=0,b6=0;
+    for(let i=0;i<len;i++){const w=Math.random()*2-1;
+      b0=0.99886*b0+w*0.0555179;b1=0.99332*b1+w*0.0750759;b2=0.96900*b2+w*0.1538520;
+      b3=0.86650*b3+w*0.3104856;b4=0.55000*b4+w*0.5329522;b5=-0.7616*b5-w*0.0168980;
+      d[i]=(b0+b1+b2+b3+b4+b5+b6+w*0.5362)*0.11;b6=w*0.115926;}}
+  else{let last=0;for(let i=0;i<len;i++){const w=Math.random()*2-1;last=(last+0.02*w)/1.02;d[i]=last*3.5;}}
+  return buf;
+}
+function ensureCtx(){
+  if(ctx)return;
+  ctx=new (window.AudioContext||window.webkitAudioContext)();
+  master=ctx.createGain();master.gain.value=document.getElementById("masterVol").value/100;
+  analyser=ctx.createAnalyser();analyser.fftSize=64;
+  master.connect(analyser);analyser.connect(ctx.destination);
+}
+function startSound(s){
+  ensureCtx();
+  const src=ctx.createBufferSource();src.buffer=makeNoiseBuffer(s.kind);src.loop=true;
+  const g=ctx.createGain();g.gain.value=state.vol[s.id]/100;
+  let head=src;
+  if(s.kind==="rain"){
+    const bp=ctx.createBiquadFilter();bp.type="bandpass";bp.frequency.value=1400;bp.Q.value=0.6;
+    src.connect(bp);head=bp;
+    rainTimer=setInterval(()=>{if(nodes.rain)g.gain.setTargetAtTime(state.vol.rain/100*(0.55+Math.random()*0.45),ctx.currentTime,0.25);},400);
+  } else if(s.kind==="ocean"){
+    const lp=ctx.createBiquadFilter();lp.type="lowpass";lp.frequency.value=420;
+    const lfo=ctx.createOscillator();lfo.frequency.value=0.09;
+    const lg=ctx.createGain();lg.gain.value=0.35;lfo.connect(lg);lg.connect(g.gain);lfo.start();
+    src.connect(lp);head=lp;nodes[s.id+"_lfo"]=lfo;
+  }
+  head.connect(g);g.connect(master);src.start();
+  nodes[s.id]={src:src,gain:g};
+}
+function stopSound(id){
+  const n=nodes[id];if(!n)return;
+  try{n.src.stop();}catch(e){}
+  n.src.disconnect();n.gain.disconnect();
+  if(id==="ocean"&&nodes[id+"_lfo"]){try{nodes[id+"_lfo"].stop();}catch(e){}delete nodes[id+"_lfo"];}
+  if(id==="rain"&&rainTimer){clearInterval(rainTimer);rainTimer=null;}
+  delete nodes[id];
+}
+function refreshPlayBtn(){
+  const anyOn=SOUNDS.some(s=>state.on[s.id]);
+  const btn=document.getElementById("playBtn");
+  btn.disabled=!anyOn;
+  btn.textContent=!anyOn?"▶ Play":(state.playing?"⏸ Pause":"▶ Play");
+  document.getElementById("timerNote").textContent=
+    !anyOn?"Pick a sound below, then press Play.":(state.playing?"Playing — press Space to pause.":"Paused — press Play or Space to resume.");
+}
+function renderGrid(){
+  const grid=document.getElementById("soundGrid");grid.innerHTML="";
+  SOUNDS.forEach(s=>{
+    const card=document.createElement("div");card.className="sound"+(state.on[s.id]?" on":"");
+    const t=document.createElement("button");t.className="btn"+(state.on[s.id]?" active":"");t.textContent=state.on[s.id]?"On":"Off";
+    t.addEventListener("click",()=>{
+      state.on[s.id]=!state.on[s.id];
+      if(state.on[s.id]&&state.playing)startSound(s);
+      if(!state.on[s.id])stopSound(s.id);
+      renderGrid();refreshPlayBtn();
+    });
+    const h=document.createElement("h2");h.textContent=s.name;
+    const p=document.createElement("p");p.textContent=s.desc;
+    const vr=document.createElement("div");vr.className="volrow ui";
+    const r=document.createElement("input");r.type="range";r.min=0;r.max=100;r.value=state.vol[s.id];
+    r.setAttribute("aria-label",s.name+" volume");
+    const v=document.createElement("span");v.textContent=state.vol[s.id]+"%";
+    r.addEventListener("input",()=>{state.vol[s.id]=Number(r.value);v.textContent=r.value+"%";
+      if(nodes[s.id])nodes[s.id].gain.gain.setTargetAtTime(state.vol[s.id]/100,ctx.currentTime,0.05);});
+    vr.appendChild(r);vr.appendChild(v);
+    card.appendChild(h);card.appendChild(p);card.appendChild(t);card.appendChild(vr);
+    grid.appendChild(card);
+  });
+}
+function setPreset(ids){
+  SOUNDS.forEach(s=>{
+    const want=ids.includes(s.id);
+    if(want&&!state.on[s.id]){state.on[s.id]=true;if(state.playing)startSound(s);}
+    if(!want&&state.on[s.id]){state.on[s.id]=false;stopSound(s.id);}
+  });
+  renderGrid();refreshPlayBtn();
+}
+document.getElementById("presetFocus").addEventListener("click",()=>setPreset(["pink","brown"]));
+document.getElementById("presetSleep").addEventListener("click",()=>setPreset(["brown","rain"]));
+document.getElementById("presetStorm").addEventListener("click",()=>setPreset(["rain","ocean"]));
+document.getElementById("playBtn").addEventListener("click",()=>{
+  ensureCtx();
+  if(!state.playing){
+    ctx.resume();
+    SOUNDS.forEach(s=>{if(state.on[s.id]&&!nodes[s.id])startSound(s);});
+    master.gain.setTargetAtTime(document.getElementById("masterVol").value/100,ctx.currentTime,0.1);
+    state.playing=true;
+  }else{
+    ctx.suspend();state.playing=false;
+  }
+  refreshPlayBtn();
+});
+document.getElementById("masterVol").addEventListener("input",e=>{
+  if(master)master.gain.setTargetAtTime(e.target.value/100,ctx.currentTime,0.05);
+});
+document.addEventListener("keydown",e=>{
+  if(e.code==="Space"&&!(e.target instanceof HTMLInputElement)&&!(e.target instanceof HTMLButtonElement)){
+    e.preventDefault();document.getElementById("playBtn").click();
+  }
+});
+let timerInt=null;
+function fmt(s){return String(Math.floor(s/60)).padStart(2,"0")+":"+String(s%60).padStart(2,"0");}
+document.querySelectorAll(".timerBtn").forEach(b=>b.addEventListener("click",()=>{
+  document.querySelectorAll(".timerBtn").forEach(x=>x.classList.remove("active"));b.classList.add("active");
+  state.timerMin=Number(b.dataset.min);
+  if(timerInt){clearInterval(timerInt);timerInt=null;}
+  if(state.timerMin===0){state.remain=0;document.getElementById("countdown").textContent="";}
+  else{
+    state.remain=state.timerMin*60;
+    document.getElementById("countdown").textContent="⏱ "+fmt(state.remain);
+    timerInt=setInterval(()=>{
+      state.remain--;
+      if(state.remain<=0){
+        clearInterval(timerInt);timerInt=null;
+        document.getElementById("countdown").textContent="";
+        if(master)master.gain.linearRampToValueAtTime(0.0001,ctx.currentTime+10);
+        setTimeout(()=>{SOUNDS.forEach(s=>{state.on[s.id]=false;stopSound(s.id);});state.playing=false;renderGrid();refreshPlayBtn();
+          document.getElementById("timerNote").textContent="Timer finished — all sounds stopped.";},10000);
+        return;
+      }
+      document.getElementById("countdown").textContent="⏱ "+fmt(state.remain);
+    },1000);
+  }
+}));
+const canvas=document.getElementById("meter"),mctx=canvas.getContext("2d");
+function drawMeter(){
+  requestAnimationFrame(drawMeter);
+  mctx.clearRect(0,0,canvas.width,canvas.height);
+  if(!analyser||!state.playing){
+    mctx.fillStyle="#1c2128";for(let i=0;i<24;i++)mctx.fillRect(8+i*36,70,20,6);return;
+  }
+  const data=new Uint8Array(analyser.frequencyBinCount);analyser.getByteFrequencyData(data);
+  for(let i=0;i<24;i++){
+    const v=data[i%data.length]/255,h=6+v*70;
+    mctx.fillStyle=i%4===0?"#d2a24c":"#3a4350";
+    mctx.fillRect(8+i*36,76-h,20,h);
+  }
+}
+drawMeter();
+renderGrid();refreshPlayBtn();
+</script>
+</body>
+</html>

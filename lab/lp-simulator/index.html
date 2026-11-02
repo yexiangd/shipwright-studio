@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Uniswap v3 LP Simulator · Shipwright Studio</title>
+<meta name="description" content="Free online Uniswap v3 liquidity simulator — pick a price range and fee tier, run a seeded price path, and see fees, impermanent loss and returns vs holding.">
+<link rel="canonical" href="https://shipwright-studio.pages.dev/lab/lp-simulator/">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"WebApplication","name":"Uniswap v3 LP Simulator","url":"https://shipwright-studio.pages.dev/lab/lp-simulator/","description":"Uniswap v3 LP Simulator is a free online tool that simulates a concentrated-liquidity position: pick a price range and fee tier, run a seeded price path, and compare fees, impermanent loss and value against simply holding the tokens.","applicationCategory":"FinanceApplication","operatingSystem":"Web","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"}}
+</script>
+<style>
+:root{--bg:#0a0c0f;--panel:#101318;--line:#1c2128;--txt:#e8e4da;--mut:#9aa3b2;--brass:#d2a24c;--teal:#5ec8b4}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--txt);font-family:Fraunces,Georgia,serif;line-height:1.65;padding:2rem 1.2rem 4rem;max-width:960px;margin:0 auto}
+a{color:var(--brass)}
+.nav{display:flex;gap:1.2rem;font-size:.85rem;margin-bottom:1.2rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.nav a{color:var(--mut);text-decoration:none}.nav a:hover{color:var(--brass)}
+.eyebrow{font-size:.75rem;letter-spacing:.22em;text-transform:uppercase;color:var(--mut);font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+h1{font-weight:600;font-size:clamp(2rem,5vw,2.8rem);margin:.5rem 0 .7rem}
+.define{color:var(--mut);max-width:46rem;margin-bottom:1.8rem}.define strong{color:var(--txt)}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:1.4rem;margin-bottom:1.4rem}
+.cardlabel{font-size:.72rem;letter-spacing:.18em;text-transform:uppercase;color:var(--mut);margin-bottom:.8rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.ui{font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.btn{font-size:.9rem;border:1px solid var(--line);background:transparent;color:var(--txt);border-radius:999px;padding:.5rem 1.1rem;cursor:pointer;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.btn:hover{border-color:var(--brass);color:var(--brass)}.btn.active{border-color:var(--brass);color:var(--brass);background:rgba(210,162,76,.12)}
+.btn.brass{border-color:var(--brass);color:var(--brass);font-size:1rem;padding:.7rem 1.6rem}
+.btnrow{display:flex;gap:.6rem;flex-wrap:wrap;align-items:center}
+.formgrid{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+.field label{display:block;font-size:.85rem;color:var(--mut);margin-bottom:.25rem}
+.field input{width:100%;background:#08090c;border:1px solid var(--line);border-radius:8px;color:var(--txt);padding:.55rem .7rem;font-size:1rem;font-family:"JetBrains Mono",ui-monospace,monospace}
+.field input:focus{outline:none;border-color:var(--brass)}
+.statgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem}
+.stat{border:1px solid var(--line);border-radius:10px;padding:.9rem;background:#0d1014}
+.stat .k{font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;color:var(--mut)}
+.stat .v{font-size:1.35rem;font-family:"JetBrains Mono",ui-monospace,monospace;margin-top:.2rem}
+.pos{color:var(--teal)}.neg{color:#e06a5a}
+canvas.chart{width:100%;height:240px;border:1px solid var(--line);border-radius:10px;background:#08090c}
+#error{color:#e06a5a;font-size:.9rem;min-height:1.4em}
+.explain{font-size:.92rem;color:var(--mut)}.explain li{margin:.4rem 0}
+footer{margin-top:2.5rem;color:var(--mut);font-size:.85rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+@media(max-width:640px){.formgrid{grid-template-columns:1fr}.statgrid{grid-template-columns:1fr 1fr}}
+</style>
+</head>
+<body>
+<nav class="nav"><a href="/">Shipwright Studio</a><a href="/ideas/">Lab</a></nav>
+<p class="eyebrow">Lab — DeFi tool</p>
+<h1>Uniswap v3 LP Simulator</h1>
+<p class="define"><strong>Uniswap v3 LP Simulator is a free online tool that</strong> simulates a concentrated-liquidity position on an ETH/USDC pool: pick a price range and fee tier, run a seeded price path, and compare the fees you earn and the impermanent loss you suffer against simply holding the two tokens. Simulated data only — not financial advice.</p>
+
+<div class="card">
+<p class="cardlabel">Position inputs</p>
+<div class="formgrid ui">
+<div class="field"><label for="capital">Capital (USD)</label><input id="capital" type="number" value="10000" min="100" step="100"></div>
+<div class="field"><label for="entry">Entry price — ETH in USDC</label><input id="entry" type="number" value="3000" min="1" step="10"></div>
+<div class="field"><label for="lower">Lower range price</label><input id="lower" type="number" value="2400" min="1" step="10"></div>
+<div class="field"><label for="upper">Upper range price</label><input id="upper" type="number" value="3600" min="1" step="10"></div>
+<div class="field"><label for="volume">Pool daily volume (USD)</label><input id="volume" type="number" value="5000000" min="0" step="100000"></div>
+<div class="field"><label for="tvl">Pool TVL (USD)</label><input id="tvl" type="number" value="10000000" min="1" step="100000"></div>
+</div>
+<div style="margin-top:1rem">
+<p class="ui" style="font-size:.85rem;color:var(--mut);margin-bottom:.4rem">Fee tier</p>
+<div class="btnrow" id="feeRow">
+<button class="btn feeBtn" data-fee="0.0005">0.05%</button>
+<button class="btn feeBtn active" data-fee="0.003">0.3%</button>
+<button class="btn feeBtn" data-fee="0.01">1%</button>
+</div>
+</div>
+<div style="margin-top:1rem">
+<p class="ui" style="font-size:.85rem;color:var(--mut);margin-bottom:.4rem">Price scenario</p>
+<div class="btnrow" id="scRow">
+<button class="btn scBtn active" data-sc="range">Range-bound</button>
+<button class="btn scBtn" data-sc="up">Trending up</button>
+<button class="btn scBtn" data-sc="down">Trending down</button>
+<button class="btn scBtn" data-sc="volatile">Volatile</button>
+</div>
+</div>
+<div style="margin-top:1rem">
+<p class="ui" style="font-size:.85rem;color:var(--mut);margin-bottom:.4rem">Horizon</p>
+<div class="btnrow" id="daysRow">
+<button class="btn daysBtn" data-days="30">30 days</button>
+<button class="btn daysBtn active" data-days="90">90 days</button>
+<button class="btn daysBtn" data-days="180">180 days</button>
+</div>
+</div>
+<div class="btnrow" style="margin-top:1.2rem">
+<button class="btn brass" id="runBtn">Run simulation</button>
+<span class="ui" id="seedNote" style="font-size:.85rem;color:var(--mut)"></span>
+</div>
+<p class="ui" id="error"></p>
+</div>
+
+<div class="card" id="resultsCard">
+<p class="cardlabel">Results</p>
+<div class="statgrid ui" id="stats"></div>
+<p class="ui" id="resultsNote" style="font-size:.9rem;color:var(--mut);margin-top:1rem">Press Run simulation to see results.</p>
+</div>
+
+<div class="card">
+<p class="cardlabel">Price path &amp; your range</p>
+<canvas class="chart" id="priceChart" width="880" height="240" aria-label="Simulated price path with range band"></canvas>
+<p class="ui" style="font-size:.85rem;color:var(--mut);margin-top:.5rem"><span style="color:var(--brass)">■</span> Price &nbsp; <span style="color:var(--teal)">■</span> Your range</p>
+</div>
+
+<div class="card">
+<p class="cardlabel">Position value vs holding</p>
+<canvas class="chart" id="valueChart" width="880" height="240" aria-label="Position value versus holding value over time"></canvas>
+<p class="ui" style="font-size:.85rem;color:var(--mut);margin-top:.5rem"><span style="color:var(--brass)">■</span> LP position (incl. fees) &nbsp; <span style="color:var(--teal)">■</span> Simply holding</p>
+</div>
+
+<div class="card">
+<p class="cardlabel">What the range does — and the model assumptions</p>
+<ul class="explain">
+<li><strong style="color:var(--txt)">Narrow range:</strong> you earn a bigger share of fees while the price is inside it — but the price spends more days outside it, earning nothing and sitting in a single token.</li>
+<li><strong style="color:var(--txt)">Wide range:</strong> you stay in range longer and keep earning, but your share of each day's fees is smaller.</li>
+<li><strong style="color:var(--txt)">Fees model:</strong> on each in-range day you earn fee&nbsp;tier × daily&nbsp;volume × (capital ÷ pool&nbsp;TVL). Out-of-range days earn zero. This is a teaching model: real pools split fees by active liquidity and ticks, and charge gas.</li>
+<li><strong style="color:var(--txt)">Price path:</strong> a seeded daily random walk (same inputs → same path). It is a scenario, not a forecast. Impermanent loss is measured against holding the original token amounts, before fees.</li>
+</ul>
+</div>
+
+<footer>Built by <a href="/">Shipwright Studio</a> · <a href="/ideas/">More Lab experiments</a></footer>
+
+<script>
+"use strict";
+function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};}
+function makeRng(seed){const r=mulberry32(seed);let spare=null;
+  return function normal(){if(spare!==null){const v=spare;spare=null;return v;}
+    let u=0,v=0;while(u===0)u=r();while(v===0)v=r();
+    const m=Math.sqrt(-2*Math.log(u)),t=2*Math.PI*v;spare=m*Math.sin(t);return m*Math.cos(t);};}
+const SCEN={range:{drift:0,vol:0.02},up:{drift:0.004,vol:0.025},down:{drift:-0.004,vol:0.025},volatile:{drift:0,vol:0.05}};
+function positionAmounts(L,price,pl,pu){
+  const s=Math.sqrt(price),sl=Math.sqrt(pl),su=Math.sqrt(pu);
+  if(price<=pl)return{x:L*(1/sl-1/su),y:0};
+  if(price>=pu)return{x:0,y:L*(su-sl)};
+  return{x:L*(1/s-1/su),y:L*(s-sl)};
+}
+function simulate(inp){
+  const s0=Math.sqrt(inp.entry),sl=Math.sqrt(inp.lower),su=Math.sqrt(inp.upper);
+  const L=inp.capital/(2*s0-sl-inp.entry/su);
+  const init=positionAmounts(L,inp.entry,inp.lower,inp.upper);
+  const sc=SCEN[inp.scenario],rand=makeRng(inp.seed);
+  const prices=[inp.entry];let p=inp.entry;
+  for(let d=0;d<inp.days;d++){p=p*Math.exp(sc.drift+sc.vol*rand());prices.push(p);}
+  const share=Math.min(inp.capital/inp.tvl,1);
+  let fees=0,inRange=0;const posVals=[],hodlVals=[];
+  prices.forEach(price=>{
+    const a=positionAmounts(L,price,inp.lower,inp.upper);
+    const inR=price>inp.lower&&price<inp.upper;
+    if(inR){inRange++;fees+=inp.fee*inp.volume*share;}
+    posVals.push(a.x*price+a.y+fees);
+    hodlVals.push(init.x*price+init.y);
+  });
+  const posExFees=posVals[posVals.length-1]-fees,hodl=hodlVals[hodlVals.length-1];
+  return{prices:prices,posVals:posVals,hodlVals:hodlVals,fees:fees,inRange:inRange,
+    pos:posVals[posVals.length-1],hodl:hodl,
+    il:(posExFees/hodl-1)*100,pnl:posVals[posVals.length-1]-hodl,
+    apr:(fees/inp.capital)*(365/inp.days)*100,
+    inRangePct:inRange/(prices.length-1)*100};
+}
+function pick(btnClass,attr,cb){document.querySelectorAll("."+btnClass).forEach(b=>b.addEventListener("click",()=>{
+  document.querySelectorAll("."+btnClass).forEach(x=>x.classList.remove("active"));b.classList.add("active");cb(b.dataset[attr]);}));}
+let fee=0.003,scenario="range",days=90;
+pick("feeBtn","fee",v=>{fee=Number(v);});
+pick("scBtn","sc",v=>{scenario=v;});
+pick("daysBtn","days",v=>{days=Number(v);});
+function fmt$ (n){return "$"+n.toLocaleString("en-US",{maximumFractionDigits:0});}
+function fmtPct(n){return (n>=0?"+":"")+n.toFixed(2)+"%";}
+function drawLine(canvas,series,band){
+  const c=canvas.getContext("2d"),W=canvas.width,H=canvas.height;
+  c.clearRect(0,0,W,H);
+  let min=Infinity,max=-Infinity;
+  series.forEach(s=>s.data.forEach(v=>{if(v<min)min=v;if(v>max)max=v;}));
+  if(band){if(band.lo<min)min=band.lo;if(band.hi>max)max=band.hi;}
+  const pad=12,span=(max-min)||1;
+  const X=i=>pad+i*(W-2*pad)/(series[0].data.length-1);
+  const Y=v=>H-pad-((v-min)/span)*(H-2*pad);
+  if(band){
+    c.fillStyle="rgba(94,200,180,0.12)";c.fillRect(pad,Y(band.hi),W-2*pad,Y(band.lo)-Y(band.hi));
+    c.strokeStyle="#5ec8b4";c.setLineDash([5,5]);c.beginPath();c.moveTo(pad,Y(band.lo));c.lineTo(W-pad,Y(band.lo));
+    c.moveTo(pad,Y(band.hi));c.lineTo(W-pad,Y(band.hi));c.stroke();c.setLineDash([]);
+  }
+  series.forEach(s=>{
+    c.strokeStyle=s.color;c.lineWidth=2;c.beginPath();
+    s.data.forEach((v,i)=>{if(i===0)c.moveTo(X(i),Y(v));else c.lineTo(X(i),Y(v));});
+    c.stroke();
+  });
+}
+document.getElementById("runBtn").addEventListener("click",()=>{
+  const inp={capital:Number(document.getElementById("capital").value),
+    entry:Number(document.getElementById("entry").value),
+    lower:Number(document.getElementById("lower").value),
+    upper:Number(document.getElementById("upper").value),
+    volume:Number(document.getElementById("volume").value),
+    tvl:Number(document.getElementById("tvl").value),
+    fee:fee,scenario:scenario,days:days,
+    seed:Math.floor(100000+Math.random()*900000)};
+  const err=document.getElementById("error");
+  if(!(inp.lower<inp.entry&&inp.entry<inp.upper)){
+    err.textContent="Invalid range: lower price must be below the entry price and upper price above it.";
+    document.getElementById("stats").innerHTML="";return;
+  }
+  err.textContent="";
+  const r=simulate(inp);
+  document.getElementById("seedNote").textContent="Seed "+inp.seed+" — rerun with the same inputs to reproduce this path.";
+  const tiles=[
+    ["Position value",fmt$(r.pos),""],
+    ["Holding value",fmt$(r.hodl),""],
+    ["Fees earned",fmt$(r.fees),"pos"],
+    ["P&L vs holding",fmt$(r.pnl),r.pnl>=0?"pos":"neg"],
+    ["Impermanent loss",fmtPct(r.il),r.il>=0?"pos":"neg"],
+    ["Time in range",r.inRangePct.toFixed(1)+"%",""],
+    ["Effective APR",r.apr.toFixed(1)+"%",""],
+    ["Final price",fmt$(r.prices[r.prices.length-1]),""]
+  ];
+  document.getElementById("stats").innerHTML=tiles.map(t=>
+    '<div class="stat"><div class="k">'+t[0]+'</div><div class="v '+(t[2]||"")+'">'+t[1]+'</div></div>').join("");
+  document.getElementById("resultsNote").textContent=
+    "Over "+inp.days+" days the price spent "+r.inRangePct.toFixed(1)+"% of days in range, earning "+
+    fmt$(r.fees)+" in fees. Net vs holding: "+fmt$(r.pnl)+".";
+  drawLine(document.getElementById("priceChart"),[{data:r.prices,color:"#d2a24c"}],{lo:inp.lower,hi:inp.upper});
+  drawLine(document.getElementById("valueChart"),[{data:r.posVals,color:"#d2a24c"},{data:r.hodlVals,color:"#5ec8b4"}],null);
+});
+</script>
+</body>
+</html>
