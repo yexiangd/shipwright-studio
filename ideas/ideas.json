@@ -1,5 +1,5 @@
 {
-  "updated": "2026-11-02",
+  "updated": "2026-11-03",
   "ideas": [
     {
       "id": "idea-000a",
@@ -591,7 +591,9 @@
       "tagline": "Design box-shadows with sliders, copy the code.",
       "priority": 71,
       "effort": "S",
-      "status": "todo"
+      "status": "done",
+      "url": "/lab/shadow-generator/",
+      "shipped": "2026-11-03"
     },
     {
       "id": "idea-050",
@@ -1363,7 +1365,9 @@
       "tagline": "Trait-based rarity scoring for a pasted collection.",
       "priority": 71,
       "effort": "M",
-      "status": "todo"
+      "status": "done",
+      "url": "/lab/nft-rarity/",
+      "shipped": "2026-11-03"
     },
     {
       "id": "idea-121",

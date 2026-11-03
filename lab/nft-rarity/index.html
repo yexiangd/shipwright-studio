@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NFT Rarity Calculator · Shipwright Studio</title>
+<meta name="description" content="Free online NFT rarity calculator — paste a trait collection as JSON and get trait frequencies, rarity scores and a ranked leaderboard, all in your browser.">
+<link rel="canonical" href="https://shipwright-studio.pages.dev/lab/nft-rarity/">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"WebApplication","name":"NFT Rarity Calculator","url":"https://shipwright-studio.pages.dev/lab/nft-rarity/","description":"NFT Rarity Calculator is a free online tool that scores how rare each item in a collection is from its traits, with trait frequencies and a ranked leaderboard, computed entirely in your browser.","applicationCategory":"UtilitiesApplication","operatingSystem":"Web","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"}}
+</script>
+<style>
+:root{--bg:#0a0c0f;--panel:#101318;--line:#1c2128;--txt:#e8e4da;--mut:#9aa3b2;--brass:#d2a24c;--red:#e0685a}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--txt);font-family:Fraunces,Georgia,serif;line-height:1.65;padding:2rem 1.2rem 4rem;max-width:960px;margin:0 auto}
+a{color:var(--brass)}
+.nav{display:flex;gap:1.2rem;font-size:.85rem;margin-bottom:1.2rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.nav a{color:var(--mut);text-decoration:none}.nav a:hover{color:var(--brass)}
+.eyebrow{font-size:.75rem;letter-spacing:.22em;text-transform:uppercase;color:var(--mut);font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+h1{font-weight:600;font-size:clamp(2.1rem,5vw,3rem);margin:.5rem 0 .7rem}
+.define{color:var(--mut);max-width:46rem;margin-bottom:1.8rem}.define strong{color:var(--txt)}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:1.4rem;margin-bottom:1.4rem}
+.cardlabel{font-size:.72rem;letter-spacing:.18em;text-transform:uppercase;color:var(--mut);margin-bottom:.8rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.ui{font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.btn{font-size:.9rem;border:1px solid var(--line);background:transparent;color:var(--txt);border-radius:999px;padding:.5rem 1.1rem;cursor:pointer;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.btn:hover{border-color:var(--brass);color:var(--brass)}.btn.brass{border-color:var(--brass);color:var(--brass)}
+.btnrow{display:flex;gap:.6rem;flex-wrap:wrap;align-items:center}
+textarea{width:100%;min-height:150px;background:#08090c;color:var(--txt);border:1px solid var(--line);border-radius:10px;padding:.9rem;font-family:"JetBrains Mono",monospace;font-size:.85rem;resize:vertical}
+textarea:focus{outline:1px solid var(--brass)}
+select{background:#0d1014;color:var(--txt);border:1px solid var(--line);border-radius:8px;padding:.4rem .6rem;font-size:.9rem}
+#error{color:var(--red);font-size:.9rem;min-height:1.4em;margin-top:.6rem}
+.tablewrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif;font-size:.9rem}
+th{text-align:left;color:var(--mut);font-weight:500;border-bottom:1px solid var(--line);padding:.5rem .6rem;white-space:nowrap}
+td{padding:.55rem .6rem;border-bottom:1px solid #161b21;white-space:nowrap}
+tbody tr{cursor:pointer}tbody tr:hover{background:#14181e}tbody tr.selected{background:rgba(210,162,76,.10)}tbody tr.rank1{border-left:3px solid var(--brass)}
+.mono{font-family:"JetBrains Mono",monospace}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem}
+.stat b{display:block;font-size:1.5rem;color:var(--brass)}.stat span{font-size:.85rem;color:var(--mut);font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.freqgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem}
+.freq h2{font-size:1.05rem;margin-bottom:.4rem}.freq p{font-size:.85rem;color:var(--mut);font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.explain{font-size:.92rem;color:var(--mut)}.explain li{margin:.4rem 0}
+.empty{color:var(--mut);font-size:.95rem}
+footer{margin-top:2.5rem;color:var(--mut);font-size:.85rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+@media(max-width:700px){.stats,.freqgrid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<nav class="nav"><a href="/">Shipwright Studio</a><a href="/ideas/">Lab</a></nav>
+<p class="eyebrow">Lab — Devtool</p>
+<h1>NFT Rarity Calculator</h1>
+<p class="define"><strong>NFT Rarity Calculator is a free online tool that</strong> scores how rare each item in a collection is from its traits — paste your collection as JSON and get trait frequencies, rarity scores and a ranked leaderboard, computed entirely in your browser. Nothing is uploaded.</p>
+
+<div class="card">
+<p class="cardlabel">Your collection (JSON)</p>
+<p class="ui" style="font-size:.9rem;color:var(--mut);margin-bottom:.6rem">Format: an array of items, each with an <span class="mono">id</span> and a <span class="mono">traits</span> object, e.g. <span class="mono">[{"id": 1, "traits": {"Background": "Blue", "Eyes": "Brown"}}]</span></p>
+<textarea id="jsonInput" placeholder='[{"id": 1, "traits": {"Background": "Blue", "Eyes": "Brown", "Mouth": "Smile"}}]'></textarea>
+<div class="btnrow ui" style="margin-top:1rem">
+<button class="btn brass" id="sampleBtn">Load sample collection</button>
+<button class="btn" id="calcBtn">Calculate</button>
+<button class="btn" id="clearBtn">Clear</button>
+</div>
+<p class="ui" id="error"></p>
+</div>
+
+<div class="card" id="summaryCard" style="display:none">
+<p class="cardlabel">Summary</p>
+<div class="stats">
+<div class="stat"><b id="statSize">–</b><span>Items in collection</span></div>
+<div class="stat"><b id="statTypes">–</b><span>Trait types</span></div>
+<div class="stat"><b id="statRarest">–</b><span>Rarest item</span></div>
+</div>
+</div>
+
+<div class="card" id="boardCard" style="display:none">
+<p class="cardlabel">Leaderboard — rarest first</p>
+<div class="btnrow ui" style="margin-bottom:.8rem">
+<label for="filterType">Filter:</label>
+<select id="filterType"></select>
+<select id="filterValue"></select>
+<button class="btn" id="clearFilterBtn">Clear filter</button>
+<span id="filterNote" style="font-size:.85rem;color:var(--mut)"></span>
+</div>
+<div class="tablewrap"><table>
+<thead><tr><th>Rank</th><th>ID</th><th>Score</th><th>Percentile</th><th>Top trait</th><th>Traits</th></tr></thead>
+<tbody id="boardBody"></tbody>
+</table></div>
+<p class="empty ui" id="boardEmpty" style="display:none">No items match this filter.</p>
+</div>
+
+<div class="card" id="detailCard" style="display:none">
+<p class="cardlabel" id="detailTitle">Trait breakdown</p>
+<div class="tablewrap"><table>
+<thead><tr><th>Trait type</th><th>Value</th><th>Count</th><th>Frequency</th><th>Trait score</th></tr></thead>
+<tbody id="detailBody"></tbody>
+</table></div>
+</div>
+
+<div class="card" id="freqCard" style="display:none">
+<p class="cardlabel">Trait frequencies — rarest first</p>
+<div class="freqgrid" id="freqGrid"></div>
+</div>
+
+<div class="card">
+<p class="cardlabel">How rarity is calculated</p>
+<ul class="explain">
+<li>For each trait value: <b style="color:var(--txt)">frequency = items with that value ÷ collection size</b>.</li>
+<li>Each trait scores <b style="color:var(--txt)">1 ÷ frequency</b> — a value held by 1 of 12 items scores 12.00.</li>
+<li>An item's rarity score is the <b style="color:var(--txt)">sum of its trait scores</b>; the highest score ranks #1.</li>
+<li>Caveat: this is trait rarity, not market value. A rare trait does not guarantee a higher price.</li>
+</ul>
+</div>
+
+<footer>Built by <a href="/">Shipwright Studio</a> · <a href="/ideas/">Back to the Lab</a></footer>
+<script>
+var SAMPLE = [
+  {id:1, traits:{Background:'Blue', Eyes:'Brown', Mouth:'Smile'}},
+  {id:2, traits:{Background:'Blue', Eyes:'Brown', Mouth:'Smile'}},
+  {id:3, traits:{Background:'Blue', Eyes:'Brown', Mouth:'Smile'}},
+  {id:4, traits:{Background:'Blue', Eyes:'Brown', Mouth:'Grin'}},
+  {id:5, traits:{Background:'Blue', Eyes:'Blue', Mouth:'Smile'}},
+  {id:6, traits:{Background:'Green', Eyes:'Brown', Mouth:'Smile'}},
+  {id:7, traits:{Background:'Gold', Eyes:'Laser', Mouth:'Frown'}},
+  {id:8, traits:{Background:'Green', Eyes:'Blue', Mouth:'Grin'}},
+  {id:9, traits:{Background:'Purple', Eyes:'Brown', Mouth:'Smile'}},
+  {id:10, traits:{Background:'Purple', Eyes:'Blue', Mouth:'Frown'}},
+  {id:11, traits:{Background:'Green', Eyes:'Laser', Mouth:'Smile'}},
+  {id:12, traits:{Background:'Blue', Eyes:'Blue', Mouth:'Grin'}}
+];
+function computeRarity(items){
+  var n = items.length;
+  var types = [];
+  items.forEach(function(it){ Object.keys(it.traits).forEach(function(t){ if (types.indexOf(t) === -1) types.push(t); }); });
+  var counts = {};
+  types.forEach(function(t){ counts[t] = {}; });
+  items.forEach(function(it){ types.forEach(function(t){ var v = it.traits[t]; if (v !== undefined) counts[t][v] = (counts[t][v] || 0) + 1; }); });
+  var scored = items.map(function(it){
+    var breakdown = types.map(function(t){
+      var v = it.traits[t], c = counts[t][v] || 0;
+      return {type:t, value:v, count:c, freq: n ? c / n : 0, score: c ? n / c : 0};
+    }).filter(function(b){ return b.value !== undefined; });
+    var score = breakdown.reduce(function(a,b){ return a + b.score; }, 0);
+    var top = breakdown.slice().sort(function(a,b){ return b.score - a.score; })[0];
+    return {id: it.id, score: score, breakdown: breakdown, top: top};
+  });
+  scored.sort(function(a,b){ return b.score - a.score || String(a.id).localeCompare(String(b.id)); });
+  scored.forEach(function(s, i){
+    s.rank = i + 1;
+    s.percentile = n > 1 ? Math.round((1 - i / (n - 1)) * 100) : 100;
+  });
+  return {n: n, types: types, counts: counts, ranked: scored};
+}
+function traitString(s){ return s.breakdown.map(function(b){ return b.type + ': ' + b.value; }).join(' · '); }
+var current = null, selectedId = null;
+var input = document.getElementById('jsonInput'), errorEl = document.getElementById('error');
+function showError(msg){ errorEl.textContent = msg; }
+function render(){
+  if (!current) return;
+  document.getElementById('summaryCard').style.display = 'block';
+  document.getElementById('boardCard').style.display = 'block';
+  document.getElementById('freqCard').style.display = 'block';
+  document.getElementById('statSize').textContent = current.n;
+  document.getElementById('statTypes').textContent = current.types.length;
+  document.getElementById('statRarest').textContent = current.ranked.length ? '#' + current.ranked[0].id + ' (' + current.ranked[0].score.toFixed(2) + ')' : '–';
+  renderFilters(); renderBoard(); renderFreq();
+}
+function currentFilter(){
+  var t = document.getElementById('filterType').value, v = document.getElementById('filterValue').value;
+  return (t && v) ? {type:t, value:v} : null;
+}
+function renderFilters(){
+  var ft = document.getElementById('filterType'), fv = document.getElementById('filterValue');
+  var prevT = ft.value, prevV = fv.value;
+  ft.innerHTML = '<option value="">All trait types</option>' + current.types.map(function(t){ return '<option>' + t + '</option>'; }).join('');
+  if (prevT) ft.value = prevT;
+  var type = ft.value;
+  fv.innerHTML = '<option value="">All values</option>';
+  if (type) Object.keys(current.counts[type]).sort().forEach(function(v){ fv.innerHTML += '<option>' + v + '</option>'; });
+  if (prevV) fv.value = prevV;
+}
+function renderBoard(){
+  var f = currentFilter(), body = document.getElementById('boardBody');
+  var list = current.ranked.filter(function(s){
+    if (!f) return true;
+    return s.breakdown.some(function(b){ return b.type === f.type && String(b.value) === f.value; });
+  });
+  document.getElementById('filterNote').textContent = f ? ('Showing ' + list.length + ' of ' + current.n + ' items') : '';
+  document.getElementById('boardEmpty').style.display = list.length ? 'none' : 'block';
+  body.innerHTML = list.map(function(s){
+    return '<tr data-id="' + s.id + '" class="' + (s.rank === 1 ? 'rank1 ' : '') + (String(s.id) === String(selectedId) ? 'selected' : '') + '">' +
+      '<td>' + s.rank + '</td><td>' + s.id + '</td><td class="mono">' + s.score.toFixed(2) + '</td>' +
+      '<td>' + s.percentile + 'th</td><td>' + (s.top ? s.top.type + ': ' + s.top.value + ' (' + s.top.score.toFixed(2) + ')' : '–') + '</td>' +
+      '<td>' + traitString(s) + '</td></tr>';
+  }).join('');
+  body.querySelectorAll('tr').forEach(function(tr){
+    tr.addEventListener('click', function(){ selectedId = tr.dataset.id; renderDetail(); renderBoard(); });
+  });
+}
+function renderDetail(){
+  if (selectedId === null) return;
+  var s = current.ranked.find(function(x){ return String(x.id) === String(selectedId); });
+  if (!s) return;
+  document.getElementById('detailCard').style.display = 'block';
+  document.getElementById('detailTitle').textContent = 'Trait breakdown — item #' + s.id + ' (score ' + s.score.toFixed(2) + ')';
+  document.getElementById('detailBody').innerHTML = s.breakdown.map(function(b){
+    return '<tr><td>' + b.type + '</td><td>' + b.value + '</td><td>' + b.count + '</td><td>' + (b.freq * 100).toFixed(1) + '%</td><td class="mono">' + b.score.toFixed(2) + '</td></tr>';
+  }).join('');
+}
+function renderFreq(){
+  var grid = document.getElementById('freqGrid');
+  grid.innerHTML = current.types.map(function(t){
+    var rows = Object.keys(current.counts[t]).map(function(v){
+      var c = current.counts[t][v];
+      return '<p>' + v + ' — ' + c + ' (' + (c / current.n * 100).toFixed(1) + '%, score ' + (current.n / c).toFixed(2) + ')</p>';
+    }).sort(function(a,b){ return 0; });
+    var sorted = Object.keys(current.counts[t]).sort(function(a,b){ return current.counts[t][a] - current.counts[t][b]; });
+    rows = sorted.map(function(v){ var c = current.counts[t][v]; return '<p>' + v + ' — ' + c + ' (' + (c / current.n * 100).toFixed(1) + '%, score ' + (current.n / c).toFixed(2) + ')</p>'; });
+    return '<div class="freq"><h2>' + t + '</h2>' + rows.join('') + '</div>';
+  }).join('');
+}
+function loadItems(items){
+  current = computeRarity(items); selectedId = current.ranked.length ? current.ranked[0].id : null;
+  showError(''); render(); renderDetail();
+}
+document.getElementById('sampleBtn').addEventListener('click', function(){
+  input.value = JSON.stringify(SAMPLE, null, 2); loadItems(SAMPLE);
+});
+document.getElementById('calcBtn').addEventListener('click', function(){
+  var raw = input.value.trim();
+  if (!raw) { showError('Paste a collection first, or load the sample collection.'); return; }
+  var parsed;
+  try { parsed = JSON.parse(raw); } catch (e) { showError('Invalid JSON: ' + e.message + '. Previous results are kept.'); return; }
+  if (!Array.isArray(parsed) || !parsed.length) { showError('Expected a non-empty JSON array of items. Previous results are kept.'); return; }
+  var bad = parsed.some(function(it){ return !it || it.id === undefined || !it.traits || typeof it.traits !== 'object'; });
+  if (bad) { showError('Each item needs an "id" and a "traits" object. Previous results are kept.'); return; }
+  loadItems(parsed);
+});
+document.getElementById('clearBtn').addEventListener('click', function(){
+  input.value = ''; current = null; selectedId = null; showError('');
+  ['summaryCard','boardCard','detailCard','freqCard'].forEach(function(id){ document.getElementById(id).style.display = 'none'; });
+});
+document.getElementById('filterType').addEventListener('change', function(){ renderFilters(); renderBoard(); });
+document.getElementById('filterValue').addEventListener('change', renderBoard);
+document.getElementById('clearFilterBtn').addEventListener('click', function(){
+  document.getElementById('filterType').value = ''; renderFilters(); renderBoard();
+});
+</script>
+</body>
+</html>

@@ -196,6 +196,11 @@
     <priority>0.7</priority>
   </url>
   <url>
+    <loc>https://shipwright-studio.pages.dev/lab/nft-rarity/</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
     <loc>https://shipwright-studio.pages.dev/lab/options-payoff/</loc>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
@@ -257,6 +262,11 @@
   </url>
   <url>
     <loc>https://shipwright-studio.pages.dev/lab/ruin-simulator/</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://shipwright-studio.pages.dev/lab/shadow-generator/</loc>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>

@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Shadow Forge · Shipwright Studio</title>
+<meta name="description" content="Free online box-shadow designer — drag sliders for offset, blur, spread and opacity, pick a preset, and copy production-ready CSS.">
+<link rel="canonical" href="https://shipwright-studio.pages.dev/lab/shadow-generator/">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"WebApplication","name":"Shadow Forge","url":"https://shipwright-studio.pages.dev/lab/shadow-generator/","description":"Shadow Forge is a free online tool that designs CSS box-shadows with sliders — offset, blur, spread, colour and opacity — with presets and one-click CSS copy.","applicationCategory":"DeveloperApplication","operatingSystem":"Web","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"}}
+</script>
+<style>
+:root{--bg:#0a0c0f;--panel:#101318;--line:#1c2128;--txt:#e8e4da;--mut:#9aa3b2;--brass:#d2a24c}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--txt);font-family:Fraunces,Georgia,serif;line-height:1.65;padding:2rem 1.2rem 4rem;max-width:960px;margin:0 auto}
+a{color:var(--brass)}
+.nav{display:flex;gap:1.2rem;font-size:.85rem;margin-bottom:1.2rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.nav a{color:var(--mut);text-decoration:none}.nav a:hover{color:var(--brass)}
+.eyebrow{font-size:.75rem;letter-spacing:.22em;text-transform:uppercase;color:var(--mut);font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+h1{font-weight:600;font-size:clamp(2.1rem,5vw,3rem);margin:.5rem 0 .7rem}
+.define{color:var(--mut);max-width:46rem;margin-bottom:1.8rem}.define strong{color:var(--txt)}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:1.4rem;margin-bottom:1.4rem}
+.cardlabel{font-size:.72rem;letter-spacing:.18em;text-transform:uppercase;color:var(--mut);margin-bottom:.8rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.ui{font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.btn{font-size:.9rem;border:1px solid var(--line);background:transparent;color:var(--txt);border-radius:999px;padding:.5rem 1.1rem;cursor:pointer;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.btn:hover{border-color:var(--brass);color:var(--brass)}.btn.active{border-color:var(--brass);color:var(--brass);background:rgba(210,162,76,.12)}
+.btn.brass{border-color:var(--brass);color:var(--brass)}
+.btnrow{display:flex;gap:.6rem;flex-wrap:wrap;align-items:center}
+input[type=range]{width:100%;accent-color:var(--brass)}
+.layout{display:grid;grid-template-columns:1fr 1fr;gap:1.4rem;align-items:start}
+.slider{margin-bottom:1rem}.slider label{display:flex;justify-content:space-between;font-size:.85rem;color:var(--mut);margin-bottom:.2rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}.slider label b{color:var(--txt)}
+.row{display:flex;gap:.8rem;align-items:center;flex-wrap:wrap;font-size:.85rem;color:var(--mut);font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.row input[type=color]{width:44px;height:32px;border:1px solid var(--line);background:transparent;padding:2px;cursor:pointer}
+.row select{background:#0d1014;color:var(--txt);border:1px solid var(--line);border-radius:8px;padding:.4rem .6rem;font-size:.9rem}
+#previewWrap{display:flex;align-items:center;justify-content:center;min-height:300px;border-radius:10px;transition:background .2s}
+#previewWrap.light{background:#e8e4da}#previewWrap.dark{background:#14181e}
+#preview{background:#fff;color:#111;display:flex;align-items:center;justify-content:center;text-align:center;padding:1rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif;transition:box-shadow .05s,border-radius .05s}
+pre{background:#08090c;border:1px solid var(--line);border-radius:10px;padding:1rem;overflow-x:auto;font-family:"JetBrains Mono",monospace;font-size:.9rem;color:var(--txt);white-space:pre-wrap}
+.explain{font-size:.92rem;color:var(--mut)}.explain li{margin:.4rem 0}
+footer{margin-top:2.5rem;color:var(--mut);font-size:.85rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+@media(max-width:700px){.layout{grid-template-columns:1fr}#previewWrap{min-height:240px}}
+</style>
+</head>
+<body>
+<nav class="nav"><a href="/">Shipwright Studio</a><a href="/ideas/">Lab</a></nav>
+<p class="eyebrow">Lab — Devtool</p>
+<h1>Shadow Forge</h1>
+<p class="define"><strong>Shadow Forge is a free online tool that</strong> designs CSS box-shadows with sliders — offset, blur, spread, colour and opacity — so you can shape a card shadow visually and copy production-ready CSS in one click. No account, nothing leaves the page.</p>
+
+<div class="layout">
+<div class="card">
+<p class="cardlabel">Shadow controls</p>
+<div class="slider"><label for="offX">Horizontal offset <b id="offXVal">0px</b></label><input type="range" id="offX" min="-50" max="50" value="0"></div>
+<div class="slider"><label for="offY">Vertical offset <b id="offYVal">10px</b></label><input type="range" id="offY" min="-50" max="50" value="10"></div>
+<div class="slider"><label for="blur">Blur <b id="blurVal">30px</b></label><input type="range" id="blur" min="0" max="100" value="30"></div>
+<div class="slider"><label for="spread">Spread <b id="spreadVal">0px</b></label><input type="range" id="spread" min="-30" max="30" value="0"></div>
+<div class="slider"><label for="opacity">Opacity <b id="opacityVal">25%</b></label><input type="range" id="opacity" min="0" max="100" value="25"></div>
+<div class="row ui" style="margin-top:.4rem">
+<label for="color">Colour</label><input type="color" id="color" value="#000000">
+<label><input type="checkbox" id="inset"> Inset</label>
+<label for="radius">Corner radius</label>
+<select id="radius"><option value="8">8px</option><option value="16" selected>16px</option><option value="24">24px</option><option value="48">48px</option></select>
+</div>
+<div class="btnrow ui" style="margin-top:1rem">
+<button class="btn" id="randomBtn">Randomize</button>
+<button class="btn" id="resetBtn">Reset</button>
+<button class="btn" id="bgBtn">Backdrop: dark</button>
+</div>
+</div>
+
+<div class="card">
+<p class="cardlabel">Live preview</p>
+<div id="previewWrap" class="dark"><div id="preview" style="width:200px;height:140px">Your card</div></div>
+<p class="ui" style="font-size:.85rem;color:var(--mut);margin-top:.8rem">Drag any slider on the left — the preview and the CSS below update together.</p>
+</div>
+</div>
+
+<div class="card">
+<p class="cardlabel">Presets</p>
+<div class="btnrow ui" id="presets">
+<button class="btn preset active" data-preset="soft">Soft</button>
+<button class="btn preset" data-preset="lift">Lift</button>
+<button class="btn preset" data-preset="deep">Deep</button>
+<button class="btn preset" data-preset="neon">Neon</button>
+<button class="btn preset" data-preset="inset">Inset</button>
+<button class="btn preset" data-preset="sharp">Sharp</button>
+</div>
+</div>
+
+<div class="card">
+<p class="cardlabel">CSS output</p>
+<pre id="cssOut"></pre>
+<div class="btnrow ui" style="margin-top:1rem">
+<button class="btn brass" id="copyBtn">Copy box-shadow</button>
+<button class="btn" id="copyFullBtn">Copy full rule</button>
+<span id="copyNote" style="font-size:.85rem;color:var(--mut)"></span>
+</div>
+</div>
+
+<div class="card">
+<p class="cardlabel">How it works</p>
+<ul class="explain">
+<li><b style="color:var(--txt)">Offset</b> moves the shadow sideways and down; negative values move it up or left.</li>
+<li><b style="color:var(--txt)">Blur</b> softens the shadow edge — 0 gives a hard edge, higher values fade it out.</li>
+<li><b style="color:var(--txt)">Spread</b> grows (positive) or shrinks (negative) the shadow before blurring.</li>
+<li><b style="color:var(--txt)">Inset</b> draws the shadow inside the element instead of outside it.</li>
+<li><b style="color:var(--txt)">Opacity</b> controls how dark the shadow colour reads against the backdrop.</li>
+</ul>
+</div>
+
+<footer>Built by <a href="/">Shipwright Studio</a> · <a href="/ideas/">Back to the Lab</a></footer>
+<script>
+function hexToRgba(hex, alpha){
+  var h = hex.replace('#','');
+  if (h.length === 3) h = h.split('').map(function(c){ return c + c; }).join('');
+  var r = parseInt(h.slice(0,2), 16), g = parseInt(h.slice(2,4), 16), b = parseInt(h.slice(4,6), 16);
+  return 'rgba(' + r + ', ' + g + ', ' + b + ', ' + alpha + ')';
+}
+function buildShadow(s){
+  return (s.inset ? 'inset ' : '') + s.x + 'px ' + s.y + 'px ' + s.blur + 'px ' + s.spread + 'px ' + hexToRgba(s.color, s.opacity);
+}
+var PRESETS = {
+  soft:  {x:0,  y:10, blur:30, spread:0,  color:'#000000', opacity:0.25, inset:false},
+  lift:  {x:0,  y:20, blur:25, spread:-5, color:'#000000', opacity:0.30, inset:false},
+  deep:  {x:0,  y:30, blur:60, spread:0,  color:'#000000', opacity:0.45, inset:false},
+  neon:  {x:0,  y:0,  blur:40, spread:0,  color:'#d2a24c', opacity:0.80, inset:false},
+  inset: {x:0,  y:4,  blur:12, spread:0,  color:'#000000', opacity:0.35, inset:true},
+  sharp: {x:6,  y:6,  blur:0,  spread:0,  color:'#000000', opacity:0.85, inset:false}
+};
+var els = {};
+['offX','offY','blur','spread','opacity','color','inset','radius'].forEach(function(id){ els[id] = document.getElementById(id); });
+var preview = document.getElementById('preview'), wrap = document.getElementById('previewWrap'),
+    cssOut = document.getElementById('cssOut'), copyNote = document.getElementById('copyNote');
+function state(){
+  return {x:+els.offX.value, y:+els.offY.value, blur:+els.blur.value, spread:+els.spread.value,
+    color: els.color.value || '#000000', opacity: (+els.opacity.value)/100, inset: els.inset.checked};
+}
+function render(){
+  var s = state();
+  document.getElementById('offXVal').textContent = s.x + 'px';
+  document.getElementById('offYVal').textContent = s.y + 'px';
+  document.getElementById('blurVal').textContent = s.blur + 'px';
+  document.getElementById('spreadVal').textContent = s.spread + 'px';
+  document.getElementById('opacityVal').textContent = els.opacity.value + '%';
+  var shadow = buildShadow(s);
+  preview.style.boxShadow = shadow;
+  preview.style.borderRadius = els.radius.value + 'px';
+  cssOut.textContent = 'box-shadow: ' + shadow + ';';
+}
+function applyPreset(name){
+  var p = PRESETS[name];
+  els.offX.value = p.x; els.offY.value = p.y; els.blur.value = p.blur; els.spread.value = p.spread;
+  els.color.value = p.color; els.opacity.value = Math.round(p.opacity * 100); els.inset.checked = p.inset;
+  document.querySelectorAll('.preset').forEach(function(b){ b.classList.toggle('active', b.dataset.preset === name); });
+  render();
+}
+['offX','offY','blur','spread','opacity','color','inset','radius'].forEach(function(id){
+  els[id].addEventListener('input', render); els[id].addEventListener('change', render);
+});
+document.querySelectorAll('.preset').forEach(function(b){
+  b.addEventListener('click', function(){ applyPreset(b.dataset.preset); });
+});
+document.getElementById('randomBtn').addEventListener('click', function(){
+  var r = function(a,b){ return Math.floor(Math.random() * (b - a + 1)) + a; };
+  els.offX.value = r(-20,20); els.offY.value = r(4,30); els.blur.value = r(8,60);
+  els.spread.value = r(-10,10); els.opacity.value = r(15,60); els.inset.checked = false;
+  document.querySelectorAll('.preset').forEach(function(b){ b.classList.remove('active'); });
+  render();
+});
+document.getElementById('resetBtn').addEventListener('click', function(){ applyPreset('soft'); });
+document.getElementById('bgBtn').addEventListener('click', function(e){
+  var light = wrap.classList.toggle('light'); wrap.classList.toggle('dark', !light);
+  e.target.textContent = 'Backdrop: ' + (light ? 'light' : 'dark');
+});
+function copyText(text, note){
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(text).then(function(){ copyNote.textContent = note; });
+  } else {
+    var ta = document.createElement('textarea'); ta.value = text; document.body.appendChild(ta);
+    ta.select(); document.execCommand('copy'); ta.remove(); copyNote.textContent = note;
+  }
+}
+document.getElementById('copyBtn').addEventListener('click', function(){
+  copyText('box-shadow: ' + buildShadow(state()) + ';', 'Copied ✓');
+});
+document.getElementById('copyFullBtn').addEventListener('click', function(){
+  copyText('.card {\n  background: #ffffff;\n  border-radius: ' + els.radius.value + 'px;\n  box-shadow: ' + buildShadow(state()) + ';\n}', 'Full rule copied ✓');
+});
+render();
+</script>
+</body>
+</html>
