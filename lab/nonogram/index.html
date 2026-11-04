@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nonogram · Shipwright Studio</title>
+<meta name="description" content="Free online nonogram puzzles — read the row and column clues, fill the hidden picture, from 5×5 warm-ups to 15×15 challenges.">
+<link rel="canonical" href="https://shipwright-studio.pages.dev/lab/nonogram/">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"WebApplication","name":"Nonogram","url":"https://shipwright-studio.pages.dev/lab/nonogram/","description":"Nonogram is a free online tool that generates logic-grid pixel puzzles — read the number clues, deduce the hidden picture, and fill it cell by cell.","applicationCategory":"GameApplication","operatingSystem":"Web","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"}}
+</script>
+<style>
+:root{--bg:#0a0c0f;--panel:#101318;--line:#1c2128;--txt:#e8e4da;--mut:#9aa3b2;--brass:#d2a24c;--red:#e06666}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--txt);font-family:Fraunces,Georgia,serif;line-height:1.65;padding:2rem 1.2rem 4rem;max-width:960px;margin:0 auto}
+a{color:var(--brass)}
+.nav{display:flex;gap:1.2rem;font-size:.85rem;margin-bottom:1.2rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.nav a{color:var(--mut);text-decoration:none}.nav a:hover{color:var(--brass)}
+.eyebrow{font-size:.75rem;letter-spacing:.22em;text-transform:uppercase;color:var(--mut);font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+h1{font-weight:600;font-size:clamp(2.1rem,5vw,3rem);margin:.5rem 0 .7rem}
+.define{color:var(--mut);max-width:46rem;margin-bottom:1.8rem}.define strong{color:var(--txt)}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:1.4rem;margin-bottom:1.4rem}
+.ui{font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.btn{font-size:.9rem;border:1px solid var(--line);background:transparent;color:var(--txt);border-radius:999px;padding:.5rem 1.1rem;cursor:pointer;font-family:inherit}
+.btn:hover{border-color:var(--brass);color:var(--brass)}.btn.active{border-color:var(--brass);color:var(--brass);background:rgba(210,162,76,.12)}
+.btnrow{display:flex;gap:.6rem;flex-wrap:wrap;align-items:center}
+select{background:#0d1014;color:var(--txt);border:1px solid var(--line);border-radius:8px;padding:.45rem .6rem;font-size:.9rem}
+.status{font-size:.9rem;color:var(--mut);margin-top:1rem}.status b{color:var(--txt)}
+#boardWrap{overflow-x:auto}
+#board{display:grid;gap:0;margin:0 auto;width:fit-content;max-width:100%}
+.clue{font-family:"JetBrains Mono",monospace;font-size:.78rem;color:var(--mut);display:flex;align-items:flex-end;justify-content:center;padding:2px}
+.clue.row{flex-direction:row;align-items:center;justify-content:flex-end;gap:4px}
+.clue.col{flex-direction:column;align-items:center;justify-content:flex-end}
+.clue span{display:block;text-align:center;line-height:1.3}
+.cell{width:34px;height:34px;border:1px solid #232a33;background:#0d1014;cursor:pointer;font-size:1rem;color:var(--mut);display:flex;align-items:center;justify-content:center;padding:0}
+.cell:nth-child(5n){border-right-width:2px}
+.cell.filled{background:var(--brass);border-color:#8a6a2e}
+.cell.wrong{animation:shake .3s}
+@keyframes shake{25%{transform:translateX(-2px)}75%{transform:translateX(2px)}}
+.cell.revealed{background:rgba(210,162,76,.35)}
+#win{display:none;margin-top:1rem;border:1px solid var(--brass);border-radius:10px;padding:1rem;color:var(--txt)}
+.explain{font-size:.92rem;color:var(--mut)}.explain li{margin:.4rem 0}
+footer{margin-top:2.5rem;color:var(--mut);font-size:.85rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+@media(max-width:700px){.cell{width:26px;height:26px}}
+</style>
+</head>
+<body>
+<nav class="nav"><a href="/">Shipwright Studio</a><a href="/ideas/">Lab</a></nav>
+<p class="eyebrow">Lab — Game</p>
+<h1>Nonogram</h1>
+<p class="define"><strong>Nonogram is a free online tool that</strong> generates logic-grid pixel puzzles — read the number clues beside each row and column, deduce where the filled cells hide, and reveal the picture one cell at a time. No account, nothing leaves the page.</p>
+
+<div class="card ui">
+<div class="btnrow">
+<label for="size">Size</label>
+<select id="size"><option value="5">5 × 5</option><option value="10" selected>10 × 10</option><option value="15">15 × 15</option></select>
+<button class="btn" id="newBtn">New puzzle</button>
+<button class="btn active" id="fillBtn">Fill mode</button>
+<button class="btn" id="xBtn">X mode</button>
+<button class="btn" id="hintBtn">Hint</button>
+<button class="btn" id="checkBtn">Check progress</button>
+<button class="btn" id="resetBtn">Reset</button>
+<button class="btn" id="revealBtn">Reveal solution</button>
+</div>
+<p class="status">Tip: press <b>F</b> to switch Fill / X mode. Click a filled or marked cell again to erase it.</p>
+</div>
+
+<div class="card">
+<div id="boardWrap"><div id="board" role="grid" aria-label="Nonogram board"></div></div>
+<p class="status ui" id="statusLine">Time 0:00 · Moves 0 · Mistakes 0 · Filled 0 / 0</p>
+<p class="status ui" id="checkLine"></p>
+<div id="win" class="ui"></div>
+</div>
+
+<div class="card explain">
+<h2 style="font-size:1.2rem;margin-bottom:.5rem">How to play</h2>
+<ul>
+<li>A clue of <b>3 1</b> means that line contains a run of 3 filled cells, then at least one gap, then a single filled cell — in that order.</li>
+<li>A clue of <b>0</b> means the whole line is empty: mark every cell with X.</li>
+<li>Fill a cell you are sure about; mark cells you are sure are empty. A wrong fill counts as a mistake, but you can erase it and keep going.</li>
+<li>You win when every solution cell is filled and no wrong cell is filled.</li>
+</ul>
+</div>
+<footer>Built by Shipwright Studio · <a href="/ideas/">Back to the Lab</a></footer>
+
+<script>
+function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;var t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+function cluesFor(line){var out=[],run=0;for(var i=0;i<line.length;i++){if(line[i])run++;else if(run){out.push(run);run=0}}if(run)out.push(run);return out.length?out:[0]}
+function genPuzzle(n,seed){var rnd=mulberry32(seed),sol=[];for(var r=0;r<n;r++){var row=[];for(var c=0;c<n;c++)row.push(rnd()<0.48);sol.push(row)}
+  var rows=sol.map(cluesFor),cols=[];for(var c2=0;c2<n;c2++){var col=[];for(var r2=0;r2<n;r2++)col.push(sol[r2][c2]);cols.push(cluesFor(col))}return{sol:sol,rows:rows,cols:cols}}
+var size=10,seed=1,state=[],solution=[],rowClues=[],colClues=[],mode='fill',moves=0,mistakes=0,started=false,startTime=0,timerId=null,won=false,locked=false;
+var boardEl=document.getElementById('board'),statusEl=document.getElementById('statusLine'),checkEl=document.getElementById('checkLine'),winEl=document.getElementById('win');
+function fmtTime(s){return Math.floor(s/60)+':'+String(s%60).padStart(2,'0')}
+function totalFilled(){var t=0;for(var r=0;r<size;r++)for(var c=0;c<size;c++)if(solution[r][c])t++;return t}
+function updateStatus(){var t=started?Math.floor((Date.now()-startTime)/1000):0;var filled=0;for(var r=0;r<size;r++)for(var c=0;c<size;c++)if(state[r][c]===1&&solution[r][c])filled++;statusEl.textContent='Time '+fmtTime(t)+' · Moves '+moves+' · Mistakes '+mistakes+' · Filled '+filled+' / '+totalFilled()}
+function checkWin(){var ok=true;for(var r=0;r<size;r++)for(var c=0;c<size;c++){if(solution[r][c]&&state[r][c]!==1)ok=false;if(!solution[r][c]&&state[r][c]===1)ok=false}if(ok&&!won){won=true;locked=true;clearInterval(timerId);winEl.style.display='block';winEl.innerHTML='<strong>You solved it!</strong> Time '+fmtTime(Math.floor((Date.now()-startTime)/1000))+' · Moves '+moves+' · Mistakes '+mistakes+'. Press New puzzle for another picture.'}}
+function render(){
+  boardEl.style.gridTemplateColumns='auto repeat('+size+', 1fr)';
+  boardEl.innerHTML='';
+  var corner=document.createElement('div');boardEl.appendChild(corner);
+  for(var c=0;c<size;c++){var cc=document.createElement('div');cc.className='clue col';cc.innerHTML=colClues[c].map(function(v){return '<span>'+v+'</span>'}).join('');boardEl.appendChild(cc)}
+  for(var r=0;r<size;r++){
+    var rc=document.createElement('div');rc.className='clue row';rc.innerHTML=rowClues[r].map(function(v){return '<span>'+v+'</span>'}).join(' ');boardEl.appendChild(rc);
+    for(var c2=0;c2<size;c2++){
+      (function(rr,cc2){var b=document.createElement('button');b.className='cell';b.setAttribute('aria-label','Row '+(rr+1)+', column '+(cc2+1));
+        if(state[rr][cc2]===1)b.classList.add('filled');if(state[rr][cc2]===2){b.textContent='×';}
+        b.onclick=function(){if(locked)return;if(!started){started=true;startTime=Date.now();timerId=setInterval(updateStatus,1000)}
+          if(state[rr][cc2]!==0){state[rr][cc2]=0;moves++}
+          else if(mode==='fill'){state[rr][cc2]=1;moves++;if(!solution[rr][cc2]){mistakes++;b.classList.add('wrong');setTimeout(function(){b.classList.remove('wrong')},300)}}
+          else{state[rr][cc2]=2;moves++}
+          render();updateStatus();checkWin()};
+        boardEl.appendChild(b)})(r,c2);
+    }
+  }
+}
+function newPuzzle(){size=parseInt(document.getElementById('size').value,10);seed=Math.floor(Math.random()*1000000);
+  var p=genPuzzle(size,seed);solution=p.sol;rowClues=p.rows;colClues=p.cols;
+  state=[];for(var r=0;r<size;r++){var row=[];for(var c=0;c<size;c++)row.push(0);state.push(row)}
+  moves=0;mistakes=0;started=false;won=false;locked=false;clearInterval(timerId);winEl.style.display='none';checkEl.textContent='';render();updateStatus()}
+function setMode(m){mode=m;document.getElementById('fillBtn').classList.toggle('active',m==='fill');document.getElementById('xBtn').classList.toggle('active',m==='x')}
+document.getElementById('size').onchange=newPuzzle;
+document.getElementById('newBtn').onclick=newPuzzle;
+document.getElementById('fillBtn').onclick=function(){setMode('fill')};
+document.getElementById('xBtn').onclick=function(){setMode('x')};
+document.addEventListener('keydown',function(e){if(e.key==='f'||e.key==='F')setMode(mode==='fill'?'x':'fill')});
+document.getElementById('hintBtn').onclick=function(){if(locked)return;var opts=[];for(var r=0;r<size;r++)for(var c=0;c<size;c++)if(solution[r][c]&&state[r][c]!==1)opts.push([r,c]);if(!opts.length)return;var p2=opts[Math.floor(Math.random()*opts.length)];state[p2[0]][p2[1]]=1;moves++;if(!started){started=true;startTime=Date.now();timerId=setInterval(updateStatus,1000)}render();updateStatus();checkWin()};
+document.getElementById('checkBtn').onclick=function(){var good=0,wrong=0;for(var r=0;r<size;r++)for(var c=0;c<size;c++){if(state[r][c]===1&&solution[r][c])good++;if(state[r][c]===1&&!solution[r][c])wrong++}checkEl.textContent='Correctly filled: '+good+' of '+totalFilled()+(wrong?' · Wrong fills: '+wrong:'')};
+document.getElementById('resetBtn').onclick=function(){for(var r=0;r<size;r++)for(var c=0;c<size;c++)state[r][c]=0;moves=0;mistakes=0;started=false;won=false;locked=false;clearInterval(timerId);winEl.style.display='none';checkEl.textContent='';render();updateStatus()};
+document.getElementById('revealBtn').onclick=function(){locked=true;clearInterval(timerId);var cells=boardEl.querySelectorAll('.cell');var i=0;for(var r=0;r<size;r++)for(var c=0;c<size;c++){if(solution[r][c])cells[i].classList.add('revealed');i++}checkEl.textContent='Solution revealed — press New puzzle to try another.'};
+newPuzzle();
+</script>
+</body>
+</html>

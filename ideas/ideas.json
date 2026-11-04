@@ -1,5 +1,5 @@
 {
-  "updated": "2026-11-03",
+  "updated": "2026-11-04",
   "ideas": [
     {
       "id": "idea-000a",
@@ -285,7 +285,9 @@
       "tagline": "Logic-grid pixel puzzles, from 5x5 to 15x15.",
       "priority": 70,
       "effort": "M",
-      "status": "todo"
+      "status": "done",
+      "url": "/lab/nonogram/",
+      "shipped": "2026-11-04"
     },
     {
       "id": "idea-023",
@@ -603,7 +605,9 @@
       "tagline": "Toggle every flex property, watch the layout obey.",
       "priority": 70,
       "effort": "M",
-      "status": "todo"
+      "status": "done",
+      "url": "/lab/flexbox-playground/",
+      "shipped": "2026-11-04"
     },
     {
       "id": "idea-051",

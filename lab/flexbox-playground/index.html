@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Flexbox Playground · Shipwright Studio</title>
+<meta name="description" content="Free online flexbox playground — toggle every flex property, watch the layout obey, and copy the CSS into your project.">
+<link rel="canonical" href="https://shipwright-studio.pages.dev/lab/flexbox-playground/">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"WebApplication","name":"Flexbox Playground","url":"https://shipwright-studio.pages.dev/lab/flexbox-playground/","description":"Flexbox Playground is a free online tool that teaches CSS flexbox — toggle container and item properties, watch boxes rearrange live, and copy the generated CSS.","applicationCategory":"DeveloperApplication","operatingSystem":"Web","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"}}
+</script>
+<style>
+:root{--bg:#0a0c0f;--panel:#101318;--line:#1c2128;--txt:#e8e4da;--mut:#9aa3b2;--brass:#d2a24c}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--txt);font-family:Fraunces,Georgia,serif;line-height:1.65;padding:2rem 1.2rem 4rem;max-width:960px;margin:0 auto}
+a{color:var(--brass)}
+.nav{display:flex;gap:1.2rem;font-size:.85rem;margin-bottom:1.2rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.nav a{color:var(--mut);text-decoration:none}.nav a:hover{color:var(--brass)}
+.eyebrow{font-size:.75rem;letter-spacing:.22em;text-transform:uppercase;color:var(--mut);font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+h1{font-weight:600;font-size:clamp(2.1rem,5vw,3rem);margin:.5rem 0 .7rem}
+.define{color:var(--mut);max-width:46rem;margin-bottom:1.8rem}.define strong{color:var(--txt)}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:1.4rem;margin-bottom:1.4rem}
+.cardlabel{font-size:.72rem;letter-spacing:.18em;text-transform:uppercase;color:var(--mut);margin-bottom:.8rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.ui{font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.btn{font-size:.9rem;border:1px solid var(--line);background:transparent;color:var(--txt);border-radius:999px;padding:.5rem 1.1rem;cursor:pointer;font-family:inherit}
+.btn:hover{border-color:var(--brass);color:var(--brass)}.btn.active{border-color:var(--brass);color:var(--brass);background:rgba(210,162,76,.12)}
+.btnrow{display:flex;gap:.6rem;flex-wrap:wrap;align-items:center}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:1rem}
+.field label{display:block;font-size:.85rem;color:var(--mut);margin-bottom:.25rem}
+.field select,.field input[type=number]{width:100%;background:#0d1014;color:var(--txt);border:1px solid var(--line);border-radius:8px;padding:.45rem .6rem;font-size:.9rem}
+input[type=range]{width:100%;accent-color:var(--brass)}
+#stage{display:flex;border:1px dashed #3a4350;border-radius:10px;min-height:220px;padding:12px;background:#0d1014}
+.item{min-width:64px;min-height:64px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-weight:600;cursor:pointer;color:#0a0c0f;border:3px solid transparent}
+.item.sel{border-color:#fff;outline:2px solid var(--brass)}
+pre{background:#08090c;border:1px solid var(--line);border-radius:10px;padding:1rem;overflow-x:auto;font-family:"JetBrains Mono",monospace;font-size:.88rem;color:var(--txt);white-space:pre-wrap}
+.explain{font-size:.92rem;color:var(--mut)}.explain li{margin:.4rem 0}
+footer{margin-top:2.5rem;color:var(--mut);font-size:.85rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+@media(max-width:700px){#stage{min-height:180px}}
+</style>
+</head>
+<body>
+<nav class="nav"><a href="/">Shipwright Studio</a><a href="/ideas/">Lab</a></nav>
+<p class="eyebrow">Lab — Devtool</p>
+<h1>Flexbox Playground</h1>
+<p class="define"><strong>Flexbox Playground is a free online tool that</strong> teaches CSS flexbox by letting you toggle every container and item property — change a value, watch the boxes obey instantly, and copy the exact CSS into your own project. No account, nothing leaves the page.</p>
+
+<div class="card ui">
+<p class="cardlabel">Container</p>
+<div class="grid">
+<div class="field"><label for="direction">flex-direction</label><select id="direction"><option>row</option><option>row-reverse</option><option>column</option><option>column-reverse</option></select></div>
+<div class="field"><label for="justify">justify-content</label><select id="justify"><option>flex-start</option><option>center</option><option>flex-end</option><option>space-between</option><option>space-around</option><option>space-evenly</option></select></div>
+<div class="field"><label for="align">align-items</label><select id="align"><option>stretch</option><option>flex-start</option><option>center</option><option>flex-end</option><option>baseline</option></select></div>
+<div class="field"><label for="wrap">flex-wrap</label><select id="wrap"><option>nowrap</option><option>wrap</option><option>wrap-reverse</option></select></div>
+<div class="field"><label for="alignContent">align-content</label><select id="alignContent"><option>stretch</option><option>flex-start</option><option>center</option><option>flex-end</option><option>space-between</option><option>space-around</option></select></div>
+<div class="field"><label for="count">Items (1–8)</label><input type="number" id="count" min="1" max="8" value="4"></div>
+</div>
+<div class="field" style="margin-top:1rem"><label for="gap">Gap: <b id="gapVal">16px</b></label><input type="range" id="gap" min="0" max="40" value="16"></div>
+<div class="btnrow" style="margin-top:1rem">
+<button class="btn" data-preset="centred">Centred</button>
+<button class="btn" data-preset="navbar">Navbar</button>
+<button class="btn" data-preset="cards">Card row</button>
+<button class="btn" data-preset="equal">Equal columns</button>
+<button class="btn" id="resetBtn">Reset</button>
+</div>
+</div>
+
+<div class="card">
+<p class="cardlabel">Live preview — click a box to select it</p>
+<div id="stage" aria-label="Flexbox preview"></div>
+<p class="ui" id="changed" style="font-size:.9rem;color:var(--mut);margin-top:.8rem">Change any control and the preview, the CSS below, and this note update together.</p>
+<div class="ui" style="margin-top:1rem">
+<p class="cardlabel">Selected item (<span id="selLabel">none yet — click a box</span>)</p>
+<div class="grid">
+<div class="field"><label for="grow">flex-grow (0–3)</label><input type="number" id="grow" min="0" max="3" value="0" disabled></div>
+<div class="field"><label for="shrink">flex-shrink (0–2)</label><input type="number" id="shrink" min="0" max="2" value="1" disabled></div>
+<div class="field"><label for="basis">flex-basis</label><select id="basis" disabled><option>auto</option><option>100px</option><option>150px</option><option>200px</option></select></div>
+<div class="field"><label for="self">align-self</label><select id="self" disabled><option>auto</option><option>flex-start</option><option>center</option><option>flex-end</option><option>stretch</option><option>baseline</option></select></div>
+</div>
+</div>
+</div>
+
+<div class="card ui">
+<p class="cardlabel">Generated CSS</p>
+<pre id="cssOut"></pre>
+<button class="btn" id="copyBtn" style="margin-top:1rem">Copy CSS</button>
+</div>
+
+<div class="card explain">
+<h2 style="font-size:1.2rem;margin-bottom:.5rem">Flexbox in 60 seconds</h2>
+<ul>
+<li>The <b>main axis</b> follows flex-direction (row = left to right). justify-content spreads items along it; align-items aligns them across it.</li>
+<li>With wrap on, align-content spreads whole rows; with nowrap it does nothing — that is why it only matters once items wrap.</li>
+<li>flex-grow lets an item take a share of leftover space; flex-basis is its starting size before growing or shrinking. align-self overrides align-items for one item only.</li>
+</ul>
+</div>
+<footer>Built by Shipwright Studio · <a href="/ideas/">Back to the Lab</a></footer>
+
+<script>
+var COLORS=['#d2a24c','#7fb069','#6ea8fe','#e07a9a','#a78bfa','#f2c14e','#5ec8c0','#e8835b'];
+var state={direction:'row',justify:'flex-start',align:'stretch',wrap:'nowrap',alignContent:'stretch',gap:16,count:4,selected:-1,items:[]};
+function defaultItem(){return{grow:0,shrink:1,basis:'auto',self:'auto'}}
+for(var i=0;i<8;i++)state.items.push(defaultItem());
+function clamp(v,lo,hi){return Math.max(lo,Math.min(hi,v))}
+function containerCSS(){return '.container {\n  display: flex;\n  flex-direction: '+state.direction+';\n  justify-content: '+state.justify+';\n  align-items: '+state.align+';\n  flex-wrap: '+state.wrap+';\n  align-content: '+state.alignContent+';\n  gap: '+state.gap+'px;\n}'}
+function itemCSS(it){return '.item {\n  flex-grow: '+it.grow+';\n  flex-shrink: '+it.shrink+';\n  flex-basis: '+it.basis+';\n  align-self: '+it.self+';\n}'}
+function render(){
+  var stage=document.getElementById('stage');
+  stage.style.flexDirection=state.direction;stage.style.justifyContent=state.justify;stage.style.alignItems=state.align;stage.style.flexWrap=state.wrap;stage.style.alignContent=state.alignContent;stage.style.gap=state.gap+'px';
+  stage.innerHTML='';
+  for(var i=0;i<state.count;i++){
+    (function(idx){var d=document.createElement('div');d.className='item'+(state.selected===idx?' sel':'');d.style.background=COLORS[idx];d.style.flexGrow=state.items[idx].grow;d.style.flexShrink=state.items[idx].shrink;d.style.flexBasis=state.items[idx].basis;d.style.alignSelf=state.items[idx].self;d.textContent=idx+1;
+      d.onclick=function(){state.selected=idx;syncItemControls();render()};
+      stage.appendChild(d)})(i);
+  }
+  var out=containerCSS();
+  if(state.selected>=0)out+='\n\n/* selected item '+(state.selected+1)+' */\n'+itemCSS(state.items[state.selected]);
+  document.getElementById('cssOut').textContent=out;
+  document.getElementById('selLabel').textContent=state.selected>=0?('item '+(state.selected+1)):'none yet — click a box';
+}
+function syncItemControls(){
+  var on=state.selected>=0;
+  ['grow','shrink','basis','self'].forEach(function(id){document.getElementById(id).disabled=!on});
+  if(!on)return;var it=state.items[state.selected];
+  document.getElementById('grow').value=it.grow;document.getElementById('shrink').value=it.shrink;document.getElementById('basis').value=it.basis;document.getElementById('self').value=it.self;
+}
+function note(msg){document.getElementById('changed').textContent=msg}
+function bind(id,key,explain){
+  document.getElementById(id).addEventListener('input',function(e){state[key]=e.target.value;note(explain+': '+e.target.value+'.');render()});
+}
+bind('direction','direction','flex-direction sets the main axis');
+bind('justify','justify','justify-content spreads items along the main axis');
+bind('align','align','align-items aligns items across the main axis');
+bind('wrap','wrap','flex-wrap lets items flow onto new lines');
+bind('alignContent','alignContent','align-content spreads rows when wrapping');
+document.getElementById('gap').addEventListener('input',function(e){state.gap=parseInt(e.target.value,10);document.getElementById('gapVal').textContent=state.gap+'px';note('gap sets the space between items: '+state.gap+'px.');render()});
+document.getElementById('count').addEventListener('input',function(e){state.count=clamp(parseInt(e.target.value,10)||1,1,8);e.target.value=state.count;if(state.selected>=state.count)state.selected=-1;syncItemControls();note('Item count: '+state.count+'.');render()});
+document.getElementById('grow').addEventListener('input',function(e){if(state.selected<0)return;state.items[state.selected].grow=clamp(parseInt(e.target.value,10)||0,0,3);e.target.value=state.items[state.selected].grow;note('flex-grow '+state.items[state.selected].grow+' gives this item that share of leftover space.');render()});
+document.getElementById('shrink').addEventListener('input',function(e){if(state.selected<0)return;state.items[state.selected].shrink=clamp(parseInt(e.target.value,10)||0,0,2);e.target.value=state.items[state.selected].shrink;render()});
+document.getElementById('basis').addEventListener('input',function(e){if(state.selected<0)return;state.items[state.selected].basis=e.target.value;render()});
+document.getElementById('self').addEventListener('input',function(e){if(state.selected<0)return;state.items[state.selected].self=e.target.value;note('align-self overrides align-items for this item only: '+e.target.value+'.');render()});
+var presets={
+  centred:{direction:'row',justify:'center',align:'center',wrap:'nowrap',alignContent:'stretch',gap:16,count:3},
+  navbar:{direction:'row',justify:'space-between',align:'center',wrap:'nowrap',alignContent:'stretch',gap:16,count:4},
+  cards:{direction:'row',justify:'flex-start',align:'stretch',wrap:'wrap',alignContent:'flex-start',gap:16,count:6},
+  equal:{direction:'row',justify:'flex-start',align:'stretch',wrap:'nowrap',alignContent:'stretch',gap:16,count:3}
+};
+document.querySelectorAll('[data-preset]').forEach(function(btn){
+  btn.onclick=function(){
+    var p=presets[btn.getAttribute('data-preset')];
+    Object.keys(p).forEach(function(k){state[k]=p[k]});
+    if(btn.getAttribute('data-preset')==='equal'){state.items.forEach(function(it){it.grow=1;it.basis='auto';it.self='auto'})} else {state.items.forEach(function(it){it.grow=0;it.basis='auto'})}
+    document.getElementById('direction').value=state.direction;document.getElementById('justify').value=state.justify;document.getElementById('align').value=state.align;document.getElementById('wrap').value=state.wrap;document.getElementById('alignContent').value=state.alignContent;document.getElementById('gap').value=state.gap;document.getElementById('gapVal').textContent=state.gap+'px';document.getElementById('count').value=state.count;
+    state.selected=-1;syncItemControls();note('Preset applied: '+btn.textContent+'.');render();
+  };
+});
+document.getElementById('resetBtn').onclick=function(){
+  state={direction:'row',justify:'flex-start',align:'stretch',wrap:'nowrap',alignContent:'stretch',gap:16,count:4,selected:-1,items:[]};
+  for(var i=0;i<8;i++)state.items.push(defaultItem());
+  document.getElementById('direction').value='row';document.getElementById('justify').value='flex-start';document.getElementById('align').value='stretch';document.getElementById('wrap').value='nowrap';document.getElementById('alignContent').value='stretch';document.getElementById('gap').value=16;document.getElementById('gapVal').textContent='16px';document.getElementById('count').value=4;
+  syncItemControls();note('Reset to defaults.');render();
+};
+document.getElementById('copyBtn').onclick=function(){
+  var t=document.getElementById('cssOut').textContent;
+  if(navigator.clipboard)navigator.clipboard.writeText(t).then(function(){document.getElementById('copyBtn').textContent='Copied!';setTimeout(function(){document.getElementById('copyBtn').textContent='Copy CSS'},1500)});
+  else{document.getElementById('copyBtn').textContent='Select the CSS above to copy';}
+};
+syncItemControls();render();
+</script>
+</body>
+</html>
