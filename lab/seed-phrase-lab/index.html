@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Seed Phrase Lab · Shipwright Studio</title>
+<meta name="description" content="Free online BIP39 seed phrase generator and validator for learning — generate 12, 15, 18, 21 or 24-word mnemonics from real entropy and check any phrase against the official wordlist and checksum, all computed locally.">
+<link rel="canonical" href="https://shipwright-studio.pages.dev/lab/seed-phrase-lab/">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"WebApplication","name":"Seed Phrase Lab","url":"https://shipwright-studio.pages.dev/lab/seed-phrase-lab/","description":"Seed Phrase Lab is a free online tool that generates BIP39 recovery phrases from real cryptographic entropy and validates any phrase against the official 2048-word list and its checksum, entirely in the browser, for learning how wallets work.","applicationCategory":"EducationApplication","operatingSystem":"Web","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"}}
+</script>
+<style>
+:root{--bg:#0a0c0f;--panel:#101318;--line:#1c2128;--txt:#e8e4da;--mut:#9aa3b2;--brass:#d2a24c;--green:#6fbf73;--red:#e0655f}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--txt);font-family:Fraunces,Georgia,serif;line-height:1.65;padding:2rem 1.2rem 4rem;max-width:960px;margin:0 auto}
+a{color:var(--brass)}
+.nav{display:flex;gap:1.2rem;font-size:.85rem;margin-bottom:1.2rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.nav a{color:var(--mut);text-decoration:none}
+.nav a:hover{color:var(--brass)}
+.eyebrow{font-size:.75rem;letter-spacing:.22em;text-transform:uppercase;color:var(--mut);font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+h1{font-weight:600;font-size:clamp(2.1rem,5vw,3rem);margin:.5rem 0 .7rem}
+.define{color:var(--mut);max-width:46rem;margin-bottom:1.8rem;font-size:1rem}
+.define strong{color:var(--txt)}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:1.4rem;margin-bottom:1.4rem}
+.cardlabel{font-size:.72rem;letter-spacing:.18em;text-transform:uppercase;color:var(--mut);margin-bottom:.8rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.ui{font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.mono{font-family:"JetBrains Mono",ui-monospace,monospace}
+.warn{border:1px solid var(--red);border-radius:14px;padding:1.1rem 1.4rem;margin-bottom:1.4rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif;font-size:.92rem}
+.warn b{color:var(--red)}
+.warn p{color:var(--mut);margin-top:.3rem}
+.warn p b{color:var(--txt)}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:999px;overflow:hidden;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif;flex-wrap:wrap}
+.seg button{border:0;background:transparent;color:var(--mut);padding:.45rem 1.1rem;cursor:pointer;font-size:.86rem}
+.seg button.on{background:rgba(210,162,76,.15);color:var(--brass)}
+.btn{font-size:.9rem;border:1px solid var(--brass);background:transparent;color:var(--brass);border-radius:999px;padding:.55rem 1.4rem;cursor:pointer;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.btn:hover{background:rgba(210,162,76,.12)}
+.btn.ghost{border-color:var(--line);color:var(--mut)}
+.btn.ghost:hover{color:var(--txt);border-color:var(--mut)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.btnrow{display:flex;gap:.7rem;flex-wrap:wrap;margin-top:1rem;align-items:center}
+.banner{font-size:.88rem;color:var(--red);min-height:1.2em;margin-top:.8rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.wordgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:.6rem;margin-top:1rem}
+@media(max-width:720px){.wordgrid{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:480px){.wordgrid{grid-template-columns:repeat(2,1fr)}.btn{width:100%}}
+.chip{background:#08090c;border:1px solid var(--line);border-radius:10px;padding:.55rem .7rem;font-family:"JetBrains Mono",ui-monospace,monospace;font-size:.9rem;display:flex;gap:.5rem;align-items:baseline}
+.chip .n{color:var(--brass);font-size:.75rem;flex:0 0 auto}
+.empty{color:var(--mut);font-size:.9rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif;margin-top:1rem}
+.statgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:.9rem;margin-top:1rem}
+@media(max-width:640px){.statgrid{grid-template-columns:1fr}}
+.tile{background:#08090c;border:1px solid var(--line);border-radius:10px;padding:1rem}
+.tile .n{font-family:"JetBrains Mono",ui-monospace,monospace;font-size:1.05rem;color:var(--brass);word-break:break-all}
+.tile .l{font-size:.78rem;color:var(--mut);font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif;margin-top:.2rem}
+textarea{width:100%;background:#08090c;border:1px solid var(--line);border-radius:10px;color:var(--txt);font-family:"JetBrains Mono",ui-monospace,monospace;font-size:.9rem;padding:.8rem;min-height:5.5rem;resize:vertical}
+textarea:focus{outline:none;border-color:var(--brass)}
+.verdict{border-radius:12px;padding:1.1rem 1.3rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif;margin-top:1rem}
+.verdict.neutral{border:1px solid var(--line);color:var(--mut)}
+.verdict.green{border:1px solid var(--green);color:var(--txt)}.verdict.green b{color:var(--green)}
+.verdict.red{border:1px solid var(--red);color:var(--txt)}.verdict.red b{color:var(--red)}
+.verdict p{font-size:.9rem;color:var(--mut);margin-top:.3rem}
+.rules{list-style:none;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif;font-size:.92rem;margin-top:.9rem}
+.rules li{padding:.45rem 0;border-bottom:1px solid var(--line);display:flex;gap:.6rem}
+.rules li:last-child{border-bottom:0}
+.ok{color:var(--green)}.bad{color:var(--red)}.dim{color:var(--mut)}
+.toast{position:fixed;bottom:1.4rem;left:50%;transform:translateX(-50%);background:var(--brass);color:#0a0c0f;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif;font-size:.88rem;padding:.55rem 1.3rem;border-radius:999px;opacity:0;pointer-events:none;transition:opacity .25s}
+.toast.show{opacity:1}
+details.explain{border:1px solid var(--line);border-radius:10px;padding:.9rem 1.1rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif;font-size:.88rem;color:var(--mut)}
+details.explain summary{cursor:pointer;color:var(--txt);font-size:.95rem}
+details.explain p{margin-top:.6rem}
+details.explain code{font-family:"JetBrains Mono",ui-monospace,monospace;color:var(--brass);font-size:.82rem}
+footer{margin-top:2.5rem;font-size:.85rem;color:var(--mut);font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+</style>
+</head>
+<body>
+<nav class="nav"><a href="/">Shipwright Studio</a><a href="/ideas/">Lab</a></nav>
+<p class="eyebrow">Lab — Web3 tool</p>
+<h1>Seed Phrase Lab</h1>
+<p class="define"><strong>Seed Phrase Lab is a free online tool that</strong> generates BIP39 recovery phrases from real cryptographic entropy and validates any phrase against the official 2048-word list and its checksum — entirely in your browser, so you can learn how wallets work without risking anything.</p>
+
+<div class="warn">
+<b>⚠ For learning only.</b>
+<p>Never use a phrase generated here for real funds. A recovery phrase <b>is</b> the wallet — anyone who sees it can take everything. Never share a phrase with anyone, never type one into a website that asks for it, and never store one in a screenshot, email or cloud note. Nothing on this page is sent or saved anywhere.</p>
+</div>
+
+<section class="card">
+<p class="cardlabel">Generate a phrase</p>
+<div class="seg" role="group" aria-label="Word count">
+<button data-words="12" class="on">12 words</button>
+<button data-words="15">15 words</button>
+<button data-words="18">18 words</button>
+<button data-words="21">21 words</button>
+<button data-words="24">24 words</button>
+</div>
+<div class="btnrow">
+<button class="btn" id="btnGenerate">Generate</button>
+<button class="btn ghost" id="btnCopy" disabled>Copy phrase</button>
+<button class="btn ghost" id="btnClearGen">Clear</button>
+</div>
+<p class="banner" id="genBanner"></p>
+<div id="wordGrid"><p class="empty">Pick a length and press Generate — the words appear here, numbered in order.</p></div>
+<div class="statgrid" id="genStats" style="display:none">
+<div class="tile"><div class="n" id="stBits">—</div><div class="l">Entropy (bits)</div></div>
+<div class="tile"><div class="n" id="stWords">—</div><div class="l">Word count</div></div>
+<div class="tile"><div class="n" id="stHex">—</div><div class="l">Entropy (hex)</div></div>
+</div>
+</section>
+
+<section class="card">
+<p class="cardlabel">Validate a phrase</p>
+<textarea id="phrase" placeholder="Paste a recovery phrase here — words separated by spaces…" aria-label="Phrase to validate" spellcheck="false"></textarea>
+<div class="btnrow">
+<button class="btn" id="btnValidate">Validate</button>
+<button class="btn ghost" id="btnSample">Load test-vector phrase</button>
+<button class="btn ghost" id="btnClearVal">Clear</button>
+</div>
+<div class="verdict neutral" id="verdict"><b>Paste a phrase above.</b><p>Validation checks the word count, that every word is in the official BIP39 list, and that the checksum matches.</p></div>
+<ul class="rules" id="rules"></ul>
+</section>
+
+<section class="card">
+<details class="explain">
+<summary>How a seed phrase works</summary>
+<p>A wallet starts with random <code>entropy</code> — 128 bits for a 12-word phrase, 256 bits for 24 words. It hashes that entropy with SHA-256 and takes the first few bits of the hash as a <code>checksum</code> (4 bits for 128-bit entropy, 8 for 256-bit). Entropy + checksum is then split into 11-bit groups, and each group is an index (0–2047) into the official BIP39 wordlist of 2048 English words. That is the whole trick: the words are just a human-readable encoding of random bits plus a checksum.</p>
+<p>The checksum is why a wallet can tell you a phrase is wrong. Change one letter, swap two words, or mistype a word and the checksum almost certainly no longer matches — so the wallet refuses the phrase instead of silently opening the wrong wallet. Validating a phrase never needs the internet: the wordlist and the SHA-256 check are all that is required, which is why this page works entirely offline.</p>
+<p>The test-vector phrase — <code>abandon</code> eleven times followed by <code>about</code> — is the official BIP39 example for all-zero 128-bit entropy. It is a public test case, not a real wallet: never use it, or any phrase from this page, with real funds.</p>
+</details>
+</section>
+
+<div class="toast" id="toast"></div>
+
+<footer>Built in the Shipwright Studio Lab · <a href="/ideas/">more experiments</a></footer>
+
+<script>
+"use strict";
+/* ===== BIP39 wordlist (official English list, 2048 words) ===== */
+var WORDLIST=["abandon", "ability", "able", "about", "above", "absent", "absorb", "abstract", "absurd", "abuse", "access", "accident", "account", "accuse", "achieve", "acid", "acoustic", "acquire", "across", "act", "action", "actor", "actress", "actual", "adapt", "add", "addict", "address", "adjust", "admit", "adult", "advance", "advice", "aerobic", "affair", "afford", "afraid", "again", "age", "agent", "agree", "ahead", "aim", "air", "airport", "aisle", "alarm", "album", "alcohol", "alert", "alien", "all", "alley", "allow", "almost", "alone", "alpha", "already", "also", "alter", "always", "amateur", "amazing", "among", "amount", "amused", "analyst", "anchor", "ancient", "anger", "angle", "angry", "animal", "ankle", "announce", "annual", "another", "answer", "antenna", "antique", "anxiety", "any", "apart", "apology", "appear", "apple", "approve", "april", "arch", "arctic", "area", "arena", "argue", "arm", "armed", "armor", "army", "around", "arrange", "arrest", "arrive", "arrow", "art", "artefact", "artist", "artwork", "ask", "aspect", "assault", "asset", "assist", "assume", "asthma", "athlete", "atom", "attack", "attend", "attitude", "attract", "auction", "audit", "august", "aunt", "author", "auto", "autumn", "average", "avocado", "avoid", "awake", "aware", "away", "awesome", "awful", "awkward", "axis", "baby", "bachelor", "bacon", "badge", "bag", "balance", "balcony", "ball", "bamboo", "banana", "banner", "bar", "barely", "bargain", "barrel", "base", "basic", "basket", "battle", "beach", "bean", "beauty", "because", "become", "beef", "before", "begin", "behave", "behind", "believe", "below", "belt", "bench", "benefit", "best", "betray", "better", "between", "beyond", "bicycle", "bid", "bike", "bind", "biology", "bird", "birth", "bitter", "black", "blade", "blame", "blanket", "blast", "bleak", "bless", "blind", "blood", "blossom", "blouse", "blue", "blur", "blush", "board", "boat", "body", "boil", "bomb", "bone", "bonus", "book", "boost", "border", "boring", "borrow", "boss", "bottom", "bounce", "box", "boy", "bracket", "brain", "brand", "brass", "brave", "bread", "breeze", "brick", "bridge", "brief", "bright", "bring", "brisk", "broccoli", "broken", "bronze", "broom", "brother", "brown", "brush", "bubble", "buddy", "budget", "buffalo", "build", "bulb", "bulk", "bullet", "bundle", "bunker", "burden", "burger", "burst", "bus", "business", "busy", "butter", "buyer", "buzz", "cabbage", "cabin", "cable", "cactus", "cage", "cake", "call", "calm", "camera", "camp", "can", "canal", "cancel", "candy", "cannon", "canoe", "canvas", "canyon", "capable", "capital", "captain", "car", "carbon", "card", "cargo", "carpet", "carry", "cart", "case", "cash", "casino", "castle", "casual", "cat", "catalog", "catch", "category", "cattle", "caught", "cause", "caution", "cave", "ceiling", "celery", "cement", "census", "century", "cereal", "certain", "chair", "chalk", "champion", "change", "chaos", "chapter", "charge", "chase", "chat", "cheap", "check", "cheese", "chef", "cherry", "chest", "chicken", "chief", "child", "chimney", "choice", "choose", "chronic", "chuckle", "chunk", "churn", "cigar", "cinnamon", "circle", "citizen", "city", "civil", "claim", "clap", "clarify", "claw", "clay", "clean", "clerk", "clever", "click", "client", "cliff", "climb", "clinic", "clip", "clock", "clog", "close", "cloth", "cloud", "clown", "club", "clump", "cluster", "clutch", "coach", "coast", "coconut", "code", "coffee", "coil", "coin", "collect", "color", "column", "combine", "come", "comfort", "comic", "common", "company", "concert", "conduct", "confirm", "congress", "connect", "consider", "control", "convince", "cook", "cool", "copper", "copy", "coral", "core", "corn", "correct", "cost", "cotton", "couch", "country", "couple", "course", "cousin", "cover", "coyote", "crack", "cradle", "craft", "cram", "crane", "crash", "crater", "crawl", "crazy", "cream", "credit", "creek", "crew", "cricket", "crime", "crisp", "critic", "crop", "cross", "crouch", "crowd", "crucial", "cruel", "cruise", "crumble", "crunch", "crush", "cry", "crystal", "cube", "culture", "cup", "cupboard", "curious", "current", "curtain", "curve", "cushion", "custom", "cute", "cycle", "dad", "damage", "damp", "dance", "danger", "daring", "dash", "daughter", "dawn", "day", "deal", "debate", "debris", "decade", "december", "decide", "decline", "decorate", "decrease", "deer", "defense", "define", "defy", "degree", "delay", "deliver", "demand", "demise", "denial", "dentist", "deny", "depart", "depend", "deposit", "depth", "deputy", "derive", "describe", "desert", "design", "desk", "despair", "destroy", "detail", "detect", "develop", "device", "devote", "diagram", "dial", "diamond", "diary", "dice", "diesel", "diet", "differ", "digital", "dignity", "dilemma", "dinner", "dinosaur", "direct", "dirt", "disagree", "discover", "disease", "dish", "dismiss", "disorder", "display", "distance", "divert", "divide", "divorce", "dizzy", "doctor", "document", "dog", "doll", "dolphin", "domain", "donate", "donkey", "donor", "door", "dose", "double", "dove", "draft", "dragon", "drama", "drastic", "draw", "dream", "dress", "drift", "drill", "drink", "drip", "drive", "drop", "drum", "dry", "duck", "dumb", "dune", "during", "dust", "dutch", "duty", "dwarf", "dynamic", "eager", "eagle", "early", "earn", "earth", "easily", "east", "easy", "echo", "ecology", "economy", "edge", "edit", "educate", "effort", "egg", "eight", "either", "elbow", "elder", "electric", "elegant", "element", "elephant", "elevator", "elite", "else", "embark", "embody", "embrace", "emerge", "emotion", "employ", "empower", "empty", "enable", "enact", "end", "endless", "endorse", "enemy", "energy", "enforce", "engage", "engine", "enhance", "enjoy", "enlist", "enough", "enrich", "enroll", "ensure", "enter", "entire", "entry", "envelope", "episode", "equal", "equip", "era", "erase", "erode", "erosion", "error", "erupt", "escape", "essay", "essence", "estate", "eternal", "ethics", "evidence", "evil", "evoke", "evolve", "exact", "example", "excess", "exchange", "excite", "exclude", "excuse", "execute", "exercise", "exhaust", "exhibit", "exile", "exist", "exit", "exotic", "expand", "expect", "expire", "explain", "expose", "express", "extend", "extra", "eye", "eyebrow", "fabric", "face", "faculty", "fade", "faint", "faith", "fall", "false", "fame", "family", "famous", "fan", "fancy", "fantasy", "farm", "fashion", "fat", "fatal", "father", "fatigue", "fault", "favorite", "feature", "february", "federal", "fee", "feed", "feel", "female", "fence", "festival", "fetch", "fever", "few", "fiber", "fiction", "field", "figure", "file", "film", "filter", "final", "find", "fine", "finger", "finish", "fire", "firm", "first", "fiscal", "fish", "fit", "fitness", "fix", "flag", "flame", "flash", "flat", "flavor", "flee", "flight", "flip", "float", "flock", "floor", "flower", "fluid", "flush", "fly", "foam", "focus", "fog", "foil", "fold", "follow", "food", "foot", "force", "forest", "forget", "fork", "fortune", "forum", "forward", "fossil", "foster", "found", "fox", "fragile", "frame", "frequent", "fresh", "friend", "fringe", "frog", "front", "frost", "frown", "frozen", "fruit", "fuel", "fun", "funny", "furnace", "fury", "future", "gadget", "gain", "galaxy", "gallery", "game", "gap", "garage", "garbage", "garden", "garlic", "garment", "gas", "gasp", "gate", "gather", "gauge", "gaze", "general", "genius", "genre", "gentle", "genuine", "gesture", "ghost", "giant", "gift", "giggle", "ginger", "giraffe", "girl", "give", "glad", "glance", "glare", "glass", "glide", "glimpse", "globe", "gloom", "glory", "glove", "glow", "glue", "goat", "goddess", "gold", "good", "goose", "gorilla", "gospel", "gossip", "govern", "gown", "grab", "grace", "grain", "grant", "grape", "grass", "gravity", "great", "green", "grid", "grief", "grit", "grocery", "group", "grow", "grunt", "guard", "guess", "guide", "guilt", "guitar", "gun", "gym", "habit", "hair", "half", "hammer", "hamster", "hand", "happy", "harbor", "hard", "harsh", "harvest", "hat", "have", "hawk", "hazard", "head", "health", "heart", "heavy", "hedgehog", "height", "hello", "helmet", "help", "hen", "hero", "hidden", "high", "hill", "hint", "hip", "hire", "history", "hobby", "hockey", "hold", "hole", "holiday", "hollow", "home", "honey", "hood", "hope", "horn", "horror", "horse", "hospital", "host", "hotel", "hour", "hover", "hub", "huge", "human", "humble", "humor", "hundred", "hungry", "hunt", "hurdle", "hurry", "hurt", "husband", "hybrid", "ice", "icon", "idea", "identify", "idle", "ignore", "ill", "illegal", "illness", "image", "imitate", "immense", "immune", "impact", "impose", "improve", "impulse", "inch", "include", "income", "increase", "index", "indicate", "indoor", "industry", "infant", "inflict", "inform", "inhale", "inherit", "initial", "inject", "injury", "inmate", "inner", "innocent", "input", "inquiry", "insane", "insect", "inside", "inspire", "install", "intact", "interest", "into", "invest", "invite", "involve", "iron", "island", "isolate", "issue", "item", "ivory", "jacket", "jaguar", "jar", "jazz", "jealous", "jeans", "jelly", "jewel", "job", "join", "joke", "journey", "joy", "judge", "juice", "jump", "jungle", "junior", "junk", "just", "kangaroo", "keen", "keep", "ketchup", "key", "kick", "kid", "kidney", "kind", "kingdom", "kiss", "kit", "kitchen", "kite", "kitten", "kiwi", "knee", "knife", "knock", "know", "lab", "label", "labor", "ladder", "lady", "lake", "lamp", "language", "laptop", "large", "later", "latin", "laugh", "laundry", "lava", "law", "lawn", "lawsuit", "layer", "lazy", "leader", "leaf", "learn", "leave", "lecture", "left", "leg", "legal", "legend", "leisure", "lemon", "lend", "length", "lens", "leopard", "lesson", "letter", "level", "liar", "liberty", "library", "license", "life", "lift", "light", "like", "limb", "limit", "link", "lion", "liquid", "list", "little", "live", "lizard", "load", "loan", "lobster", "local", "lock", "logic", "lonely", "long", "loop", "lottery", "loud", "lounge", "love", "loyal", "lucky", "luggage", "lumber", "lunar", "lunch", "luxury", "lyrics", "machine", "mad", "magic", "magnet", "maid", "mail", "main", "major", "make", "mammal", "man", "manage", "mandate", "mango", "mansion", "manual", "maple", "marble", "march", "margin", "marine", "market", "marriage", "mask", "mass", "master", "match", "material", "math", "matrix", "matter", "maximum", "maze", "meadow", "mean", "measure", "meat", "mechanic", "medal", "media", "melody", "melt", "member", "memory", "mention", "menu", "mercy", "merge", "merit", "merry", "mesh", "message", "metal", "method", "middle", "midnight", "milk", "million", "mimic", "mind", "minimum", "minor", "minute", "miracle", "mirror", "misery", "miss", "mistake", "mix", "mixed", "mixture", "mobile", "model", "modify", "mom", "moment", "monitor", "monkey", "monster", "month", "moon", "moral", "more", "morning", "mosquito", "mother", "motion", "motor", "mountain", "mouse", "move", "movie", "much", "muffin", "mule", "multiply", "muscle", "museum", "mushroom", "music", "must", "mutual", "myself", "mystery", "myth", "naive", "name", "napkin", "narrow", "nasty", "nation", "nature", "near", "neck", "need", "negative", "neglect", "neither", "nephew", "nerve", "nest", "net", "network", "neutral", "never", "news", "next", "nice", "night", "noble", "noise", "nominee", "noodle", "normal", "north", "nose", "notable", "note", "nothing", "notice", "novel", "now", "nuclear", "number", "nurse", "nut", "oak", "obey", "object", "oblige", "obscure", "observe", "obtain", "obvious", "occur", "ocean", "october", "odor", "off", "offer", "office", "often", "oil", "okay", "old", "olive", "olympic", "omit", "once", "one", "onion", "online", "only", "open", "opera", "opinion", "oppose", "option", "orange", "orbit", "orchard", "order", "ordinary", "organ", "orient", "original", "orphan", "ostrich", "other", "outdoor", "outer", "output", "outside", "oval", "oven", "over", "own", "owner", "oxygen", "oyster", "ozone", "pact", "paddle", "page", "pair", "palace", "palm", "panda", "panel", "panic", "panther", "paper", "parade", "parent", "park", "parrot", "party", "pass", "patch", "path", "patient", "patrol", "pattern", "pause", "pave", "payment", "peace", "peanut", "pear", "peasant", "pelican", "pen", "penalty", "pencil", "people", "pepper", "perfect", "permit", "person", "pet", "phone", "photo", "phrase", "physical", "piano", "picnic", "picture", "piece", "pig", "pigeon", "pill", "pilot", "pink", "pioneer", "pipe", "pistol", "pitch", "pizza", "place", "planet", "plastic", "plate", "play", "please", "pledge", "pluck", "plug", "plunge", "poem", "poet", "point", "polar", "pole", "police", "pond", "pony", "pool", "popular", "portion", "position", "possible", "post", "potato", "pottery", "poverty", "powder", "power", "practice", "praise", "predict", "prefer", "prepare", "present", "pretty", "prevent", "price", "pride", "primary", "print", "priority", "prison", "private", "prize", "problem", "process", "produce", "profit", "program", "project", "promote", "proof", "property", "prosper", "protect", "proud", "provide", "public", "pudding", "pull", "pulp", "pulse", "pumpkin", "punch", "pupil", "puppy", "purchase", "purity", "purpose", "purse", "push", "put", "puzzle", "pyramid", "quality", "quantum", "quarter", "question", "quick", "quit", "quiz", "quote", "rabbit", "raccoon", "race", "rack", "radar", "radio", "rail", "rain", "raise", "rally", "ramp", "ranch", "random", "range", "rapid", "rare", "rate", "rather", "raven", "raw", "razor", "ready", "real", "reason", "rebel", "rebuild", "recall", "receive", "recipe", "record", "recycle", "reduce", "reflect", "reform", "refuse", "region", "regret", "regular", "reject", "relax", "release", "relief", "rely", "remain", "remember", "remind", "remove", "render", "renew", "rent", "reopen", "repair", "repeat", "replace", "report", "require", "rescue", "resemble", "resist", "resource", "response", "result", "retire", "retreat", "return", "reunion", "reveal", "review", "reward", "rhythm", "rib", "ribbon", "rice", "rich", "ride", "ridge", "rifle", "right", "rigid", "ring", "riot", "ripple", "risk", "ritual", "rival", "river", "road", "roast", "robot", "robust", "rocket", "romance", "roof", "rookie", "room", "rose", "rotate", "rough", "round", "route", "royal", "rubber", "rude", "rug", "rule", "run", "runway", "rural", "sad", "saddle", "sadness", "safe", "sail", "salad", "salmon", "salon", "salt", "salute", "same", "sample", "sand", "satisfy", "satoshi", "sauce", "sausage", "save", "say", "scale", "scan", "scare", "scatter", "scene", "scheme", "school", "science", "scissors", "scorpion", "scout", "scrap", "screen", "script", "scrub", "sea", "search", "season", "seat", "second", "secret", "section", "security", "seed", "seek", "segment", "select", "sell", "seminar", "senior", "sense", "sentence", "series", "service", "session", "settle", "setup", "seven", "shadow", "shaft", "shallow", "share", "shed", "shell", "sheriff", "shield", "shift", "shine", "ship", "shiver", "shock", "shoe", "shoot", "shop", "short", "shoulder", "shove", "shrimp", "shrug", "shuffle", "shy", "sibling", "sick", "side", "siege", "sight", "sign", "silent", "silk", "silly", "silver", "similar", "simple", "since", "sing", "siren", "sister", "situate", "six", "size", "skate", "sketch", "ski", "skill", "skin", "skirt", "skull", "slab", "slam", "sleep", "slender", "slice", "slide", "slight", "slim", "slogan", "slot", "slow", "slush", "small", "smart", "smile", "smoke", "smooth", "snack", "snake", "snap", "sniff", "snow", "soap", "soccer", "social", "sock", "soda", "soft", "solar", "soldier", "solid", "solution", "solve", "someone", "song", "soon", "sorry", "sort", "soul", "sound", "soup", "source", "south", "space", "spare", "spatial", "spawn", "speak", "special", "speed", "spell", "spend", "sphere", "spice", "spider", "spike", "spin", "spirit", "split", "spoil", "sponsor", "spoon", "sport", "spot", "spray", "spread", "spring", "spy", "square", "squeeze", "squirrel", "stable", "stadium", "staff", "stage", "stairs", "stamp", "stand", "start", "state", "stay", "steak", "steel", "stem", "step", "stereo", "stick", "still", "sting", "stock", "stomach", "stone", "stool", "story", "stove", "strategy", "street", "strike", "strong", "struggle", "student", "stuff", "stumble", "style", "subject", "submit", "subway", "success", "such", "sudden", "suffer", "sugar", "suggest", "suit", "summer", "sun", "sunny", "sunset", "super", "supply", "supreme", "sure", "surface", "surge", "surprise", "surround", "survey", "suspect", "sustain", "swallow", "swamp", "swap", "swarm", "swear", "sweet", "swift", "swim", "swing", "switch", "sword", "symbol", "symptom", "syrup", "system", "table", "tackle", "tag", "tail", "talent", "talk", "tank", "tape", "target", "task", "taste", "tattoo", "taxi", "teach", "team", "tell", "ten", "tenant", "tennis", "tent", "term", "test", "text", "thank", "that", "theme", "then", "theory", "there", "they", "thing", "this", "thought", "three", "thrive", "throw", "thumb", "thunder", "ticket", "tide", "tiger", "tilt", "timber", "time", "tiny", "tip", "tired", "tissue", "title", "toast", "tobacco", "today", "toddler", "toe", "together", "toilet", "token", "tomato", "tomorrow", "tone", "tongue", "tonight", "tool", "tooth", "top", "topic", "topple", "torch", "tornado", "tortoise", "toss", "total", "tourist", "toward", "tower", "town", "toy", "track", "trade", "traffic", "tragic", "train", "transfer", "trap", "trash", "travel", "tray", "treat", "tree", "trend", "trial", "tribe", "trick", "trigger", "trim", "trip", "trophy", "trouble", "truck", "true", "truly", "trumpet", "trust", "truth", "try", "tube", "tuition", "tumble", "tuna", "tunnel", "turkey", "turn", "turtle", "twelve", "twenty", "twice", "twin", "twist", "two", "type", "typical", "ugly", "umbrella", "unable", "unaware", "uncle", "uncover", "under", "undo", "unfair", "unfold", "unhappy", "uniform", "unique", "unit", "universe", "unknown", "unlock", "until", "unusual", "unveil", "update", "upgrade", "uphold", "upon", "upper", "upset", "urban", "urge", "usage", "use", "used", "useful", "useless", "usual", "utility", "vacant", "vacuum", "vague", "valid", "valley", "valve", "van", "vanish", "vapor", "various", "vast", "vault", "vehicle", "velvet", "vendor", "venture", "venue", "verb", "verify", "version", "very", "vessel", "veteran", "viable", "vibrant", "vicious", "victory", "video", "view", "village", "vintage", "violin", "virtual", "virus", "visa", "visit", "visual", "vital", "vivid", "vocal", "voice", "void", "volcano", "volume", "vote", "voyage", "wage", "wagon", "wait", "walk", "wall", "walnut", "want", "warfare", "warm", "warrior", "wash", "wasp", "waste", "water", "wave", "way", "wealth", "weapon", "wear", "weasel", "weather", "web", "wedding", "weekend", "weird", "welcome", "west", "wet", "whale", "what", "wheat", "wheel", "when", "where", "whip", "whisper", "wide", "width", "wife", "wild", "will", "win", "window", "wine", "wing", "wink", "winner", "winter", "wire", "wisdom", "wise", "wish", "witness", "wolf", "woman", "wonder", "wood", "wool", "word", "work", "world", "worry", "worth", "wrap", "wreck", "wrestle", "wrist", "write", "wrong", "yard", "year", "yellow", "you", "young", "youth", "zebra", "zero", "zone", "zoo"];
+
+/* ===== Core (node-tested against the official BIP39 test vector) ===== */
+var WORD_INDEX={};
+for(var i=0;i<WORDLIST.length;i++)WORD_INDEX[WORDLIST[i]]=i;
+
+function bytesToBits(bytes){
+  var bits="";
+  for(var i=0;i<bytes.length;i++)bits+=("0000000"+bytes[i].toString(2)).slice(-8);
+  return bits;
+}
+function bitsToBytes(bits){
+  var out=new Uint8Array(bits.length/8);
+  for(var i=0;i<out.length;i++)out[i]=parseInt(bits.slice(i*8,i*8+8),2);
+  return out;
+}
+function bytesToHex(bytes){
+  var s="";
+  for(var i=0;i<bytes.length;i++)s+=("0"+bytes[i].toString(16)).slice(-2);
+  return s;
+}
+async function sha256(bytes){
+  var d=await crypto.subtle.digest("SHA-256",bytes);
+  return new Uint8Array(d);
+}
+/* entropy (Uint8Array, 16/20/24/28/32 bytes) -> mnemonic words */
+async function entropyToMnemonic(entropy){
+  var ent=entropy.length*8, cs=ent/32;
+  var hash=await sha256(entropy);
+  var bits=bytesToBits(entropy)+bytesToBits(hash).slice(0,cs);
+  var words=[];
+  for(var i=0;i<bits.length/11;i++)
+    words.push(WORDLIST[parseInt(bits.slice(i*11,i*11+11),2)]);
+  return words;
+}
+/* mnemonic string -> {valid, words, errors[]} */
+async function validateMnemonic(phrase){
+  var words=phrase.trim().toLowerCase().split(/\s+/).filter(Boolean);
+  var errors=[];
+  var allowed=[12,15,18,21,24];
+  if(words.length===0)return {valid:false,words:words,errors:["No words entered."]};
+  if(allowed.indexOf(words.length)<0)
+    errors.push("Word count is "+words.length+" — a BIP39 phrase has 12, 15, 18, 21 or 24 words.");
+  var unknown=[];
+  words.forEach(function(w,idx){
+    if(!(w in WORD_INDEX))unknown.push("#"+(idx+1)+" “"+w+"”");
+  });
+  if(unknown.length)
+    errors.push("Unknown word"+(unknown.length>1?"s":"")+" (not in the BIP39 list): "+unknown.join(", ")+".");
+  if(errors.length)return {valid:false,words:words,errors:errors};
+  var bits="";
+  words.forEach(function(w){bits+=("0000000000"+WORD_INDEX[w].toString(2)).slice(-11);});
+  var entBits=words.length*11*32/33, csBits=words.length*11-entBits;
+  var entropyBits=bits.slice(0,entBits), checksumBits=bits.slice(entBits);
+  var entropy=bitsToBytes(entropyBits);
+  var hash=await sha256(entropy);
+  var expected=bytesToBits(hash).slice(0,csBits);
+  if(checksumBits!==expected)
+    errors.push("Checksum mismatch — the words are all in the list, but the phrase fails its checksum. A word is probably mistyped or swapped.");
+  return {valid:errors.length===0,words:words,errors:errors};
+}
+
+/* ===== UI ===== */
+function $(id){return document.getElementById(id);}
+var wordCount=12, currentPhrase="";
+function toast(t){var el=$("toast");el.textContent=t;el.classList.add("show");
+  setTimeout(function(){el.classList.remove("show");},1500);}
+function copyText(t){
+  function fb(){var ta=document.createElement("textarea");ta.value=t;document.body.appendChild(ta);ta.select();
+    try{document.execCommand("copy");toast("Copied ✓");}catch(e){}document.body.removeChild(ta);}
+  if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(t).then(function(){toast("Copied ✓");}).catch(fb);
+  else fb();
+}
+function cryptoOK(){
+  return !!(window.crypto&&crypto.getRandomValues&&crypto.subtle&&crypto.subtle.digest);
+}
+document.querySelectorAll("[data-words]").forEach(function(b){
+  b.addEventListener("click",function(){
+    document.querySelectorAll("[data-words]").forEach(function(x){x.classList.remove("on");});
+    b.classList.add("on");
+    wordCount=parseInt(b.getAttribute("data-words"),10);
+  });
+});
+$("btnGenerate").addEventListener("click",async function(){
+  if(!cryptoOK()){$("genBanner").textContent="Web Crypto is unavailable in this browser or context — generation needs a secure context (HTTPS or localhost).";return;}
+  $("genBanner").textContent="";
+  var bytes=new Uint8Array(wordCount*11*32/33/8);
+  crypto.getRandomValues(bytes);
+  try{
+    var words=await entropyToMnemonic(bytes);
+    currentPhrase=words.join(" ");
+    var html='<div class="wordgrid">';
+    words.forEach(function(w,idx){
+      html+='<div class="chip"><span class="n">'+(idx+1)+'</span><span>'+w+'</span></div>';
+    });
+    html+='</div>';
+    $("wordGrid").innerHTML=html;
+    $("stBits").textContent=bytes.length*8+" bits";
+    $("stWords").textContent=words.length+" words";
+    $("stHex").textContent=bytesToHex(bytes);
+    $("genStats").style.display="grid";
+    $("btnCopy").disabled=false;
+  }catch(e){
+    $("genBanner").textContent="Generation failed: "+(e&&e.message?e.message:e);
+  }
+});
+$("btnCopy").addEventListener("click",function(){
+  if(currentPhrase)copyText(currentPhrase);
+});
+$("btnClearGen").addEventListener("click",function(){
+  currentPhrase="";
+  $("wordGrid").innerHTML='<p class="empty">Pick a length and press Generate — the words appear here, numbered in order.</p>';
+  $("genStats").style.display="none";
+  $("btnCopy").disabled=true;
+  $("genBanner").textContent="";
+});
+$("btnValidate").addEventListener("click",async function(){
+  var verdict=$("verdict"), rules=$("rules");
+  rules.innerHTML="";
+  var raw=$("phrase").value;
+  if(!raw.trim()){
+    verdict.className="verdict neutral";
+    verdict.innerHTML="<b>Paste a phrase above.</b><p>Validation checks the word count, that every word is in the official BIP39 list, and that the checksum matches.</p>";
+    return;
+  }
+  if(!cryptoOK()){
+    verdict.className="verdict red";
+    verdict.innerHTML="<b>Cannot validate here.</b><p>Web Crypto is unavailable in this browser or context — validation needs a secure context (HTTPS or localhost).</p>";
+    return;
+  }
+  verdict.className="verdict neutral";
+  verdict.innerHTML="<b>Checking…</b><p>Verifying word count, wordlist membership and checksum.</p>";
+  var res=await validateMnemonic(raw);
+  var allowed=[12,15,18,21,24];
+  function ruleRow(pass,label,detail){
+    var li=document.createElement("li");
+    li.innerHTML='<span class="'+(pass?"ok":"bad")+'">'+(pass?"✓":"✗")+"</span><span>"+label+'</span><span class="dim">'+detail+"</span>";
+    rules.appendChild(li);
+  }
+  var countOK=allowed.indexOf(res.words.length)>=0;
+  ruleRow(countOK,"Word count",res.words.length+" words"+(countOK?"":" — need 12, 15, 18, 21 or 24"));
+  var unknown=res.words.filter(function(w){return !(w in WORD_INDEX);});
+  ruleRow(unknown.length===0,"Every word is in the BIP39 list",
+    unknown.length===0?res.words.length+" words, all recognised":"unknown: "+unknown.join(", "));
+  var checksumOK=res.valid&&countOK&&unknown.length===0;
+  if(countOK&&unknown.length===0)
+    ruleRow(res.valid,"Checksum matches","SHA-256 checksum of the entropy matches the phrase");
+  if(res.valid){
+    verdict.className="verdict green";
+    verdict.innerHTML="<b>Valid mnemonic ✓</b><p>Word count, words and checksum all check out. This phrase is well-formed — but remember, this page is for learning: never use a generated phrase for real funds.</p>";
+  }else{
+    verdict.className="verdict red";
+    verdict.innerHTML="<b>Invalid phrase.</b><p>"+res.errors.join(" ")+"</p>";
+  }
+});
+$("btnSample").addEventListener("click",function(){
+  $("phrase").value="abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about";
+  $("btnValidate").click();
+  $("phrase").focus();
+});
+$("btnClearVal").addEventListener("click",function(){
+  $("phrase").value="";
+  $("rules").innerHTML="";
+  $("verdict").className="verdict neutral";
+  $("verdict").innerHTML="<b>Paste a phrase above.</b><p>Validation checks the word count, that every word is in the official BIP39 list, and that the checksum matches.</p>";
+  $("phrase").focus();
+});
+if(!cryptoOK()){
+  $("genBanner").textContent="Web Crypto is unavailable in this browser or context — generation and validation need a secure context (HTTPS or localhost).";
+  $("btnGenerate").disabled=true;
+  $("btnValidate").disabled=true;
+}
+</script>
+</body>
+</html>

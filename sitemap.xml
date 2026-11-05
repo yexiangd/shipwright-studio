@@ -201,6 +201,11 @@
     <priority>0.7</priority>
   </url>
   <url>
+    <loc>https://shipwright-studio.pages.dev/lab/name-picker/</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
     <loc>https://shipwright-studio.pages.dev/lab/nft-rarity/</loc>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
@@ -272,6 +277,11 @@
   </url>
   <url>
     <loc>https://shipwright-studio.pages.dev/lab/ruin-simulator/</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://shipwright-studio.pages.dev/lab/seed-phrase-lab/</loc>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>

@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Name Picker · Shipwright Studio</title>
+<meta name="description" content="Free online name picker — paste a list of names and draw a fair random winner for classrooms, raffles and giveaways, with a no-repeat mode and winner history. Nothing leaves your browser.">
+<link rel="canonical" href="https://shipwright-studio.pages.dev/lab/name-picker/">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"WebApplication","name":"Name Picker","url":"https://shipwright-studio.pages.dev/lab/name-picker/","description":"Name Picker is a free online tool that draws a fair random winner from any list of names for classrooms, raffles and giveaways, with a no-repeat mode and a winner history — all computed locally in the browser.","applicationCategory":"UtilitiesApplication","operatingSystem":"Web","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"}}
+</script>
+<style>
+:root{--bg:#0a0c0f;--panel:#101318;--line:#1c2128;--txt:#e8e4da;--mut:#9aa3b2;--brass:#d2a24c;--red:#e0655f}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--txt);font-family:Fraunces,Georgia,serif;line-height:1.65;padding:2rem 1.2rem 4rem;max-width:960px;margin:0 auto}
+a{color:var(--brass)}
+.nav{display:flex;gap:1.2rem;font-size:.85rem;margin-bottom:1.2rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.nav a{color:var(--mut);text-decoration:none}
+.nav a:hover{color:var(--brass)}
+.eyebrow{font-size:.75rem;letter-spacing:.22em;text-transform:uppercase;color:var(--mut);font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+h1{font-weight:600;font-size:clamp(2.1rem,5vw,3rem);margin:.5rem 0 .7rem}
+.define{color:var(--mut);max-width:46rem;margin-bottom:1.8rem;font-size:1rem}
+.define strong{color:var(--txt)}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:1.4rem;margin-bottom:1.4rem}
+.cardlabel{font-size:.72rem;letter-spacing:.18em;text-transform:uppercase;color:var(--mut);margin-bottom:.8rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.ui{font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.mono{font-family:"JetBrains Mono",ui-monospace,monospace}
+textarea{width:100%;background:#08090c;border:1px solid var(--line);border-radius:10px;color:var(--txt);font-family:"JetBrains Mono",ui-monospace,monospace;font-size:.9rem;padding:.8rem;min-height:9rem;resize:vertical}
+textarea:focus{outline:none;border-color:var(--brass)}
+.chips{display:flex;flex-wrap:wrap;gap:.5rem;margin-top:.9rem}
+.chips:empty{display:none}
+.chip{display:inline-flex;align-items:center;gap:.45rem;background:#08090c;border:1px solid var(--line);border-radius:999px;padding:.3rem .4rem .3rem .85rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif;font-size:.86rem;color:var(--txt)}
+.chip button{border:0;background:transparent;color:var(--mut);cursor:pointer;font-size:1rem;line-height:1;padding:.1rem .35rem;border-radius:50%}
+.chip button:hover{color:var(--red)}
+.btn{font-size:.9rem;border:1px solid var(--brass);background:transparent;color:var(--brass);border-radius:999px;padding:.55rem 1.4rem;cursor:pointer;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.btn:hover{background:rgba(210,162,76,.12)}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.btn:disabled:hover{background:transparent}
+.btn.ghost{border-color:var(--line);color:var(--mut)}
+.btn.ghost:hover{color:var(--txt);border-color:var(--mut)}
+.btnrow{display:flex;gap:.7rem;flex-wrap:wrap;margin-top:1rem;align-items:center}
+.countline{font-size:.88rem;color:var(--mut);margin-top:.8rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.countline b{color:var(--brass);font-family:"JetBrains Mono",ui-monospace,monospace;font-weight:500}
+.winner{min-height:6.5rem;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;border:1px dashed var(--line);border-radius:10px;padding:1.4rem 1rem;background:#08090c}
+.winner.hit{border:1px solid var(--brass);background:rgba(210,162,76,.07)}
+.winner .idle{color:var(--mut);font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif;font-size:.92rem}
+.winner .name{font-family:"JetBrains Mono",ui-monospace,monospace;font-size:clamp(1.6rem,5vw,2.4rem);font-weight:500;color:var(--brass);line-height:1.25;word-break:break-word}
+.winner .sub{font-size:.8rem;color:var(--mut);font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif;margin-top:.4rem}
+label.toggle{font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif;font-size:.88rem;color:var(--mut);display:flex;gap:.5rem;align-items:center;cursor:pointer}
+input[type=checkbox]{accent-color:var(--brass);width:1.05rem;height:1.05rem}
+.statusline{font-size:.85rem;color:var(--mut);margin-top:.9rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif;min-height:1.2em}
+.statusline b{color:var(--brass)}
+.hist{list-style:none;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif;font-size:.92rem}
+.hist li{display:flex;justify-content:space-between;gap:1rem;padding:.55rem 0;border-bottom:1px solid #12151b}
+.hist li:last-child{border-bottom:0}
+.hist .n{font-family:"JetBrains Mono",ui-monospace,monospace;color:var(--brass)}
+.hist .t{color:var(--mut);font-size:.8rem;white-space:nowrap}
+.empty{color:var(--mut);font-size:.9rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.msg{font-size:.88rem;color:var(--mut);min-height:1.2em;margin-top:.8rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.msg.ok{color:var(--brass)}
+.msg.err{color:var(--red)}
+details.explain{border:1px solid var(--line);border-radius:10px;padding:.9rem 1.1rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif;font-size:.88rem;color:var(--mut)}
+details.explain summary{cursor:pointer;color:var(--txt);font-size:.95rem}
+details.explain p{margin-top:.6rem}
+details.explain code{font-family:"JetBrains Mono",ui-monospace,monospace;color:var(--brass);font-size:.82rem}
+footer{margin-top:2.5rem;color:var(--mut);font-size:.85rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+@media(max-width:720px){.btn{width:100%}}
+</style>
+</head>
+<body>
+<nav class="nav"><a href="/">Shipwright Studio</a><a href="/ideas/">Idea Lab</a></nav>
+<p class="eyebrow">Lab · Classroom &amp; giveaway tools</p>
+<h1>Name Picker</h1>
+<p class="define"><strong>Name Picker is a free online tool that</strong> draws a fair random winner from any list of names — for classrooms, raffles and giveaways — with a no-repeat mode so everyone gets a turn, and a winner history to keep the draw honest. Everything runs in your browser; your names are never sent anywhere.</p>
+
+<section class="card">
+  <p class="cardlabel">Names — one per line</p>
+  <textarea id="names" placeholder="Ava&#10;Liam&#10;Maya&#10;Noah&#10;…" aria-label="Names, one per line"></textarea>
+  <div class="chips" id="chips" aria-label="Names in the pool"></div>
+  <div class="btnrow">
+    <button class="btn ghost" id="btnSample">Load sample</button>
+    <button class="btn ghost" id="btnClear">Clear all</button>
+  </div>
+  <p class="countline" id="countline"><b>0</b> names in the pool</p>
+</section>
+
+<section class="card">
+  <p class="cardlabel">Draw</p>
+  <div class="winner" id="winner" aria-live="polite">
+    <span class="idle" id="winnerIdle">Add some names, then press pick to draw a winner.</span>
+  </div>
+  <div class="btnrow">
+    <button class="btn" id="btnPick" disabled>Pick a winner</button>
+    <button class="btn ghost" id="btnCopy" disabled>Copy winner</button>
+  </div>
+  <div class="btnrow">
+    <label class="toggle"><input type="checkbox" id="chkNoRepeat" checked> Don't repeat winners</label>
+  </div>
+  <p class="statusline" id="statusline"></p>
+  <p class="msg" id="msg"></p>
+</section>
+
+<section class="card">
+  <p class="cardlabel">Winner history</p>
+  <ol class="hist" id="hist"></ol>
+  <p class="empty" id="histEmpty">No winners yet — make your first draw.</p>
+  <div class="btnrow">
+    <button class="btn ghost" id="btnClearHist">Clear history</button>
+  </div>
+</section>
+
+<details class="explain"><summary>How it works</summary>
+<p style="margin-top:.6rem">Every name in the pool has exactly the same chance. The final pick is made with the Web Crypto API (<code>crypto.getRandomValues</code>) — the same source of randomness browsers use for security — not with a plain pseudo-random call, so the draw can't be nudged toward any name.</p>
+<p>With <strong>Don't repeat winners</strong> on, each name can only win once until the whole pool has had a turn; then the pool resets automatically and the next draw starts fresh. Turn it off and every draw is independent — any name can win twice in a row.</p>
+<p>Names are trimmed, blank lines are ignored, and duplicates are collapsed, so pasting a roster straight from a spreadsheet just works. Nothing is uploaded or stored: close the tab and the list is gone.</p>
+</details>
+
+<footer>Built by Shipwright Studio · <a href="/ideas/">Back to the Lab</a></footer>
+
+<script>
+"use strict";
+/* ===== Core (node-tested) ===== */
+function parseNames(text){
+  var seen={}, out=[];
+  text.split("\n").forEach(function(line){
+    var name=line.trim();
+    if(!name) return;
+    var key=name.toLowerCase();
+    if(seen[key]) return;
+    seen[key]=1; out.push(name);
+  });
+  return out;
+}
+function cryptoIndex(n){
+  if(n<=1) return 0;
+  /* Rejection sampling: no modulo bias for any pool size. */
+  var range=4294967296, limit=range-(range%n), buf=new Uint32Array(1);
+  var v;
+  do{ crypto.getRandomValues(buf); v=buf[0]; }while(v>=limit);
+  return v%n;
+}
+function pickWinner(pool, excluded){
+  var avail=pool.filter(function(n){ return excluded.indexOf(n)===-1; });
+  if(!avail.length) return null;
+  return avail[cryptoIndex(avail.length)];
+}
+/* ===== UI ===== */
+var SAMPLE="Ava\nLiam\nMaya\nNoah\nSophia\nEthan\nIsla\nLucas\n";
+function $(id){return document.getElementById(id);}
+var history=[], pickedSet=[], drawing=false, currentWinner=null;
+function pool(){ return parseNames($("names").value); }
+function noRepeat(){ return $("chkNoRepeat").checked; }
+function syncChips(){
+  var names=pool(), chips=$("chips"); chips.innerHTML="";
+  names.forEach(function(name){
+    var c=document.createElement("span"); c.className="chip";
+    c.appendChild(document.createTextNode(name));
+    var x=document.createElement("button");
+    x.type="button"; x.textContent="×";
+    x.setAttribute("aria-label","Remove "+name);
+    x.onclick=function(){ removeName(name); };
+    c.appendChild(x); chips.appendChild(c);
+  });
+  var picked=pickedSet.filter(function(n){ return names.indexOf(n)!==-1; }).length;
+  $("countline").innerHTML="<b>"+names.length+"</b> names in the pool"+
+    (noRepeat()&&names.length?" · <b>"+picked+"</b> already won":"");
+  $("btnPick").disabled = drawing || names.length===0;
+}
+function removeName(name){
+  var lines=$("names").value.split("\n").filter(function(l){ return l.trim().toLowerCase()!==name.toLowerCase(); });
+  $("names").value=lines.join("\n");
+  pickedSet=pickedSet.filter(function(n){ return n.toLowerCase()!==name.toLowerCase(); });
+  sync();
+}
+function renderHistory(){
+  var h=$("hist"); h.innerHTML="";
+  history.forEach(function(w,i){
+    var li=document.createElement("li");
+    var s1=document.createElement("span");
+    s1.innerHTML='<span class="n">#'+(i+1)+'</span> ';
+    s1.appendChild(document.createTextNode(w.name));
+    var s2=document.createElement("span"); s2.className="t"; s2.textContent=w.time;
+    li.appendChild(s1); li.appendChild(s2); h.appendChild(li);
+  });
+  $("histEmpty").style.display=history.length?"none":"block";
+}
+function showWinner(name){
+  var w=$("winner");
+  w.classList.add("hit");
+  w.innerHTML="";
+  var d=document.createElement("div"); d.className="name"; d.textContent=name;
+  var s=document.createElement("div"); s.className="sub"; s.textContent="Winner — drawn fairly from "+pool().length+" names";
+  w.appendChild(d); w.appendChild(s);
+  currentWinner=name;
+  $("btnCopy").disabled=false;
+}
+function showIdle(text){
+  var w=$("winner");
+  w.classList.remove("hit");
+  w.innerHTML="";
+  var s=document.createElement("span"); s.className="idle"; s.textContent=text;
+  w.appendChild(s);
+  currentWinner=null;
+  $("btnCopy").disabled=true;
+}
+function draw(){
+  if(drawing) return;
+  var names=pool();
+  if(!names.length) return;
+  if(noRepeat()){
+    var remaining=names.filter(function(n){ return pickedSet.indexOf(n)===-1; });
+    if(!remaining.length){
+      pickedSet=[];
+      $("statusline").innerHTML="Everyone has won once — <b>pool reset</b>, starting fresh.";
+    }
+  }
+  var winner=pickWinner(names, noRepeat()?pickedSet:[]);
+  if(!winner) return;
+  drawing=true;
+  $("btnPick").disabled=true; $("btnPick").textContent="Drawing…";
+  $("msg").textContent="";
+  var w=$("winner"); w.classList.remove("hit");
+  /* Shuffle animation: cycle candidates, decelerating to a stop (~1.2s). */
+  var ticks=0, total=14, timer=null;
+  function tick(){
+    ticks++;
+    var cand=names[cryptoIndex(names.length)];
+    var d=w.querySelector(".name");
+    if(!d){ w.innerHTML=""; d=document.createElement("div"); d.className="name"; w.appendChild(d); }
+    d.textContent=cand;
+    if(ticks>=total){
+      clearInterval(timer);
+      showWinner(winner);
+      pickedSet.push(winner);
+      history.push({name:winner, time:new Date().toLocaleTimeString("en-GB",{hour:"2-digit",minute:"2-digit"})});
+      renderHistory();
+      sync();
+      var remaining=pool().length-pickedSet.filter(function(n){ return pool().indexOf(n)!==-1; }).length;
+      if(noRepeat()&&remaining>0)
+        $("statusline").innerHTML="<b>"+remaining+"</b> of "+pool().length+" names still to win.";
+      else if(noRepeat()&&remaining===0)
+        $("statusline").innerHTML="Everyone has won — the next draw starts a fresh round.";
+      else
+        $("statusline").textContent="";
+      drawing=false;
+      $("btnPick").disabled=false; $("btnPick").textContent="Pick a winner";
+    }
+  }
+  timer=setInterval(tick, 40+Math.floor(650/total)); /* ~85ms steps, easing feel via early fast cycling */
+  /* Decelerate: restart with growing interval after the first half */
+  setTimeout(function(){ if(timer){ clearInterval(timer); timer=setInterval(tick, 160); } }, 650);
+}
+function sync(){ syncChips(); }
+$("names").addEventListener("input", sync);
+$("chkNoRepeat").addEventListener("change", sync);
+$("btnSample").onclick=function(){ $("names").value=SAMPLE; sync(); $("msg").textContent=""; };
+$("btnClear").onclick=function(){
+  $("names").value=""; pickedSet=[]; history=[]; renderHistory();
+  showIdle("Add some names, then press pick to draw a winner.");
+  $("statusline").textContent=""; $("msg").textContent=""; sync();
+};
+$("btnClearHist").onclick=function(){
+  history=[]; pickedSet=[]; renderHistory();
+  $("statusline").textContent="History cleared — every name is eligible again.";
+  sync();
+};
+$("btnPick").onclick=draw;
+$("btnCopy").onclick=function(){
+  if(!currentWinner) return;
+  function done(){ $("msg").textContent="Copied winner to clipboard."; $("msg").className="msg ok"; }
+  function fail(){ $("msg").textContent="Could not copy — your browser blocked clipboard access."; $("msg").className="msg err"; }
+  if(navigator.clipboard&&navigator.clipboard.writeText)
+    navigator.clipboard.writeText(currentWinner).then(done, fail);
+  else fail();
+};
+renderHistory();
+sync();
+</script>
+</body>
+</html>

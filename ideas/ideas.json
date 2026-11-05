@@ -1,5 +1,5 @@
 {
-  "updated": "2026-11-04",
+  "updated": "2026-11-05",
   "ideas": [
     {
       "id": "idea-000a",
@@ -1011,7 +1011,9 @@
       "tagline": "Raffle names fairly — classrooms and giveaways love it.",
       "priority": 70,
       "effort": "S",
-      "status": "todo"
+      "status": "done",
+      "url": "/lab/name-picker/",
+      "shipped": "2026-11-05"
     },
     {
       "id": "idea-089",
@@ -1381,7 +1383,9 @@
       "tagline": "Educational BIP39 mnemonic generator, client-side only.",
       "priority": 70,
       "effort": "M",
-      "status": "todo"
+      "status": "done",
+      "url": "/lab/seed-phrase-lab/",
+      "shipped": "2026-11-05"
     },
     {
       "id": "idea-122",
