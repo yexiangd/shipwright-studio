@@ -1,5 +1,5 @@
 {
-  "updated": "2026-11-05",
+  "updated": "2026-11-06",
   "ideas": [
     {
       "id": "idea-000a",
@@ -617,7 +617,9 @@
       "tagline": "Draw your grid, get the CSS.",
       "priority": 69,
       "effort": "M",
-      "status": "todo"
+      "status": "done",
+      "url": "/lab/grid-builder/",
+      "shipped": "2026-11-06"
     },
     {
       "id": "idea-052",
@@ -1395,7 +1397,9 @@
       "tagline": "Wei, gwei and ether conversions with live arithmetic.",
       "priority": 69,
       "effort": "S",
-      "status": "todo"
+      "status": "done",
+      "url": "/lab/eth-unit-converter/",
+      "shipped": "2026-11-06"
     },
     {
       "id": "idea-123",

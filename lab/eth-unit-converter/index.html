@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ethereum Unit Converter · Shipwright Studio</title>
+<meta name="description" content="Free online Ethereum unit converter — convert wei, gwei and ether with exact integer math, plus a gas-cost calculator.">
+<link rel="canonical" href="https://shipwright-studio.pages.dev/lab/eth-unit-converter/">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"WebApplication","name":"Ethereum Unit Converter","url":"https://shipwright-studio.pages.dev/lab/eth-unit-converter/","description":"Ethereum Unit Converter is a free online tool that converts between wei, gwei and ether with exact integer arithmetic, and estimates transaction gas costs.","applicationCategory":"DeveloperApplication","operatingSystem":"Web","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"}}
+</script>
+<style>
+:root{--bg:#0a0c0f;--panel:#101318;--line:#1c2128;--txt:#e8e4da;--mut:#9aa3b2;--brass:#d2a24c;--err:#e07a7a}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--txt);font-family:Fraunces,Georgia,serif;line-height:1.65;padding:2rem 1.2rem 4rem;max-width:960px;margin:0 auto}
+a{color:var(--brass)}
+.nav{display:flex;gap:1.2rem;font-size:.85rem;margin-bottom:1.2rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.nav a{color:var(--mut);text-decoration:none}.nav a:hover{color:var(--brass)}
+.eyebrow{font-size:.75rem;letter-spacing:.22em;text-transform:uppercase;color:var(--mut);font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+h1{font-weight:600;font-size:clamp(2.1rem,5vw,3rem);margin:.5rem 0 .7rem}
+.define{color:var(--mut);max-width:46rem;margin-bottom:1.8rem}.define strong{color:var(--txt)}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:1.4rem;margin-bottom:1.4rem}
+.cardlabel{font-size:.72rem;letter-spacing:.18em;text-transform:uppercase;color:var(--mut);margin-bottom:.8rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.ui{font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.btn{font-size:.9rem;border:1px solid var(--line);background:transparent;color:var(--txt);border-radius:999px;padding:.5rem 1.1rem;cursor:pointer;font-family:inherit}
+.btn:hover{border-color:var(--brass);color:var(--brass)}.btn.active{border-color:var(--brass);color:var(--brass);background:rgba(210,162,76,.12)}
+.btnrow{display:flex;gap:.6rem;flex-wrap:wrap;align-items:center}
+.field label{display:block;font-size:.85rem;color:var(--mut);margin-bottom:.25rem}
+.field input{width:100%;background:#0d1014;color:var(--txt);border:1px solid var(--line);border-radius:8px;padding:.6rem .7rem;font-size:1rem;font-family:"JetBrains Mono",monospace}
+.field input:focus{outline:none;border-color:var(--brass)}
+.field input.invalid{border-color:var(--err)}
+.unitrow{display:grid;grid-template-columns:1fr auto;gap:.6rem;align-items:end;margin-bottom:1rem}
+.unitrow .btn{white-space:nowrap}
+.copybtn{min-width:76px}
+.errline{font-size:.9rem;color:var(--err);min-height:1.4em;margin-top:.2rem}
+.hint{font-size:.85rem;color:var(--mut)}
+.grid3{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1rem}
+.readout{background:#0d1014;border:1px solid var(--line);border-radius:10px;padding:1rem;margin-top:1rem}
+.readout .row{display:flex;justify-content:space-between;gap:1rem;padding:.3rem 0;font-family:"JetBrains Mono",monospace;font-size:.95rem;word-break:break-all}
+.readout .row span:first-child{color:var(--mut);font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif;font-size:.9rem;flex-shrink:0}
+table{width:100%;border-collapse:collapse;font-family:"JetBrains Mono",monospace;font-size:.9rem}
+th,td{text-align:left;padding:.45rem .5rem;border-bottom:1px solid var(--line)}
+th{color:var(--mut);font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif;font-size:.8rem;text-transform:uppercase;letter-spacing:.08em}
+.tablewrap{overflow-x:auto}
+.explain{font-size:.92rem;color:var(--mut)}.explain li{margin:.4rem 0}
+footer{margin-top:2.5rem;color:var(--mut);font-size:.85rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+@media(max-width:700px){.unitrow{grid-template-columns:1fr}.copybtn{width:100%}}
+</style>
+</head>
+<body>
+<nav class="nav"><a href="/">Shipwright Studio</a><a href="/ideas/">Lab</a></nav>
+<p class="eyebrow">Lab — Devtool</p>
+<h1>Ethereum Unit Converter</h1>
+<p class="define"><strong>Ethereum Unit Converter is a free online tool that</strong> converts between wei, gwei and ether with exact integer arithmetic — type a value in any unit and the other two update instantly, with no floating-point rounding. It also estimates what a transaction costs at any gas price. Everything runs in your browser; nothing leaves the page.</p>
+
+<div class="card ui">
+<p class="cardlabel">Convert — type in any unit</p>
+<div class="field unitrow">
+<div><label for="weiIn">Wei <span class="hint">(10⁰ — the base unit)</span></label><input id="weiIn" inputmode="decimal" autocomplete="off" spellcheck="false" value="1000000000000000000"></div>
+<button class="btn copybtn" data-copy="weiIn">Copy</button>
+</div>
+<div class="field unitrow">
+<div><label for="gweiIn">Gwei <span class="hint">(10⁹ wei — gas prices)</span></label><input id="gweiIn" inputmode="decimal" autocomplete="off" spellcheck="false" value="1000000000"></div>
+<button class="btn copybtn" data-copy="gweiIn">Copy</button>
+</div>
+<div class="field unitrow">
+<div><label for="ethIn">Ether <span class="hint">(10¹⁸ wei — value)</span></label><input id="ethIn" inputmode="decimal" autocomplete="off" spellcheck="false" value="1"></div>
+<button class="btn copybtn" data-copy="ethIn">Copy</button>
+</div>
+<p class="errline" id="convErr" role="alert"></p>
+<div class="btnrow" style="margin-top:.4rem">
+<button class="btn" data-chip="gwei:1">1 gwei</button>
+<button class="btn" data-chip="eth:1">1 ether</button>
+<button class="btn" data-chip="eth:0.01">0.01 ether</button>
+<button class="btn" data-chip="wei:1000000">1,000,000 wei</button>
+<button class="btn" data-chip="transfer">Standard transfer · 21,000 gas @ 20 gwei</button>
+<button class="btn" id="resetBtn">Reset</button>
+</div>
+</div>
+
+<div class="card ui">
+<p class="cardlabel">Gas-cost calculator</p>
+<div class="grid3">
+<div class="field"><label for="gasLimit">Gas limit (units)</label><input id="gasLimit" inputmode="numeric" autocomplete="off" spellcheck="false" value="21000"></div>
+<div class="field"><label for="gasPrice">Gas price (gwei)</label><input id="gasPrice" inputmode="decimal" autocomplete="off" spellcheck="false" value="20"></div>
+<div class="field"><label for="ethPrice">Sample ETH price (USD)</label><input id="ethPrice" inputmode="decimal" autocomplete="off" spellcheck="false" value="3000"></div>
+</div>
+<p class="errline" id="gasErr" role="alert"></p>
+<div class="readout" id="gasOut">
+<div class="row"><span>Cost in wei</span><span id="costWei">—</span></div>
+<div class="row"><span>Cost in gwei</span><span id="costGwei">—</span></div>
+<div class="row"><span>Cost in ether</span><span id="costEth">—</span></div>
+<div class="row"><span>Cost in USD (sample price)</span><span id="costUsd">—</span></div>
+</div>
+<p class="hint" style="margin-top:.8rem">The ETH price above is a sample value you can edit — it is not a live market price. The USD figure is an estimate only.</p>
+</div>
+
+<div class="card">
+<p class="cardlabel">Unit magnitudes</p>
+<div class="tablewrap">
+<table>
+<thead><tr><th>Unit</th><th>Wei</th><th>Used for</th></tr></thead>
+<tbody>
+<tr><td>wei</td><td>1</td><td>The base unit — everything on-chain is counted in wei</td></tr>
+<tr><td>kwei</td><td>1,000</td><td>Rarely used in practice</td></tr>
+<tr><td>mwei</td><td>1,000,000</td><td>Rarely used in practice</td></tr>
+<tr><td>gwei</td><td>1,000,000,000</td><td>Gas prices — the unit you see in every wallet</td></tr>
+<tr><td>szabo</td><td>1,000,000,000,000</td><td>Historical; rarely used today</td></tr>
+<tr><td>finney</td><td>1,000,000,000,000,000</td><td>Historical; rarely used today</td></tr>
+<tr><td>ether</td><td>1,000,000,000,000,000,000</td><td>Balances and transfer values</td></tr>
+</tbody>
+</table>
+</div>
+</div>
+
+<div class="card explain">
+<h2 style="font-size:1.2rem;margin-bottom:.5rem">How the units relate</h2>
+<ul>
+<li>Wei is the smallest unit of ether: 1 ether = 10¹⁸ wei, and 1 gwei = 10⁹ wei. On-chain, every amount is an integer number of wei — there is no such thing as half a wei.</li>
+<li>That is why this page converts with <b>BigInt</b> integer math instead of floating point: a JavaScript <b>Number</b> can only represent integers exactly up to 2⁵³, while 1 ether is already 10¹⁸ wei. Floats would silently round your money away.</li>
+<li>Gas is priced in gwei and paid in wei: cost = gas limit × gas price. A standard transfer uses 21,000 gas, so at 20 gwei it costs 420,000 gwei — 0.00042 ether.</li>
+</ul>
+</div>
+<footer>Built by Shipwright Studio · <a href="/ideas/">Back to the Lab</a></footer>
+
+<script>
+// --- Pure conversion logic (no DOM) ---
+var WEI_PER_GWEI = 10n ** 9n;
+var WEI_PER_ETHER = 10n ** 18n;
+
+// Parse a decimal string into exact wei. `decimals` is how many decimal
+// places one unit of the input has (0 for wei, 9 for gwei, 18 for ether).
+// Returns {ok:true, wei:BigInt} or {ok:false, error:string}.
+function parseToWei(str, decimals) {
+  var s = String(str).trim();
+  if (s === '') return { ok: true, wei: 0n, empty: true };
+  if (!/^\d*(\.\d*)?$/.test(s) || s === '.' || s === '') {
+    return { ok: false, error: 'Enter digits only — no letters, commas, signs or spaces.' };
+  }
+  var parts = s.split('.');
+  var intPart = parts[0] === '' ? '0' : parts[0];
+  var fracPart = parts.length > 1 ? parts[1] : '';
+  if (decimals === 0) {
+    if (fracPart !== '' && !/^0*$/.test(fracPart)) {
+      return { ok: false, error: 'Wei must be a whole number — there is no such thing as fractional wei.' };
+    }
+    return { ok: true, wei: BigInt(intPart) };
+  }
+  if (fracPart.length > decimals) {
+    var extra = fracPart.slice(decimals);
+    if (!/^0*$/.test(extra)) {
+      return { ok: false, error: 'That value is smaller than 1 wei — it cannot be represented exactly.' };
+    }
+    fracPart = fracPart.slice(0, decimals);
+  }
+  var fracPadded = (fracPart + '0'.repeat(decimals)).slice(0, decimals);
+  return { ok: true, wei: BigInt(intPart) * (10n ** BigInt(decimals)) + BigInt(fracPadded || '0') };
+}
+
+// Format exact wei as a decimal string in the given unit (9 = gwei, 18 = ether).
+function formatFromWei(wei, decimals) {
+  var neg = wei < 0n;
+  var abs = neg ? -wei : wei;
+  var divisor = 10n ** BigInt(decimals);
+  var intPart = abs / divisor;
+  var fracPart = abs % divisor;
+  var out = intPart.toString();
+  if (fracPart !== 0n) {
+    var frac = fracPart.toString().padStart(decimals, '0').replace(/0+$/, '');
+    out += '.' + frac;
+  }
+  return neg ? '-' + out : out;
+}
+
+// Gas cost: limit (integer units) * price (gwei, may be fractional) -> wei.
+function gasCostWei(limitStr, priceGweiStr) {
+  var limit = String(limitStr).trim();
+  if (!/^\d+$/.test(limit)) return { ok: false, error: 'Gas limit must be a whole number.' };
+  var price = parseToWei(priceGweiStr, 9);
+  if (!price.ok) return { ok: false, error: price.error };
+  return { ok: true, wei: BigInt(limit) * price.wei };
+}
+
+// --- DOM wiring below ---
+var weiIn = document.getElementById('weiIn');
+var gweiIn = document.getElementById('gweiIn');
+var ethIn = document.getElementById('ethIn');
+var convErr = document.getElementById('convErr');
+var lastGoodWei = 10n ** 18n;
+
+function setError(msg, input) {
+  convErr.textContent = msg || '';
+  [weiIn, gweiIn, ethIn].forEach(function (el) { el.classList.toggle('invalid', !!msg && el === input); });
+}
+function showWei(wei) {
+  lastGoodWei = wei;
+  weiIn.value = wei.toString();
+  gweiIn.value = formatFromWei(wei, 9);
+  ethIn.value = formatFromWei(wei, 18);
+  setError('', null);
+  updateGas();
+}
+function onConvert(source, decimals) {
+  var raw = source.value;
+  if (raw.trim() === '') {
+    weiIn.value = ''; gweiIn.value = ''; ethIn.value = '';
+    setError('', null); updateGas(); return;
+  }
+  var r = parseToWei(raw, decimals);
+  if (!r.ok) { setError(r.error, source); return; }
+  showWei(r.wei);
+}
+weiIn.addEventListener('input', function () { onConvert(weiIn, 0); });
+gweiIn.addEventListener('input', function () { onConvert(gweiIn, 9); });
+ethIn.addEventListener('input', function () { onConvert(ethIn, 18); });
+
+document.querySelectorAll('[data-chip]').forEach(function (btn) {
+  btn.addEventListener('click', function () {
+    var spec = btn.getAttribute('data-chip');
+    if (spec === 'transfer') {
+      document.getElementById('gasLimit').value = '21000';
+      document.getElementById('gasPrice').value = '20';
+      showWei(420000n * WEI_PER_GWEI);
+      return;
+    }
+    var parts = spec.split(':');
+    showWei(parseToWei(parts[1], parts[0] === 'wei' ? 0 : parts[0] === 'gwei' ? 9 : 18).wei);
+  });
+});
+document.getElementById('resetBtn').addEventListener('click', function () {
+  document.getElementById('gasLimit').value = '21000';
+  document.getElementById('gasPrice').value = '20';
+  document.getElementById('ethPrice').value = '3000';
+  showWei(WEI_PER_ETHER);
+});
+
+var gasLimit = document.getElementById('gasLimit');
+var gasPrice = document.getElementById('gasPrice');
+var ethPrice = document.getElementById('ethPrice');
+var gasErr = document.getElementById('gasErr');
+function updateGas() {
+  var r = gasCostWei(gasLimit.value, gasPrice.value);
+  if (!r.ok) {
+    gasErr.textContent = r.error;
+    ['costWei', 'costGwei', 'costEth', 'costUsd'].forEach(function (id) { document.getElementById(id).textContent = '—'; });
+    return;
+  }
+  gasErr.textContent = '';
+  document.getElementById('costWei').textContent = r.wei.toString();
+  document.getElementById('costGwei').textContent = formatFromWei(r.wei, 9);
+  document.getElementById('costEth').textContent = formatFromWei(r.wei, 18);
+  var priceRaw = ethPrice.value.trim();
+  var price = parseFloat(priceRaw);
+  if (priceRaw === '' || isNaN(price) || price < 0) {
+    document.getElementById('costUsd').textContent = '—';
+  } else {
+    // USD is a display-only estimate from the editable sample price;
+    // the wei/gwei/ether figures above are exact.
+    var ethCost = Number(formatFromWei(r.wei, 18));
+    var usd = ethCost * price;
+    document.getElementById('costUsd').textContent = '$' + (usd < 0.01 && usd > 0 ? usd.toFixed(6) : usd.toFixed(2));
+  }
+}
+[gasLimit, gasPrice, ethPrice].forEach(function (el) { el.addEventListener('input', updateGas); });
+
+document.querySelectorAll('[data-copy]').forEach(function (btn) {
+  btn.addEventListener('click', function () {
+    var input = document.getElementById(btn.getAttribute('data-copy'));
+    var text = input.value;
+    var done = function () { btn.textContent = 'Copied!'; setTimeout(function () { btn.textContent = 'Copy'; }, 1500); };
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(done, function () { input.select(); });
+    } else { input.select(); }
+  });
+});
+updateGas();
+</script>
+</body>
+</html>

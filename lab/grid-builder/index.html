@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Grid Builder · Shipwright Studio</title>
+<meta name="description" content="Free online CSS grid builder — draw a layout on the canvas, place items, and copy the generated grid CSS into your project.">
+<link rel="canonical" href="https://shipwright-studio.pages.dev/lab/grid-builder/">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"WebApplication","name":"Grid Builder","url":"https://shipwright-studio.pages.dev/lab/grid-builder/","description":"Grid Builder is a free online tool that draws CSS grid layouts — set columns and rows, drag to mark out a region, place items, and copy the generated CSS.","applicationCategory":"DeveloperApplication","operatingSystem":"Web","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"}}
+</script>
+<style>
+:root{--bg:#0a0c0f;--panel:#101318;--line:#1c2128;--txt:#e8e4da;--mut:#9aa3b2;--brass:#d2a24c}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--txt);font-family:Fraunces,Georgia,serif;line-height:1.65;padding:2rem 1.2rem 4rem;max-width:960px;margin:0 auto}
+a{color:var(--brass)}
+.nav{display:flex;gap:1.2rem;font-size:.85rem;margin-bottom:1.2rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.nav a{color:var(--mut);text-decoration:none}.nav a:hover{color:var(--brass)}
+.eyebrow{font-size:.75rem;letter-spacing:.22em;text-transform:uppercase;color:var(--mut);font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+h1{font-weight:600;font-size:clamp(2.1rem,5vw,3rem);margin:.5rem 0 .7rem}
+.define{color:var(--mut);max-width:46rem;margin-bottom:1.8rem}.define strong{color:var(--txt)}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:1.4rem;margin-bottom:1.4rem}
+.cardlabel{font-size:.72rem;letter-spacing:.18em;text-transform:uppercase;color:var(--mut);margin-bottom:.8rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.ui{font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.btn{font-size:.9rem;border:1px solid var(--line);background:transparent;color:var(--txt);border-radius:999px;padding:.5rem 1.1rem;cursor:pointer;font-family:inherit}
+.btn:hover{border-color:var(--brass);color:var(--brass)}.btn:disabled{opacity:.4;cursor:not-allowed}.btn:disabled:hover{border-color:var(--line);color:var(--txt)}
+.btn.active{border-color:var(--brass);color:var(--brass);background:rgba(210,162,76,.12)}
+.btnrow{display:flex;gap:.6rem;flex-wrap:wrap;align-items:center}
+.grid3{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:1rem}
+.field label{display:block;font-size:.85rem;color:var(--mut);margin-bottom:.25rem}
+.field select{width:100%;background:#0d1014;color:var(--txt);border:1px solid var(--line);border-radius:8px;padding:.45rem .6rem;font-size:.9rem}
+input[type=range]{width:100%;accent-color:var(--brass)}
+#stage{display:grid;border:1px dashed #3a4350;border-radius:10px;height:320px;padding:8px;background:#0d1014;user-select:none;overflow-x:auto}
+.cell{border:1px dashed #2a313c;border-radius:4px;font-size:.62rem;color:#5b6572;display:flex;align-items:flex-start;justify-content:flex-start;padding:2px 4px;cursor:cell;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif;min-width:0;min-height:0}
+.cell.occupied{border-style:solid;border-color:#3a4350}
+.placed{background:rgba(210,162,76,.85);color:#0a0c0f;border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:600;font-size:1.1rem;cursor:pointer;border:3px solid transparent;min-width:0;min-height:0;overflow:hidden}
+.placed.sel{border-color:#fff;outline:2px solid var(--brass)}
+.selbox{border:2px solid var(--brass);background:rgba(210,162,76,.18);border-radius:8px;pointer-events:none}
+pre{background:#08090c;border:1px solid var(--line);border-radius:10px;padding:1rem;overflow-x:auto;font-family:"JetBrains Mono",monospace;font-size:.88rem;color:var(--txt);white-space:pre-wrap}
+.explain{font-size:.92rem;color:var(--mut)}.explain li{margin:.4rem 0}
+.itemlist{list-style:none;display:flex;gap:.5rem;flex-wrap:wrap}
+.itemlist li{font-size:.85rem;border:1px solid var(--line);border-radius:999px;padding:.3rem .8rem;cursor:pointer}
+.itemlist li.sel{border-color:var(--brass);color:var(--brass)}
+.itemlist li:hover{border-color:var(--brass)}
+footer{margin-top:2.5rem;color:var(--mut);font-size:.85rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+@media(max-width:700px){#stage{height:260px}.btn{width:100%;text-align:center}}
+</style>
+</head>
+<body>
+<nav class="nav"><a href="/">Shipwright Studio</a><a href="/ideas/">Lab</a></nav>
+<p class="eyebrow">Lab — Devtool</p>
+<h1>Grid Builder</h1>
+<p class="define"><strong>Grid Builder is a free online tool that</strong> turns a drawn layout into CSS grid code — set your columns and rows, drag across the canvas to mark out a region, place items into it, and copy the exact CSS into your own project. No account, nothing leaves the page.</p>
+
+<div class="card ui">
+<p class="cardlabel">Grid</p>
+<div class="grid3">
+<div class="field"><label for="cols">Columns: <b id="colsVal">4</b> (1–12)</label><input type="range" id="cols" min="1" max="12" value="4"></div>
+<div class="field"><label for="rows">Rows: <b id="rowsVal">3</b> (1–6)</label><input type="range" id="rows" min="1" max="6" value="3"></div>
+<div class="field"><label for="gap">Gap: <b id="gapVal">16px</b> (0–32)</label><input type="range" id="gap" min="0" max="32" value="16"></div>
+<div class="field"><label for="sizing">Column sizing</label><select id="sizing"><option value="1fr">Equal (1fr)</option><option value="auto">Auto</option><option value="120px">Fixed 120px</option></select></div>
+</div>
+<div class="btnrow" style="margin-top:1rem">
+<button class="btn" data-preset="twelve">12-column</button>
+<button class="btn" data-preset="grail">Holy Grail</button>
+<button class="btn" data-preset="sidebar">Sidebar left</button>
+<button class="btn" data-preset="bento">Bento</button>
+<button class="btn" id="resetBtn">Reset</button>
+</div>
+</div>
+
+<div class="card">
+<p class="cardlabel">Canvas — drag across cells to select a region, then place an item</p>
+<div id="stage" aria-label="Grid canvas"></div>
+<p class="ui" id="readout" style="font-size:.9rem;color:var(--mut);margin-top:.8rem">No region selected — drag across cells, then Place item.</p>
+<div class="btnrow ui" style="margin-top:.8rem">
+<button class="btn" id="placeBtn" disabled>Place item</button>
+<button class="btn" id="deleteBtn" disabled>Delete selected</button>
+<button class="btn" id="clearBtn">Clear all</button>
+</div>
+<div class="ui" style="margin-top:1rem">
+<p class="cardlabel">Items (<span id="itemCount">none yet</span>)</p>
+<ul class="itemlist" id="itemList"></ul>
+</div>
+<p class="ui" id="changed" style="font-size:.9rem;color:var(--mut);margin-top:1rem">Change any control and the canvas, the CSS below, and this note update together.</p>
+</div>
+
+<div class="card ui">
+<p class="cardlabel">Generated CSS</p>
+<pre id="cssOut"></pre>
+<button class="btn" id="copyBtn" style="margin-top:1rem">Copy CSS</button>
+</div>
+
+<div class="card explain">
+<h2 style="font-size:1.2rem;margin-bottom:.5rem">Grid in 60 seconds</h2>
+<ul>
+<li>A <b>track</b> is one column or row. <code>grid-template-columns: repeat(4, 1fr)</code> makes four equal tracks; <code>gap</code> is the gutter between them.</li>
+<li>Items sit on <b>lines</b>, not cells: <code>grid-column: 1 / 3</code> starts at line 1 and ends at line 3, so it spans two columns. Lines are numbered from 1, and the last line is tracks + 1.</li>
+<li><code>grid-row</code> works the same way down the page. Give each item a column span and a row span and the layout is fully described — no floats, no wrappers.</li>
+</ul>
+</div>
+<footer>Built by Shipwright Studio · <a href="/ideas/">Back to the Lab</a></footer>
+
+<script>
+/* PURE-START */
+function clamp(v,lo,hi){return Math.max(lo,Math.min(hi,v))}
+function normRect(a,b){return{c1:Math.min(a.c,b.c),c2:Math.max(a.c,b.c)+1,r1:Math.min(a.r,b.r),r2:Math.max(a.r,b.r)+1}}
+function rectsOverlap(x,y){return x.c1<y.c2&&x.c2>y.c1&&x.r1<y.r2&&x.r2>y.r1}
+function findOverlap(rect,items){for(var i=0;i<items.length;i++){if(rectsOverlap(rect,items[i]))return items[i]}return null}
+function pruneItems(items,cols,rows){return items.filter(function(it){return it.c2<=cols+1&&it.r2<=rows+1})}
+function trackValue(sizing,cols){return 'repeat('+cols+', '+sizing+')'}
+function containerCSS(s){return '.container {\n  display: grid;\n  grid-template-columns: '+trackValue(s.sizing,s.cols)+';\n  grid-template-rows: repeat('+s.rows+', 1fr);\n  gap: '+s.gap+'px;\n}'}
+function itemCSS(it){return '.item-'+it.label.toLowerCase()+' {\n  grid-column: '+it.c1+' / '+it.c2+';\n  grid-row: '+it.r1+' / '+it.r2+';\n}'}
+function generateCSS(s){var out=containerCSS(s);s.items.forEach(function(it){out+='\n\n'+itemCSS(it)});return out}
+function nextLabel(items){var used={};items.forEach(function(it){used[it.label]=1});var letters='ABCDEFGHIJKLMNOPQRSTUVWXYZ';for(var i=0;i<letters.length;i++){if(!used[letters[i]])return letters[i]}return 'Item '+(items.length+1)}
+function presetState(name){
+  var base={gap:16,sizing:'1fr',items:[]};
+  if(name==='twelve'){base.cols=12;base.rows=3;base.items=[{label:'A',c1:1,c2:13,r1:1,r2:2},{label:'B',c1:1,c2:10,r1:2,r2:4},{label:'C',c1:10,c2:13,r1:2,r2:4}]}
+  else if(name==='grail'){base.cols=4;base.rows=3;base.items=[{label:'A',c1:1,c2:5,r1:1,r2:2},{label:'B',c1:1,c2:2,r1:2,r2:3},{label:'C',c1:2,c2:5,r1:2,r2:3},{label:'D',c1:1,c2:5,r1:3,r2:4}]}
+  else if(name==='sidebar'){base.cols=4;base.rows=2;base.items=[{label:'A',c1:1,c2:2,r1:1,r2:3},{label:'B',c1:2,c2:5,r1:1,r2:3}]}
+  else if(name==='bento'){base.cols=4;base.rows=3;base.items=[{label:'A',c1:1,c2:3,r1:1,r2:3},{label:'B',c1:3,c2:5,r1:1,r2:2},{label:'C',c1:3,c2:4,r1:2,r2:3},{label:'D',c1:4,c2:5,r1:2,r2:3},{label:'E',c1:1,c2:5,r1:3,r2:4}]}
+  return base;
+}
+/* PURE-END */
+var state={cols:4,rows:3,gap:16,sizing:'1fr',items:[],selected:null,selectedItem:null,anchor:null,dragging:false};
+function note(msg){document.getElementById('changed').textContent=msg}
+function render(){
+  var stage=document.getElementById('stage');
+  stage.style.gridTemplateColumns=trackValue(state.sizing,state.cols);
+  stage.style.gridTemplateRows='repeat('+state.rows+', 1fr)';
+  stage.style.gap=state.gap+'px';
+  stage.innerHTML='';
+  var occupied={};
+  state.items.forEach(function(it){for(var c=it.c1;c<it.c2;c++)for(var r=it.r1;r<it.r2;r++)occupied[c+','+r]=it.label});
+  for(var r=1;r<=state.rows;r++){
+    for(var c=1;c<=state.cols;c++){
+      (function(cc,rr){
+        var d=document.createElement('div');
+        d.className='cell'+(occupied[cc+','+rr]?' occupied':'');
+        d.textContent=cc+','+rr;
+        d.style.gridColumn=cc+' / '+(cc+1);d.style.gridRow=rr+' / '+(rr+1);
+        d.addEventListener('pointerdown',function(e){e.preventDefault();state.anchor={c:cc,r:rr};state.dragging=true;state.selected=normRect(state.anchor,state.anchor);state.selectedItem=null;render()});
+        d.addEventListener('pointerenter',function(){if(state.dragging&&state.anchor){state.selected=normRect(state.anchor,{c:cc,r:rr});render()}});
+        stage.appendChild(d);
+      })(c,r);
+    }
+  }
+  state.items.forEach(function(it){
+    var d=document.createElement('div');
+    d.className='placed'+(state.selectedItem===it.label?' sel':'');
+    d.textContent=it.label;
+    d.style.gridColumn=it.c1+' / '+it.c2;d.style.gridRow=it.r1+' / '+it.r2;
+    d.addEventListener('pointerdown',function(e){e.stopPropagation();state.selectedItem=it.label;state.selected=null;note('Selected item '+it.label+' — columns '+it.c1+'–'+(it.c2-1)+', rows '+it.r1+'–'+(it.r2-1)+'.');render()});
+    stage.appendChild(d);
+  });
+  if(state.selected){
+    var s=document.createElement('div');
+    s.className='selbox';
+    s.style.gridColumn=state.selected.c1+' / '+state.selected.c2;
+    s.style.gridRow=state.selected.r1+' / '+state.selected.r2;
+    stage.appendChild(s);
+  }
+  var ro=document.getElementById('readout');
+  if(state.selected){var w=state.selected.c2-state.selected.c1,h=state.selected.r2-state.selected.r1;ro.textContent='Selected: columns '+state.selected.c1+'–'+(state.selected.c2-1)+' ('+w+' wide), rows '+state.selected.r1+'–'+(state.selected.r2-1)+' ('+h+' tall) — ready to place.'}
+  else if(state.selectedItem){ro.textContent='Item '+state.selectedItem+' selected — delete it or click a cell to start a new region.'}
+  else{ro.textContent='No region selected — drag across cells, then Place item.'}
+  document.getElementById('placeBtn').disabled=!state.selected;
+  document.getElementById('deleteBtn').disabled=!state.selectedItem;
+  document.getElementById('itemCount').textContent=state.items.length?state.items.length+' placed':'none yet';
+  var list=document.getElementById('itemList');list.innerHTML='';
+  state.items.forEach(function(it){
+    var li=document.createElement('li');
+    li.textContent=it.label+' · col '+it.c1+'/'+it.c2+' · row '+it.r1+'/'+it.r2;
+    if(state.selectedItem===it.label)li.className='sel';
+    li.onclick=function(){state.selectedItem=it.label;state.selected=null;note('Selected item '+it.label+'.');render()};
+    list.appendChild(li);
+  });
+  document.getElementById('cssOut').textContent=generateCSS(state);
+}
+document.addEventListener('pointerup',function(){state.dragging=false;state.anchor=null});
+document.getElementById('cols').addEventListener('input',function(e){state.cols=parseInt(e.target.value,10);document.getElementById('colsVal').textContent=state.cols;var before=state.items.length;state.items=pruneItems(state.items,state.cols,state.rows);state.selected=null;state.selectedItem=null;note(before>state.items.length?'Columns: '+state.cols+'. '+(before-state.items.length)+' item(s) no longer fit and were removed.':'Columns: '+state.cols+'.');render()});
+document.getElementById('rows').addEventListener('input',function(e){state.rows=parseInt(e.target.value,10);document.getElementById('rowsVal').textContent=state.rows;var before=state.items.length;state.items=pruneItems(state.items,state.cols,state.rows);state.selected=null;state.selectedItem=null;note(before>state.items.length?'Rows: '+state.rows+'. '+(before-state.items.length)+' item(s) no longer fit and were removed.':'Rows: '+state.rows+'.');render()});
+document.getElementById('gap').addEventListener('input',function(e){state.gap=parseInt(e.target.value,10);document.getElementById('gapVal').textContent=state.gap+'px';note('Gap sets the gutter between tracks: '+state.gap+'px.');render()});
+document.getElementById('sizing').addEventListener('input',function(e){state.sizing=e.target.value;note('Column sizing: '+e.target.options[e.target.selectedIndex].text+'.');render()});
+document.getElementById('placeBtn').onclick=function(){
+  if(!state.selected)return;
+  var clash=findOverlap(state.selected,state.items);
+  if(clash){note('That region overlaps item '+clash.label+' — pick empty cells.');document.getElementById('readout').textContent='That region overlaps item '+clash.label+' — pick empty cells.';return}
+  var label=nextLabel(state.items);
+  state.items.push({label:label,c1:state.selected.c1,c2:state.selected.c2,r1:state.selected.r1,r2:state.selected.r2});
+  note('Placed item '+label+' — columns '+state.selected.c1+'–'+(state.selected.c2-1)+', rows '+state.selected.r1+'–'+(state.selected.r2-1)+'.');
+  state.selected=null;render();
+};
+document.getElementById('deleteBtn').onclick=function(){
+  if(!state.selectedItem)return;
+  state.items=state.items.filter(function(it){return it.label!==state.selectedItem});
+  note('Deleted item '+state.selectedItem+'.');state.selectedItem=null;render();
+};
+document.getElementById('clearBtn').onclick=function(){state.items=[];state.selected=null;state.selectedItem=null;note('Cleared all items.');render()};
+document.querySelectorAll('[data-preset]').forEach(function(btn){
+  btn.onclick=function(){
+    var p=presetState(btn.getAttribute('data-preset'));
+    state.cols=p.cols;state.rows=p.rows;state.gap=p.gap;state.sizing=p.sizing;
+    state.items=p.items.map(function(it){return{label:it.label,c1:it.c1,c2:it.c2,r1:it.r1,r2:it.r2}});
+    state.selected=null;state.selectedItem=null;
+    document.getElementById('cols').value=state.cols;document.getElementById('colsVal').textContent=state.cols;
+    document.getElementById('rows').value=state.rows;document.getElementById('rowsVal').textContent=state.rows;
+    document.getElementById('gap').value=state.gap;document.getElementById('gapVal').textContent=state.gap+'px';
+    document.getElementById('sizing').value=state.sizing;
+    note('Preset applied: '+btn.textContent+' — '+state.items.length+' items placed.');render();
+  };
+});
+document.getElementById('resetBtn').onclick=function(){
+  state={cols:4,rows:3,gap:16,sizing:'1fr',items:[],selected:null,selectedItem:null,anchor:null,dragging:false};
+  document.getElementById('cols').value=4;document.getElementById('colsVal').textContent='4';
+  document.getElementById('rows').value=3;document.getElementById('rowsVal').textContent='3';
+  document.getElementById('gap').value=16;document.getElementById('gapVal').textContent='16px';
+  document.getElementById('sizing').value='1fr';
+  note('Reset to defaults.');render();
+};
+document.getElementById('copyBtn').onclick=function(){
+  var t=document.getElementById('cssOut').textContent;
+  if(navigator.clipboard)navigator.clipboard.writeText(t).then(function(){document.getElementById('copyBtn').textContent='Copied!';setTimeout(function(){document.getElementById('copyBtn').textContent='Copy CSS'},1500)});
+  else{document.getElementById('copyBtn').textContent='Select the CSS above to copy';}
+};
+render();
+</script>
+</body>
+</html>
