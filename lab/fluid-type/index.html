@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fluid Type Calc · Shipwright Studio</title>
+<meta name="description" content="Free online fluid typography calculator — type four numbers and copy a CSS clamp() expression that scales text smoothly between two viewport widths.">
+<link rel="canonical" href="https://shipwright-studio.pages.dev/lab/fluid-type/">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"WebApplication","name":"Fluid Type Calc","url":"https://shipwright-studio.pages.dev/lab/fluid-type/","description":"Fluid Type Calc is a free online tool that generates CSS clamp() expressions for fluid typography — type that scales smoothly between two viewport widths — with a live preview and one-click CSS copy.","applicationCategory":"DeveloperApplication","operatingSystem":"Web","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"}}
+</script>
+<style>
+:root{--bg:#0a0c0f;--panel:#101318;--line:#1c2128;--txt:#e8e4da;--mut:#9aa3b2;--brass:#d2a24c;--err:#e07856}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--txt);font-family:Fraunces,Georgia,serif;line-height:1.65;padding:2rem 1.2rem 4rem;max-width:960px;margin:0 auto}
+a{color:var(--brass)}
+.nav{display:flex;gap:1.2rem;font-size:.85rem;margin-bottom:1.2rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.nav a{color:var(--mut);text-decoration:none}.nav a:hover{color:var(--brass)}
+.eyebrow{font-size:.75rem;letter-spacing:.22em;text-transform:uppercase;color:var(--mut);font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+h1{font-weight:600;font-size:clamp(2.1rem,5vw,3rem);margin:.5rem 0 .7rem}
+.define{color:var(--mut);max-width:46rem;margin-bottom:1.8rem}.define strong{color:var(--txt)}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:1.4rem;margin-bottom:1.4rem}
+.cardlabel{font-size:.72rem;letter-spacing:.18em;text-transform:uppercase;color:var(--mut);margin-bottom:.8rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.ui{font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.btn{font-size:.9rem;border:1px solid var(--line);background:transparent;color:var(--txt);border-radius:999px;padding:.5rem 1.1rem;cursor:pointer;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.btn:hover{border-color:var(--brass);color:var(--brass)}.btn.active{border-color:var(--brass);color:var(--brass);background:rgba(210,162,76,.12)}
+.btn.brass{border-color:var(--brass);color:var(--brass)}
+.btn:disabled{opacity:.4;cursor:not-allowed}.btn:disabled:hover{border-color:var(--line);color:var(--txt)}
+.btnrow{display:flex;gap:.6rem;flex-wrap:wrap;align-items:center}
+input[type=range]{width:100%;accent-color:var(--brass)}
+.layout{display:grid;grid-template-columns:1fr 1fr;gap:1.4rem;align-items:start}
+.field{margin-bottom:1rem}.field label{display:flex;justify-content:space-between;font-size:.85rem;color:var(--mut);margin-bottom:.3rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.field input{width:100%;background:#0d1014;color:var(--txt);border:1px solid var(--line);border-radius:8px;padding:.55rem .7rem;font-size:1rem;font-family:"JetBrains Mono",monospace}
+.field input:focus{outline:none;border-color:var(--brass)}
+.field input.invalid{border-color:var(--err)}
+.field .unit{color:var(--mut);font-size:.8rem}
+#error{color:var(--err);font-size:.88rem;margin-top:.2rem;min-height:1.3em}
+#previewBox{background:#14181e;border-radius:10px;padding:1.6rem 1.4rem;min-height:220px;overflow:hidden}
+#previewHeading{font-weight:600;line-height:1.15;margin-bottom:.6rem;transition:font-size .08s linear}
+#previewBody{color:var(--mut);line-height:1.6;transition:font-size .08s linear}
+#previewNote{color:var(--mut);font-size:.85rem;margin-top:1rem;text-align:center}
+.readout{font-size:.85rem;color:var(--mut);margin-top:.9rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.readout b{color:var(--txt);font-family:"JetBrains Mono",monospace}
+.slider label{display:flex;justify-content:space-between;font-size:.85rem;color:var(--mut);margin-bottom:.2rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}.slider label b{color:var(--txt)}
+pre{background:#08090c;border:1px solid var(--line);border-radius:10px;padding:1rem;overflow-x:auto;font-family:"JetBrains Mono",monospace;font-size:.9rem;color:var(--txt);white-space:pre-wrap}
+.explain{font-size:.92rem;color:var(--mut)}.explain li{margin:.4rem 0}
+footer{margin-top:2.5rem;color:var(--mut);font-size:.85rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+@media(max-width:700px){.layout{grid-template-columns:1fr}#previewBox{min-height:180px}}
+</style>
+</head>
+<body>
+<nav class="nav"><a href="/">Shipwright Studio</a><a href="/ideas/">Lab</a></nav>
+<p class="eyebrow">Lab — Devtool</p>
+<h1>Fluid Type Calc</h1>
+<p class="define"><strong>Fluid Type Calc is a free online tool that</strong> generates CSS <code>clamp()</code> expressions for fluid typography — type that scales smoothly between two viewport widths instead of jumping between breakpoints. Type four numbers, watch the preview breathe at any screen width, and copy production-ready CSS in one click. No account, nothing leaves the page.</p>
+
+<div class="layout">
+<div class="card">
+<p class="cardlabel">Type scale</p>
+<div class="field"><label for="minSize">Min font size <span class="unit">px</span></label><input type="number" id="minSize" min="1" step="1" value="16"></div>
+<div class="field"><label for="maxSize">Max font size <span class="unit">px</span></label><input type="number" id="maxSize" min="1" step="1" value="24"></div>
+<div class="field"><label for="minVp">Min viewport width <span class="unit">px</span></label><input type="number" id="minVp" min="1" step="1" value="360"></div>
+<div class="field"><label for="maxVp">Max viewport width <span class="unit">px</span></label><input type="number" id="maxVp" min="1" step="1" value="1280"></div>
+<p id="error" class="ui" role="alert"></p>
+</div>
+
+<div class="card">
+<p class="cardlabel">Live preview</p>
+<div id="previewBox">
+<h2 id="previewHeading">Type that scales beautifully</h2>
+<p id="previewBody">Fluid type grows and shrinks with the screen — no breakpoints, no jumps. Drag the slider below to see this heading breathe from a phone to a desktop.</p>
+</div>
+<div class="slider ui" style="margin-top:1rem"><label for="vpSlider">Simulated viewport <b id="vpVal">768px</b></label><input type="range" id="vpSlider" min="320" max="1440" value="768"></div>
+<p class="readout" id="readout"></p>
+</div>
+</div>
+
+<div class="card">
+<p class="cardlabel">Presets</p>
+<div class="btnrow ui" id="presets">
+<button class="btn preset" data-preset="body">Body · 16→20px</button>
+<button class="btn preset" data-preset="heading">Heading · 28→48px</button>
+<button class="btn preset" data-preset="display">Display · 40→80px</button>
+</div>
+<p class="ui" style="font-size:.85rem;color:var(--mut);margin-top:.7rem">Presets run over 360 → 1280px viewports. The page opens on the 16 → 24px default, not a preset.</p>
+</div>
+
+<div class="card">
+<p class="cardlabel">CSS output</p>
+<pre id="cssOut"></pre>
+<div class="btnrow ui" style="margin-top:1rem">
+<button class="btn brass" id="copyBtn">Copy CSS</button>
+<span id="copyNote" style="font-size:.85rem;color:var(--mut)"></span>
+</div>
+</div>
+
+<div class="card">
+<p class="cardlabel">How it works</p>
+<ul class="explain">
+<li><b style="color:var(--txt)">Slope</b> — how fast the type grows: (max size − min size) ÷ (max viewport − min viewport), expressed in vw units. Steeper slope, faster growth.</li>
+<li><b style="color:var(--txt)">Intercept</b> — the px anchor the vw term is added to, so the line passes exactly through your min size at your min viewport.</li>
+<li><b style="color:var(--txt)">clamp()</b> — pins the result: below the min viewport the size stays at your minimum, above the max viewport it stays at your maximum, and between them it glides along the line.</li>
+<li><b style="color:var(--txt)">Prefer rem?</b> — divide every px value by 16 (e.g. 16px → 1rem, 24px → 1.5rem) and keep the vw term as-is.</li>
+</ul>
+</div>
+
+<footer>Built by <a href="/">Shipwright Studio</a> · <a href="/ideas/">Back to the Lab</a></footer>
+<script>
+function fmt(n){ return (Math.round(n * 1000) / 1000).toString(); }
+function computeClamp(o){
+  var minSize = o.minSize, maxSize = o.maxSize, minVp = o.minVp, maxVp = o.maxVp;
+  var vals = [minSize, maxSize, minVp, maxVp];
+  for (var i = 0; i < 4; i++){
+    if (typeof vals[i] !== 'number' || !isFinite(vals[i]) || vals[i] <= 0)
+      return { ok:false, error:'All four values must be positive numbers.' };
+  }
+  if (minSize >= maxSize)
+    return { ok:false, error:'Min font size must be smaller than max font size.', field:'minSize' };
+  if (minVp >= maxVp)
+    return { ok:false, error:'Min viewport width must be smaller than max viewport width.', field:'minVp' };
+  var slope = (maxSize - minSize) / (maxVp - minVp);
+  var slopeVw = Math.round(slope * 100 * 1000) / 1000;
+  var intercept = minSize - slope * minVp;
+  var interceptR = Math.round(intercept * 100) / 100;
+  return {
+    ok:true, minSize:minSize, maxSize:maxSize, minVp:minVp, maxVp:maxVp,
+    slope:slope, slopeVw:slopeVw, intercept:intercept, interceptR:interceptR,
+    css:'clamp(' + fmt(minSize) + 'px, ' + fmt(interceptR) + 'px + ' + fmt(slopeVw) + 'vw, ' + fmt(maxSize) + 'px)',
+    sizeAt:function(vp){ return Math.min(maxSize, Math.max(minSize, intercept + slope * vp)); }
+  };
+}
+var PRESETS = {
+  body:    { minSize:16, maxSize:20, minVp:360, maxVp:1280 },
+  heading: { minSize:28, maxSize:48, minVp:360, maxVp:1280 },
+  display: { minSize:40, maxSize:80, minVp:360, maxVp:1280 }
+};
+var inputs = {
+  minSize: document.getElementById('minSize'),
+  maxSize: document.getElementById('maxSize'),
+  minVp: document.getElementById('minVp'),
+  maxVp: document.getElementById('maxVp')
+};
+var errorEl = document.getElementById('error');
+var cssOut = document.getElementById('cssOut');
+var copyBtn = document.getElementById('copyBtn');
+var copyNote = document.getElementById('copyNote');
+var vpSlider = document.getElementById('vpSlider');
+var vpVal = document.getElementById('vpVal');
+var readout = document.getElementById('readout');
+var previewHeading = document.getElementById('previewHeading');
+var previewBody = document.getElementById('previewBody');
+var lastGood = null;
+
+function readInputs(){
+  return {
+    minSize: parseFloat(inputs.minSize.value),
+    maxSize: parseFloat(inputs.maxSize.value),
+    minVp: parseFloat(inputs.minVp.value),
+    maxVp: parseFloat(inputs.maxVp.value)
+  };
+}
+function update(){
+  var res = computeClamp(readInputs());
+  Object.keys(inputs).forEach(function(k){ inputs[k].classList.remove('invalid'); });
+  if (!res.ok){
+    errorEl.textContent = res.error;
+    if (res.field) inputs[res.field].classList.add('invalid');
+    cssOut.textContent = '/* Fix the values above to generate your clamp(). */';
+    copyBtn.disabled = true;
+    readout.textContent = '';
+    previewHeading.style.fontSize = '';
+    previewBody.style.fontSize = '';
+    return;
+  }
+  errorEl.textContent = '';
+  copyBtn.disabled = false;
+  lastGood = res;
+  cssOut.textContent = '/* Fluid type: ' + res.minSize + 'px → ' + res.maxSize + 'px between ' +
+    res.minVp + 'px and ' + res.maxVp + 'px viewports */\nfont-size: ' + res.css + ';';
+  renderPreview();
+}
+function renderPreview(){
+  if (!lastGood) return;
+  var vp = parseInt(vpSlider.value, 10);
+  vpVal.textContent = vp + 'px';
+  var size = lastGood.sizeAt(vp);
+  previewHeading.style.fontSize = size.toFixed(2) + 'px';
+  previewBody.style.fontSize = Math.max(11, size * 0.62).toFixed(2) + 'px';
+  readout.innerHTML = 'At <b>' + vp + 'px</b> viewport → heading renders at <b>' + size.toFixed(2) + 'px</b> ' +
+    '(slope ' + fmt(lastGood.slopeVw) + 'vw, intercept ' + fmt(lastGood.interceptR) + 'px)';
+}
+Object.keys(inputs).forEach(function(k){
+  inputs[k].addEventListener('input', function(){
+    document.querySelectorAll('.preset').forEach(function(b){ b.classList.remove('active'); });
+    update();
+  });
+});
+vpSlider.addEventListener('input', renderPreview);
+document.querySelectorAll('.preset').forEach(function(btn){
+  btn.addEventListener('click', function(){
+    var p = PRESETS[btn.dataset.preset];
+    inputs.minSize.value = p.minSize; inputs.maxSize.value = p.maxSize;
+    inputs.minVp.value = p.minVp; inputs.maxVp.value = p.maxVp;
+    document.querySelectorAll('.preset').forEach(function(b){ b.classList.remove('active'); });
+    btn.classList.add('active');
+    update();
+  });
+});
+copyBtn.addEventListener('click', function(){
+  var text = cssOut.textContent;
+  function done(){
+    copyBtn.textContent = 'Copied ✓';
+    copyNote.textContent = 'Ready to paste into your stylesheet.';
+    setTimeout(function(){ copyBtn.textContent = 'Copy CSS'; copyNote.textContent = ''; }, 2000);
+  }
+  if (navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(text).then(done, function(){ fallbackCopy(text); done(); });
+  } else { fallbackCopy(text); done(); }
+});
+function fallbackCopy(text){
+  var ta = document.createElement('textarea');
+  ta.value = text; document.body.appendChild(ta); ta.select();
+  try { document.execCommand('copy'); } catch(e){}
+  document.body.removeChild(ta);
+}
+update();
+</script>
+</body>
+</html>

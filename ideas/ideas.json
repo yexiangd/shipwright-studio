@@ -1,5 +1,5 @@
 {
-  "updated": "2026-11-06",
+  "updated": "2026-11-07",
   "ideas": [
     {
       "id": "idea-000a",
@@ -297,7 +297,9 @@
       "tagline": "Rotate the tiles, connect the whole grid.",
       "priority": 68,
       "effort": "M",
-      "status": "todo"
+      "status": "done",
+      "url": "/lab/pipe-loop/",
+      "shipped": "2026-11-07"
     },
     {
       "id": "idea-024",
@@ -629,7 +631,9 @@
       "tagline": "clamp() values for type that scales beautifully.",
       "priority": 68,
       "effort": "S",
-      "status": "todo"
+      "status": "done",
+      "url": "/lab/fluid-type/",
+      "shipped": "2026-11-07"
     },
     {
       "id": "idea-053",
