@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Contract Event Decoder · Shipwright Studio</title>
+<meta name="description" content="Free online contract event decoder — paste an ABI and an EVM log's topics and data to see the event name and every parameter decoded, all computed locally.">
+<link rel="canonical" href="https://shipwright-studio.pages.dev/lab/event-decoder/">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"WebApplication","name":"Contract Event Decoder","url":"https://shipwright-studio.pages.dev/lab/event-decoder/","description":"Contract Event Decoder is a free online tool that decodes EVM event logs — paste a contract ABI and a log's topics and data, and it matches the event by its Keccak-256 signature hash and decodes every parameter, all locally in your browser.","applicationCategory":"DeveloperApplication","operatingSystem":"Web","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"}}
+</script>
+<style>
+:root{--bg:#0a0c0f;--panel:#101318;--line:#1c2128;--txt:#e8e4da;--mut:#9aa3b2;--brass:#d2a24c;--err:#e07856;--green:#7fb069}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--txt);font-family:Fraunces,Georgia,serif;line-height:1.65;padding:2rem 1.2rem 4rem;max-width:960px;margin:0 auto}
+a{color:var(--brass)}
+.nav{display:flex;gap:1.2rem;font-size:.85rem;margin-bottom:1.2rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.nav a{color:var(--mut);text-decoration:none}.nav a:hover{color:var(--brass)}
+.eyebrow{font-size:.75rem;letter-spacing:.22em;text-transform:uppercase;color:var(--mut);font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+h1{font-weight:600;font-size:clamp(2.1rem,5vw,3rem);margin:.5rem 0 .7rem}
+.define{color:var(--mut);max-width:46rem;margin-bottom:1.8rem}.define strong{color:var(--txt)}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:1.4rem;margin-bottom:1.4rem}
+.cardlabel{font-size:.72rem;letter-spacing:.18em;text-transform:uppercase;color:var(--mut);margin-bottom:.8rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.ui{font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.mono{font-family:"JetBrains Mono",ui-monospace,monospace}
+textarea{width:100%;background:#08090c;color:var(--txt);border:1px solid var(--line);border-radius:10px;padding:.8rem 1rem;font-size:.85rem;font-family:"JetBrains Mono",ui-monospace,monospace;line-height:1.5;resize:vertical}
+textarea:focus{outline:none;border-color:var(--brass)}
+textarea.invalid{border-color:var(--err)}
+.hint{font-size:.85rem;color:var(--mut);margin-top:.6rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.btn{font-size:.9rem;border:1px solid var(--line);background:transparent;color:var(--txt);border-radius:999px;padding:.5rem 1.1rem;cursor:pointer;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.btn:hover{border-color:var(--brass);color:var(--brass)}
+.btn.brass{border-color:var(--brass);color:var(--brass)}
+.btn.ghost{color:var(--mut)}
+.btn:disabled{opacity:.4;cursor:not-allowed}.btn:disabled:hover{border-color:var(--line);color:var(--txt)}
+.btnrow{display:flex;gap:.6rem;flex-wrap:wrap;align-items:center;margin-top:.9rem}
+#error{color:var(--err);font-size:.9rem;margin-top:.8rem;min-height:1.3em;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+#resultCard{display:none}
+.match{font-size:1.05rem;margin-bottom:.4rem}
+.match b{color:var(--brass)}
+.topichash{font-size:.82rem;color:var(--mut);word-break:break-all;margin-bottom:1rem;font-family:"JetBrains Mono",ui-monospace,monospace}
+table{width:100%;border-collapse:collapse;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif;font-size:.92rem}
+th{text-align:left;color:var(--mut);font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;padding:.5rem .6rem;border-bottom:1px solid var(--line)}
+td{padding:.65rem .6rem;border-bottom:1px solid var(--line);vertical-align:top}
+tr:last-child td{border-bottom:0}
+td.val{font-family:"JetBrains Mono",ui-monospace,monospace;font-size:.85rem;word-break:break-all}
+.tag{display:inline-block;font-size:.68rem;letter-spacing:.08em;text-transform:uppercase;border:1px solid var(--brass);color:var(--brass);border-radius:999px;padding:.1rem .5rem;margin-left:.4rem}
+.note{font-size:.82rem;color:var(--mut);margin-top:.9rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.explain{font-size:.92rem;color:var(--mut)}.explain li{margin:.4rem 0}
+footer{margin-top:2.5rem;color:var(--mut);font-size:.85rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+@media(max-width:700px){
+  table,thead,tbody,tr,th,td{display:block}
+  thead{display:none}
+  tr{border-bottom:1px solid var(--line);padding:.4rem 0}
+  td{border-bottom:0;padding:.2rem .2rem}
+  td::before{content:attr(data-label);display:block;font-size:.68rem;letter-spacing:.14em;text-transform:uppercase;color:var(--mut)}
+}
+</style>
+</head>
+<body>
+<nav class="nav"><a href="/">Shipwright Studio</a><a href="/ideas/">Lab</a></nav>
+<p class="eyebrow">Lab — Web3 tool</p>
+<h1>Contract Event Decoder</h1>
+<p class="define"><strong>Contract Event Decoder is a free online tool that</strong> turns raw EVM event logs into readable parameters — paste a contract ABI and a log's topics and data, and it matches the event by its Keccak-256 signature hash, then decodes every indexed and non-indexed value. No wallet, no RPC call, nothing leaves this page.</p>
+
+<div class="card">
+<p class="cardlabel">1 · Contract ABI</p>
+<textarea id="abiInput" rows="7" spellcheck="false" placeholder='[{"anonymous":false,"inputs":[{"indexed":true,"name":"from","type":"address"},{"indexed":true,"name":"to","type":"address"},{"indexed":false,"name":"value","type":"uint256"}],"name":"Transfer","type":"event"}]'></textarea>
+<div class="btnrow">
+<button class="btn ghost" id="btnErc20">Load ERC-20 events</button>
+</div>
+<p class="hint">Paste a JSON array of event objects, or a full contract ABI — only the events are used. Tuple / struct types are not supported in this version.</p>
+</div>
+
+<div class="card">
+<p class="cardlabel">2 · Event log</p>
+<textarea id="logInput" rows="7" spellcheck="false" placeholder='{"topics":["0xddf252ad…","0x0000…"],"data":"0x0000…"}'></textarea>
+<p class="hint">Paste a raw log object with <span class="mono">topics</span> and <span class="mono">data</span> (extra fields like <span class="mono">address</span> are ignored) — or paste just a topics array and put the data below.</p>
+<textarea id="dataInput" rows="2" spellcheck="false" style="margin-top:.7rem" placeholder="data (0x…) — only needed if you pasted a bare topics array above"></textarea>
+<div class="btnrow">
+<button class="btn ghost" id="btnSampleTransfer">Load sample · Transfer</button>
+<button class="btn ghost" id="btnSampleApproval">Load sample · Approval</button>
+</div>
+</div>
+
+<div class="btnrow">
+<button class="btn brass" id="btnDecode" disabled>Decode log</button>
+<button class="btn ghost" id="btnClear">Clear</button>
+</div>
+<p id="error" role="alert"></p>
+
+<div class="card" id="resultCard">
+<p class="cardlabel">Decoded event</p>
+<p class="match" id="matchLine"></p>
+<p class="topichash" id="topicLine"></p>
+<table>
+<thead><tr><th>Name</th><th>Type</th><th>Indexed</th><th>Value</th></tr></thead>
+<tbody id="resultBody"></tbody>
+</table>
+<div class="btnrow">
+<button class="btn" id="btnCopy">Copy JSON</button>
+<span id="copyNote" class="ui" style="font-size:.85rem;color:var(--mut)"></span>
+</div>
+<p class="note" id="resultNote" style="display:none">Indexed <span class="mono">string</span>, <span class="mono">bytes</span> and array values are never stored on-chain — only their Keccak-256 hash appears in the topic, so the original value cannot be recovered from the log.</p>
+</div>
+
+<div class="card">
+<p class="cardlabel">How it works</p>
+<ul class="explain">
+<li><b style="color:var(--txt)">Signature hash</b> — every event has a signature like <span class="mono">Transfer(address,address,uint256)</span>. Its Keccak-256 hash is <span class="mono">topics[0]</span>; matching that hash against the ABI identifies the event.</li>
+<li><b style="color:var(--txt)">Indexed vs. data</b> — indexed parameters live in <span class="mono">topics[1…]</span> (one 32-byte word each); the rest are packed as 32-byte words in <span class="mono">data</span>. Dynamic types (<span class="mono">string</span>, <span class="mono">bytes</span>, arrays) are stored as an offset plus length plus payload.</li>
+<li><b style="color:var(--txt)">Local only</b> — Keccak-256 and the ABI decoder are implemented in this page with no libraries. Your ABI and log never leave the browser.</li>
+</ul>
+</div>
+
+<footer>Built by <a href="/">Shipwright Studio</a> · <a href="/ideas/">Back to the Lab</a></footer>
+
+<script>
+// ---- Keccak-256 (dependency-free, clean-room implementation) ----
+var RC=[0x0000000000000001n,0x0000000000008082n,0x800000000000808an,0x8000000080008000n,0x000000000000808bn,0x0000000080000001n,0x8000000080008081n,0x8000000000008009n,0x000000000000008an,0x0000000000000088n,0x0000000080008009n,0x000000008000000an,0x000000008000808bn,0x800000000000008bn,0x8000000000008089n,0x8000000000008003n,0x8000000000008002n,0x8000000000000080n,0x000000000000800an,0x800000008000000an,0x8000000080008081n,0x8000000000008080n,0x0000000080000001n,0x8000000080008008n];
+var ROT=[[0,36,3,41,18],[1,44,10,45,2],[62,6,43,15,61],[28,55,25,21,56],[27,20,39,8,14]];
+var MASK64=(1n<<64n)-1n;
+function rotl64(x,n){n=BigInt(n);return n===0n?x:((x<<n)|(x>>(64n-n)))&MASK64;}
+function keccakF(s){
+  for(var r=0;r<24;r++){
+    var C=[],D=[],x,y;
+    for(x=0;x<5;x++)C[x]=s[x]^s[x+5]^s[x+10]^s[x+15]^s[x+20];
+    for(x=0;x<5;x++)D[x]=C[(x+4)%5]^rotl64(C[(x+1)%5],1);
+    for(x=0;x<5;x++)for(y=0;y<5;y++)s[x+5*y]^=D[x];
+    var B=new Array(25);
+    for(x=0;x<5;x++)for(y=0;y<5;y++)B[y+5*((2*x+3*y)%5)]=rotl64(s[x+5*y],ROT[x][y]);
+    for(x=0;x<5;x++)for(y=0;y<5;y++)s[x+5*y]=B[x+5*y]^((~B[(x+1)%5+5*y])&B[(x+2)%5+5*y]);
+    s[0]^=RC[r];
+  }
+}
+function keccak256Hex(ascii){
+  var bytes=[];for(var i=0;i<ascii.length;i++)bytes.push(ascii.charCodeAt(i)&0xff);
+  var rate=136,s=new Array(25).fill(0n),off=0;
+  while(bytes.length-off>=rate){
+    for(var i=0;i<rate;i++)s[Math.floor(i/8)]^=BigInt(bytes[off+i])<<BigInt((i%8)*8);
+    keccakF(s);off+=rate;
+  }
+  var rem=bytes.slice(off),block=new Array(rate).fill(0);
+  rem.forEach(function(b,i){block[i]=b;});
+  block[rem.length]^=0x01;block[rate-1]^=0x80;
+  for(var j=0;j<rate;j++)s[Math.floor(j/8)]^=BigInt(block[j])<<BigInt((j%8)*8);
+  keccakF(s);
+  var out='';
+  for(var k=0;k<32;k++)out+=((s[Math.floor(k/8)]>>BigInt((k%8)*8))&0xffn).toString(16).padStart(2,'0');
+  return out;
+}
+
+// ---- Hex helpers ----
+function cleanHex(h,label){
+  if(typeof h!=='string')throw new Error(label+' must be a hex string.');
+  var s=h.trim().toLowerCase();
+  if(s.slice(0,2)==='0x')s=s.slice(2);
+  if(!/^[0-9a-f]*$/.test(s))throw new Error(label+' contains non-hex characters.');
+  if(s.length%2!==0)throw new Error(label+' has an odd number of hex characters.');
+  return s;
+}
+function hexToBytes(h){
+  var out=[];for(var i=0;i<h.length;i+=2)out.push(parseInt(h.slice(i,i+2),16));
+  return out;
+}
+function bytesToHex(b){return b.map(function(x){return x.toString(16).padStart(2,'0');}).join('');}
+function wordAt(data,off){
+  if(off<0||off+32>data.length)throw new Error('Data is too short for this event — expected at least '+(off+32)+' bytes, got '+data.length+'.');
+  return data.slice(off,off+32);
+}
+function wordToBigInt(w){var v=0n;for(var i=0;i<w.length;i++)v=(v<<8n)|BigInt(w[i]);return v;}
+
+// ---- ABI types ----
+function isDynamicBase(t){return t==='string'||t==='bytes';}
+function parseType(t){
+  if(t.indexOf('tuple')===0)throw new Error('Tuple / struct types are not supported in this version.');
+  var m=t.match(/^(.+)\[(\d*)\]$/);
+  if(m){
+    var base=m[1];
+    if(isDynamicBase(base))throw new Error('Arrays of dynamic types ('+t+') are not supported in this version.');
+    if(base.indexOf('tuple')===0)throw new Error('Tuple / struct types are not supported in this version.');
+    return {base:base,isArray:true,len:m[2]==='' ? null : parseInt(m[2],10),dynamic:m[2]===''};
+  }
+  return {base:t,isArray:false,len:null,dynamic:isDynamicBase(t)};
+}
+function decodeStaticWord(base,w){
+  if(base==='address')return '0x'+bytesToHex(w.slice(12));
+  if(base.indexOf('uint')===0)return wordToBigInt(w).toString(10);
+  if(base.indexOf('int')===0){
+    var v=wordToBigInt(w);
+    if(v>=(1n<<255n))v-=(1n<<256n);
+    return v.toString(10);
+  }
+  if(base==='bool')return w[31]!==0?'true':'false';
+  if(base.indexOf('bytes')===0){
+    var n=base==='bytes32'?32:parseInt(base.slice(5),10);
+    if(isNaN(n)||n<1||n>32)throw new Error('Unsupported type "'+base+'".');
+    return '0x'+bytesToHex(w.slice(0,n));
+  }
+  throw new Error('Unsupported type "'+base+'".');
+}
+function isPrintable(bytes){
+  return bytes.every(function(b){return (b>=0x20&&b<=0x7e)||b===0x0a||b===0x0d||b===0x09;});
+}
+function decodeDynamic(base,data,off){
+  var len=Number(wordToBigInt(wordAt(data,off)));
+  var start=off+32;
+  if(start+len>data.length)throw new Error('Data is too short for this '+base+' value — declared length '+len+' bytes, only '+(data.length-start)+' available.');
+  var payload=data.slice(start,start+len);
+  if(base==='string'){
+    if(isPrintable(payload))return {value:new TextDecoder().decode(new Uint8Array(payload))};
+    return {value:'0x'+bytesToHex(payload)+' (not printable text)'};
+  }
+  var hex='0x'+bytesToHex(payload);
+  if(isPrintable(payload)&&payload.length>0)hex+=' ("'+new TextDecoder().decode(new Uint8Array(payload))+'")';
+  return {value:hex};
+}
+function decodeValue(type,data,headOff){
+  var p=parseType(type);
+  if(p.isArray){
+    if(p.len===null){
+      var off=Number(wordToBigInt(wordAt(data,headOff)));
+      var n=Number(wordToBigInt(wordAt(data,off)));
+      var items=[];
+      for(var i=0;i<n;i++)items.push(decodeStaticWord(p.base,wordAt(data,off+32+i*32)));
+      return {value:'['+items.join(', ')+']'};
+    }
+    var arr=[];
+    for(var j=0;j<p.len;j++)arr.push(decodeStaticWord(p.base,wordAt(data,headOff+j*32)));
+    return {value:'['+arr.join(', ')+']'};
+  }
+  if(p.dynamic)return decodeDynamic(p.base,data,Number(wordToBigInt(wordAt(data,headOff))));
+  return {value:decodeStaticWord(p.base,wordAt(data,headOff))};
+}
+
+// ---- ABI + log parsing ----
+function eventSignature(ev){
+  if(!ev.name||!Array.isArray(ev.inputs))throw new Error('Each event in the ABI needs a name and an inputs array.');
+  var types=ev.inputs.map(function(inp){
+    if(inp.type.indexOf('tuple')===0)throw new Error('Event "'+ev.name+'" uses a tuple type, which is not supported in this version.');
+    return inp.type;
+  });
+  return ev.name+'('+types.join(',')+')';
+}
+function parseABI(text){
+  var parsed;
+  try{parsed=JSON.parse(text);}catch(e){throw new Error('That ABI is not valid JSON — '+e.message.replace(/^JSON\.parse:\s*/,'')+'.');}
+  if(!Array.isArray(parsed))throw new Error('The ABI must be a JSON array of event objects (or a full contract ABI array).');
+  var events=parsed.filter(function(e){return e&&e.type==='event';});
+  if(events.length===0)throw new Error('No events found in this ABI — paste an array containing at least one object with "type": "event".');
+  events.forEach(function(ev){ev._sig=eventSignature(ev);ev._topic0='0x'+keccak256Hex(ev._sig);});
+  return events;
+}
+function parseLog(text,dataText){
+  var parsed;
+  try{parsed=JSON.parse(text);}catch(e){throw new Error('That log is not valid JSON — '+e.message.replace(/^JSON\.parse:\s*/,'')+'.');}
+  var topics,dataHex;
+  if(Array.isArray(parsed)){
+    topics=parsed;
+    dataHex=(dataText||'').trim();
+    if(!dataHex)throw new Error('You pasted a bare topics array — please also paste the log data (0x…) in the data field below.');
+  }else if(parsed&&typeof parsed==='object'){
+    if(!Array.isArray(parsed.topics))throw new Error('The log object needs a "topics" array.');
+    topics=parsed.topics;
+    dataHex=(parsed.data||'').toString().trim();
+    if(!dataHex)throw new Error('The log object needs a "data" field (0x…).');
+  }else{
+    throw new Error('The log must be a JSON object with topics and data, or a bare topics array.');
+  }
+  if(topics.length===0)throw new Error('The topics array is empty — a non-anonymous event log always has at least topics[0].');
+  topics.forEach(function(t,i){
+    var h=cleanHex(t,'topics['+i+']');
+    if(h.length!==64)throw new Error('topics['+i+'] must be 32 bytes (64 hex characters), got '+(h.length/2)+' bytes.');
+  });
+  var dataClean=cleanHex(dataHex,'data');
+  if(dataClean.length%64!==0)throw new Error('data must be a multiple of 32 bytes ('+(dataClean.length/2)+' bytes found).');
+  return {topics:topics.map(function(t){return '0x'+cleanHex(t,'topic').toLowerCase();}),data:hexToBytes(dataClean)};
+}
+
+// ---- Main decode ----
+function decodeLog(abiText,logText,dataText){
+  var events=parseABI(abiText);
+  var log=parseLog(logText,dataText);
+  var topic0=log.topics[0];
+  var ev=null;
+  for(var i=0;i<events.length;i++)if(events[i]._topic0===topic0){ev=events[i];break;}
+  if(!ev)throw new Error('No event in this ABI matches topic0 '+topic0+'. Check the ABI, or that the log really came from this contract.');
+  var indexed=ev.inputs.filter(function(x){return x.indexed;});
+  var plain=ev.inputs.filter(function(x){return !x.indexed;});
+  if(log.topics.length-1<indexed.length)
+    throw new Error('This '+ev.name+' event has '+indexed.length+' indexed parameters, but the log only has '+(log.topics.length-1)+' topic(s) after topic0.');
+  var headBytes=0;
+  plain.forEach(function(inp){
+    var p=parseType(inp.type);
+    headBytes+=p.isArray&&p.len!==null?p.len*32:32;
+  });
+  if(log.data.length<headBytes)
+    throw new Error('data is too short for '+ev.name+' — expected at least '+headBytes+' bytes, got '+log.data.length+'.');
+  var results=[],hasHashed=false,topicIdx=1,headOff=0;
+  ev.inputs.forEach(function(inp){
+    var p=parseType(inp.type);
+    if(inp.indexed){
+      var w=hexToBytes(cleanHex(log.topics[topicIdx],'topic'));
+      topicIdx++;
+      if(p.dynamic||p.isArray){
+        hasHashed=true;
+        results.push({name:inp.name,type:inp.type,indexed:true,value:'0x'+bytesToHex(w)+' — keccak256 hash only; the original value is not stored on-chain'});
+      }else{
+        results.push({name:inp.name,type:inp.type,indexed:true,value:decodeStaticWord(p.base,w)});
+      }
+    }else{
+      var decoded=decodeValue(inp.type,log.data,headOff);
+      headOff+=p.isArray&&p.len!==null?p.len*32:32;
+      results.push({name:inp.name,type:inp.type,indexed:false,value:decoded.value});
+    }
+  });
+  return {event:ev.name,signature:ev._sig,topic0:topic0,params:results,hasHashed:hasHashed};
+}
+
+// ---- Samples ----
+var ERC20_ABI=[
+  {"anonymous":false,"inputs":[{"indexed":true,"name":"from","type":"address"},{"indexed":true,"name":"to","type":"address"},{"indexed":false,"name":"value","type":"uint256"}],"name":"Transfer","type":"event"},
+  {"anonymous":false,"inputs":[{"indexed":true,"name":"owner","type":"address"},{"indexed":true,"name":"spender","type":"address"},{"indexed":false,"name":"value","type":"uint256"}],"name":"Approval","type":"event"}
+];
+var SAMPLE_TRANSFER={
+  "address":"0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+  "topics":[
+    "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef",
+    "0x0000000000000000000000005aaeb6053f3e94c9b9a09f33669435e7ef1beaed",
+    "0x000000000000000000000000fb6916095ca1df60bb79ce92ce3ea74c37c5d359"
+  ],
+  "data":"0x00000000000000000000000000000000000000000000000000000000000f4240"
+};
+var SAMPLE_APPROVAL={
+  "address":"0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+  "topics":[
+    "0x8c5be1e5ebec7d5bd14f71427d1e84f3dd0314c0f7b2291e5b200ac8c7c3b925",
+    "0x0000000000000000000000005aaeb6053f3e94c9b9a09f33669435e7ef1beaed",
+    "0x000000000000000000000000742d35cc6634c0532925a3b844bc454e4438f44e"
+  ],
+  "data":"0x0000000000000000000000000000000000000000000000000de0b6b3a7640000"
+};
+
+// ---- UI ----
+var abiInput=document.getElementById('abiInput');
+var logInput=document.getElementById('logInput');
+var dataInput=document.getElementById('dataInput');
+var errorEl=document.getElementById('error');
+var decodeBtn=document.getElementById('btnDecode');
+var resultCard=document.getElementById('resultCard');
+var matchLine=document.getElementById('matchLine');
+var topicLine=document.getElementById('topicLine');
+var resultBody=document.getElementById('resultBody');
+var resultNote=document.getElementById('resultNote');
+var copyNote=document.getElementById('copyNote');
+var lastResult=null;
+
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function updateDecodeState(){
+  decodeBtn.disabled=!(abiInput.value.trim()&&logInput.value.trim());
+}
+function showError(msg,field){
+  errorEl.textContent=msg;
+  [abiInput,logInput,dataInput].forEach(function(el){el.classList.remove('invalid');});
+  if(field)field.classList.add('invalid');
+}
+function doDecode(){
+  try{
+    var res=decodeLog(abiInput.value,logInput.value,dataInput.value);
+    lastResult=res;
+    showError('');
+    matchLine.innerHTML='<b>'+esc(res.event)+'</b> <span class="mono" style="color:var(--mut)">'+esc(res.signature)+'</span>';
+    topicLine.textContent='topic0 '+res.topic0;
+    resultBody.innerHTML=res.params.map(function(p){
+      return '<tr><td data-label="Name">'+esc(p.name)+(p.indexed?'<span class="tag">indexed</span>':'')+'</td>'+
+        '<td data-label="Type"><span class="mono">'+esc(p.type)+'</span></td>'+
+        '<td data-label="Indexed">'+(p.indexed?'Yes':'No')+'</td>'+
+        '<td data-label="Value" class="val">'+esc(p.value)+'</td></tr>';
+    }).join('');
+    resultNote.style.display=res.hasHashed?'block':'none';
+    resultCard.style.display='block';
+  }catch(e){
+    showError(e.message);
+    resultCard.style.display='none';
+    lastResult=null;
+  }
+}
+[abiInput,logInput,dataInput].forEach(function(el){el.addEventListener('input',updateDecodeState);});
+decodeBtn.addEventListener('click',doDecode);
+document.getElementById('btnClear').addEventListener('click',function(){
+  abiInput.value='';logInput.value='';dataInput.value='';
+  showError('');resultCard.style.display='none';lastResult=null;updateDecodeState();abiInput.focus();
+});
+document.getElementById('btnErc20').addEventListener('click',function(){
+  abiInput.value=JSON.stringify(ERC20_ABI,null,2);updateDecodeState();abiInput.focus();
+});
+document.getElementById('btnSampleTransfer').addEventListener('click',function(){
+  abiInput.value=JSON.stringify(ERC20_ABI,null,2);
+  logInput.value=JSON.stringify(SAMPLE_TRANSFER,null,2);
+  dataInput.value='';updateDecodeState();doDecode();
+});
+document.getElementById('btnSampleApproval').addEventListener('click',function(){
+  abiInput.value=JSON.stringify(ERC20_ABI,null,2);
+  logInput.value=JSON.stringify(SAMPLE_APPROVAL,null,2);
+  dataInput.value='';updateDecodeState();doDecode();
+});
+document.getElementById('btnCopy').addEventListener('click',function(){
+  if(!lastResult)return;
+  var text=JSON.stringify({event:lastResult.event,signature:lastResult.signature,topic0:lastResult.topic0,params:lastResult.params.map(function(p){return {name:p.name,type:p.type,indexed:p.indexed,value:p.value};})},null,2);
+  var done=function(){var b=document.getElementById('btnCopy');b.textContent='Copied ✓';copyNote.textContent='Decoded JSON is on your clipboard.';setTimeout(function(){b.textContent='Copy JSON';copyNote.textContent='';},2000);};
+  if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(text).then(done,function(){done();});}
+  else{var ta=document.createElement('textarea');ta.value=text;document.body.appendChild(ta);ta.select();try{document.execCommand('copy');}catch(e){}document.body.removeChild(ta);done();}
+});
+updateDecodeState();
+</script>
+</body>
+</html>

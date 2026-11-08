@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Quote Machine · Shipwright Studio</title>
+<meta name="description" content="Free online quote machine — draw a fresh aphorism from stoics to startups, filter by theme, and copy it in one click. No repeats until the deck is spent.">
+<link rel="canonical" href="https://shipwright-studio.pages.dev/lab/quote-generator/">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"WebApplication","name":"Quote Machine","url":"https://shipwright-studio.pages.dev/lab/quote-generator/","description":"Quote Machine is a free online tool that serves a fresh aphorism on demand — from stoics to startups — with category filters, a no-repeat shuffled deck, one-click copy, and a quote of the day.","applicationCategory":"UtilitiesApplication","operatingSystem":"Web","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"}}
+</script>
+<style>
+:root{--bg:#0a0c0f;--panel:#101318;--line:#1c2128;--txt:#e8e4da;--mut:#9aa3b2;--brass:#d2a24c;--err:#e07856}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--txt);font-family:Fraunces,Georgia,serif;line-height:1.65;padding:2rem 1.2rem 4rem;max-width:960px;margin:0 auto}
+a{color:var(--brass)}
+.nav{display:flex;gap:1.2rem;font-size:.85rem;margin-bottom:1.2rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.nav a{color:var(--mut);text-decoration:none}.nav a:hover{color:var(--brass)}
+.eyebrow{font-size:.75rem;letter-spacing:.22em;text-transform:uppercase;color:var(--mut);font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+h1{font-weight:600;font-size:clamp(2.1rem,5vw,3rem);margin:.5rem 0 .7rem}
+.define{color:var(--mut);max-width:46rem;margin-bottom:1.8rem}.define strong{color:var(--txt)}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:1.6rem;margin-bottom:1.4rem}
+.cardlabel{font-size:.72rem;letter-spacing:.18em;text-transform:uppercase;color:var(--mut);margin-bottom:.8rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.ui{font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.btn{font-size:.9rem;border:1px solid var(--line);background:transparent;color:var(--txt);border-radius:999px;padding:.55rem 1.2rem;cursor:pointer;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.btn:hover{border-color:var(--brass);color:var(--brass)}.btn.active{border-color:var(--brass);color:var(--brass);background:rgba(210,162,76,.12)}
+.btn.brass{border-color:var(--brass);color:var(--brass)}
+.btnrow{display:flex;gap:.6rem;flex-wrap:wrap;align-items:center}
+.tag{font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;color:var(--brass);font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.cardtop{display:flex;justify-content:space-between;align-items:baseline;gap:1rem;margin-bottom:1rem}
+.progress{font-size:.8rem;color:var(--mut);font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.quotemark{font-size:4rem;line-height:.6;color:var(--brass);opacity:.55;display:block;margin-bottom:.4rem}
+#quoteText{font-weight:600;font-size:clamp(1.55rem,4.4vw,2.3rem);line-height:1.35;text-align:center;max-width:34rem;margin:0 auto .9rem}
+#quoteAuthor{text-align:center;color:var(--brass);font-size:1.05rem}
+#quoteAuthor::before{content:"— "}
+#quoteCard .btnrow{justify-content:center;margin-top:1.5rem}
+#copyNote{font-size:.85rem;color:var(--mut);min-height:1.3em;text-align:center;margin-top:.6rem}
+#copyNote.err{color:var(--err)}
+#deckNote{font-size:.85rem;color:var(--mut);text-align:center;min-height:1.3em;margin-top:.4rem}
+.fade{animation:fadein .45s ease}
+@keyframes fadein{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+#dailyText{font-size:1.25rem;line-height:1.5;margin-bottom:.5rem}
+#dailyAuthor{color:var(--brass);margin-bottom:1rem}
+.explain{font-size:.92rem;color:var(--mut)}.explain li{margin:.4rem 0}
+.explain b{color:var(--txt)}
+footer{margin-top:2.5rem;color:var(--mut);font-size:.85rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+kbd{font-family:"JetBrains Mono",monospace;font-size:.8em;border:1px solid var(--line);border-bottom-width:2px;border-radius:5px;padding:.05rem .35rem;color:var(--txt)}
+@media(max-width:700px){
+  #quoteCard .btnrow .btn{flex:1 1 100%;text-align:center}
+  .card{padding:1.3rem 1.1rem}
+}
+</style>
+</head>
+<body>
+<nav class="nav"><a href="/">Shipwright Studio</a><a href="/ideas/">Lab</a></nav>
+<p class="eyebrow">Lab — Words</p>
+<h1>Quote Machine</h1>
+<p class="define"><strong>Quote Machine is a free online tool that</strong> serves a fresh aphorism on demand — from stoics to startups. Draw from a shuffled deck that never repeats until every card is spent, filter by theme, copy the line in one click, or come back tomorrow for a new quote of the day. No account, nothing leaves the page.</p>
+
+<div class="card" id="quoteCard">
+  <div class="cardtop"><span class="tag" id="quoteTag">Stoicism</span><span class="progress" id="progress"></span></div>
+  <span class="quotemark" aria-hidden="true">&ldquo;</span>
+  <p id="quoteText"></p>
+  <p id="quoteAuthor"></p>
+  <div class="btnrow ui">
+    <button class="btn brass" id="newBtn">New quote</button>
+    <button class="btn" id="copyBtn">Copy quote</button>
+  </div>
+  <p id="copyNote" class="ui" role="status"></p>
+  <p id="deckNote" class="ui" role="status"></p>
+</div>
+
+<div class="card">
+  <p class="cardlabel">Filter by theme</p>
+  <div class="btnrow ui" id="filters" role="group" aria-label="Quote categories"></div>
+  <p class="ui" style="font-size:.85rem;color:var(--mut);margin-top:.7rem">Press <kbd>N</kbd> for a new quote. Switching themes reshuffles the deck for that theme.</p>
+</div>
+
+<div class="card">
+  <p class="cardlabel">Quote of the day · <span id="dailyDate"></span></p>
+  <p id="dailyText"></p>
+  <p id="dailyAuthor"></p>
+  <div class="btnrow ui"><button class="btn" id="dailyBtn">Show in card &rarr;</button></div>
+</div>
+
+<div class="card">
+  <p class="cardlabel">How it works</p>
+  <ul class="explain">
+    <li><b style="color:var(--txt)">The deck</b> — every quote in the active theme is shuffled once, then dealt in order. Nothing repeats until the whole deck is spent, then it reshuffles.</li>
+    <li><b style="color:var(--txt)">Quote of the day</b> — the date seeds a small random generator, so the same day always picks the same quote, for everyone.</li>
+    <li><b style="color:var(--txt)">The sources</b> — every line is a real, attributed aphorism, from Marcus Aurelius to Naval Ravikant. No invented attributions, no paraphrases passed off as quotes.</li>
+  </ul>
+</div>
+
+<footer>Built by <a href="/">Shipwright Studio</a> · <a href="/ideas/">Back to the Lab</a></footer>
+<script>
+/* Pure logic first — no DOM access, testable under node. */
+var QUOTES = [
+/* Stoicism */
+{text:"You have power over your mind — not outside events. Realize this, and you will find strength.",author:"Marcus Aurelius",cat:"Stoicism"},
+{text:"The impediment to action advances action. What stands in the way becomes the way.",author:"Marcus Aurelius",cat:"Stoicism"},
+{text:"Waste no more time arguing what a good man should be. Be one.",author:"Marcus Aurelius",cat:"Stoicism"},
+{text:"Dwell on the beauty of life. Watch the stars, and see yourself running with them.",author:"Marcus Aurelius",cat:"Stoicism"},
+{text:"We suffer more often in imagination than in reality.",author:"Seneca",cat:"Stoicism"},
+{text:"It is not that we have a short time to live, but that we waste a great deal of it.",author:"Seneca",cat:"Stoicism"},
+{text:"Luck is what happens when preparation meets opportunity.",author:"Seneca",cat:"Stoicism"},
+{text:"He who is brave is free.",author:"Seneca",cat:"Stoicism"},
+{text:"No man is free who is not master of himself.",author:"Epictetus",cat:"Stoicism"},
+{text:"First say to yourself what you would be; and then do what you have to do.",author:"Epictetus",cat:"Stoicism"},
+{text:"It's not what happens to you, but how you react to it that matters.",author:"Epictetus",cat:"Stoicism"},
+{text:"We have two ears and one mouth so that we can listen twice as much as we speak.",author:"Zeno of Citium",cat:"Stoicism"},
+/* Focus */
+{text:"What gets measured gets managed.",author:"Peter Drucker",cat:"Focus"},
+{text:"You can do anything, but not everything.",author:"David Allen",cat:"Focus"},
+{text:"Where focus goes, energy flows.",author:"Tony Robbins",cat:"Focus"},
+{text:"The key is not to prioritize what's on your schedule, but to schedule your priorities.",author:"Stephen Covey",cat:"Focus"},
+{text:"Concentrate all your thoughts upon the work in hand.",author:"Alexander Graham Bell",cat:"Focus"},
+{text:"Do not dwell in the past, do not dream of the future, concentrate the mind on the present moment.",author:"Buddha",cat:"Focus"},
+{text:"It is during our darkest moments that we must focus to see the light.",author:"Aristotle",cat:"Focus"},
+{text:"Focus is a matter of deciding what things you're not going to do.",author:"John Carmack",cat:"Focus"},
+{text:"Simplicity is the soul of efficiency.",author:"Austin Freeman",cat:"Focus"},
+{text:"The successful person has the habit of doing things failures don't like to do.",author:"E. M. Gray",cat:"Focus"},
+/* Startups */
+{text:"The best way to predict the future is to invent it.",author:"Alan Kay",cat:"Startups"},
+{text:"The way to get started is to quit talking and begin doing.",author:"Walt Disney",cat:"Startups"},
+{text:"If you are not embarrassed by the first version of your product, you've launched too late.",author:"Reid Hoffman",cat:"Startups"},
+{text:"Make something people want.",author:"Paul Graham",cat:"Startups"},
+{text:"Move fast and break things.",author:"Mark Zuckerberg",cat:"Startups"},
+{text:"The biggest risk is not taking any risk.",author:"Mark Zuckerberg",cat:"Startups"},
+{text:"Done is better than perfect.",author:"Sheryl Sandberg",cat:"Startups"},
+{text:"Whether you think you can or you think you can't, you're right.",author:"Henry Ford",cat:"Startups"},
+{text:"Your most unhappy customers are your greatest source of learning.",author:"Bill Gates",cat:"Startups"},
+{text:"The only way to do great work is to love what you do.",author:"Steve Jobs",cat:"Startups"},
+{text:"Stay hungry, stay foolish.",author:"Steve Jobs",cat:"Startups"},
+{text:"In the middle of difficulty lies opportunity.",author:"Albert Einstein",cat:"Startups"},
+{text:"Play long-term games with long-term people.",author:"Naval Ravikant",cat:"Startups"},
+{text:"Escape competition through authenticity.",author:"Naval Ravikant",cat:"Startups"},
+{text:"Desire is a contract you sign to be unhappy until you get what you want.",author:"Naval Ravikant",cat:"Startups"},
+{text:"Specific knowledge is knowledge you cannot be trained for.",author:"Naval Ravikant",cat:"Startups"},
+/* Craft */
+{text:"Simplicity is the ultimate sophistication.",author:"Leonardo da Vinci",cat:"Craft"},
+{text:"Details matter, it's worth waiting to get it right.",author:"Steve Jobs",cat:"Craft"},
+{text:"The details are not the details. They make the design.",author:"Charles Eames",cat:"Craft"},
+{text:"Good design is obvious. Great design is transparent.",author:"Joe Sparano",cat:"Craft"},
+{text:"Less, but better.",author:"Dieter Rams",cat:"Craft"},
+{text:"Perfection is achieved, not when there is nothing more to add, but when there is nothing left to take away.",author:"Antoine de Saint-Exupéry",cat:"Craft"},
+{text:"Practice doesn't make perfect. Perfect practice makes perfect.",author:"Vince Lombardi",cat:"Craft"},
+{text:"The master has failed more times than the beginner has even tried.",author:"Stephen McCranie",cat:"Craft"},
+{text:"We are what we repeatedly do. Excellence, then, is not an act, but a habit.",author:"Will Durant",cat:"Craft"},
+{text:"Design is intelligence made visible.",author:"Alina Wheeler",cat:"Craft"},
+/* Resilience */
+{text:"Fall seven times, stand up eight.",author:"Japanese proverb",cat:"Resilience"},
+{text:"It always seems impossible until it's done.",author:"Nelson Mandela",cat:"Resilience"},
+{text:"The best time to plant a tree was twenty years ago. The second best time is now.",author:"Chinese proverb",cat:"Resilience"},
+{text:"Success is not final, failure is not fatal: it is the courage to continue that counts.",author:"Winston Churchill",cat:"Resilience"},
+{text:"Our greatest glory is not in never falling, but in rising every time we fall.",author:"Confucius",cat:"Resilience"},
+{text:"Rock bottom became the solid foundation on which I rebuilt my life.",author:"J. K. Rowling",cat:"Resilience"},
+{text:"You may have to fight a battle more than once to win it.",author:"Margaret Thatcher",cat:"Resilience"},
+{text:"What lies behind us and what lies before us are tiny matters compared to what lies within us.",author:"Ralph Waldo Emerson",cat:"Resilience"},
+{text:"The only thing we have to fear is fear itself.",author:"Franklin D. Roosevelt",cat:"Resilience"},
+{text:"When you come to the end of your rope, tie a knot and hang on.",author:"Franklin D. Roosevelt",cat:"Resilience"},
+{text:"Tough times never last, but tough people do.",author:"Robert H. Schuller",cat:"Resilience"}
+];
+var CATEGORIES = ["All","Stoicism","Focus","Startups","Craft","Resilience"];
+
+function hashString(s){
+  var h = 2166136261;
+  for (var i = 0; i < s.length; i++){ h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); }
+  return h >>> 0;
+}
+function mulberry32(a){
+  return function(){
+    a |= 0; a = (a + 0x6D2B79F5) | 0;
+    var t = Math.imul(a ^ (a >>> 15), 1 | a);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+function shuffle(arr, rand){
+  var a = arr.slice();
+  for (var i = a.length - 1; i > 0; i--){
+    var j = Math.floor(rand() * (i + 1));
+    var tmp = a[i]; a[i] = a[j]; a[j] = tmp;
+  }
+  return a;
+}
+function quotesFor(cat){
+  if (!cat || cat === "All") return QUOTES.slice();
+  return QUOTES.filter(function(q){ return q.cat === cat; });
+}
+function makeDeck(cat, rand){
+  return shuffle(quotesFor(cat), rand || Math.random);
+}
+function dailyIndex(dateStr, n){
+  return Math.floor(mulberry32(hashString(dateStr))() * n);
+}
+function dailyQuote(dateStr){
+  return QUOTES[dailyIndex(dateStr, QUOTES.length)];
+}
+function formatCopy(q){
+  return "\u201C" + q.text + "\u201D \u2014 " + q.author;
+}
+function todayStr(d){
+  var y = d.getFullYear();
+  var m = ("0" + (d.getMonth() + 1)).slice(-2);
+  var day = ("0" + d.getDate()).slice(-2);
+  return y + "-" + m + "-" + day;
+}
+
+if (typeof document !== "undefined"){
+  var currentCat = "All";
+  var deck = [];
+  var deckTotal = 0;
+  var shown = 0;
+  var current = null;
+  var quoteText = document.getElementById("quoteText");
+  var quoteAuthor = document.getElementById("quoteAuthor");
+  var quoteTag = document.getElementById("quoteTag");
+  var progressEl = document.getElementById("progress");
+  var copyNote = document.getElementById("copyNote");
+  var deckNote = document.getElementById("deckNote");
+  var copyBtn = document.getElementById("copyBtn");
+  var newBtn = document.getElementById("newBtn");
+
+  function render(q){
+    quoteText.textContent = q.text;
+    quoteAuthor.textContent = q.author;
+    quoteTag.textContent = q.cat;
+    progressEl.textContent = "Card " + shown + " of " + deckTotal + " · " + currentCat;
+    var wrap = document.getElementById("quoteCard");
+    wrap.classList.remove("fade"); void wrap.offsetWidth; wrap.classList.add("fade");
+  }
+  function draw(){
+    if (deck.length === 0){
+      deck = makeDeck(currentCat);
+      deckTotal = deck.length;
+      shown = 0;
+      deckNote.textContent = "Deck complete — reshuffled.";
+      setTimeout(function(){ deckNote.textContent = ""; }, 3000);
+    }
+    current = deck.pop();
+    shown += 1;
+    render(current);
+  }
+  function setCategory(cat){
+    currentCat = cat;
+    deck = makeDeck(cat);
+    deckTotal = deck.length;
+    shown = 0;
+    deckNote.textContent = "";
+    copyNote.textContent = "";
+    document.querySelectorAll("#filters .btn").forEach(function(b){
+      b.classList.toggle("active", b.dataset.cat === cat);
+    });
+    draw();
+  }
+  var filtersEl = document.getElementById("filters");
+  CATEGORIES.forEach(function(cat){
+    var b = document.createElement("button");
+    b.className = "btn" + (cat === "All" ? " active" : "");
+    b.dataset.cat = cat;
+    b.textContent = cat;
+    b.addEventListener("click", function(){ setCategory(cat); });
+    filtersEl.appendChild(b);
+  });
+  newBtn.addEventListener("click", draw);
+  document.addEventListener("keydown", function(e){
+    if ((e.key === "n" || e.key === "N" || e.key === " ") &&
+        !/^(BUTTON|INPUT|TEXTAREA|A)$/.test(document.activeElement && document.activeElement.tagName || "")){
+      e.preventDefault();
+      draw();
+    }
+  });
+  function fallbackCopy(text){
+    var ta = document.createElement("textarea");
+    ta.value = text; document.body.appendChild(ta); ta.select();
+    var ok = false;
+    try { ok = document.execCommand("copy"); } catch(e){ ok = false; }
+    document.body.removeChild(ta);
+    return ok;
+  }
+  copyBtn.addEventListener("click", function(){
+    if (!current) return;
+    var text = formatCopy(current);
+    function done(ok){
+      if (ok){
+        copyBtn.textContent = "Copied \u2713";
+        copyNote.textContent = "Ready to paste anywhere.";
+        copyNote.classList.remove("err");
+        setTimeout(function(){ copyBtn.textContent = "Copy quote"; copyNote.textContent = ""; }, 2000);
+      } else {
+        copyNote.textContent = "Copy failed — select the text manually.";
+        copyNote.classList.add("err");
+      }
+    }
+    if (navigator.clipboard && navigator.clipboard.writeText){
+      navigator.clipboard.writeText(text).then(function(){ done(true); }, function(){ done(fallbackCopy(text)); });
+    } else { done(fallbackCopy(text)); }
+  });
+  var today = todayStr(new Date());
+  var dq = dailyQuote(today);
+  document.getElementById("dailyDate").textContent = today;
+  document.getElementById("dailyText").textContent = "\u201C" + dq.text + "\u201D";
+  document.getElementById("dailyAuthor").textContent = "— " + dq.author + " · " + dq.cat;
+  document.getElementById("dailyBtn").addEventListener("click", function(){
+    current = dq;
+    quoteText.textContent = dq.text;
+    quoteAuthor.textContent = dq.author;
+    quoteTag.textContent = dq.cat;
+    progressEl.textContent = "Quote of the day · " + currentCat;
+    var wrap = document.getElementById("quoteCard");
+    wrap.classList.remove("fade"); void wrap.offsetWidth; wrap.classList.add("fade");
+    document.getElementById("quoteCard").scrollIntoView({behavior:"smooth", block:"center"});
+  });
+  deck = makeDeck("All");
+  deckTotal = deck.length;
+  draw();
+}
+</script>
+</body>
+</html>

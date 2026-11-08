@@ -1,5 +1,5 @@
 {
-  "updated": "2026-11-07",
+  "updated": "2026-11-08",
   "ideas": [
     {
       "id": "idea-000a",
@@ -1029,7 +1029,9 @@
       "tagline": "Aphorisms on demand, from stoics to startups.",
       "priority": 68,
       "effort": "S",
-      "status": "todo"
+      "status": "done",
+      "url": "/lab/quote-generator/",
+      "shipped": "2026-11-08"
     },
     {
       "id": "idea-090",
@@ -1413,7 +1415,9 @@
       "tagline": "Decode EVM event logs with a pasted ABI.",
       "priority": 68,
       "effort": "M",
-      "status": "todo"
+      "status": "done",
+      "url": "/lab/event-decoder/",
+      "shipped": "2026-11-08"
     },
     {
       "id": "idea-124",

@@ -96,6 +96,11 @@
     <priority>0.7</priority>
   </url>
   <url>
+    <loc>https://shipwright-studio.pages.dev/lab/event-decoder/</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
     <loc>https://shipwright-studio.pages.dev/lab/flappy-flyer/</loc>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
@@ -277,6 +282,11 @@
   </url>
   <url>
     <loc>https://shipwright-studio.pages.dev/lab/qr-generator/</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://shipwright-studio.pages.dev/lab/quote-generator/</loc>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
