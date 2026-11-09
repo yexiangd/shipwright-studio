@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PX ⇄ REM Converter · Shipwright Studio</title>
+<meta name="description" content="Free online px to rem converter — convert pixels to rem and back at any root font size, with a quick reference table and a copy-ready CSS snippet.">
+<link rel="canonical" href="https://shipwright-studio.pages.dev/lab/px-rem/">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"WebApplication","name":"PX ⇄ REM Converter","url":"https://shipwright-studio.pages.dev/lab/px-rem/","description":"PX ⇄ REM Converter is a free online tool that converts pixel values to rem units and back at any root font size, with a quick reference table, copy-to-clipboard values, and a live CSS snippet generator.","applicationCategory":"UtilitiesApplication","operatingSystem":"Web","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"}}
+</script>
+<style>
+:root{--bg:#0a0c0f;--panel:#101318;--line:#1c2128;--txt:#e8e4da;--mut:#9aa3b2;--brass:#d2a24c;--err:#e07856}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--txt);font-family:Fraunces,Georgia,serif;line-height:1.65;padding:2rem 1.2rem 4rem;max-width:960px;margin:0 auto}
+a{color:var(--brass)}
+.nav{display:flex;gap:1.2rem;font-size:.85rem;margin-bottom:1.2rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.nav a{color:var(--mut);text-decoration:none}.nav a:hover{color:var(--brass)}
+.eyebrow{font-size:.75rem;letter-spacing:.22em;text-transform:uppercase;color:var(--mut);font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+h1{font-weight:600;font-size:clamp(2.1rem,5vw,3rem);margin:.5rem 0 .7rem}
+.define{color:var(--mut);max-width:46rem;margin-bottom:1.8rem}.define strong{color:var(--txt)}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:1.6rem;margin-bottom:1.4rem}
+.cardlabel{font-size:.72rem;letter-spacing:.18em;text-transform:uppercase;color:var(--mut);margin-bottom:.8rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.ui{font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.btn{font-size:.9rem;border:1px solid var(--line);background:transparent;color:var(--txt);border-radius:999px;padding:.55rem 1.2rem;cursor:pointer;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.btn:hover{border-color:var(--brass);color:var(--brass)}.btn.active{border-color:var(--brass);color:var(--brass);background:rgba(210,162,76,.12)}
+.btn.brass{border-color:var(--brass);color:var(--brass)}
+.btnrow{display:flex;gap:.6rem;flex-wrap:wrap;align-items:center}
+.conv{display:grid;grid-template-columns:1fr auto 1fr;gap:1rem;align-items:end}
+.convfield label{display:block;font-size:.8rem;color:var(--mut);margin-bottom:.45rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.convfield input{width:100%;background:var(--bg);border:1px solid var(--line);border-radius:10px;color:var(--txt);font-family:"JetBrains Mono",monospace;font-size:1.6rem;padding:.7rem .9rem;outline:none}
+.convfield input:focus{border-color:var(--brass)}
+.convfield .unit{font-family:"JetBrains Mono",monospace;color:var(--mut);font-size:.9rem;margin-top:.45rem}
+.swap{font-size:1.6rem;color:var(--brass);padding-bottom:.9rem}
+.baseline{font-size:.85rem;color:var(--mut);margin-top:1rem;min-height:1.3em}
+.baseline.err{color:var(--err)}
+.baserow{display:flex;gap:1rem;align-items:flex-end;flex-wrap:wrap;margin-top:1.2rem}
+.basefield label{display:block;font-size:.8rem;color:var(--mut);margin-bottom:.45rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.basefield input{width:7.5rem;background:var(--bg);border:1px solid var(--line);border-radius:10px;color:var(--txt);font-family:"JetBrains Mono",monospace;font-size:1.15rem;padding:.55rem .8rem;outline:none}
+.basefield input:focus{border-color:var(--brass)}
+.presets{display:flex;gap:.5rem;flex-wrap:wrap}
+.presets .btn{padding:.55rem 1rem}
+.hint{font-size:.85rem;color:var(--mut);margin-top:.9rem}
+#copyNote{font-size:.85rem;color:var(--mut);min-height:1.3em;margin-top:.6rem}
+#copyNote.err{color:var(--err)}
+pre{font-family:"JetBrains Mono",monospace;font-size:1.05rem;background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:1rem 1.1rem;overflow-x:auto;white-space:pre}
+pre .prop{color:var(--brass)}
+table{width:100%;border-collapse:collapse;font-family:"JetBrains Mono",monospace;font-size:.95rem}
+th,td{padding:.45rem .6rem;text-align:left;border-bottom:1px solid var(--line)}
+th{color:var(--mut);font-weight:500;font-size:.8rem;letter-spacing:.08em;text-transform:uppercase}
+tr.hl td{background:rgba(210,162,76,.08)}
+tr.hl td:first-child{color:var(--brass)}
+td .copyval{background:none;border:none;color:var(--txt);font-family:"JetBrains Mono",monospace;font-size:.95rem;cursor:pointer;padding:.15rem .3rem;border-radius:6px}
+td .copyval:hover{color:var(--brass);background:rgba(210,162,76,.12)}
+td .copyval.copied{color:var(--brass)}
+.explain{font-size:.92rem;color:var(--mut)}.explain li{margin:.4rem 0}
+.explain b{color:var(--txt)}
+.explain code{font-family:"JetBrains Mono",monospace;font-size:.85em;color:var(--txt)}
+footer{margin-top:2.5rem;color:var(--mut);font-size:.85rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+@media(max-width:700px){
+  .card{padding:1.3rem 1.1rem}
+  .conv{grid-template-columns:1fr;gap:.4rem}
+  .swap{transform:rotate(90deg);justify-self:center;padding:0;margin:-.2rem 0}
+  .convfield input{font-size:1.35rem}
+}
+</style>
+</head>
+<body>
+<nav class="nav"><a href="/">Shipwright Studio</a><a href="/ideas/">Lab</a></nav>
+<p class="eyebrow">Lab — Dev Tools</p>
+<h1>PX ⇄ REM Converter</h1>
+<p class="define"><strong>PX ⇄ REM Converter is a free online tool that</strong> converts pixel values to rem units and back at any root font size — type a value, get the exact conversion instantly, copy the result or a ready-to-paste CSS declaration, and check the quick reference table for common sizes. No account, nothing leaves the page.</p>
+
+<div class="card">
+  <div class="conv">
+    <div class="convfield">
+      <label for="pxInput">Pixels</label>
+      <input id="pxInput" type="number" min="0" step="any" value="16" inputmode="decimal" aria-label="Pixels">
+      <div class="unit">px</div>
+    </div>
+    <div class="swap" aria-hidden="true">&#8646;</div>
+    <div class="convfield">
+      <label for="remInput">Rem</label>
+      <input id="remInput" type="number" min="0" step="any" value="1" inputmode="decimal" aria-label="Rem">
+      <div class="unit">rem</div>
+    </div>
+  </div>
+  <p class="baseline ui" id="baseLine" role="status"></p>
+  <div class="baserow">
+    <div class="basefield">
+      <label for="baseInput">Root font-size (base)</label>
+      <input id="baseInput" type="number" min="1" max="100" step="any" value="16" inputmode="decimal" aria-label="Root font size in pixels">
+    </div>
+    <div class="presets ui" id="presets" role="group" aria-label="Base size presets"></div>
+  </div>
+  <p class="baseline ui err" id="baseErr" role="alert"></p>
+  <p class="hint ui">Press <b>Enter</b> in the px field to copy the rem value. Your base size is remembered on this device.</p>
+  <div class="btnrow ui" style="margin-top:1rem">
+    <button class="btn brass" id="copyRemBtn">Copy rem value</button>
+  </div>
+  <p id="copyNote" class="ui" role="status"></p>
+</div>
+
+<div class="card">
+  <p class="cardlabel">CSS snippet</p>
+  <div class="btnrow ui" id="props" role="group" aria-label="CSS property" style="margin-bottom:1rem"></div>
+  <pre id="snippet" aria-live="polite"></pre>
+  <div class="btnrow ui" style="margin-top:1rem">
+    <button class="btn" id="copySnippetBtn">Copy snippet</button>
+  </div>
+</div>
+
+<div class="card">
+  <p class="cardlabel">Common values · <span id="tableBase"></span></p>
+  <table>
+    <thead><tr><th scope="col">px</th><th scope="col">rem</th><th scope="col"></th></tr></thead>
+    <tbody id="tableBody"></tbody>
+  </table>
+  <p class="hint ui">Click any rem value to copy it.</p>
+</div>
+
+<div class="card">
+  <p class="cardlabel">How it works</p>
+  <ul class="explain">
+    <li><b>The formula</b> — <code>rem = px &divide; base</code> and <code>px = rem &times; base</code>. At the default 16px base, 20px is 1.25rem.</li>
+    <li><b>Why rem</b> — rem units scale with the reader's root font size, so a layout set in rem respects the browser's text-size setting while px stays fixed.</li>
+    <li><b>Rounding</b> — results are rounded to at most 4 decimal places, with trailing zeros trimmed, so 15px at 16 is 0.9375rem and 1px is 0.0625rem.</li>
+  </ul>
+</div>
+
+<footer>Built by <a href="/">Shipwright Studio</a> · <a href="/ideas/">Back to the Lab</a></footer>
+<script>
+/* Pure logic first — no DOM access, testable under node. */
+var COMMON_PX = [4, 8, 12, 14, 16, 18, 20, 24, 28, 32, 36, 40, 48, 56, 64];
+var PRESETS = [14, 16, 18, 20];
+var PROPERTIES = ["font-size", "width", "padding", "margin", "line-height"];
+var DEFAULT_BASE = 16;
+var BASE_MIN = 1, BASE_MAX = 100;
+
+function round4(x){
+  return Math.round(x * 10000) / 10000;
+}
+function pxToRem(px, base){
+  return round4(px / base);
+}
+function remToPx(rem, base){
+  return round4(rem * base);
+}
+function fmt(n){
+  return String(n);
+}
+function validBase(v){
+  return typeof v === "number" && isFinite(v) && v >= BASE_MIN && v <= BASE_MAX;
+}
+function parseBase(s){
+  var v = parseFloat(s);
+  return validBase(v) ? v : null;
+}
+function parseValue(s){
+  if (s === null || s === undefined) return null;
+  var t = String(s).trim();
+  if (t === "") return null;
+  var v = parseFloat(t);
+  return (isFinite(v) && v >= 0) ? v : null;
+}
+function buildSnippet(prop, px, base){
+  var rem = pxToRem(px, base);
+  var comment = base === DEFAULT_BASE ? "/* " + fmt(px) + "px */" : "/* " + fmt(px) + "px at " + fmt(base) + "px base */";
+  return prop + ": " + fmt(rem) + "rem; " + comment;
+}
+function commonRows(base){
+  return COMMON_PX.map(function(px){
+    return {px: px, rem: pxToRem(px, base)};
+  });
+}
+
+if (typeof document !== "undefined"){
+  var pxInput = document.getElementById("pxInput");
+  var remInput = document.getElementById("remInput");
+  var baseInput = document.getElementById("baseInput");
+  var baseLine = document.getElementById("baseLine");
+  var baseErr = document.getElementById("baseErr");
+  var copyNote = document.getElementById("copyNote");
+  var snippetEl = document.getElementById("snippet");
+  var tableBody = document.getElementById("tableBody");
+  var tableBase = document.getElementById("tableBase");
+  var presetsEl = document.getElementById("presets");
+  var propsEl = document.getElementById("props");
+  var copyRemBtn = document.getElementById("copyRemBtn");
+  var copySnippetBtn = document.getElementById("copySnippetBtn");
+
+  var base = DEFAULT_BASE;
+  var lastValidBase = DEFAULT_BASE;
+  var prop = PROPERTIES[0];
+  var lastEdited = "px";
+
+  try {
+    var stored = window.localStorage.getItem("px-rem-base");
+    var parsed = parseBase(stored);
+    if (parsed !== null){ base = parsed; lastValidBase = parsed; }
+  } catch (e) { /* storage unavailable — keep default */ }
+  baseInput.value = fmt(base);
+
+  function fallbackCopy(text){
+    var ta = document.createElement("textarea");
+    ta.value = text; document.body.appendChild(ta); ta.select();
+    var ok = false;
+    try { ok = document.execCommand("copy"); } catch(e){ ok = false; }
+    document.body.removeChild(ta);
+    return ok;
+  }
+  function copyText(text, okMsg){
+    function done(ok){
+      if (ok){
+        copyNote.textContent = okMsg;
+        copyNote.classList.remove("err");
+      } else {
+        copyNote.textContent = "Copy failed — select the value manually.";
+        copyNote.classList.add("err");
+      }
+      setTimeout(function(){ copyNote.textContent = ""; }, 2000);
+    }
+    if (navigator.clipboard && navigator.clipboard.writeText){
+      navigator.clipboard.writeText(text).then(function(){ done(true); }, function(){ done(fallbackCopy(text)); });
+    } else { done(fallbackCopy(text)); }
+  }
+  function flashCopied(btn, original){
+    btn.textContent = "Copied \u2713";
+    btn.classList.add("copied");
+    setTimeout(function(){ btn.textContent = original; btn.classList.remove("copied"); }, 2000);
+  }
+
+  function renderTable(){
+    tableBase.textContent = "at " + fmt(base) + "px base";
+    tableBody.innerHTML = "";
+    var currentPx = parseValue(pxInput.value);
+    commonRows(base).forEach(function(row){
+      var tr = document.createElement("tr");
+      if (currentPx !== null && currentPx === row.px) tr.className = "hl";
+      var tdPx = document.createElement("td");
+      tdPx.textContent = fmt(row.px) + "px";
+      var tdRem = document.createElement("td");
+      var b = document.createElement("button");
+      b.className = "copyval";
+      b.type = "button";
+      b.textContent = fmt(row.rem) + "rem";
+      b.setAttribute("aria-label", "Copy " + fmt(row.rem) + "rem");
+      b.addEventListener("click", function(){
+        copyText(fmt(row.rem) + "rem", "Copied " + fmt(row.rem) + "rem.");
+        flashCopied(b, fmt(row.rem) + "rem");
+      });
+      tdRem.appendChild(b);
+      var tdHint = document.createElement("td");
+      tdHint.textContent = "";
+      tr.appendChild(tdPx); tr.appendChild(tdRem); tr.appendChild(tdHint);
+      tableBody.appendChild(tr);
+    });
+  }
+  function renderSnippet(){
+    var px = parseValue(pxInput.value);
+    if (px === null){ snippetEl.textContent = ""; return; }
+    snippetEl.innerHTML = "";
+    var propSpan = document.createElement("span");
+    propSpan.className = "prop";
+    propSpan.textContent = prop;
+    var rest = document.createTextNode(": " + fmt(pxToRem(px, base)) + "rem; " +
+      (base === DEFAULT_BASE ? "/* " + fmt(px) + "px */" : "/* " + fmt(px) + "px at " + fmt(base) + "px base */"));
+    snippetEl.appendChild(propSpan);
+    snippetEl.appendChild(rest);
+  }
+  function renderBaseLine(){
+    baseLine.textContent = "1rem = " + fmt(base) + "px · " + fmt(pxToRem(16, base)) + "rem = 16px";
+  }
+  function renderPresets(){
+    presetsEl.querySelectorAll(".btn").forEach(function(b){
+      b.classList.toggle("active", parseFloat(b.dataset.base) === base);
+    });
+  }
+  function convertFromPx(){
+    var px = parseValue(pxInput.value);
+    if (px === null){ remInput.value = ""; renderSnippet(); renderTable(); return; }
+    remInput.value = fmt(pxToRem(px, base));
+    renderSnippet();
+    renderTable();
+  }
+  function convertFromRem(){
+    var rem = parseValue(remInput.value);
+    if (rem === null){ pxInput.value = ""; renderSnippet(); renderTable(); return; }
+    pxInput.value = fmt(remToPx(rem, base));
+    renderSnippet();
+    renderTable();
+  }
+  function setBase(next, save){
+    if (!validBase(next)){
+      baseErr.textContent = "Base must be between " + BASE_MIN + " and " + BASE_MAX + " px — keeping " + fmt(lastValidBase) + "px.";
+      return false;
+    }
+    base = next;
+    lastValidBase = next;
+    baseErr.textContent = "";
+    if (save){
+      try { window.localStorage.setItem("px-rem-base", fmt(next)); } catch (e) { /* ignore */ }
+    }
+    renderPresets();
+    renderBaseLine();
+    if (lastEdited === "px") convertFromPx(); else convertFromRem();
+    return true;
+  }
+
+  PRESETS.forEach(function(p){
+    var b = document.createElement("button");
+    b.className = "btn";
+    b.type = "button";
+    b.dataset.base = String(p);
+    b.textContent = p + "px";
+    b.addEventListener("click", function(){ baseInput.value = fmt(p); setBase(p, true); });
+    presetsEl.appendChild(b);
+  });
+  PROPERTIES.forEach(function(p){
+    var b = document.createElement("button");
+    b.className = "btn" + (p === prop ? " active" : "");
+    b.type = "button";
+    b.dataset.prop = p;
+    b.textContent = p;
+    b.addEventListener("click", function(){
+      prop = p;
+      propsEl.querySelectorAll(".btn").forEach(function(x){ x.classList.toggle("active", x.dataset.prop === p); });
+      renderSnippet();
+    });
+    propsEl.appendChild(b);
+  });
+
+  pxInput.addEventListener("input", function(){ lastEdited = "px"; convertFromPx(); });
+  remInput.addEventListener("input", function(){ lastEdited = "rem"; convertFromRem(); });
+  baseInput.addEventListener("input", function(){
+    var next = parseBase(baseInput.value);
+    if (next === null){
+      baseErr.textContent = "Base must be between " + BASE_MIN + " and " + BASE_MAX + " px — keeping " + fmt(lastValidBase) + "px.";
+      return;
+    }
+    setBase(next, true);
+  });
+  pxInput.addEventListener("keydown", function(e){
+    if (e.key === "Enter"){
+      var px = parseValue(pxInput.value);
+      if (px !== null){
+        copyText(fmt(pxToRem(px, base)) + "rem", "Copied " + fmt(pxToRem(px, base)) + "rem.");
+      }
+    }
+  });
+  copyRemBtn.addEventListener("click", function(){
+    var px = parseValue(pxInput.value);
+    if (px === null){ copyNote.textContent = "Enter a pixel value first."; copyNote.classList.remove("err"); return; }
+    copyText(fmt(pxToRem(px, base)) + "rem", "Copied " + fmt(pxToRem(px, base)) + "rem.");
+    flashCopied(copyRemBtn, "Copy rem value");
+  });
+  copySnippetBtn.addEventListener("click", function(){
+    var px = parseValue(pxInput.value);
+    if (px === null){ copyNote.textContent = "Enter a pixel value first."; copyNote.classList.remove("err"); return; }
+    copyText(buildSnippet(prop, px, base), "Snippet copied.");
+    flashCopied(copySnippetBtn, "Copy snippet");
+  });
+
+  renderPresets();
+  renderBaseLine();
+  convertFromPx();
+}
+</script>
+</body>
+</html>

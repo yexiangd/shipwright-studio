@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DAO Voting Power Viz · Shipwright Studio</title>
+<meta name="description" content="Free online DAO voting power visualizer — paste token holder balances to see voting-power shares, concentration stats and the smallest passing coalition, all computed locally.">
+<link rel="canonical" href="https://shipwright-studio.pages.dev/lab/dao-voting-viz/">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"WebApplication","name":"DAO Voting Power Viz","url":"https://shipwright-studio.pages.dev/lab/dao-voting-viz/","description":"DAO Voting Power Viz is a free online tool that visualizes token-weighted governance power — paste a list of voters and token balances and it computes each voter's voting-power share, charts the distribution, and reports concentration stats including the Herfindahl index and the Nakamoto coefficient, all locally in your browser.","applicationCategory":"DeveloperApplication","operatingSystem":"Web","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"}}
+</script>
+<style>
+:root{--bg:#0a0c0f;--panel:#101318;--line:#1c2128;--txt:#e8e4da;--mut:#9aa3b2;--brass:#d2a24c;--err:#e07856;--green:#7fb069;--bar:#2a313b}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--txt);font-family:Fraunces,Georgia,serif;line-height:1.65;padding:2rem 1.2rem 4rem;max-width:960px;margin:0 auto}
+a{color:var(--brass)}
+.nav{display:flex;gap:1.2rem;font-size:.85rem;margin-bottom:1.2rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.nav a{color:var(--mut);text-decoration:none}.nav a:hover{color:var(--brass)}
+.eyebrow{font-size:.75rem;letter-spacing:.22em;text-transform:uppercase;color:var(--mut);font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+h1{font-weight:600;font-size:clamp(2.1rem,5vw,3rem);margin:.5rem 0 .7rem}
+.define{color:var(--mut);max-width:46rem;margin-bottom:1.8rem}.define strong{color:var(--txt)}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:1.4rem;margin-bottom:1.4rem}
+.cardlabel{font-size:.72rem;letter-spacing:.18em;text-transform:uppercase;color:var(--mut);margin-bottom:.8rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.ui{font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.mono{font-family:"JetBrains Mono",ui-monospace,monospace}
+textarea{width:100%;background:#08090c;color:var(--txt);border:1px solid var(--line);border-radius:10px;padding:.8rem 1rem;font-size:.85rem;font-family:"JetBrains Mono",ui-monospace,monospace;line-height:1.5;resize:vertical}
+textarea:focus{outline:none;border-color:var(--brass)}
+textarea.invalid{border-color:var(--err)}
+.hint{font-size:.85rem;color:var(--mut);margin-top:.6rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.btn{font-size:.9rem;border:1px solid var(--line);background:transparent;color:var(--txt);border-radius:999px;padding:.5rem 1.1rem;cursor:pointer;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.btn:hover{border-color:var(--brass);color:var(--brass)}
+.btn.brass{border-color:var(--brass);color:var(--brass)}
+.btn.ghost{color:var(--mut)}
+.btn:disabled{opacity:.4;cursor:not-allowed}.btn:disabled:hover{border-color:var(--line);color:var(--txt)}
+.btnrow{display:flex;gap:.6rem;flex-wrap:wrap;align-items:center;margin-top:.9rem}
+#error{color:var(--err);font-size:.9rem;margin-top:.8rem;min-height:1.3em;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+#results{display:none}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:.8rem;margin-bottom:.9rem}
+.stat{background:#08090c;border:1px solid var(--line);border-radius:10px;padding:.9rem 1rem}
+.stat .v{font-family:"JetBrains Mono",ui-monospace,monospace;font-size:1.35rem;color:var(--brass)}
+.stat .k{font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;color:var(--mut);font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.stat .r{font-size:.8rem;color:var(--mut);font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.summary{font-size:.95rem;color:var(--mut);font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.summary b{color:var(--txt)}
+.summary .coal{color:var(--brass);font-weight:600}
+input[type=range]{width:100%;accent-color:var(--brass)}
+.sliderow{display:flex;justify-content:space-between;align-items:baseline;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif;font-size:.9rem;margin-bottom:.4rem}
+.sliderow .val{font-family:"JetBrains Mono",ui-monospace,monospace;color:var(--brass);font-size:1.05rem}
+.bar-row{display:grid;grid-template-columns:minmax(120px,180px) 1fr 64px;gap:.7rem;align-items:center;margin:.45rem 0;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif;font-size:.88rem}
+.bar-row .nm{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bar-track{background:#08090c;border-radius:999px;height:14px;overflow:hidden}
+.bar-fill{height:100%;background:var(--bar);border-radius:999px;min-width:2px}
+.bar-fill.coal{background:var(--brass)}
+.bar-row .pc{font-family:"JetBrains Mono",ui-monospace,monospace;text-align:right;color:var(--mut)}
+.bar-row.coal .pc{color:var(--brass)}
+table{width:100%;border-collapse:collapse;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif;font-size:.92rem}
+th{text-align:left;color:var(--mut);font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;padding:.5rem .6rem;border-bottom:1px solid var(--line)}
+td{padding:.65rem .6rem;border-bottom:1px solid var(--line);vertical-align:top}
+tr:last-child td{border-bottom:0}
+td.num{font-family:"JetBrains Mono",ui-monospace,monospace;font-size:.85rem;text-align:right}
+th.num{text-align:right}
+tr.coal td{background:rgba(210,162,76,.06)}
+.tag{display:inline-block;font-size:.68rem;letter-spacing:.08em;text-transform:uppercase;border:1px solid var(--brass);color:var(--brass);border-radius:999px;padding:.1rem .5rem;margin-left:.4rem}
+.note{font-size:.82rem;color:var(--mut);margin-top:.9rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.explain{font-size:.92rem;color:var(--mut)}.explain li{margin:.4rem 0}
+footer{margin-top:2.5rem;color:var(--mut);font-size:.85rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+@media(max-width:700px){
+  .stats{grid-template-columns:repeat(2,1fr)}
+  .bar-row{grid-template-columns:minmax(90px,120px) 1fr 56px;font-size:.82rem}
+  table,thead,tbody,tr,th,td{display:block}
+  thead{display:none}
+  tr{border-bottom:1px solid var(--line);padding:.4rem 0}
+  td{border-bottom:0;padding:.2rem .2rem}
+  td.num{text-align:left}
+  td::before{content:attr(data-label);display:block;font-size:.68rem;letter-spacing:.14em;text-transform:uppercase;color:var(--mut)}
+}
+</style>
+</head>
+<body>
+<nav class="nav"><a href="/">Shipwright Studio</a><a href="/ideas/">Lab</a></nav>
+<p class="eyebrow">Lab — Web3 tool</p>
+<h1>DAO Voting Power Viz</h1>
+<p class="define"><strong>DAO Voting Power Viz is a free online tool that</strong> visualizes token-weighted governance power — paste a list of voters and their token balances and it computes each voter's share of the vote, charts the distribution, and reports concentration stats like the Herfindahl index and the Nakamoto coefficient. No wallet, no API call, nothing leaves this page.</p>
+
+<div class="card">
+<p class="cardlabel">1 · Voters &amp; token balances</p>
+<textarea id="voterInput" rows="10" spellcheck="false" placeholder="Founding Whale, 4200000
+Team Multisig, 1800000
+Early VC, 1200000"></textarea>
+<div class="btnrow">
+<button class="btn ghost" data-sample="whale">Load sample · Whale DAO</button>
+<button class="btn ghost" data-sample="foundation">Load sample · Foundation DAO</button>
+<button class="btn ghost" data-sample="distributed">Load sample · Distributed DAO</button>
+</div>
+<p class="hint">One voter per line: <span class="mono">name, balance</span> — balances may use thousands separators. Lines starting with <span class="mono">#</span> are ignored.</p>
+</div>
+
+<div class="btnrow">
+<button class="btn brass" id="btnViz" disabled>Visualize power</button>
+<button class="btn ghost" id="btnClear">Clear</button>
+</div>
+<p id="error" role="alert"></p>
+
+<div id="results">
+<div class="card">
+<p class="cardlabel">Concentration stats</p>
+<div class="stats">
+<div class="stat"><div class="v" id="statTop1">–</div><div class="k">Top-1 share</div><div class="r" id="readTop1"></div></div>
+<div class="stat"><div class="v" id="statTop5">–</div><div class="k">Top-5 share</div><div class="r" id="readTop5"></div></div>
+<div class="stat"><div class="v" id="statHhi">–</div><div class="k">Herfindahl index</div><div class="r" id="readHhi"></div></div>
+<div class="stat"><div class="v" id="statNak">–</div><div class="k">Nakamoto coeff.</div><div class="r" id="readNak"></div></div>
+</div>
+<p class="summary" id="totalsLine"></p>
+</div>
+
+<div class="card">
+<p class="cardlabel">2 · Passing threshold</p>
+<div class="sliderow"><span>Threshold to pass a proposal</span><span class="val" id="thresholdVal">50%</span></div>
+<input type="range" id="threshold" min="1" max="99" value="50" step="1" aria-label="Passing threshold percent">
+<p class="summary" id="coalitionLine" style="margin-top:.7rem"></p>
+</div>
+
+<div class="card">
+<p class="cardlabel">Voting-power distribution</p>
+<div id="chart"></div>
+</div>
+
+<div class="card">
+<p class="cardlabel">Share table</p>
+<table>
+<thead><tr><th>#</th><th>Voter</th><th class="num">Balance</th><th class="num">Share</th><th class="num">Cumulative</th><th>Coalition</th></tr></thead>
+<tbody id="tableBody"></tbody>
+</table>
+</div>
+</div>
+
+<div class="card">
+<p class="cardlabel">How it works</p>
+<ul class="explain">
+<li><b style="color:var(--txt)">Share</b> — each voter's share is their balance divided by the total supply of all listed voters, sorted largest first. Cumulative share shows how much power the top <i>n</i> voters hold together.</li>
+<li><b style="color:var(--txt)">Herfindahl index</b> — the sum of every voter's squared share, on a 0–10,000 scale. Below 1,500 is competitive, 1,500–2,500 moderately concentrated, above 2,500 highly concentrated.</li>
+<li><b style="color:var(--txt)">Nakamoto coefficient</b> — the smallest number of voters whose combined share exceeds 50%. A coefficient of 2 means two wallets can pass anything on their own.</li>
+<li><b style="color:var(--txt)">Passing coalition</b> — the smallest set of top voters whose cumulative share reaches your threshold slider. Brass bars and rows are in the coalition.</li>
+</ul>
+<p class="note">All figures are computed in your browser from the list you pasted or the sample you loaded. Sample datasets are illustrative — they are not real governance data from any DAO.</p>
+</div>
+
+<footer>Built by <a href="/">Shipwright Studio</a> · <a href="/ideas/">Back to the Lab</a></footer>
+
+<script>
+// ---- Pure computation (no DOM) ----
+function parseVoters(text){
+  var voters=[],errors=[];
+  var lines=String(text).split(/\r?\n/);
+  for(var i=0;i<lines.length;i++){
+    var raw=lines[i].trim();
+    if(!raw||raw.charAt(0)==='#')continue;
+    var name,balanceText;
+    var comma=raw.indexOf(',');
+    if(comma>0){
+      name=raw.slice(0,comma).trim();
+      balanceText=raw.slice(comma+1).trim();
+    }else{
+      var parts=raw.split(/\s+/);
+      if(parts.length<2){errors.push('Line '+(i+1)+': expected "name, balance" — no balance found.');continue;}
+      balanceText=parts.pop();
+      name=parts.join(' ');
+    }
+    if(!name){errors.push('Line '+(i+1)+': missing voter name.');continue;}
+    var clean=balanceText.replace(/,/g,'');
+    if(!/^\d+(\.\d+)?$/.test(clean)){errors.push('Line '+(i+1)+': could not read a balance from "'+balanceText+'".');continue;}
+    var balance=parseFloat(clean);
+    if(!(balance>0)||!isFinite(balance)){errors.push('Line '+(i+1)+': balance must be a positive number.');continue;}
+    voters.push({name:name,balance:balance});
+  }
+  return {voters:voters,errors:errors};
+}
+function computeStats(voters){
+  var sorted=voters.slice().sort(function(a,b){return b.balance-a.balance;});
+  var total=sorted.reduce(function(s,v){return s+v.balance;},0);
+  var rows=[],cum=0,hhi=0,nakamoto=null;
+  for(var i=0;i<sorted.length;i++){
+    var share=total>0?sorted[i].balance/total:0;
+    cum+=share;
+    hhi+=share*share;
+    if(nakamoto===null&&cum>0.5)nakamoto=i+1;
+    rows.push({rank:i+1,name:sorted[i].name,balance:sorted[i].balance,share:share,cumulative:cum});
+  }
+  var top5=rows.slice(0,5).reduce(function(s,r){return s+r.share;},0);
+  return {total:total,count:sorted.length,rows:rows,
+    top1:rows.length?rows[0].share:0,top5:top5,
+    hhi:hhi*10000,nakamoto:nakamoto===null?sorted.length:nakamoto};
+}
+function coalitionSize(rows,thresholdPct){
+  var t=thresholdPct/100;
+  for(var i=0;i<rows.length;i++)if(rows[i].cumulative>=t)return i+1;
+  return rows.length;
+}
+function hhiReading(hhi){
+  if(hhi<1500)return 'Competitive — power is spread out.';
+  if(hhi<=2500)return 'Moderately concentrated.';
+  return 'Highly concentrated.';
+}
+
+// ---- Sample datasets (illustrative) ----
+var SAMPLES={
+  whale:[
+    ['Founding Whale',4200000],['Team Multisig',1800000],['Early VC',1200000],
+    ['Treasury',900000],['LP Provider',600000],['Community A',400000],
+    ['Community B',300000],['Airdrop Pool',250000],['Contributor C',200000],
+    ['Retail',150000]
+  ],
+  foundation:[
+    ['Foundation',1500000],['Lead Investor',1000000],['Core Team',750000],
+    ['Grants Pool',500000],['Ecosystem Fund',400000],['Advisor',350000],
+    ['Community Chest',300000],['Public Sale',200000]
+  ],
+  distributed:[
+    ['Validator One',150000],['Validator Two',150000],['Builder Guild',120000],
+    ['Treasury',100000],['Research Lab',90000],['Node Operator A',80000],
+    ['Node Operator B',70000],['Grants DAO',60000],['Member 09',50000],
+    ['Member 10',50000],['Member 11',40000],['Member 12',40000]
+  ]
+};
+function sampleText(key){
+  return SAMPLES[key].map(function(v){return v[0]+', '+v[1].toLocaleString('en-US');}).join('\n');
+}
+
+// ---- UI ----
+if(typeof document!=='undefined'){
+var voterInput=document.getElementById('voterInput');
+var vizBtn=document.getElementById('btnViz');
+var errorEl=document.getElementById('error');
+var resultsEl=document.getElementById('results');
+var thresholdEl=document.getElementById('threshold');
+var thresholdVal=document.getElementById('thresholdVal');
+var coalitionLine=document.getElementById('coalitionLine');
+var chartEl=document.getElementById('chart');
+var tableBody=document.getElementById('tableBody');
+var currentRows=null;
+
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function fmt(n){return n.toLocaleString('en-US',{maximumFractionDigits:2});}
+function pct(x){return (x*100).toFixed(2)+'%';}
+function updateVizState(){vizBtn.disabled=!voterInput.value.trim();}
+function showError(msg){
+  errorEl.textContent=msg||'';
+  voterInput.classList.toggle('invalid',!!msg);
+}
+function renderCoalition(){
+  if(!currentRows)return;
+  var t=parseInt(thresholdEl.value,10);
+  thresholdVal.textContent=t+'%';
+  var n=coalitionSize(currentRows,t);
+  var cum=currentRows[n-1].cumulative;
+  coalitionLine.innerHTML='<span class="coal">'+n+' voter'+(n===1?'':'s')+'</span> control <b>'+pct(cum)+'</b> of the vote — '+
+    'the smallest coalition that reaches the <b>'+t+'%</b> threshold is highlighted in brass below.';
+  var bars=chartEl.querySelectorAll('.bar-row');
+  bars.forEach(function(bar,i){
+    var inCoal=i<n;
+    bar.classList.toggle('coal',inCoal);
+    bar.querySelector('.bar-fill').classList.toggle('coal',inCoal);
+  });
+  var trs=tableBody.querySelectorAll('tr');
+  trs.forEach(function(tr,i){
+    var inCoal=i<n;
+    tr.classList.toggle('coal',inCoal);
+    var cell=tr.querySelector('td:last-child');
+    cell.innerHTML=inCoal?'<span class="tag">coalition</span>':'';
+  });
+}
+function doVisualize(){
+  var parsed=parseVoters(voterInput.value);
+  if(parsed.voters.length===0){
+    showError(parsed.errors[0]||'Add at least one voter line, e.g. "alice, 100".');
+    resultsEl.style.display='none';
+    currentRows=null;
+    return;
+  }
+  showError(parsed.errors.length?parsed.errors.join(' '):'');
+  var stats=computeStats(parsed.voters);
+  currentRows=stats.rows;
+  document.getElementById('statTop1').textContent=pct(stats.top1);
+  document.getElementById('readTop1').textContent=stats.rows[0].name+' holds the most.';
+  document.getElementById('statTop5').textContent=pct(stats.top5);
+  document.getElementById('readTop5').textContent='Top '+Math.min(5,stats.count)+' voters combined.';
+  document.getElementById('statHhi').textContent=Math.round(stats.hhi).toLocaleString('en-US');
+  document.getElementById('readHhi').textContent=hhiReading(stats.hhi);
+  document.getElementById('statNak').textContent=String(stats.nakamoto);
+  document.getElementById('readNak').textContent=stats.nakamoto===1?'One voter can pass anything.':'voters to reach a majority.';
+  document.getElementById('totalsLine').innerHTML='<b>'+stats.count+' voters</b> · total supply <b class="mono">'+fmt(stats.total)+'</b> tokens';
+  chartEl.innerHTML=stats.rows.map(function(r){
+    return '<div class="bar-row"><span class="nm">'+esc(r.name)+'</span>'+
+      '<div class="bar-track"><div class="bar-fill" style="width:'+Math.max(r.share*100,0.4).toFixed(2)+'%"></div></div>'+
+      '<span class="pc">'+pct(r.share)+'</span></div>';
+  }).join('');
+  tableBody.innerHTML=stats.rows.map(function(r){
+    return '<tr><td data-label="#">'+r.rank+'</td><td data-label="Voter">'+esc(r.name)+'</td>'+
+      '<td data-label="Balance" class="num">'+fmt(r.balance)+'</td>'+
+      '<td data-label="Share" class="num">'+pct(r.share)+'</td>'+
+      '<td data-label="Cumulative" class="num">'+pct(r.cumulative)+'</td>'+
+      '<td data-label="Coalition"></td></tr>';
+  }).join('');
+  resultsEl.style.display='block';
+  renderCoalition();
+}
+voterInput.addEventListener('input',updateVizState);
+vizBtn.addEventListener('click',doVisualize);
+document.getElementById('btnClear').addEventListener('click',function(){
+  voterInput.value='';showError('');resultsEl.style.display='none';currentRows=null;updateVizState();voterInput.focus();
+});
+thresholdEl.addEventListener('input',renderCoalition);
+document.querySelectorAll('[data-sample]').forEach(function(btn){
+  btn.addEventListener('click',function(){
+    voterInput.value=sampleText(btn.getAttribute('data-sample'));
+    updateVizState();doVisualize();voterInput.focus();
+  });
+});
+// Load the Whale DAO sample on first visit so the page is never a blank wall.
+voterInput.value=sampleText('whale');
+updateVizState();
+doVisualize();
+}
+</script>
+</body>
+</html>

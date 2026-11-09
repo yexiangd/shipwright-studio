@@ -67,6 +67,9 @@ AI 搜索不看排名看"可引用性"。打法：
 
 ## 运行日志
 
+- **2026-11-09**：Phase 3-① `llms.txt` 持续维护 —— "Recent additions" 更新为今日新上线的两个实验（PX ⇄ REM Converter：免费在线像素/rem 换算工具，任意根字号双向换算、常用值速查表与可复制 CSS 代码片段，全浏览器运行；DAO Voting Power Viz：免费在线 DAO 投票权可视化工具，粘贴持币余额即得投票权占比图与集中度统计（前 N 名占比、Herfindahl 指数、Nakamoto 系数）及达标最小联盟，全本地计算），实验总数 84→86；移除较早的 Shadow Forge / NFT Rarity Calculator 条目以控制长度（保留最近 10 条）。另：当日两个 lab 新页（px-rem、dao-voting-viz）均按构建 checklist 自带 canonical/title/description/quotable 定义段/WebApplication JSON-LD（每页恰 1 个 h1、无 mailto、无密钥痕迹、回链 /ideas/；seo-check.py 本地 89 页全通过；px-rem 核心逻辑经 node 校验 30/30 通过——多根字号双向换算、舍入、非法输入拒绝与代码片段生成；dao-voting-viz 核心逻辑经 node 校验 32/32 通过——Whale DAO 总量 10,000,000、前 1 名 42%、HHI 2386.5、Nakamoto 系数 2，构建中修了千分位逗号余额解析真 bug）；sitemap 经 `generate-sitemap.py` 重生成为 88 个 URL（CI 在 push 后也会重生成）。跳过：og 社交卡片（待用户拍板，见 §5）、GSC 验证（需人工）、Lighthouse 性能基线（Phase 1-⑤，按季度节奏）。下一步候选：Lighthouse 性能基线（Phase 1-⑤）或 og 社交卡片（等用户拍板）。
+
+
 - **2026-11-08**：Phase 3-① `llms.txt` 持续维护 —— "Recent additions" 更新为今日新上线的两个实验（Quote Machine：免费在线名言生成器，59 条斯多葛/创业/专注格言，洗牌抽取不重复、分类筛选与每日一句，全浏览器运行；Contract Event Decoder：免费在线 EVM 事件日志解码器，粘贴 ABI 与日志即解码 Transfer 等合约事件、BigInt 精确数值，全本地计算），实验总数 82→84；移除较早的 White Noise / Uniswap v3 LP Simulator 条目以控制长度（保留最近 10 条）。另：当日两个 lab 新页（quote-generator、event-decoder）均按构建 checklist 自带 canonical/title/description/quotable 定义段/WebApplication JSON-LD（每页恰 1 个 h1、无 mailto、无密钥痕迹、回链 /ideas/；seo-check.py 本地 87 页全通过；quote-generator 核心逻辑经 node 校验——59 条名言库、每分类洗牌为真排列、每日一句按日期确定且一周内各异；event-decoder 核心逻辑经 node 校验 31 项通过——Transfer topic0 0xddf252ad…3ef 与已知值一致、Transfer/Approval 样本解码精确、未知 topic0 与畸形输入均友好报错）；sitemap 经 `generate-sitemap.py` 重生成为 86 个 URL（CI 在 push 后也会重生成）。跳过：og 社交卡片（待用户拍板，见 §5）、GSC 验证（需人工）、Lighthouse 性能基线（Phase 1-⑤，按季度节奏）。下一步候选：Lighthouse 性能基线（Phase 1-⑤）或 og 社交卡片（等用户拍板）。
 
 

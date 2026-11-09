@@ -1,5 +1,5 @@
 {
-  "updated": "2026-11-08",
+  "updated": "2026-11-09",
   "ideas": [
     {
       "id": "idea-000a",
@@ -643,7 +643,9 @@
       "tagline": "Instant pixel/rem conversion at any base size.",
       "priority": 67,
       "effort": "S",
-      "status": "todo"
+      "status": "done",
+      "url": "/lab/px-rem/",
+      "shipped": "2026-11-09"
     },
     {
       "id": "idea-054",
@@ -1427,7 +1429,9 @@
       "tagline": "Token-weighted governance power distribution charts.",
       "priority": 67,
       "effort": "M",
-      "status": "todo"
+      "status": "done",
+      "url": "/lab/dao-voting-viz/",
+      "shipped": "2026-11-09"
     },
     {
       "id": "idea-125",
