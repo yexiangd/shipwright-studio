@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Aspect Ratio Calc · Shipwright Studio</title>
+<meta name="description" content="Free online aspect ratio calculator — fit any width and height to 16:9, 4:3, 1:1, 21:9, 9:16, 2.39:1 or a custom ratio, with a live preview and common resolutions.">
+<link rel="canonical" href="https://shipwright-studio.pages.dev/lab/aspect-ratio/">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"WebApplication","name":"Aspect Ratio Calc","url":"https://shipwright-studio.pages.dev/lab/aspect-ratio/","description":"Aspect Ratio Calc is a free online tool that fits any dimensions to any aspect ratio — enter a width or a height and get the matching dimension at 16:9, 4:3, 1:1, 21:9, 9:16, 2.39:1 or a custom ratio, with a live preview box and a table of common resolutions.","applicationCategory":"UtilitiesApplication","operatingSystem":"Web","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"}}
+</script>
+<style>
+:root{--bg:#0a0c0f;--panel:#101318;--line:#1c2128;--txt:#e8e4da;--mut:#9aa3b2;--brass:#d2a24c;--err:#e07856}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--txt);font-family:Fraunces,Georgia,serif;line-height:1.65;padding:2rem 1.2rem 4rem;max-width:960px;margin:0 auto}
+a{color:var(--brass)}
+.nav{display:flex;gap:1.2rem;font-size:.85rem;margin-bottom:1.2rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.nav a{color:var(--mut);text-decoration:none}.nav a:hover{color:var(--brass)}
+.eyebrow{font-size:.75rem;letter-spacing:.22em;text-transform:uppercase;color:var(--mut);font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+h1{font-weight:600;font-size:clamp(2.1rem,5vw,3rem);margin:.5rem 0 .7rem}
+.define{color:var(--mut);max-width:46rem;margin-bottom:1.8rem}.define strong{color:var(--txt)}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:1.6rem;margin-bottom:1.4rem}
+.cardlabel{font-size:.72rem;letter-spacing:.18em;text-transform:uppercase;color:var(--mut);margin-bottom:.8rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.ui{font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.btn{font-size:.9rem;border:1px solid var(--line);background:transparent;color:var(--txt);border-radius:999px;padding:.55rem 1.2rem;cursor:pointer;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.btn:hover{border-color:var(--brass);color:var(--brass)}.btn.active{border-color:var(--brass);color:var(--brass);background:rgba(210,162,76,.12)}
+.btn.brass{border-color:var(--brass);color:var(--brass)}
+.btnrow{display:flex;gap:.6rem;flex-wrap:wrap;align-items:center}
+.conv{display:grid;grid-template-columns:1fr auto 1fr;gap:1rem;align-items:end}
+.convfield label{display:block;font-size:.8rem;color:var(--mut);margin-bottom:.45rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.convfield input{width:100%;background:var(--bg);border:1px solid var(--line);border-radius:10px;color:var(--txt);font-family:"JetBrains Mono",monospace;font-size:1.6rem;padding:.7rem .9rem;outline:none}
+.convfield input:focus{border-color:var(--brass)}
+.convfield .unit{font-family:"JetBrains Mono",monospace;color:var(--mut);font-size:.9rem;margin-top:.45rem}
+.swap{font-size:1.6rem;color:var(--brass);padding-bottom:.9rem;background:none;border:none;cursor:pointer;font-family:inherit}
+.swap:hover{color:#e8c078}
+.readout{font-size:.85rem;color:var(--mut);margin-top:1rem;min-height:1.3em}
+.readout.err{color:var(--err)}
+.ratios{display:flex;gap:.5rem;flex-wrap:wrap;margin-top:1.2rem}
+.ratios .btn{padding:.55rem 1rem}
+.customrow{display:none;gap:.8rem;align-items:flex-end;flex-wrap:wrap;margin-top:1rem}
+.customrow.show{display:flex}
+.customfield label{display:block;font-size:.8rem;color:var(--mut);margin-bottom:.45rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.customfield input{width:7rem;background:var(--bg);border:1px solid var(--line);border-radius:10px;color:var(--txt);font-family:"JetBrains Mono",monospace;font-size:1.15rem;padding:.55rem .8rem;outline:none}
+.customfield input:focus{border-color:var(--brass)}
+.customsep{font-family:"JetBrains Mono",monospace;color:var(--mut);font-size:1.15rem;padding-bottom:.55rem}
+.hint{font-size:.85rem;color:var(--mut);margin-top:.9rem}
+#copyNote{font-size:.85rem;color:var(--mut);min-height:1.3em;margin-top:.6rem}
+#copyNote.err{color:var(--err)}
+.stage{height:260px;display:flex;align-items:center;justify-content:center;background:var(--bg);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.previewbox{border:1px solid var(--brass);background:rgba(210,162,76,.10);display:flex;align-items:center;justify-content:center;min-width:2px;min-height:2px;transition:width .18s ease,height .18s ease}
+.previewbox span{font-family:"JetBrains Mono",monospace;font-size:.95rem;color:var(--txt);white-space:nowrap}
+.previewbox.empty{border-style:dashed;background:transparent}
+.previewbox.empty span{color:var(--mut)}
+.stagecaption{font-size:.85rem;color:var(--mut);margin-top:.8rem;text-align:center}
+table{width:100%;border-collapse:collapse;font-family:"JetBrains Mono",monospace;font-size:.95rem}
+th,td{padding:.45rem .6rem;text-align:left;border-bottom:1px solid var(--line)}
+th{color:var(--mut);font-weight:500;font-size:.8rem;letter-spacing:.08em;text-transform:uppercase}
+tr.hl td{background:rgba(210,162,76,.08)}
+tr.hl td:first-child{color:var(--brass)}
+td .loadres{background:none;border:none;color:var(--txt);font-family:"JetBrains Mono",monospace;font-size:.95rem;cursor:pointer;padding:.15rem .3rem;border-radius:6px;text-align:left}
+td .loadres:hover{color:var(--brass);background:rgba(210,162,76,.12)}
+.explain{font-size:.92rem;color:var(--mut)}.explain li{margin:.4rem 0}
+.explain b{color:var(--txt)}
+.explain code{font-family:"JetBrains Mono",monospace;font-size:.85em;color:var(--txt)}
+footer{margin-top:2.5rem;color:var(--mut);font-size:.85rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+@media(max-width:700px){
+  .card{padding:1.3rem 1.1rem}
+  .conv{grid-template-columns:1fr;gap:.4rem}
+  .swap{transform:rotate(90deg);justify-self:center;padding:0;margin:-.2rem 0}
+  .convfield input{font-size:1.35rem}
+  .stage{height:210px}
+}
+</style>
+</head>
+<body>
+<nav class="nav"><a href="/">Shipwright Studio</a><a href="/ideas/">Lab</a></nav>
+<p class="eyebrow">Lab — Dev Tools</p>
+<h1>Aspect Ratio Calc</h1>
+<p class="define"><strong>Aspect Ratio Calc is a free online tool that</strong> fits any dimensions to any aspect ratio — type a width or a height and get the matching dimension at 16:9, 4:3, 1:1, 21:9, 9:16, 2.39:1 or a custom ratio, with a live preview box and common resolutions to load in one click. No account, nothing leaves the page.</p>
+
+<div class="card">
+  <div class="conv">
+    <div class="convfield">
+      <label for="widthInput">Width</label>
+      <input id="widthInput" type="number" min="1" step="any" value="1920" inputmode="decimal" aria-label="Width in pixels">
+      <div class="unit">px</div>
+    </div>
+    <button class="swap" id="swapBtn" type="button" title="Swap width and height" aria-label="Swap width and height">&#8646;</button>
+    <div class="convfield">
+      <label for="heightInput">Height</label>
+      <input id="heightInput" type="number" min="1" step="any" value="1080" inputmode="decimal" aria-label="Height in pixels">
+      <div class="unit">px</div>
+    </div>
+  </div>
+  <p class="readout ui" id="readout" role="status"></p>
+  <div class="ratios ui" id="ratios" role="group" aria-label="Aspect ratio presets"></div>
+  <div class="customrow" id="customRow">
+    <div class="customfield">
+      <label for="customW">Custom ratio — width</label>
+      <input id="customW" type="number" min="0.01" step="any" value="2.39" inputmode="decimal" aria-label="Custom ratio width part">
+    </div>
+    <div class="customsep">:</div>
+    <div class="customfield">
+      <label for="customH">Custom ratio — height</label>
+      <input id="customH" type="number" min="0.01" step="any" value="1" inputmode="decimal" aria-label="Custom ratio height part">
+    </div>
+  </div>
+  <p class="readout ui err" id="dimErr" role="alert"></p>
+  <p class="hint ui">Type in either field — the other updates instantly. Press <b>Enter</b> in a dimension field to copy the result. Your ratio and dimensions are remembered on this device.</p>
+  <div class="btnrow ui" style="margin-top:1rem">
+    <button class="btn brass" id="copyBtn">Copy result</button>
+  </div>
+  <p id="copyNote" class="ui" role="status"></p>
+</div>
+
+<div class="card">
+  <p class="cardlabel">Live preview</p>
+  <div class="stage" id="stage">
+    <div class="previewbox" id="previewBox"><span id="previewLabel"></span></div>
+  </div>
+  <p class="stagecaption ui" id="stageCaption"></p>
+</div>
+
+<div class="card">
+  <p class="cardlabel">Common resolutions · <span id="tableRatio"></span></p>
+  <table>
+    <thead><tr><th scope="col">Width</th><th scope="col">Height</th><th scope="col">Name</th></tr></thead>
+    <tbody id="tableBody"></tbody>
+  </table>
+  <p class="hint ui">Click any row to load that resolution into the calculator. Standard sizes are the marketed resolutions — a few sit a pixel or two off the exact ratio, and the readout above says so when they do.</p>
+</div>
+
+<div class="card">
+  <p class="cardlabel">How it works</p>
+  <ul class="explain">
+    <li><b>The formula</b> — <code>height = width &times; ratio height &divide; ratio width</code>, and <code>width = height &times; ratio width &divide; ratio height</code>. At 16:9, a width of 1280 gives a height of 720.</li>
+    <li><b>Simplifying a ratio</b> — the calculator divides both dimensions by their greatest common divisor: 1920 &times; 1080 simplifies to 16:9. If the dimensions do not match a named ratio, the nearest one is shown instead.</li>
+    <li><b>Rounding</b> — results are rounded to the nearest whole pixel, so 1920 wide at 21:9 is 823 tall, and 2.39:1 is stored as 239:100 so the maths stays exact.</li>
+  </ul>
+</div>
+
+<footer>Built by <a href="/">Shipwright Studio</a> · <a href="/ideas/">Back to the Lab</a></footer>
+<script>
+/* Pure logic first — no DOM access, testable under node. */
+var PRESETS = [
+  {label: "16:9", w: 16, h: 9},
+  {label: "4:3", w: 4, h: 3},
+  {label: "1:1", w: 1, h: 1},
+  {label: "21:9", w: 21, h: 9},
+  {label: "3:2", w: 3, h: 2},
+  {label: "9:16", w: 9, h: 16},
+  {label: "2.39:1", w: 239, h: 100}
+];
+var CUSTOM_WIDTHS = [3840, 1920, 1280, 800, 640];
+var COMMON = {
+  "16:9": [
+    {w: 3840, h: 2160, name: "4K UHD"},
+    {w: 2560, h: 1440, name: "QHD"},
+    {w: 1920, h: 1080, name: "Full HD"},
+    {w: 1366, h: 768, name: "HD+"},
+    {w: 1280, h: 720, name: "HD 720p"},
+    {w: 854, h: 480, name: "480p"}
+  ],
+  "4:3": [
+    {w: 2048, h: 1536, name: "QXGA"},
+    {w: 1600, h: 1200, name: "UXGA"},
+    {w: 1024, h: 768, name: "XGA"},
+    {w: 800, h: 600, name: "SVGA"},
+    {w: 640, h: 480, name: "VGA"}
+  ],
+  "1:1": [
+    {w: 2048, h: 2048, name: "2K square"},
+    {w: 1080, h: 1080, name: "Social square"},
+    {w: 1024, h: 1024, name: "1K square"},
+    {w: 800, h: 800, name: "Square"},
+    {w: 512, h: 512, name: "Icon"}
+  ],
+  "21:9": [
+    {w: 5120, h: 2194, name: "Extra-wide 5K"},
+    {w: 3440, h: 1474, name: "Extra-wide QHD"},
+    {w: 2560, h: 1097, name: "Extra-wide FHD"},
+    {w: 1920, h: 823, name: "Ultrawide HD"},
+    {w: 1680, h: 720, name: "Ultrawide"}
+  ],
+  "3:2": [
+    {w: 3000, h: 2000, name: "Photo 3:2"},
+    {w: 2400, h: 1600, name: "Large print"},
+    {w: 1620, h: 1080, name: "Photo"},
+    {w: 1200, h: 800, name: "Print"},
+    {w: 900, h: 600, name: "Small print"}
+  ],
+  "9:16": [
+    {w: 1440, h: 2560, name: "QHD portrait"},
+    {w: 1080, h: 1920, name: "Full HD portrait"},
+    {w: 720, h: 1280, name: "HD portrait"},
+    {w: 540, h: 960, name: "Portrait"},
+    {w: 360, h: 640, name: "Small portrait"}
+  ],
+  "2.39:1": [
+    {w: 4096, h: 1716, name: "4K DCI scope"},
+    {w: 2048, h: 858, name: "2K scope"},
+    {w: 1920, h: 804, name: "Scope HD"},
+    {w: 1280, h: 536, name: "Scope"},
+    {w: 960, h: 402, name: "Small scope"}
+  ]
+};
+var DEFAULT_RATIO = PRESETS[0];
+var DEFAULT_W = 1920, DEFAULT_H = 1080;
+
+function gcd(a, b){
+  a = Math.abs(Math.round(a)); b = Math.abs(Math.round(b));
+  while (b){ var t = b; b = a % b; a = t; }
+  return a || 1;
+}
+function heightFromWidth(w, rw, rh){
+  return Math.round(w * rh / rw);
+}
+function widthFromHeight(h, rw, rh){
+  return Math.round(h * rw / rh);
+}
+function simplifyRatio(w, h){
+  var g = gcd(w, h);
+  return {w: Math.round(w) / g, h: Math.round(h) / g};
+}
+function ratioLabel(rw, rh){
+  return rw + ":" + rh;
+}
+function ratioDecimal(rw, rh){
+  return rw / rh;
+}
+function nearestNamedRatio(w, h){
+  var target = w / h;
+  var best = null, bestDiff = Infinity;
+  PRESETS.forEach(function(p){
+    var d = Math.abs(ratioDecimal(p.w, p.h) - target);
+    if (d < bestDiff){ bestDiff = d; best = p; }
+  });
+  return best;
+}
+function parseDimension(s){
+  if (s === null || s === undefined) return null;
+  var t = String(s).trim();
+  if (t === "") return null;
+  var v = parseFloat(t);
+  return (isFinite(v) && v > 0) ? v : null;
+}
+function validRatioPart(v){
+  return typeof v === "number" && isFinite(v) && v > 0;
+}
+function findPreset(rw, rh){
+  for (var i = 0; i < PRESETS.length; i++){
+    if (Math.abs(ratioDecimal(PRESETS[i].w, PRESETS[i].h) - ratioDecimal(rw, rh)) < 1e-9) return PRESETS[i];
+  }
+  return null;
+}
+function commonResolutions(ratio){
+  if (ratio.label && COMMON[ratio.label]) return COMMON[ratio.label];
+  return CUSTOM_WIDTHS.map(function(w){
+    return {w: w, h: heightFromWidth(w, ratio.w, ratio.h), name: "At " + ratioLabel(ratio.w, ratio.h)};
+  });
+}
+function fmt(n){
+  return String(Math.round(n));
+}
+function resultText(w, h){
+  return fmt(w) + " \u00d7 " + fmt(h);
+}
+function previewSize(rw, rh, maxW, maxH){
+  var scale = Math.min(maxW / rw, maxH / rh);
+  return {w: Math.max(2, Math.round(rw * scale)), h: Math.max(2, Math.round(rh * scale))};
+}
+
+if (typeof document !== "undefined"){
+  var widthInput = document.getElementById("widthInput");
+  var heightInput = document.getElementById("heightInput");
+  var swapBtn = document.getElementById("swapBtn");
+  var readout = document.getElementById("readout");
+  var dimErr = document.getElementById("dimErr");
+  var ratiosEl = document.getElementById("ratios");
+  var customRow = document.getElementById("customRow");
+  var customW = document.getElementById("customW");
+  var customH = document.getElementById("customH");
+  var copyBtn = document.getElementById("copyBtn");
+  var copyNote = document.getElementById("copyNote");
+  var stage = document.getElementById("stage");
+  var previewBox = document.getElementById("previewBox");
+  var previewLabel = document.getElementById("previewLabel");
+  var stageCaption = document.getElementById("stageCaption");
+  var tableBody = document.getElementById("tableBody");
+  var tableRatio = document.getElementById("tableRatio");
+
+  var ratio = {label: DEFAULT_RATIO.label, w: DEFAULT_RATIO.w, h: DEFAULT_RATIO.h};
+  var lastEdited = "width";
+  var lastValid = {w: DEFAULT_W, h: DEFAULT_H};
+  var custom = {w: 2.39, h: 1};
+
+  try {
+    var stored = JSON.parse(window.localStorage.getItem("aspect-ratio-state") || "null");
+    if (stored){
+      var sw = parseDimension(stored.w), sh = parseDimension(stored.h);
+      if (sw !== null && sh !== null){
+        lastValid = {w: sw, h: sh};
+        if (stored.customW && stored.customH && validRatioPart(stored.customW) && validRatioPart(stored.customH)){
+          custom = {w: stored.customW, h: stored.customH};
+        }
+        if (stored.ratioLabel === "custom"){
+          ratio = {label: "custom", w: custom.w, h: custom.h};
+        } else {
+          var p = null;
+          PRESETS.forEach(function(x){ if (x.label === stored.ratioLabel) p = x; });
+          if (p) ratio = {label: p.label, w: p.w, h: p.h};
+        }
+      }
+    }
+  } catch (e) { /* storage unavailable or corrupt — keep defaults */ }
+  widthInput.value = fmt(lastValid.w);
+  heightInput.value = fmt(lastValid.h);
+  customW.value = String(custom.w);
+  customH.value = String(custom.h);
+
+  function fallbackCopy(text){
+    var ta = document.createElement("textarea");
+    ta.value = text; document.body.appendChild(ta); ta.select();
+    var ok = false;
+    try { ok = document.execCommand("copy"); } catch(e){ ok = false; }
+    document.body.removeChild(ta);
+    return ok;
+  }
+  function copyText(text, okMsg){
+    function done(ok){
+      if (ok){
+        copyNote.textContent = okMsg;
+        copyNote.classList.remove("err");
+      } else {
+        copyNote.textContent = "Copy failed — select the value manually.";
+        copyNote.classList.add("err");
+      }
+      setTimeout(function(){ copyNote.textContent = ""; }, 2000);
+    }
+    if (navigator.clipboard && navigator.clipboard.writeText){
+      navigator.clipboard.writeText(text).then(function(){ done(true); }, function(){ done(fallbackCopy(text)); });
+    } else { done(fallbackCopy(text)); }
+  }
+  function flashCopied(btn, original){
+    btn.textContent = "Copied \u2713";
+    setTimeout(function(){ btn.textContent = original; }, 2000);
+  }
+  function save(){
+    try {
+      window.localStorage.setItem("aspect-ratio-state", JSON.stringify({
+        ratioLabel: ratio.label, customW: custom.w, customH: custom.h,
+        w: lastValid.w, h: lastValid.h
+      }));
+    } catch (e) { /* ignore */ }
+  }
+  function err(msg){
+    dimErr.textContent = msg;
+  }
+  function renderReadout(){
+    var w = parseDimension(widthInput.value), h = parseDimension(heightInput.value);
+    if (w === null || h === null){ readout.textContent = "Enter a dimension to see its ratio."; return; }
+    var s = simplifyRatio(w, h);
+    var exact = findPreset(s.w, s.h);
+    var text = fmt(w) + " \u00d7 " + fmt(h) + " simplifies to " + ratioLabel(s.w, s.h);
+    if (exact && exact.label === ratio.label){
+      text += " — matches the selected ratio.";
+    } else if (exact){
+      text += " — nearest named ratio " + exact.label + ".";
+    } else {
+      var near = nearestNamedRatio(w, h);
+      text += " — nearest named ratio " + near.label + ".";
+    }
+    readout.textContent = text;
+  }
+  function renderPreview(){
+    var w = parseDimension(widthInput.value), h = parseDimension(heightInput.value);
+    var stageW = Math.min(stage.clientWidth - 32, 880);
+    var stageH = 260 - 32;
+    if (window.innerWidth <= 700) stageH = 210 - 32;
+    if (w === null || h === null){
+      previewBox.style.width = "120px";
+      previewBox.style.height = "68px";
+      previewBox.classList.add("empty");
+      previewLabel.textContent = "Enter a dimension";
+      stageCaption.textContent = "Preview — " + ratioLabel(ratio.w, ratio.h) + " (" + ratioDecimal(ratio.w, ratio.h).toFixed(2) + " : 1)";
+      return;
+    }
+    previewBox.classList.remove("empty");
+    var size = previewSize(ratio.w, ratio.h, stageW, stageH);
+    previewBox.style.width = size.w + "px";
+    previewBox.style.height = size.h + "px";
+    var label = resultText(w, h);
+    previewLabel.textContent = (size.w > 130 && size.h > 34) ? label : "";
+    stageCaption.textContent = "Preview — " + ratioLabel(ratio.w, ratio.h) + " (" + ratioDecimal(ratio.w, ratio.h).toFixed(2) + " : 1)" +
+      ((size.w <= 130 || size.h <= 34) ? " · " + label : "");
+  }
+  function renderTable(){
+    tableRatio.textContent = ratio.label === "custom" ? "custom " + ratioLabel(ratio.w, ratio.h) : ratio.label;
+    tableBody.innerHTML = "";
+    var curW = parseDimension(widthInput.value), curH = parseDimension(heightInput.value);
+    commonResolutions(ratio).forEach(function(row){
+      var tr = document.createElement("tr");
+      if (curW !== null && curH !== null && Math.round(curW) === row.w && Math.round(curH) === row.h) tr.className = "hl";
+      var tdW = document.createElement("td");
+      var bW = document.createElement("button");
+      bW.className = "loadres"; bW.type = "button";
+      bW.textContent = fmt(row.w) + "px";
+      bW.setAttribute("aria-label", "Load " + row.w + " by " + row.h);
+      bW.addEventListener("click", function(){ loadResolution(row.w, row.h); });
+      tdW.appendChild(bW);
+      var tdH = document.createElement("td");
+      var bH = document.createElement("button");
+      bH.className = "loadres"; bH.type = "button";
+      bH.textContent = fmt(row.h) + "px";
+      bH.setAttribute("aria-label", "Load " + row.w + " by " + row.h);
+      bH.addEventListener("click", function(){ loadResolution(row.w, row.h); });
+      tdH.appendChild(bH);
+      var tdN = document.createElement("td");
+      tdN.textContent = row.name;
+      tr.appendChild(tdW); tr.appendChild(tdH); tr.appendChild(tdN);
+      tableBody.appendChild(tr);
+    });
+  }
+  function renderChips(){
+    ratiosEl.querySelectorAll(".btn").forEach(function(b){
+      b.classList.toggle("active", b.dataset.ratio === ratio.label);
+    });
+    customRow.classList.toggle("show", ratio.label === "custom");
+  }
+  function renderAll(){
+    renderReadout();
+    renderPreview();
+    renderTable();
+    renderChips();
+  }
+  function loadResolution(w, h){
+    lastValid = {w: w, h: h};
+    widthInput.value = fmt(w);
+    heightInput.value = fmt(h);
+    err("");
+    save();
+    renderAll();
+  }
+  function convertFromWidth(){
+    var w = parseDimension(widthInput.value);
+    if (w === null){
+      heightInput.value = "";
+      err("Dimensions must be positive numbers — keeping " + resultText(lastValid.w, lastValid.h) + ".");
+      renderAll();
+      return;
+    }
+    err("");
+    var h = heightFromWidth(w, ratio.w, ratio.h);
+    heightInput.value = fmt(h);
+    lastValid = {w: w, h: h};
+    save();
+    renderAll();
+  }
+  function convertFromHeight(){
+    var h = parseDimension(heightInput.value);
+    if (h === null){
+      widthInput.value = "";
+      err("Dimensions must be positive numbers — keeping " + resultText(lastValid.w, lastValid.h) + ".");
+      renderAll();
+      return;
+    }
+    err("");
+    var w = widthFromHeight(h, ratio.w, ratio.h);
+    widthInput.value = fmt(w);
+    lastValid = {w: w, h: h};
+    save();
+    renderAll();
+  }
+  function setRatio(next){
+    ratio = next;
+    if (lastEdited === "width") convertFromWidth(); else convertFromHeight();
+    save();
+    renderAll();
+  }
+  function applyCustom(){
+    var cw = parseDimension(customW.value), ch = parseDimension(customH.value);
+    if (cw === null || ch === null){
+      err("Custom ratio parts must be positive numbers.");
+      return;
+    }
+    err("");
+    custom = {w: cw, h: ch};
+    setRatio({label: "custom", w: cw, h: ch});
+  }
+
+  PRESETS.forEach(function(p){
+    var b = document.createElement("button");
+    b.className = "btn";
+    b.type = "button";
+    b.dataset.ratio = p.label;
+    b.textContent = p.label;
+    b.addEventListener("click", function(){ setRatio({label: p.label, w: p.w, h: p.h}); });
+    ratiosEl.appendChild(b);
+  });
+  var customBtn = document.createElement("button");
+  customBtn.className = "btn";
+  customBtn.type = "button";
+  customBtn.dataset.ratio = "custom";
+  customBtn.textContent = "Custom";
+  customBtn.addEventListener("click", function(){ applyCustom(); });
+  ratiosEl.appendChild(customBtn);
+
+  widthInput.addEventListener("input", function(){ lastEdited = "width"; convertFromWidth(); });
+  heightInput.addEventListener("input", function(){ lastEdited = "height"; convertFromHeight(); });
+  customW.addEventListener("input", function(){ if (ratio.label === "custom") applyCustom(); });
+  customH.addEventListener("input", function(){ if (ratio.label === "custom") applyCustom(); });
+  swapBtn.addEventListener("click", function(){
+    var w = parseDimension(widthInput.value), h = parseDimension(heightInput.value);
+    if (w === null || h === null){
+      err("Enter a dimension first — nothing to swap.");
+      return;
+    }
+    err("");
+    var flipped = findPreset(ratio.h, ratio.w);
+    if (flipped){
+      ratio = {label: flipped.label, w: flipped.w, h: flipped.h};
+    } else {
+      custom = {w: ratio.h, h: ratio.w};
+      customW.value = String(custom.w);
+      customH.value = String(custom.h);
+      ratio = {label: "custom", w: custom.w, h: custom.h};
+    }
+    lastValid = {w: h, h: w};
+    widthInput.value = fmt(h);
+    heightInput.value = fmt(w);
+    lastEdited = "width";
+    save();
+    renderAll();
+  });
+  function copyResult(){
+    var w = parseDimension(widthInput.value), h = parseDimension(heightInput.value);
+    if (w === null || h === null){
+      copyNote.textContent = "Enter a dimension first.";
+      copyNote.classList.remove("err");
+      return;
+    }
+    copyText(resultText(w, h), "Copied " + resultText(w, h) + ".");
+    flashCopied(copyBtn, "Copy result");
+  }
+  copyBtn.addEventListener("click", copyResult);
+  widthInput.addEventListener("keydown", function(e){ if (e.key === "Enter") copyResult(); });
+  heightInput.addEventListener("keydown", function(e){ if (e.key === "Enter") copyResult(); });
+  window.addEventListener("resize", renderPreview);
+
+  renderAll();
+}
+</script>
+</body>
+</html>

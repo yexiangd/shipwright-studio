@@ -1,0 +1,604 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Asteroids · Shipwright Studio</title>
+<meta name="description" content="Free online Asteroids arcade game — pilot a vector ship through drifting space rocks with real inertia, split rocks, chase the high score, and play in your browser.">
+<link rel="canonical" href="https://shipwright-studio.pages.dev/lab/asteroids/">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"WebApplication","name":"Asteroids","url":"https://shipwright-studio.pages.dev/lab/asteroids/","description":"Asteroids is a free online game that recreates the vector arcade classic: pilot a lone ship through drifting space rocks with real inertia, shoot rocks to split them, and chase the high score — no install, no account.","applicationCategory":"GameApplication","operatingSystem":"Web","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"}}
+</script>
+<style>
+:root{--bg:#0a0c0f;--panel:#101318;--line:#1c2128;--txt:#e8e4da;--mut:#9aa3b2;--brass:#d2a24c;--err:#e07856}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--txt);font-family:Fraunces,Georgia,serif;line-height:1.65;padding:2rem 1.2rem 4rem;max-width:960px;margin:0 auto}
+a{color:var(--brass)}
+.nav{display:flex;gap:1.2rem;font-size:.85rem;margin-bottom:1.2rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.nav a{color:var(--mut);text-decoration:none}.nav a:hover{color:var(--brass)}
+.eyebrow{font-size:.75rem;letter-spacing:.22em;text-transform:uppercase;color:var(--mut);font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+h1{font-weight:600;font-size:clamp(2.1rem,5vw,3rem);margin:.5rem 0 .7rem}
+.define{color:var(--mut);max-width:46rem;margin-bottom:1.8rem}.define strong{color:var(--txt)}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:1.6rem;margin-bottom:1.4rem}
+.cardlabel{font-size:.72rem;letter-spacing:.18em;text-transform:uppercase;color:var(--mut);margin-bottom:.8rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.ui{font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.btn{font-size:.9rem;border:1px solid var(--line);background:transparent;color:var(--txt);border-radius:999px;padding:.55rem 1.2rem;cursor:pointer;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.btn:hover{border-color:var(--brass);color:var(--brass)}
+.btn.brass{border-color:var(--brass);color:var(--brass)}
+.hud{display:flex;gap:1.6rem;flex-wrap:wrap;align-items:baseline;font-family:"JetBrains Mono",monospace;font-size:.95rem;margin-bottom:1rem}
+.hud .lbl{font-size:.7rem;letter-spacing:.14em;text-transform:uppercase;color:var(--mut);font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif;margin-right:.4rem}
+.hud .val{color:var(--txt)}
+.hud .val.brass{color:var(--brass)}
+.hud .spacer{flex:1}
+.hud .lives{color:var(--brass);letter-spacing:.15em}
+.gamewrap{position:relative}
+canvas{display:block;width:100%;height:auto;background:#07090c;border:1px solid var(--line);border-radius:10px;touch-action:none;outline:none}
+canvas:focus{border-color:var(--brass)}
+.overlay{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1rem;text-align:center;padding:1.5rem;background:rgba(7,9,12,.72);border-radius:10px}
+.overlay[hidden]{display:none}
+.overlay h2{font-size:clamp(1.5rem,4vw,2.2rem);font-weight:600}
+.overlay p{color:var(--mut);max-width:26rem;font-size:.95rem}
+.overlay .score-line{font-family:"JetBrains Mono",monospace;color:var(--txt);font-size:1.05rem}
+.overlay .score-line .brass{color:var(--brass)}
+.hint{font-size:.85rem;color:var(--mut);margin-top:.9rem}
+.hint b{color:var(--txt)}
+.hint kbd{font-family:"JetBrains Mono",monospace;font-size:.8em;border:1px solid var(--line);border-radius:5px;padding:.1rem .4rem;color:var(--txt)}
+.touch{display:none;gap:.6rem;margin-top:1rem;justify-content:space-between}
+.touch .group{display:flex;gap:.6rem}
+.tbtn{min-width:56px;min-height:56px;border:1px solid var(--line);background:var(--bg);color:var(--txt);border-radius:12px;font-size:1.3rem;cursor:pointer;touch-action:none;user-select:none;-webkit-user-select:none;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.tbtn:active,.tbtn.on{border-color:var(--brass);color:var(--brass);background:rgba(210,162,76,.12)}
+.tbtn.wide{font-size:.85rem;padding:0 .9rem}
+@media(pointer:coarse){.touch{display:flex}.keyhint{display:none}}
+.explain{font-size:.92rem;color:var(--mut)}.explain li{margin:.4rem 0}
+.explain b{color:var(--txt)}
+.explain code{font-family:"JetBrains Mono",monospace;font-size:.85em;color:var(--txt)}
+footer{margin-top:2.5rem;color:var(--mut);font-size:.85rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+@media(max-width:700px){
+  .card{padding:1.3rem 1.1rem}
+  .hud{gap:1rem}
+}
+</style>
+</head>
+<body>
+<nav class="nav"><a href="/">Shipwright Studio</a><a href="/ideas/">Lab</a></nav>
+<p class="eyebrow">Lab — Game</p>
+<h1>Asteroids</h1>
+<p class="define"><strong>Asteroids is a free online game that</strong> recreates the vector arcade classic — pilot a lone ship through a drifting field of space rocks with real inertia, shoot the rocks to split them apart, and chase the high score. No install, no account, just you, the rocks, and Newton's first law.</p>
+
+<div class="hud" aria-live="polite">
+  <span><span class="lbl">Score</span><span class="val" id="scoreVal">0</span></span>
+  <span><span class="lbl">Level</span><span class="val" id="levelVal">1</span></span>
+  <span><span class="lbl">Lives</span><span class="lives" id="livesVal" aria-label="3 lives">&#9651;&#9651;&#9651;</span></span>
+  <span><span class="lbl">Best</span><span class="val brass" id="bestVal">0</span></span>
+  <span class="spacer"></span>
+  <button class="btn ui" id="pauseBtn" type="button" aria-label="Pause game">Pause</button>
+</div>
+
+<div class="card">
+  <div class="gamewrap">
+    <canvas id="game" width="800" height="600" tabindex="0" aria-label="Asteroids game field. Use arrow keys or WASD to steer and thrust, Space to shoot."></canvas>
+    <div class="overlay" id="startOverlay">
+      <h2>Ready, pilot?</h2>
+      <p>Thrust, turn, and blast the rocks before they blast you. Your ship keeps drifting when you stop thrusting — steer with counter-thrust.</p>
+      <button class="btn brass" id="startBtn" type="button">Start game</button>
+      <p class="hint ui keyhint"><kbd>&#8592;</kbd><kbd>&#8593;</kbd><kbd>&#8594;</kbd> steer &amp; thrust &nbsp;·&nbsp; <kbd>Space</kbd> shoot &nbsp;·&nbsp; <kbd>Shift</kbd> hyperspace &nbsp;·&nbsp; <kbd>P</kbd> pause</p>
+    </div>
+    <div class="overlay" id="levelOverlay" hidden>
+      <h2 id="levelTitle">Level clear</h2>
+      <p class="score-line" id="levelBonus"></p>
+    </div>
+    <div class="overlay" id="pauseOverlay" hidden>
+      <h2>Paused</h2>
+      <p>Press <b>P</b> or tap Resume to carry on.</p>
+      <button class="btn brass" id="resumeBtn" type="button">Resume</button>
+    </div>
+    <div class="overlay" id="overOverlay" hidden>
+      <h2>Game over</h2>
+      <p class="score-line" id="finalScore"></p>
+      <p class="score-line" id="newBest" hidden><span class="brass">New best score!</span></p>
+      <button class="btn brass" id="againBtn" type="button">Play again</button>
+      <p class="hint ui keyhint">Press <kbd>Enter</kbd> to play again</p>
+    </div>
+  </div>
+  <p class="hint ui keyhint">Steer with <kbd>&#8592;</kbd> <kbd>&#8593;</kbd> <kbd>&#8594;</kbd> or <kbd>A</kbd> <kbd>W</kbd> <kbd>D</kbd> · <kbd>Space</kbd> to shoot · <kbd>Shift</kbd> for hyperspace · <kbd>P</kbd> to pause.</p>
+  <div class="touch" id="touchControls">
+    <div class="group">
+      <button class="tbtn" id="tLeft" type="button" aria-label="Rotate left">&#8634;</button>
+      <button class="tbtn" id="tRight" type="button" aria-label="Rotate right">&#8635;</button>
+    </div>
+    <div class="group">
+      <button class="tbtn" id="tHyper" type="button" aria-label="Hyperspace">&#10022;</button>
+      <button class="tbtn" id="tThrust" type="button" aria-label="Thrust">&#9650;</button>
+      <button class="tbtn wide" id="tFire" type="button" aria-label="Fire">FIRE</button>
+    </div>
+  </div>
+</div>
+
+<div class="card">
+  <p class="cardlabel">How to play</p>
+  <ul class="explain">
+    <li><b>Controls</b> — rotate with <code>&#8592;</code> <code>&#8594;</code> or <code>A</code> <code>D</code>, thrust with <code>&#8593;</code> or <code>W</code>, fire with <code>Space</code>, hyperspace with <code>Shift</code>. On touch screens, use the buttons under the game.</li>
+    <li><b>Inertia</b> — thrust only accelerates you along the nose. You keep drifting when you stop, so turn around and thrust back to slow down. Everything wraps around the screen edges.</li>
+    <li><b>Scoring</b> — large rock <code>20</code>, medium <code>50</code>, small <code>100</code>; clearing a field pays a bonus of <code>250 &times; level</code>. Large rocks split into 2 medium, medium into 2 small.</li>
+    <li><b>Hyperspace</b> — an emergency jump to a random spot, but there is a 15% chance the ship does not survive re-entry. Use it when cornered, not as a taxi.</li>
+  </ul>
+</div>
+
+<footer>Built by <a href="/">Shipwright Studio</a> · <a href="/ideas/">Back to the Lab</a></footer>
+<script>
+/* Pure logic first — no DOM access, testable under node. */
+var W = 800, H = 600;
+var THRUST = 0.12, DRAG = 0.995, TURN = 0.09;
+var BULLET_SPEED = 7, BULLET_LIFE = 55, MAX_BULLETS = 4, FIRE_COOLDOWN = 12;
+var SHIP_R = 10, INVULN_FRAMES = 120, RESPAWN_DELAY = 72;
+var ROCK_R = {large: 52, medium: 30, small: 16};
+var ROCK_SCORE = {large: 20, medium: 50, small: 100};
+var ROCK_CHILD = {large: "medium", medium: "small", small: null};
+var HYPERSPACE_FAIL = 0.15;
+
+function wrap(v, max){
+  v = v % max;
+  return v < 0 ? v + max : v;
+}
+function wrapPos(p){
+  return {x: wrap(p.x, W), y: wrap(p.y, H)};
+}
+function newShip(){
+  return {x: W / 2, y: H / 2, vx: 0, vy: 0, angle: -Math.PI / 2, r: SHIP_R, thrusting: false};
+}
+function applyThrust(ship){
+  ship.vx += Math.cos(ship.angle) * THRUST;
+  ship.vy += Math.sin(ship.angle) * THRUST;
+}
+function applyDrag(ship){
+  ship.vx *= DRAG;
+  ship.vy *= DRAG;
+}
+function moveShip(ship){
+  ship.x = wrap(ship.x + ship.vx, W);
+  ship.y = wrap(ship.y + ship.vy, H);
+}
+function stepShip(ship, input){
+  if (input.left) ship.angle -= TURN;
+  if (input.right) ship.angle += TURN;
+  ship.thrusting = !!input.thrust;
+  if (input.thrust) applyThrust(ship);
+  applyDrag(ship);
+  moveShip(ship);
+  return ship;
+}
+function rockSpeedFor(level){
+  return Math.min(0.4 + 0.15 * (level - 1), 2.2);
+}
+function rocksForLevel(level){
+  return 3 + level;
+}
+function makeRock(size, x, y, level, rng){
+  var base = rockSpeedFor(level);
+  var sizeBoost = size === "small" ? 1.5 : size === "medium" ? 1.2 : 1.0;
+  var a = (rng ? rng() : Math.random()) * Math.PI * 2;
+  var sp = base * sizeBoost * (0.7 + (rng ? rng() : Math.random()) * 0.6);
+  var verts = [];
+  var n = 9 + Math.floor(((rng ? rng() : Math.random())) * 4);
+  for (var i = 0; i < n; i++) verts.push(0.75 + ((rng ? rng() : Math.random()) * 0.45));
+  return {
+    size: size, x: x, y: y,
+    vx: Math.cos(a) * sp, vy: Math.sin(a) * sp,
+    r: ROCK_R[size], angle: (rng ? rng() : Math.random()) * Math.PI * 2,
+    spin: (((rng ? rng() : Math.random()) - 0.5) * 0.04), verts: verts
+  };
+}
+function moveRock(rock){
+  rock.x = wrap(rock.x + rock.vx, W);
+  rock.y = wrap(rock.y + rock.vy, H);
+  rock.angle += rock.spin;
+  return rock;
+}
+function dist2(a, b){
+  var dx = a.x - b.x, dy = a.y - b.y;
+  return dx * dx + dy * dy;
+}
+function circlesHit(a, b){
+  var r = a.r + b.r;
+  return dist2(a, b) < r * r;
+}
+function fireBullet(ship){
+  return {
+    x: ship.x + Math.cos(ship.angle) * (ship.r + 4),
+    y: ship.y + Math.sin(ship.angle) * (ship.r + 4),
+    vx: ship.vx + Math.cos(ship.angle) * BULLET_SPEED,
+    vy: ship.vy + Math.sin(ship.angle) * BULLET_SPEED,
+    r: 2, life: BULLET_LIFE
+  };
+}
+function stepBullet(b){
+  b.x = wrap(b.x + b.vx, W);
+  b.y = wrap(b.y + b.vy, H);
+  b.life -= 1;
+  return b.life > 0;
+}
+/* Splits a rock hit by a bullet: returns {score, children[]} */
+function splitRock(rock, level, rng){
+  var child = ROCK_CHILD[rock.size];
+  var children = [];
+  if (child){
+    for (var i = 0; i < 2; i++){
+      var c = makeRock(child, rock.x, rock.y, level, rng);
+      children.push(c);
+    }
+  }
+  return {score: ROCK_SCORE[rock.size], children: children};
+}
+function levelBonus(level){
+  return 250 * level;
+}
+function hyperspaceFails(rng){
+  return (rng ? rng() : Math.random()) < HYPERSPACE_FAIL;
+}
+function randomPos(rng){
+  return {x: (rng ? rng() : Math.random()) * W, y: (rng ? rng() : Math.random()) * H};
+}
+function areaClear(x, y, rocks, margin){
+  for (var i = 0; i < rocks.length; i++){
+    var dx = rocks[i].x - x, dy = rocks[i].y - y;
+    if (dx * dx + dy * dy < Math.pow(rocks[i].r + margin, 2)) return false;
+  }
+  return true;
+}
+
+if (typeof document !== "undefined"){
+  var canvas = document.getElementById("game");
+  var ctx = canvas.getContext("2d");
+  var scoreVal = document.getElementById("scoreVal");
+  var levelVal = document.getElementById("levelVal");
+  var livesVal = document.getElementById("livesVal");
+  var bestVal = document.getElementById("bestVal");
+  var pauseBtn = document.getElementById("pauseBtn");
+  var startOverlay = document.getElementById("startOverlay");
+  var levelOverlay = document.getElementById("levelOverlay");
+  var levelTitle = document.getElementById("levelTitle");
+  var levelBonusEl = document.getElementById("levelBonus");
+  var pauseOverlay = document.getElementById("pauseOverlay");
+  var overOverlay = document.getElementById("overOverlay");
+  var finalScoreEl = document.getElementById("finalScore");
+  var newBestEl = document.getElementById("newBest");
+  var startBtn = document.getElementById("startBtn");
+  var resumeBtn = document.getElementById("resumeBtn");
+  var againBtn = document.getElementById("againBtn");
+
+  var BEST_KEY = "asteroids-best";
+  var best = 0;
+  try {
+    var stored = window.localStorage.getItem(BEST_KEY);
+    if (stored !== null){ var p = parseInt(stored, 10); if (isFinite(p) && p >= 0) best = p; }
+  } catch (e) { /* storage unavailable — keep 0 */ }
+  bestVal.textContent = String(best);
+
+  var stars = [];
+  for (var s = 0; s < 80; s++){
+    stars.push({x: Math.random() * W, y: Math.random() * H, a: 0.2 + Math.random() * 0.6, r: Math.random() < 0.85 ? 1 : 2});
+  }
+
+  var state = "start"; /* start | playing | paused | levelclear | over */
+  var ship = null, rocks = [], bullets = [], particles = [];
+  var score = 0, lives = 3, level = 1, cooldown = 0, invuln = 0, respawnIn = 0;
+  var input = {left: false, right: false, thrust: false, fire: false};
+  var keys = {};
+  var raf = 0, lastT = 0;
+
+  /* Ambient rocks drifting behind the start overlay. */
+  function seedAmbient(){
+    rocks = [];
+    for (var i = 0; i < 5; i++){
+      rocks.push(makeRock(i % 3 === 0 ? "large" : "medium", Math.random() * W, Math.random() * H, 1));
+    }
+  }
+  seedAmbient();
+
+  function saveBest(){
+    try { window.localStorage.setItem(BEST_KEY, String(best)); } catch (e) { /* ignore */ }
+  }
+  function renderHud(){
+    scoreVal.textContent = String(score);
+    levelVal.textContent = String(level);
+    livesVal.textContent = lives > 0 ? "\u25B1".repeat(lives) : "";
+    livesVal.setAttribute("aria-label", lives + (lives === 1 ? " life" : " lives"));
+    bestVal.textContent = String(best);
+  }
+  function spawnLevel(n){
+    rocks = [];
+    var count = rocksForLevel(n);
+    for (var i = 0; i < count; i++){
+      var x, y, tries = 0;
+      do {
+        x = Math.random() * W; y = Math.random() * H; tries++;
+      } while (!areaClear(x, y, [{x: W / 2, y: H / 2, r: 120}], 0) && tries < 40);
+      rocks.push(makeRock("large", x, y, n));
+    }
+  }
+  function startGame(){
+    score = 0; lives = 3; level = 1;
+    ship = newShip();
+    bullets = []; particles = [];
+    invuln = INVULN_FRAMES; respawnIn = 0; cooldown = 0;
+    spawnLevel(1);
+    state = "playing";
+    startOverlay.hidden = true;
+    overOverlay.hidden = true;
+    levelOverlay.hidden = true;
+    pauseOverlay.hidden = true;
+    pauseBtn.textContent = "Pause";
+    renderHud();
+    canvas.focus();
+  }
+  function burst(x, y, color, n){
+    for (var i = 0; i < n; i++){
+      var a = Math.random() * Math.PI * 2;
+      var sp = 0.5 + Math.random() * 2.5;
+      particles.push({x: x, y: y, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp, life: 22 + Math.random() * 18, color: color});
+    }
+  }
+  function destroyShip(){
+    burst(ship.x, ship.y, "#e8e4da", 26);
+    burst(ship.x, ship.y, "#d2a24c", 14);
+    ship = null;
+    lives -= 1;
+    renderHud();
+    if (lives <= 0){
+      endGame();
+    } else {
+      respawnIn = RESPAWN_DELAY;
+    }
+  }
+  function respawnShip(){
+    if (!areaClear(W / 2, H / 2, rocks, 90)) { respawnIn = 20; return; }
+    ship = newShip();
+    invuln = INVULN_FRAMES;
+  }
+  function endGame(){
+    state = "over";
+    var isBest = score > best;
+    if (isBest){ best = score; saveBest(); }
+    finalScoreEl.textContent = "Final score: " + score + " · Level " + level + " · Best: " + best;
+    newBestEl.hidden = !isBest;
+    overOverlay.hidden = false;
+    renderHud();
+  }
+  function nextLevel(){
+    var bonus = levelBonus(level);
+    score += bonus;
+    levelTitle.textContent = "Level " + level + " clear";
+    levelBonusEl.textContent = "Bonus +" + bonus + " · Score " + score;
+    levelOverlay.hidden = false;
+    state = "levelclear";
+    renderHud();
+    setTimeout(function(){
+      if (state !== "levelclear") return;
+      level += 1;
+      ship = newShip();
+      invuln = INVULN_FRAMES;
+      bullets = [];
+      spawnLevel(level);
+      levelOverlay.hidden = true;
+      state = "playing";
+      renderHud();
+    }, 2000);
+  }
+  function doHyperspace(){
+    if (!ship || state !== "playing") return;
+    var pos = randomPos();
+    ship.x = pos.x; ship.y = pos.y;
+    ship.vx = 0; ship.vy = 0;
+    burst(ship.x, ship.y, "#d2a24c", 12);
+    if (hyperspaceFails()){
+      destroyShip();
+    }
+  }
+  function update(){
+    /* Rocks always drift, even behind overlays. */
+    for (var i = 0; i < rocks.length; i++) moveRock(rocks[i]);
+    for (var p = particles.length - 1; p >= 0; p--){
+      var pt = particles[p];
+      pt.x = wrap(pt.x + pt.vx, W); pt.y = wrap(pt.y + pt.vy, H);
+      pt.life -= 1;
+      if (pt.life <= 0) particles.splice(p, 1);
+    }
+    if (state !== "playing") return;
+
+    if (ship){
+      stepShip(ship, input);
+      if (input.fire && cooldown <= 0 && bullets.length < MAX_BULLETS){
+        bullets.push(fireBullet(ship));
+        cooldown = FIRE_COOLDOWN;
+      }
+    } else if (respawnIn > 0){
+      respawnIn -= 1;
+      if (respawnIn === 0) respawnShip();
+    }
+    if (cooldown > 0) cooldown -= 1;
+    if (invuln > 0) invuln -= 1;
+
+    for (var b = bullets.length - 1; b >= 0; b--){
+      if (!stepBullet(bullets[b])){ bullets.splice(b, 1); continue; }
+      var hit = -1;
+      for (var r = 0; r < rocks.length; r++){
+        if (circlesHit(bullets[b], rocks[r])){ hit = r; break; }
+      }
+      if (hit >= 0){
+        var rock = rocks[hit];
+        var res = splitRock(rock, level);
+        score += res.score;
+        burst(rock.x, rock.y, "#e8e4da", rock.size === "large" ? 16 : 10);
+        rocks.splice(hit, 1);
+        for (var c = 0; c < res.children.length; c++) rocks.push(res.children[c]);
+        bullets.splice(b, 1);
+        if (score > best){ best = score; saveBest(); }
+        renderHud();
+      }
+    }
+    if (ship && invuln <= 0){
+      for (var k = 0; k < rocks.length; k++){
+        if (circlesHit(ship, rocks[k])){ destroyShip(); break; }
+      }
+    }
+    if (rocks.length === 0 && state === "playing") nextLevel();
+  }
+  function drawRock(rock){
+    ctx.save();
+    ctx.translate(rock.x, rock.y);
+    ctx.rotate(rock.angle);
+    ctx.beginPath();
+    var n = rock.verts.length;
+    for (var i = 0; i < n; i++){
+      var a = (i / n) * Math.PI * 2;
+      var rr = rock.r * rock.verts[i];
+      if (i === 0) ctx.moveTo(Math.cos(a) * rr, Math.sin(a) * rr);
+      else ctx.lineTo(Math.cos(a) * rr, Math.sin(a) * rr);
+    }
+    ctx.closePath();
+    ctx.strokeStyle = "#c9cdd4";
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+    ctx.restore();
+  }
+  function drawShip(){
+    if (!ship) return;
+    if (invuln > 0 && Math.floor(invuln / 6) % 2 === 0) return; /* blink while invulnerable */
+    ctx.save();
+    ctx.translate(ship.x, ship.y);
+    ctx.rotate(ship.angle);
+    ctx.beginPath();
+    ctx.moveTo(16, 0); ctx.lineTo(-10, 9); ctx.lineTo(-6, 0); ctx.lineTo(-10, -9);
+    ctx.closePath();
+    ctx.strokeStyle = "#e8e4da";
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+    if (ship.thrusting){
+      ctx.beginPath();
+      ctx.moveTo(-8, 5); ctx.lineTo(-16 - Math.random() * 6, 0); ctx.lineTo(-8, -5);
+      ctx.closePath();
+      ctx.strokeStyle = "#d2a24c";
+      ctx.stroke();
+    }
+    ctx.restore();
+  }
+  function draw(){
+    ctx.clearRect(0, 0, W, H);
+    ctx.fillStyle = "#07090c";
+    ctx.fillRect(0, 0, W, H);
+    for (var s = 0; s < stars.length; s++){
+      ctx.globalAlpha = stars[s].a;
+      ctx.fillStyle = "#e8e4da";
+      ctx.fillRect(stars[s].x, stars[s].y, stars[s].r, stars[s].r);
+    }
+    ctx.globalAlpha = 1;
+    for (var r = 0; r < rocks.length; r++) drawRock(rocks[r]);
+    ctx.fillStyle = "#e8e4da";
+    for (var b = 0; b < bullets.length; b++){
+      ctx.beginPath();
+      ctx.arc(bullets[b].x, bullets[b].y, 2, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    for (var p = 0; p < particles.length; p++){
+      ctx.globalAlpha = Math.max(0, particles[p].life / 40);
+      ctx.fillStyle = particles[p].color;
+      ctx.fillRect(particles[p].x, particles[p].y, 2, 2);
+    }
+    ctx.globalAlpha = 1;
+    drawShip();
+  }
+  function loop(t){
+    raf = requestAnimationFrame(loop);
+    if (state === "paused") return;
+    if (!lastT) lastT = t;
+    /* Fixed-ish step: one update per frame, capped so tab switches don't fast-forward. */
+    if (t - lastT > 250) lastT = t;
+    update();
+    draw();
+    lastT = t;
+  }
+  function setPaused(on){
+    if (state === "playing" && on){
+      state = "paused";
+      pauseOverlay.hidden = false;
+      pauseBtn.textContent = "Resume";
+    } else if (state === "paused" && !on){
+      state = "playing";
+      pauseOverlay.hidden = true;
+      pauseBtn.textContent = "Pause";
+      lastT = 0;
+    }
+  }
+  function syncInput(){
+    input.left = !!(keys["ArrowLeft"] || keys["KeyA"]);
+    input.right = !!(keys["ArrowRight"] || keys["KeyD"]);
+    input.thrust = !!(keys["ArrowUp"] || keys["KeyW"]);
+    input.fire = !!keys["Space"];
+  }
+  document.addEventListener("keydown", function(e){
+    if (e.code === "Space" || e.code === "ArrowUp" || e.code === "ArrowDown"){
+      e.preventDefault();
+    }
+    keys[e.code] = true;
+    syncInput();
+    if (e.code === "KeyP"){
+      if (state === "playing" || state === "paused") setPaused(state === "playing");
+    }
+    if (e.code === "ShiftLeft" || e.code === "ShiftRight"){
+      if (state === "playing") doHyperspace();
+    }
+    if (e.code === "Enter"){
+      if (state === "start") startGame();
+      else if (state === "over") startGame();
+    }
+  });
+  document.addEventListener("keyup", function(e){
+    keys[e.code] = false;
+    syncInput();
+  });
+  function bindHold(el, on, off){
+    function start(e){
+      e.preventDefault();
+      el.classList.add("on");
+      on();
+    }
+    function end(e){
+      e.preventDefault();
+      el.classList.remove("on");
+      off();
+    }
+    el.addEventListener("pointerdown", start);
+    el.addEventListener("pointerup", end);
+    el.addEventListener("pointerleave", end);
+    el.addEventListener("pointercancel", end);
+    el.addEventListener("contextmenu", function(e){ e.preventDefault(); });
+  }
+  bindHold(document.getElementById("tLeft"), function(){ keys["ArrowLeft"] = true; syncInput(); }, function(){ keys["ArrowLeft"] = false; syncInput(); });
+  bindHold(document.getElementById("tRight"), function(){ keys["ArrowRight"] = true; syncInput(); }, function(){ keys["ArrowRight"] = false; syncInput(); });
+  bindHold(document.getElementById("tThrust"), function(){ keys["ArrowUp"] = true; syncInput(); }, function(){ keys["ArrowUp"] = false; syncInput(); });
+  bindHold(document.getElementById("tFire"), function(){ keys["Space"] = true; syncInput(); }, function(){ keys["Space"] = false; syncInput(); });
+  document.getElementById("tHyper").addEventListener("click", function(e){
+    e.preventDefault();
+    doHyperspace();
+  });
+
+  startBtn.addEventListener("click", startGame);
+  againBtn.addEventListener("click", startGame);
+  resumeBtn.addEventListener("click", function(){ setPaused(false); });
+  pauseBtn.addEventListener("click", function(){
+    if (state === "playing") setPaused(true);
+    else if (state === "paused") setPaused(false);
+  });
+  document.addEventListener("visibilitychange", function(){
+    if (document.hidden && state === "playing") setPaused(true);
+  });
+
+  renderHud();
+  raf = requestAnimationFrame(loop);
+}
+</script>
+</body>
+</html>

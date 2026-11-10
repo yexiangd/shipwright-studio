@@ -1,5 +1,5 @@
 {
-  "updated": "2026-11-09",
+  "updated": "2026-11-10",
   "ideas": [
     {
       "id": "idea-000a",
@@ -309,7 +309,9 @@
       "tagline": "Vector-style space rocks, inertia included.",
       "priority": 66,
       "effort": "M",
-      "status": "todo"
+      "status": "done",
+      "url": "/lab/asteroids/",
+      "shipped": "2026-11-10"
     },
     {
       "id": "idea-025",
@@ -655,7 +657,9 @@
       "tagline": "Fit any dimensions to any ratio.",
       "priority": 66,
       "effort": "S",
-      "status": "todo"
+      "status": "done",
+      "url": "/lab/aspect-ratio/",
+      "shipped": "2026-11-10"
     },
     {
       "id": "idea-055",
