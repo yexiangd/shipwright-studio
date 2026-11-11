@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Stablecoin Depeg Monitor · Shipwright Studio</title>
+<meta name="description" content="Free online stablecoin depeg monitor — watch USDT, USDC, DAI, FRAX, USDe, TUSD and PYUSD drift from their $1.00 peg with live charts, deviation sparklines and a custom alert threshold. Demo feed: simulated prices, not real market data.">
+<link rel="canonical" href="https://shipwright-studio.pages.dev/lab/depeg-monitor/">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"WebApplication","name":"Stablecoin Depeg Monitor","url":"https://shipwright-studio.pages.dev/lab/depeg-monitor/","description":"Stablecoin Depeg Monitor is a free online tool that watches how far major stablecoins sit from their $1.00 peg — live simulated prices, deviation in percent and basis points, status badges, a price chart, sparklines, and a custom alert threshold. All prices are simulated in your browser; this is a demo feed, not real market data.","applicationCategory":"FinanceApplication","operatingSystem":"Web","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"}}
+</script>
+<style>
+:root{--bg:#0a0c0f;--panel:#101318;--line:#1c2128;--txt:#e8e4da;--mut:#9aa3b2;--brass:#d2a24c;--err:#e07856;--ok:#7fb069}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--txt);font-family:Fraunces,Georgia,serif;line-height:1.65;padding:2rem 1.2rem 4rem;max-width:960px;margin:0 auto}
+a{color:var(--brass)}
+.nav{display:flex;gap:1.2rem;font-size:.85rem;margin-bottom:1.2rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.nav a{color:var(--mut);text-decoration:none}.nav a:hover{color:var(--brass)}
+.eyebrow{font-size:.75rem;letter-spacing:.22em;text-transform:uppercase;color:var(--mut);font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+h1{font-weight:600;font-size:clamp(2.1rem,5vw,3rem);margin:.5rem 0 .7rem}
+.define{color:var(--mut);max-width:46rem;margin-bottom:1.4rem}.define strong{color:var(--txt)}
+.demo-banner{border:1px solid var(--brass);border-radius:12px;padding:.9rem 1.1rem;margin-bottom:1.4rem;display:flex;gap:.8rem;align-items:flex-start;background:rgba(210,162,76,.06)}
+.demo-tag{flex:0 0 auto;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif;font-size:.7rem;letter-spacing:.18em;font-weight:700;color:var(--bg);background:var(--brass);border-radius:6px;padding:.25rem .55rem;margin-top:.1rem}
+.demo-banner p{font-size:.92rem;color:var(--txt)}
+.demo-banner p span{color:var(--mut)}
+.alert-banner{display:none;border:1px solid var(--err);border-radius:12px;padding:.85rem 1.1rem;margin-bottom:1.4rem;background:rgba(224,120,86,.08);font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif;font-size:.92rem}
+.alert-banner.show{display:block}
+.statusline{font-size:.85rem;color:var(--mut);margin-bottom:1.4rem;min-height:1.3em;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:1.6rem;margin-bottom:1.4rem}
+.cardlabel{font-size:.72rem;letter-spacing:.18em;text-transform:uppercase;color:var(--mut);margin-bottom:.8rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.ui{font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.btn{font-size:.9rem;border:1px solid var(--line);background:transparent;color:var(--txt);border-radius:999px;padding:.55rem 1.2rem;cursor:pointer;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.btn:hover{border-color:var(--brass);color:var(--brass)}
+.btn.brass{border-color:var(--brass);color:var(--brass)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.btnrow{display:flex;gap:.6rem;flex-wrap:wrap;align-items:flex-end}
+.ctrlfield label{display:block;font-size:.8rem;color:var(--mut);margin-bottom:.45rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.ctrlfield input{width:7rem;background:var(--bg);border:1px solid var(--line);border-radius:10px;color:var(--txt);font-family:"JetBrains Mono",monospace;font-size:1.15rem;padding:.55rem .8rem;outline:none}
+.ctrlfield input:focus{border-color:var(--brass)}
+.ctrlfield .suffix{font-family:"JetBrains Mono",monospace;color:var(--mut);font-size:1rem}
+.threshold-err{font-size:.85rem;color:var(--err);margin-top:.6rem;min-height:1.3em;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.hint{font-size:.85rem;color:var(--mut);margin-top:.9rem}
+.chartwrap{position:relative}
+canvas.chart{width:100%;height:280px;display:block;background:var(--bg);border:1px solid var(--line);border-radius:10px}
+.chartreadout{font-family:"JetBrains Mono",monospace;font-size:.95rem;margin-top:.8rem}
+.chartreadout .mut{color:var(--mut)}
+.badge{display:inline-block;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif;font-size:.75rem;font-weight:600;letter-spacing:.06em;text-transform:uppercase;border-radius:999px;padding:.2rem .65rem}
+.badge.pegged{color:var(--ok);border:1px solid var(--ok)}
+.badge.watch{color:var(--brass);border:1px solid var(--brass)}
+.badge.depegged{color:var(--err);border:1px solid var(--err)}
+.tablewrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-family:"JetBrains Mono",monospace;font-size:.95rem;min-width:560px}
+th,td{padding:.55rem .6rem;text-align:left;border-bottom:1px solid var(--line);white-space:nowrap}
+th{color:var(--mut);font-weight:500;font-size:.8rem;letter-spacing:.08em;text-transform:uppercase}
+th button{background:none;border:none;color:var(--mut);font:inherit;letter-spacing:inherit;text-transform:inherit;cursor:pointer;padding:0}
+th button:hover{color:var(--brass)}
+tbody tr{cursor:pointer}
+tbody tr:hover td{background:rgba(210,162,76,.05)}
+tbody tr.sel td{background:rgba(210,162,76,.08)}
+tbody tr.sel td:first-child{color:var(--brass)}
+tbody tr.alert td{background:rgba(224,120,86,.07)}
+tbody tr.alert td:first-child{border-left:3px solid var(--err)}
+td .coinname{color:var(--mut);font-size:.82rem;margin-left:.5rem}
+.dev-neg{color:var(--err)}
+.dev-pos{color:var(--ok)}
+.spark{width:90px;height:28px;display:block}
+.legend{font-size:.92rem;color:var(--mut)}
+.legend li{margin:.4rem 0}
+.legend b{color:var(--txt)}
+.legend code{font-family:"JetBrains Mono",monospace;font-size:.85em;color:var(--txt)}
+footer{margin-top:2.5rem;color:var(--mut);font-size:.85rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+@media(max-width:700px){
+  .card{padding:1.3rem 1.1rem}
+  canvas.chart{height:210px}
+  .spark{width:70px}
+  .ctrlfield input{width:6rem}
+}
+</style>
+</head>
+<body>
+<nav class="nav"><a href="/">Shipwright Studio</a><a href="/ideas/">Lab</a></nav>
+<p class="eyebrow">Lab — Market Tools</p>
+<h1>Stablecoin Depeg Monitor</h1>
+<p class="define"><strong>Stablecoin Depeg Monitor is a free online tool that</strong> watches how far major stablecoins sit from their $1.00 peg — live simulated prices, deviation in percent and basis points, status badges, a price chart, sparklines, and a custom alert threshold. No account, nothing leaves the page.</p>
+
+<div class="demo-banner" role="note">
+  <span class="demo-tag">DEMO</span>
+  <p><b>Demo data — simulated feed, not real market data.</b><br><span>Prices are generated in your browser by a random-walk simulation and never leave the page. Do not use this dashboard for trading decisions.</span></p>
+</div>
+
+<div class="alert-banner" id="alertBanner" role="alert"></div>
+<p class="statusline" id="statusLine" role="status">Feed live — ticking every 1.5 s.</p>
+
+<div class="card">
+  <p class="cardlabel">Controls</p>
+  <div class="btnrow">
+    <div class="ctrlfield">
+      <label for="thresholdInput">Alert threshold</label>
+      <span class="suffix"><input id="thresholdInput" type="number" min="0.05" max="5" step="0.05" value="0.50" inputmode="decimal" aria-label="Alert threshold in percent"> %</span>
+    </div>
+    <button class="btn brass" id="depegBtn" type="button">Simulate depeg</button>
+    <button class="btn" id="pauseBtn" type="button">Pause feed</button>
+  </div>
+  <p class="threshold-err" id="thresholdErr" role="alert"></p>
+  <p class="hint ui">Any coin whose deviation reaches your threshold is highlighted below and counted in the alert banner. Click a row to chart that coin. The threshold is remembered on this device.</p>
+</div>
+
+<div class="card">
+  <p class="cardlabel">Price chart · <span id="chartCoin">USDC</span></p>
+  <div class="chartwrap"><canvas class="chart" id="chart" width="880" height="280" aria-label="Price history chart for the selected stablecoin"></canvas></div>
+  <p class="chartreadout" id="chartReadout"></p>
+</div>
+
+<div class="card">
+  <p class="cardlabel">Stablecoins · deviation from $1.00</p>
+  <div class="tablewrap">
+    <table>
+      <thead><tr>
+        <th scope="col">Coin</th>
+        <th scope="col">Price</th>
+        <th scope="col"><button id="sortBtn" type="button" title="Sort by deviation magnitude">Deviation % ↕</button></th>
+        <th scope="col">Deviation (bps)</th>
+        <th scope="col">Status</th>
+        <th scope="col">Sparkline</th>
+      </tr></thead>
+      <tbody id="tableBody"></tbody>
+    </table>
+  </div>
+  <p class="hint ui">Click any row to chart that coin. Prices are simulated — see the demo notice above.</p>
+</div>
+
+<div class="card">
+  <p class="cardlabel">Status thresholds &amp; how the demo feed works</p>
+  <ul class="legend">
+    <li><b>Pegged</b> — |deviation| &lt; <code>0.10%</code> (10 bps): the coin is holding its peg.</li>
+    <li><b>Watch</b> — <code>0.10%</code> ≤ |deviation| &lt; <code>0.50%</code> (10–50 bps): drifting, worth keeping an eye on.</li>
+    <li><b>Depegged</b> — |deviation| ≥ <code>0.50%</code> (50 bps): the coin has broken away from $1.00.</li>
+    <li><b>The feed</b> — each coin follows a random walk with mean reversion to $1.00, clamped to <code>$0.90–$1.10</code>; small depeg events also occur on their own. "Simulate depeg" forces one on a random coin, which then recovers over the following ticks. No network requests are made.</li>
+  </ul>
+</div>
+
+<footer>Built by <a href="/">Shipwright Studio</a> · <a href="/ideas/">Back to the Lab</a> · Demo data — simulated feed, not real market data.</footer>
+<script>
+/* Pure logic first — no DOM access, testable under node. */
+var PEG = 1.0;
+var STATUS_THRESHOLDS = {watch: 0.10, depeg: 0.50};
+var PRICE_MIN = 0.90, PRICE_MAX = 1.10;
+var HISTORY_LEN = 60, SPARK_LEN = 40;
+var COINS = [
+  {symbol: "USDT", name: "Tether", vol: 0.0004},
+  {symbol: "USDC", name: "USD Coin", vol: 0.0004},
+  {symbol: "DAI", name: "Dai", vol: 0.0007},
+  {symbol: "FRAX", name: "Frax", vol: 0.0009},
+  {symbol: "USDe", name: "Ethena USDe", vol: 0.0012},
+  {symbol: "TUSD", name: "TrueUSD", vol: 0.0010},
+  {symbol: "PYUSD", name: "PayPal USD", vol: 0.0008}
+];
+var DEFAULT_THRESHOLD = 0.50;
+
+function deviationPct(price){
+  return (price - PEG) * 100;
+}
+function deviationBps(price){
+  return deviationPct(price) * 100;
+}
+function statusFor(devPct){
+  var a = Math.abs(devPct);
+  if (a >= STATUS_THRESHOLDS.depeg) return "depegged";
+  if (a >= STATUS_THRESHOLDS.watch) return "watch";
+  return "pegged";
+}
+function statusLabel(s){
+  return s === "pegged" ? "Pegged" : (s === "watch" ? "Watch" : "Depegged");
+}
+function isAlert(devPct, threshold){
+  return Math.abs(devPct) >= threshold;
+}
+function clampPrice(p){
+  return Math.min(PRICE_MAX, Math.max(PRICE_MIN, p));
+}
+function stepPrice(price, vol, rand){
+  // Mean reversion toward $1.00 plus symmetric noise, then clamp.
+  return clampPrice(price + (PEG - price) * 0.02 + (rand - 0.5) * 2 * vol);
+}
+function validThreshold(v){
+  return typeof v === "number" && isFinite(v) && v >= 0.05 && v <= 5;
+}
+function sortByDeviation(coins, desc){
+  var copy = coins.slice();
+  copy.sort(function(a, b){
+    var d = Math.abs(deviationPct(b.price)) - Math.abs(deviationPct(a.price));
+    return desc ? d : -d;
+  });
+  return copy;
+}
+function countAlerts(coins, threshold){
+  var n = 0;
+  coins.forEach(function(c){ if (isAlert(deviationPct(c.price), threshold)) n++; });
+  return n;
+}
+function fmtPrice(p){
+  return "$" + p.toFixed(4);
+}
+function fmtDevPct(devPct){
+  var s = devPct >= 0 ? "+" : "";
+  return s + devPct.toFixed(2) + "%";
+}
+function fmtBps(bps){
+  var s = bps >= 0 ? "+" : "";
+  return s + Math.round(bps) + " bps";
+}
+function depegTarget(rand){
+  // A demo depeg drops 1–3% below peg.
+  return PEG - (0.01 + rand * 0.02);
+}
+
+if (typeof document !== "undefined"){
+  var thresholdInput = document.getElementById("thresholdInput");
+  var thresholdErr = document.getElementById("thresholdErr");
+  var depegBtn = document.getElementById("depegBtn");
+  var pauseBtn = document.getElementById("pauseBtn");
+  var alertBanner = document.getElementById("alertBanner");
+  var statusLine = document.getElementById("statusLine");
+  var chartCoin = document.getElementById("chartCoin");
+  var chart = document.getElementById("chart");
+  var chartReadout = document.getElementById("chartReadout");
+  var tableBody = document.getElementById("tableBody");
+  var sortBtn = document.getElementById("sortBtn");
+
+  var threshold = DEFAULT_THRESHOLD;
+  var paused = false;
+  var sortDesc = true;
+  var selected = "USDC";
+  var event = null; // {symbol, target, ticksLeft, recovering}
+
+  var state = COINS.map(function(c){
+    var history = [];
+    var p = PEG + (Math.random() - 0.5) * 0.002;
+    for (var i = 0; i < HISTORY_LEN; i++){
+      p = stepPrice(p, c.vol, Math.random());
+      history.push(p);
+    }
+    return {symbol: c.symbol, name: c.name, vol: c.vol, price: p, history: history};
+  });
+
+  try {
+    var stored = JSON.parse(window.localStorage.getItem("depeg-monitor-state") || "null");
+    if (stored && validThreshold(stored.threshold)){
+      threshold = stored.threshold;
+      thresholdInput.value = threshold.toFixed(2);
+    }
+    if (stored && stored.selected){
+      var ok = state.some(function(s){ return s.symbol === stored.selected; });
+      if (ok) selected = stored.selected;
+    }
+  } catch (e) { /* storage unavailable or corrupt — keep defaults */ }
+
+  function save(){
+    try {
+      window.localStorage.setItem("depeg-monitor-state", JSON.stringify({threshold: threshold, selected: selected}));
+    } catch (e) { /* ignore */ }
+  }
+  function bySymbol(sym){
+    for (var i = 0; i < state.length; i++) if (state[i].symbol === sym) return state[i];
+    return state[0];
+  }
+  function setStatus(msg){
+    statusLine.textContent = msg;
+  }
+  function renderTable(){
+    var rows = sortByDeviation(state, sortDesc);
+    tableBody.innerHTML = "";
+    rows.forEach(function(c){
+      var dev = deviationPct(c.price);
+      var st = statusFor(dev);
+      var tr = document.createElement("tr");
+      if (c.symbol === selected) tr.className += " sel";
+      if (isAlert(dev, threshold)) tr.className += " alert";
+      tr.addEventListener("click", function(){
+        selected = c.symbol;
+        save();
+        renderAll();
+      });
+      var tdCoin = document.createElement("td");
+      tdCoin.innerHTML = "";
+      var b = document.createElement("b");
+      b.textContent = c.symbol;
+      var nm = document.createElement("span");
+      nm.className = "coinname";
+      nm.textContent = c.name;
+      tdCoin.appendChild(b); tdCoin.appendChild(nm);
+      var tdPrice = document.createElement("td");
+      tdPrice.textContent = fmtPrice(c.price);
+      var tdDev = document.createElement("td");
+      tdDev.textContent = fmtDevPct(dev);
+      tdDev.className = dev < 0 ? "dev-neg" : (dev > 0 ? "dev-pos" : "");
+      var tdBps = document.createElement("td");
+      tdBps.textContent = fmtBps(deviationBps(c.price));
+      tdBps.className = tdDev.className;
+      var tdStatus = document.createElement("td");
+      var badge = document.createElement("span");
+      badge.className = "badge " + st;
+      badge.textContent = statusLabel(st);
+      tdStatus.appendChild(badge);
+      var tdSpark = document.createElement("td");
+      var cv = document.createElement("canvas");
+      cv.className = "spark";
+      cv.width = 90; cv.height = 28;
+      cv.setAttribute("aria-label", c.symbol + " deviation sparkline");
+      tdSpark.appendChild(cv);
+      tr.appendChild(tdCoin); tr.appendChild(tdPrice); tr.appendChild(tdDev);
+      tr.appendChild(tdBps); tr.appendChild(tdStatus); tr.appendChild(tdSpark);
+      tableBody.appendChild(tr);
+      drawSpark(cv, c);
+    });
+  }
+  function drawSpark(cv, coin){
+    var ctx = cv.getContext("2d");
+    if (!ctx) return;
+    var w = cv.width, h = cv.height;
+    ctx.clearRect(0, 0, w, h);
+    var data = coin.history.slice(-SPARK_LEN);
+    var min = 0.995, max = 1.005;
+    data.forEach(function(p){ if (p < min) min = p; if (p > max) max = p; });
+    var mid = (min + max) / 2, range = (max - min) || 0.001;
+    // Zero-deviation line.
+    ctx.strokeStyle = "#1c2128";
+    ctx.beginPath();
+    var zy = h - ((PEG - min) / range) * h;
+    ctx.moveTo(0, zy); ctx.lineTo(w, zy); ctx.stroke();
+    var st = statusFor(deviationPct(coin.price));
+    ctx.strokeStyle = st === "depegged" ? "#e07856" : (st === "watch" ? "#d2a24c" : "#7fb069");
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    data.forEach(function(p, i){
+      var x = (i / (data.length - 1)) * w;
+      var y = h - ((p - min) / range) * h;
+      if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+    });
+    ctx.stroke();
+  }
+  function drawChart(){
+    var ctx = chart.getContext("2d");
+    if (!ctx) return;
+    var coin = bySymbol(selected);
+    var w = chart.width, h = chart.height;
+    ctx.clearRect(0, 0, w, h);
+    var data = coin.history;
+    var min = PEG - 0.01, max = PEG + 0.01;
+    data.forEach(function(p){ if (p < min) min = p; if (p > max) max = p; });
+    var pad = 0.001;
+    min -= pad; max += pad;
+    var range = max - min;
+    function y(p){ return h - 24 - ((p - min) / range) * (h - 48); }
+    function x(i){ return 12 + (i / (data.length - 1)) * (w - 24); }
+    // Peg line at $1.00.
+    ctx.strokeStyle = "#9aa3b2";
+    ctx.setLineDash([6, 5]);
+    ctx.beginPath(); ctx.moveTo(0, y(PEG)); ctx.lineTo(w, y(PEG)); ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle = "#9aa3b2";
+    ctx.font = "12px 'JetBrains Mono', monospace";
+    ctx.fillText("$1.00 peg", 8, y(PEG) - 6);
+    // Price line.
+    var st = statusFor(deviationPct(coin.price));
+    ctx.strokeStyle = st === "depegged" ? "#e07856" : "#d2a24c";
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    data.forEach(function(p, i){
+      if (i === 0) ctx.moveTo(x(i), y(p)); else ctx.lineTo(x(i), y(p));
+    });
+    ctx.stroke();
+    // Last point dot.
+    var last = data[data.length - 1];
+    ctx.fillStyle = ctx.strokeStyle;
+    ctx.beginPath(); ctx.arc(x(data.length - 1), y(last), 4, 0, Math.PI * 2); ctx.fill();
+    // Axis labels.
+    ctx.fillStyle = "#9aa3b2";
+    ctx.fillText(fmtPrice(max), 8, 16);
+    ctx.fillText(fmtPrice(min), 8, h - 8);
+  }
+  function renderChart(){
+    var coin = bySymbol(selected);
+    chartCoin.textContent = coin.symbol + " — " + coin.name;
+    drawChart();
+    var dev = deviationPct(coin.price);
+    var st = statusFor(dev);
+    chartReadout.innerHTML = "";
+    var t1 = document.createTextNode(fmtPrice(coin.price) + "  ");
+    var t2 = document.createElement("span");
+    t2.className = dev < 0 ? "dev-neg" : (dev > 0 ? "dev-pos" : "");
+    t2.textContent = fmtDevPct(dev) + " (" + fmtBps(deviationBps(coin.price)) + ")";
+    var t3 = document.createTextNode("  ");
+    var badge = document.createElement("span");
+    badge.className = "badge " + st;
+    badge.textContent = statusLabel(st);
+    var t4 = document.createElement("span");
+    t4.className = "mut";
+    t4.textContent = "  · last " + coin.history.length + " ticks · demo feed";
+    chartReadout.appendChild(t1); chartReadout.appendChild(t2);
+    chartReadout.appendChild(t3); chartReadout.appendChild(badge); chartReadout.appendChild(t4);
+  }
+  function renderAlerts(){
+    var n = countAlerts(state, threshold);
+    if (n === 0){
+      alertBanner.classList.remove("show");
+      alertBanner.textContent = "";
+    } else {
+      alertBanner.classList.add("show");
+      alertBanner.textContent = "⚠ " + n + (n === 1 ? " coin is" : " coins are") +
+        " breaching your " + threshold.toFixed(2) + "% alert threshold.";
+    }
+  }
+  function renderAll(){
+    renderTable();
+    renderChart();
+    renderAlerts();
+  }
+  function tick(){
+    if (paused) return;
+    state.forEach(function(c){
+      var r = Math.random();
+      if (event && event.symbol === c.symbol){
+        if (event.ticksLeft > 0){
+          // Drive toward the depeg target, then release to mean reversion.
+          c.price = clampPrice(c.price + (event.target - c.price) * 0.25 + (r - 0.5) * c.vol);
+          event.ticksLeft--;
+          if (event.ticksLeft === 0){
+            event.recovering = true;
+            setStatus("Demo event: " + c.symbol + " recovering toward peg…");
+          }
+        } else {
+          c.price = stepPrice(c.price, c.vol, r);
+          if (Math.abs(deviationPct(c.price)) < STATUS_THRESHOLDS.watch){
+            setStatus("Demo event finished — " + c.symbol + " recovered to " + fmtPrice(c.price) + ".");
+            event = null;
+            depegBtn.disabled = false;
+          }
+        }
+      } else {
+        c.price = stepPrice(c.price, c.vol, r);
+      }
+      c.history.push(c.price);
+      if (c.history.length > HISTORY_LEN) c.history.shift();
+    });
+    // Occasional spontaneous small depeg when no event is running.
+    if (!event && Math.random() < 0.02){
+      var candidates = state.filter(function(c){ return statusFor(deviationPct(c.price)) !== "depegged"; });
+      if (candidates.length === 0) return;
+      var pick = candidates[Math.floor(Math.random() * candidates.length)];
+      event = {symbol: pick.symbol, target: depegTarget(Math.random()), ticksLeft: 6, recovering: false};
+      depegBtn.disabled = true;
+      setStatus("Demo event: " + pick.symbol + " depegging…");
+    }
+    renderAll();
+  }
+  function applyThreshold(){
+    var v = parseFloat(thresholdInput.value);
+    if (!validThreshold(v)){
+      thresholdErr.textContent = "Alert threshold must be between 0.05% and 5% — keeping " + threshold.toFixed(2) + "%.";
+      thresholdInput.value = threshold.toFixed(2);
+      return;
+    }
+    thresholdErr.textContent = "";
+    threshold = v;
+    save();
+    renderAll();
+  }
+
+  thresholdInput.addEventListener("change", applyThreshold);
+  sortBtn.addEventListener("click", function(){
+    sortDesc = !sortDesc;
+    sortBtn.textContent = sortDesc ? "Deviation % ↓" : "Deviation % ↑";
+    renderTable();
+  });
+  depegBtn.addEventListener("click", function(){
+    if (event) return;
+    var candidates = state.filter(function(c){ return statusFor(deviationPct(c.price)) !== "depegged"; });
+    if (candidates.length === 0){
+      setStatus("All coins are already depegged — wait for a recovery before simulating another event.");
+      return;
+    }
+    var pick = candidates[Math.floor(Math.random() * candidates.length)];
+    event = {symbol: pick.symbol, target: depegTarget(Math.random()), ticksLeft: 6, recovering: false};
+    depegBtn.disabled = true;
+    setStatus("Demo event: " + pick.symbol + " depegging…");
+  });
+  pauseBtn.addEventListener("click", function(){
+    paused = !paused;
+    pauseBtn.textContent = paused ? "Resume feed" : "Pause feed";
+    setStatus(paused ? "Feed paused — prices frozen." : "Feed live — ticking every 1.5 s.");
+  });
+  window.addEventListener("resize", drawChart);
+
+  renderAll();
+  setInterval(tick, 1500);
+}
+</script>
+</body>
+</html>

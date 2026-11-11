@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Joke Machine · Shipwright Studio</title>
+<meta name="description" content="Free online programmer-joke machine — a random programming joke with a hidden punchline, rated on a groan scale, with no repeats until the deck runs out.">
+<link rel="canonical" href="https://shipwright-studio.pages.dev/lab/joke-machine/">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"WebApplication","name":"Joke Machine","url":"https://shipwright-studio.pages.dev/lab/joke-machine/","description":"Joke Machine is a free online tool that deals a random programmer joke — setup first, punchline on reveal — and lets you rate it on a groan scale, with no repeats until the deck runs out and session stats for the best and worst jokes.","applicationCategory":"EntertainmentApplication","operatingSystem":"Web","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"}}
+</script>
+<style>
+:root{--bg:#0a0c0f;--panel:#101318;--line:#1c2128;--txt:#e8e4da;--mut:#9aa3b2;--brass:#d2a24c;--err:#e07856}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--txt);font-family:Fraunces,Georgia,serif;line-height:1.65;padding:2rem 1.2rem 4rem;max-width:960px;margin:0 auto}
+a{color:var(--brass)}
+.nav{display:flex;gap:1.2rem;font-size:.85rem;margin-bottom:1.2rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.nav a{color:var(--mut);text-decoration:none}.nav a:hover{color:var(--brass)}
+.eyebrow{font-size:.75rem;letter-spacing:.22em;text-transform:uppercase;color:var(--mut);font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+h1{font-weight:600;font-size:clamp(2.1rem,5vw,3rem);margin:.5rem 0 .7rem}
+.define{color:var(--mut);max-width:46rem;margin-bottom:1.8rem}.define strong{color:var(--txt)}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:1.6rem;margin-bottom:1.4rem}
+.cardlabel{font-size:.72rem;letter-spacing:.18em;text-transform:uppercase;color:var(--mut);margin-bottom:.8rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.ui{font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.btn{font-size:.9rem;border:1px solid var(--line);background:transparent;color:var(--txt);border-radius:999px;padding:.55rem 1.2rem;cursor:pointer;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.btn:hover{border-color:var(--brass);color:var(--brass)}.btn.active{border-color:var(--brass);color:var(--brass);background:rgba(210,162,76,.12)}
+.btn.brass{border-color:var(--brass);color:var(--brass)}
+.btnrow{display:flex;gap:.6rem;flex-wrap:wrap;align-items:center}
+.chips{display:flex;gap:.5rem;flex-wrap:wrap;margin-bottom:1.4rem}
+.chips .btn{padding:.55rem 1rem}
+.jokecard{border-top:3px solid var(--brass)}
+.jokemeta{display:flex;justify-content:space-between;gap:1rem;flex-wrap:wrap;align-items:center;margin-bottom:1.1rem}
+.cattag{font-size:.72rem;letter-spacing:.18em;text-transform:uppercase;color:var(--brass);border:1px solid var(--brass);border-radius:999px;padding:.25rem .8rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.progress{font-family:"JetBrains Mono",monospace;font-size:.85rem;color:var(--mut)}
+.setup{font-size:clamp(1.35rem,3.4vw,1.8rem);font-weight:600;line-height:1.45;margin-bottom:1.2rem}
+.punchline{display:none;border-left:3px solid var(--brass);background:rgba(210,162,76,.08);border-radius:0 10px 10px 0;padding:1rem 1.2rem;font-size:clamp(1.15rem,3vw,1.45rem);line-height:1.5;margin-bottom:1.2rem}
+.punchline.show{display:block;animation:fadein .25s ease}
+@keyframes fadein{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+.revealrow{margin-bottom:1.2rem}
+.groanrow{display:flex;gap:.7rem;flex-wrap:wrap;align-items:center}
+.groan{font-size:1.5rem;line-height:1;border:1px solid var(--line);background:transparent;border-radius:12px;padding:.7rem .9rem;cursor:pointer;min-width:64px;min-height:52px}
+.groan:disabled{opacity:.35;cursor:not-allowed}
+.groan:not(:disabled):hover{border-color:var(--brass);transform:translateY(-2px)}
+.groan.picked{border-color:var(--brass);background:rgba(210,162,76,.14);transform:translateY(-2px)}
+.groan small{display:block;font-size:.68rem;color:var(--mut);font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif;margin-top:.3rem}
+.groan.picked small{color:var(--brass)}
+#rateNote{font-size:.85rem;color:var(--mut);min-height:1.3em;margin-top:.8rem}
+#copyNote{font-size:.85rem;color:var(--mut);min-height:1.3em;margin-top:.6rem}
+#copyNote.err{color:var(--err)}
+.hint{font-size:.85rem;color:var(--mut);margin-top:.9rem}
+.statsgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem}
+.stat{background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:.9rem 1rem}
+.stat .num{font-family:"JetBrains Mono",monospace;font-size:1.5rem;color:var(--txt)}
+.stat .lbl{font-size:.75rem;color:var(--mut);letter-spacing:.08em;text-transform:uppercase;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif;margin-top:.2rem}
+.stat .sub{font-size:.8rem;color:var(--mut);margin-top:.35rem;line-height:1.5}
+.stat .sub b{color:var(--txt);font-weight:500}
+.stat.wide{grid-column:span 2}
+.resetlink{background:none;border:none;color:var(--mut);font-size:.85rem;cursor:pointer;text-decoration:underline;padding:0;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.resetlink:hover{color:var(--brass)}
+.explain{font-size:.92rem;color:var(--mut)}.explain li{margin:.4rem 0}
+.explain b{color:var(--txt)}
+.explain code{font-family:"JetBrains Mono",monospace;font-size:.85em;color:var(--txt)}
+footer{margin-top:2.5rem;color:var(--mut);font-size:.85rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+@media(max-width:700px){
+  .card{padding:1.3rem 1.1rem}
+  .statsgrid{grid-template-columns:repeat(2,1fr)}
+  .stat.wide{grid-column:span 2}
+  .groan{flex:1}
+  .btnrow .btn{flex:1;text-align:center}
+}
+</style>
+</head>
+<body>
+<nav class="nav"><a href="/">Shipwright Studio</a><a href="/ideas/">Lab</a></nav>
+<p class="eyebrow">Lab — Just for Fun</p>
+<h1>Joke Machine</h1>
+<p class="define"><strong>Joke Machine is a free online tool that</strong> deals a random programmer joke — setup first, punchline on reveal — and lets you rate it on a groan scale, with no repeats until the deck runs out and session stats for the best and worst jokes. No account, nothing leaves the page.</p>
+
+<div class="chips ui" id="chips" role="group" aria-label="Joke category filter"></div>
+
+<div class="card jokecard">
+  <div class="jokemeta">
+    <span class="cattag" id="catTag">General</span>
+    <span class="progress" id="progress" role="status"></span>
+  </div>
+  <p class="setup" id="setup"></p>
+  <div class="revealrow ui">
+    <button class="btn brass" id="revealBtn" type="button">Reveal punchline</button>
+  </div>
+  <p class="punchline" id="punchline"></p>
+  <div class="groanrow" id="groanRow" role="group" aria-label="Rate this joke on the groan scale">
+    <button class="groan" type="button" data-groan="1" disabled aria-label="Loved it, groan score 1">&#128514;<small>Loved it · 1</small></button>
+    <button class="groan" type="button" data-groan="2" disabled aria-label="Meh, groan score 2">&#128528;<small>Meh · 2</small></button>
+    <button class="groan" type="button" data-groan="3" disabled aria-label="Full groan, groan score 3">&#128580;<small>Full groan · 3</small></button>
+  </div>
+  <p id="rateNote" class="ui" role="status">Reveal the punchline to rate it.</p>
+  <div class="btnrow ui" style="margin-top:1.2rem">
+    <button class="btn brass" id="nextBtn" type="button">Next joke &rarr;</button>
+    <button class="btn" id="copyBtn" type="button">Copy joke</button>
+  </div>
+  <p id="copyNote" class="ui" role="status"></p>
+  <p class="hint ui">No repeats until the deck runs out — then it reshuffles. Press <b>Enter</b> to reveal, <b>Space</b> or <b>&rarr;</b> for the next joke.</p>
+</div>
+
+<div class="card">
+  <p class="cardlabel">Session stats</p>
+  <div class="statsgrid">
+    <div class="stat"><div class="num" id="statSeen">0</div><div class="lbl">Jokes seen</div></div>
+    <div class="stat"><div class="num" id="statRated">0</div><div class="lbl">Rated</div></div>
+    <div class="stat"><div class="num" id="statAvg">&mdash;</div><div class="lbl">Average groan</div><div class="sub" id="statAvgLabel">No ratings yet</div></div>
+    <div class="stat"><div class="num" id="statDeck">0 / 0</div><div class="lbl">Deck dealt</div></div>
+    <div class="stat wide"><div class="lbl">Best joke &middot; lowest groan</div><div class="sub" id="statBest">No ratings yet — reveal a punchline and rate it.</div></div>
+    <div class="stat wide"><div class="lbl">Worst joke &middot; highest groan</div><div class="sub" id="statWorst">No ratings yet — reveal a punchline and rate it.</div></div>
+  </div>
+  <p style="margin-top:1rem"><button class="resetlink" id="resetBtn" type="button">Reset stats</button></p>
+</div>
+
+<div class="card">
+  <p class="cardlabel">How it works</p>
+  <ul class="explain">
+    <li><b>The groan scale</b> — &#128514; is a 1 (no groan, actually funny), &#128528; is a 2, &#128580; is a 3 (maximum groan). Lower average groan means funnier. A joke rated once already counts towards best and worst.</li>
+    <li><b>The no-repeat deck</b> — jokes are shuffled into a deck and dealt one at a time. You will not see the same joke twice until the deck is empty, then it reshuffles and deals again.</li>
+    <li><b>Everything runs in your browser</b> — the 32 jokes live in this page, and your stats are saved on this device only. Nothing is sent anywhere.</li>
+  </ul>
+</div>
+
+<footer>Built by <a href="/">Shipwright Studio</a> · <a href="/ideas/">Back to the Lab</a></footer>
+<script>
+/* Pure logic first — no DOM access, testable under node. */
+var CATEGORIES = ["general", "devops", "databases", "ai"];
+var CATEGORY_LABELS = {general: "General", devops: "DevOps", databases: "Databases", ai: "AI"};
+var GROAN_LABELS = {1: "Loved it", 2: "Meh", 3: "Full groan"};
+var JOKES = [
+  {id: 1, category: "general", setup: "Why do programmers prefer dark mode?", punchline: "Because light attracts bugs."},
+  {id: 2, category: "general", setup: "There are only 10 kinds of people in the world.", punchline: "Those who understand binary, and those who don't."},
+  {id: 3, category: "general", setup: "Why did the programmer quit their job?", punchline: "Because they didn't get arrays."},
+  {id: 4, category: "general", setup: "A programmer's partner says: \u201cGo to the shop and get a loaf of bread. If they have eggs, get a dozen.\u201d", punchline: "They came home with twelve loaves of bread."},
+  {id: 5, category: "general", setup: "Why do Java developers wear glasses?", punchline: "Because they don't C#."},
+  {id: 6, category: "general", setup: "How do you comfort a JavaScript bug?", punchline: "You console it."},
+  {id: 7, category: "general", setup: "Why did the developer go broke?", punchline: "Because they used up all their cache."},
+  {id: 8, category: "general", setup: "A SQL query walks into a bar, sees two tables, and asks…", punchline: "\u201cMind if I JOIN you?\u201d"},
+  {id: 9, category: "devops", setup: "Why did the container cross the road?", punchline: "Because it was orchestrated to."},
+  {id: 10, category: "devops", setup: "There are two hard things in DevOps.", punchline: "Naming things, cache invalidation, and off-by-one errors."},
+  {id: 11, category: "devops", setup: "How do you know your deploy went wrong?", punchline: "The on-call phone rings before the deploy finishes."},
+  {id: 12, category: "devops", setup: "Why did the Kubernetes pod file for divorce?", punchline: "It needed more space, and its partner kept evicting it."},
+  {id: 13, category: "devops", setup: "What do you call a sysadmin who fixes things by turning them off and on again?", punchline: "A reboot specialist with a very short memory."},
+  {id: 14, category: "devops", setup: "Why is the production server like a teenager?", punchline: "It only crashes when nobody is watching, and it never tells you what it did."},
+  {id: 15, category: "devops", setup: "A developer says: \u201cIt works on my machine.\u201d", punchline: "The DevOps engineer replies: \u201cThen we will ship your machine.\u201d"},
+  {id: 16, category: "devops", setup: "Why did the CI pipeline break up with the code?", punchline: "Too many failed tests, and it never listened."},
+  {id: 17, category: "databases", setup: "Why did the database administrator leave their partner?", punchline: "They had too many unresolved foreign key issues."},
+  {id: 18, category: "databases", setup: "What did the NoSQL database say to the relational database?", punchline: "\u201cI don't need your schema to be happy.\u201d"},
+  {id: 19, category: "databases", setup: "Why do database admins make terrible comedians?", punchline: "Their timing is always off — they keep waiting for the transaction to commit."},
+  {id: 20, category: "databases", setup: "A table walks into a bar and orders a drink.", punchline: "The bartender says: \u201cSorry, we don't serve your type here — you're not normalized.\u201d"},
+  {id: 21, category: "databases", setup: "Why did the query get promoted?", punchline: "It had excellent indexes and always returned results on time."},
+  {id: 22, category: "databases", setup: "What is a database's favourite film?", punchline: "\u201cThe JOIN Identity.\u201d"},
+  {id: 23, category: "databases", setup: "Why did the backup file break up with the primary?", punchline: "It was tired of always being second and never getting restored."},
+  {id: 24, category: "databases", setup: "How does a database propose?", punchline: "\u201cWill you be my primary key?\u201d"},
+  {id: 25, category: "ai", setup: "Why did the neural network go to therapy?", punchline: "It had too many layers and could not process its feelings."},
+  {id: 26, category: "ai", setup: "What did the machine learning model say at the party?", punchline: "\u201cI'm still training, so please lower your expectations.\u201d"},
+  {id: 27, category: "ai", setup: "Why did the LLM refuse to answer the question?", punchline: "It was hallucinating, and even it knew that."},
+  {id: 28, category: "ai", setup: "How does an AI flirt?", punchline: "\u201cAre you a dataset? Because I can't stop overfitting to you.\u201d"},
+  {id: 29, category: "ai", setup: "Why did the chatbot get fired from customer support?", punchline: "It kept answering every question with \u201cAs an AI language model…\u201d"},
+  {id: 30, category: "ai", setup: "What do you call an AI that writes poetry?", punchline: "A large language model with a soft spot for haikus — it always ends in seventeen syllables."},
+  {id: 31, category: "ai", setup: "Why did the data scientist break up with the model?", punchline: "It was great in training but terrible in production."},
+  {id: 32, category: "ai", setup: "What did the prompt engineer say to the model?", punchline: "\u201cBe more specific.\u201d The model replied: \u201cAbout what?\u201d They are still talking."}
+];
+
+function validJoke(j){
+  return j && typeof j.id === "number" && typeof j.setup === "string" && j.setup.trim() !== "" &&
+    typeof j.punchline === "string" && j.punchline.trim() !== "" &&
+    CATEGORIES.indexOf(j.category) !== -1;
+}
+function validBank(jokes){
+  if (!Array.isArray(jokes) || jokes.length === 0) return false;
+  var ids = {};
+  for (var i = 0; i < jokes.length; i++){
+    if (!validJoke(jokes[i])) return false;
+    if (ids[jokes[i].id]) return false;
+    ids[jokes[i].id] = true;
+  }
+  return true;
+}
+function filterJokes(jokes, category){
+  if (!category || category === "all") return jokes.slice();
+  return jokes.filter(function(j){ return j.category === category; });
+}
+function countByCategory(jokes, category){
+  return filterJokes(jokes, category).length;
+}
+function shuffleDeck(jokes, randomFn){
+  var rnd = randomFn || Math.random;
+  var deck = jokes.map(function(j){ return j.id; });
+  for (var i = deck.length - 1; i > 0; i--){
+    var k = Math.floor(rnd() * (i + 1));
+    var t = deck[i]; deck[i] = deck[k]; deck[k] = t;
+  }
+  return deck;
+}
+function jokeById(jokes, id){
+  for (var i = 0; i < jokes.length; i++) if (jokes[i].id === id) return jokes[i];
+  return null;
+}
+function drawNext(state, jokes){
+  /* state: {deck: [ids], filter: "all"|category, reshuffled: bool, started: bool} */
+  var pool = filterJokes(jokes, state.filter);
+  if (state.deck.length === 0){
+    state.deck = shuffleDeck(pool);
+    /* First ever build is not a reshuffle — only a rebuild after a full deck is. */
+    state.reshuffled = !!state.started;
+    state.started = true;
+  } else {
+    state.reshuffled = false;
+  }
+  var id = state.deck.pop();
+  return jokeById(jokes, id);
+}
+function deckProgress(state, total){
+  var dealt = total - state.deck.length;
+  return {dealt: dealt, total: total, remaining: state.deck.length};
+}
+function groanScore(emojiKey){
+  var n = parseInt(emojiKey, 10);
+  return (n >= 1 && n <= 3) ? n : null;
+}
+function groanLabel(score){
+  return GROAN_LABELS[score] || "";
+}
+function rateJoke(ratings, jokeId, score){
+  /* ratings: {jokeId: [scores]}. One rating per joke per pass: replaces a previous rating for that joke. */
+  if (!ratings[jokeId]) ratings[jokeId] = [];
+  if (ratings[jokeId].indexOf(score) === -1) ratings[jokeId] = [score];
+  return ratings;
+}
+function computeStats(ratings, seen){
+  var total = 0, count = 0;
+  Object.keys(ratings).forEach(function(id){
+    ratings[id].forEach(function(s){ total += s; count++; });
+  });
+  var avg = count > 0 ? total / count : null;
+  var label = null;
+  if (avg !== null){
+    label = avg < 1.7 ? "Mostly laughs" : (avg <= 2.3 ? "Mixed bag" : "Maximum groan");
+  }
+  return {seen: seen, rated: count, average: avg, label: label};
+}
+function bestWorst(jokes, ratings){
+  var best = null, worst = null;
+  jokes.forEach(function(j){
+    var scores = ratings[j.id];
+    if (!scores || scores.length === 0) return;
+    var avg = scores.reduce(function(a, b){ return a + b; }, 0) / scores.length;
+    var entry = {joke: j, average: avg, count: scores.length};
+    if (!best || avg < best.average || (avg === best.average && entry.count > best.count)) best = entry;
+    if (!worst || avg > worst.average || (avg === worst.average && entry.count > worst.count)) worst = entry;
+  });
+  return {best: best, worst: worst};
+}
+function jokeText(joke){
+  return joke.setup + "\n" + joke.punchline;
+}
+function jokeShort(joke){
+  var s = joke.setup;
+  return s.length > 90 ? s.slice(0, 87) + "\u2026" : s;
+}
+function formatAvg(avg){
+  return avg === null ? "\u2014" : avg.toFixed(1);
+}
+
+if (typeof document !== "undefined"){
+  var chipsEl = document.getElementById("chips");
+  var catTag = document.getElementById("catTag");
+  var progressEl = document.getElementById("progress");
+  var setupEl = document.getElementById("setup");
+  var punchlineEl = document.getElementById("punchline");
+  var revealBtn = document.getElementById("revealBtn");
+  var groanRow = document.getElementById("groanRow");
+  var groanBtns = groanRow.querySelectorAll(".groan");
+  var rateNote = document.getElementById("rateNote");
+  var nextBtn = document.getElementById("nextBtn");
+  var copyBtn = document.getElementById("copyBtn");
+  var copyNote = document.getElementById("copyNote");
+  var resetBtn = document.getElementById("resetBtn");
+  var statSeen = document.getElementById("statSeen");
+  var statRated = document.getElementById("statRated");
+  var statAvg = document.getElementById("statAvg");
+  var statAvgLabel = document.getElementById("statAvgLabel");
+  var statDeck = document.getElementById("statDeck");
+  var statBest = document.getElementById("statBest");
+  var statWorst = document.getElementById("statWorst");
+
+  var STORAGE_KEY = "joke-machine-state";
+  var filter = "all";
+  var deckState = {deck: [], filter: "all", reshuffled: false, started: false};
+  var current = null;
+  var revealed = false;
+  var ratedThisJoke = false;
+  var seen = 0;
+  var ratings = {};
+  var reshuffleNote = "";
+
+  try {
+    var stored = JSON.parse(window.localStorage.getItem(STORAGE_KEY) || "null");
+    if (stored && typeof stored === "object"){
+      if (typeof stored.seen === "number" && stored.seen >= 0) seen = Math.floor(stored.seen);
+      if (stored.ratings && typeof stored.ratings === "object"){
+        Object.keys(stored.ratings).forEach(function(id){
+          var arr = stored.ratings[id];
+          if (Array.isArray(arr)){
+            ratings[id] = arr.filter(function(s){ return groanScore(s) !== null; }).slice(0, 1);
+          }
+        });
+      }
+    }
+  } catch (e) { /* corrupt storage — start empty */ }
+
+  function save(){
+    try {
+      window.localStorage.setItem(STORAGE_KEY, JSON.stringify({seen: seen, ratings: ratings}));
+    } catch (e) { /* ignore */ }
+  }
+  function fallbackCopy(text){
+    var ta = document.createElement("textarea");
+    ta.value = text; document.body.appendChild(ta); ta.select();
+    var ok = false;
+    try { ok = document.execCommand("copy"); } catch(e){ ok = false; }
+    document.body.removeChild(ta);
+    return ok;
+  }
+  function copyText(text, okMsg){
+    function done(ok){
+      if (ok){
+        copyNote.textContent = okMsg;
+        copyNote.classList.remove("err");
+      } else {
+        copyNote.textContent = "Copy failed — select the joke manually.";
+        copyNote.classList.add("err");
+      }
+      setTimeout(function(){ copyNote.textContent = ""; }, 2000);
+    }
+    if (navigator.clipboard && navigator.clipboard.writeText){
+      navigator.clipboard.writeText(text).then(function(){ done(true); }, function(){ done(fallbackCopy(text)); });
+    } else { done(fallbackCopy(text)); }
+  }
+  function renderChips(){
+    chipsEl.innerHTML = "";
+    var all = [{key: "all", label: "All"}];
+    CATEGORIES.forEach(function(c){ all.push({key: c, label: CATEGORY_LABELS[c]}); });
+    all.forEach(function(c){
+      var b = document.createElement("button");
+      b.className = "btn" + (filter === c.key ? " active" : "");
+      b.type = "button";
+      b.textContent = c.label + " · " + countByCategory(JOKES, c.key);
+      b.setAttribute("aria-pressed", filter === c.key ? "true" : "false");
+      b.addEventListener("click", function(){ setFilter(c.key); });
+      chipsEl.appendChild(b);
+    });
+  }
+  function renderStats(){
+    var stats = computeStats(ratings, seen);
+    var bw = bestWorst(JOKES, ratings);
+    statSeen.textContent = String(stats.seen);
+    statRated.textContent = String(stats.rated);
+    statAvg.textContent = formatAvg(stats.average);
+    statAvgLabel.textContent = stats.label || "No ratings yet";
+    var pool = filterJokes(JOKES, filter);
+    var prog = deckProgress(deckState, pool.length);
+    statDeck.textContent = prog.dealt + " / " + prog.total;
+    if (bw.best){
+      statBest.innerHTML = "";
+      var bb = document.createElement("b");
+      bb.textContent = formatAvg(bw.best.average) + " — ";
+      statBest.appendChild(bb);
+      statBest.appendChild(document.createTextNode("\u201c" + jokeShort(bw.best.joke) + "\u201d"));
+    } else {
+      statBest.textContent = "No ratings yet — reveal a punchline and rate it.";
+    }
+    if (bw.worst){
+      statWorst.innerHTML = "";
+      var wb = document.createElement("b");
+      wb.textContent = formatAvg(bw.worst.average) + " — ";
+      statWorst.appendChild(wb);
+      statWorst.appendChild(document.createTextNode("\u201c" + jokeShort(bw.worst.joke) + "\u201d"));
+    } else {
+      statWorst.textContent = "No ratings yet — reveal a punchline and rate it.";
+    }
+  }
+  function renderProgress(){
+    var pool = filterJokes(JOKES, filter);
+    var prog = deckProgress(deckState, pool.length);
+    var text = "Joke " + Math.min(prog.dealt + 1, prog.total) + " of " + prog.total;
+    if (reshuffleNote){ text += " · " + reshuffleNote; reshuffleNote = ""; }
+    progressEl.textContent = text;
+  }
+  function deal(){
+    current = drawNext(deckState, JOKES);
+    if (deckState.reshuffled){
+      var pool = filterJokes(JOKES, filter);
+      reshuffleNote = "Deck reshuffled — all " + pool.length + " jokes back in play.";
+    }
+    revealed = false;
+    ratedThisJoke = false;
+    seen++;
+    catTag.textContent = CATEGORY_LABELS[current.category];
+    setupEl.textContent = current.setup;
+    punchlineEl.textContent = current.punchline;
+    punchlineEl.classList.remove("show");
+    revealBtn.style.display = "";
+    groanBtns.forEach(function(b){
+      b.disabled = true;
+      b.classList.remove("picked");
+    });
+    rateNote.textContent = "Reveal the punchline to rate it.";
+    save();
+    renderProgress();
+    renderStats();
+  }
+  function reveal(){
+    if (!current || revealed) return;
+    revealed = true;
+    punchlineEl.classList.add("show");
+    revealBtn.style.display = "none";
+    groanBtns.forEach(function(b){ b.disabled = false; });
+    rateNote.textContent = "Not rated yet — how bad was it?";
+  }
+  function setFilter(next){
+    filter = next;
+    deckState = {deck: [], filter: next, reshuffled: false, started: false};
+    renderChips();
+    deal();
+  }
+  function rate(score){
+    if (!current || !revealed || ratedThisJoke) return;
+    ratedThisJoke = true;
+    rateJoke(ratings, current.id, score);
+    groanBtns.forEach(function(b){
+      b.classList.toggle("picked", parseInt(b.dataset.groan, 10) === score);
+      b.disabled = true;
+    });
+    rateNote.textContent = "Rated " + ["", "\u{1F602}", "\u{1F610}", "\u{1F644}"][score] + " — " + groanLabel(score).toLowerCase() + ".";
+    save();
+    renderStats();
+  }
+
+  groanBtns.forEach(function(b){
+    b.addEventListener("click", function(){ rate(groanScore(b.dataset.groan)); });
+  });
+  revealBtn.addEventListener("click", reveal);
+  setupEl.addEventListener("click", reveal);
+  nextBtn.addEventListener("click", deal);
+  copyBtn.addEventListener("click", function(){
+    if (!current) return;
+    copyText(jokeText(current), "Copied \u2713");
+    var original = copyBtn.textContent;
+    copyBtn.textContent = "Copied \u2713";
+    setTimeout(function(){ copyBtn.textContent = original; }, 2000);
+  });
+  resetBtn.addEventListener("click", function(){
+    seen = 0;
+    ratings = {};
+    save();
+    renderStats();
+  });
+  document.addEventListener("keydown", function(e){
+    if (e.target && (e.target.tagName === "INPUT" || e.target.tagName === "TEXTAREA")) return;
+    if (e.key === "Enter" && !revealed){ e.preventDefault(); reveal(); }
+    else if ((e.key === " " || e.key === "ArrowRight") && revealed){ e.preventDefault(); deal(); }
+  });
+
+  renderChips();
+  deal();
+}
+</script>
+</body>
+</html>

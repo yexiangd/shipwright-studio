@@ -1,5 +1,5 @@
 {
-  "updated": "2026-11-10",
+  "updated": "2026-11-11",
   "ideas": [
     {
       "id": "idea-000a",
@@ -1047,7 +1047,9 @@
       "tagline": "Programmer jokes, rated by your groans.",
       "priority": 66,
       "effort": "S",
-      "status": "todo"
+      "status": "done",
+      "url": "/lab/joke-machine/",
+      "shipped": "2026-11-11"
     },
     {
       "id": "idea-091",
@@ -1445,7 +1447,9 @@
       "tagline": "Peg deviation dashboard with demo feed.",
       "priority": 66,
       "effort": "M",
-      "status": "todo"
+      "status": "done",
+      "url": "/lab/depeg-monitor/",
+      "shipped": "2026-11-11"
     },
     {
       "id": "idea-126",
