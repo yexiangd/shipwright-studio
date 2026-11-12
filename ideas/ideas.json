@@ -1,5 +1,5 @@
 {
-  "updated": "2026-11-11",
+  "updated": "2026-11-12",
   "ideas": [
     {
       "id": "idea-000a",
@@ -669,7 +669,9 @@
       "tagline": "Press any key, see its code, key, and modifiers.",
       "priority": 65,
       "effort": "S",
-      "status": "todo"
+      "status": "done",
+      "url": "/lab/key-inspector/",
+      "shipped": "2026-11-12"
     },
     {
       "id": "idea-056",
@@ -1459,7 +1461,9 @@
       "tagline": "Eligibility-check UI template with rule builder.",
       "priority": 65,
       "effort": "M",
-      "status": "todo"
+      "status": "done",
+      "url": "/lab/airdrop-checker/",
+      "shipped": "2026-11-12"
     },
     {
       "id": "idea-127",

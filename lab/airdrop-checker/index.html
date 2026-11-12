@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Airdrop Checker Template · Shipwright Studio</title>
+<meta name="description" content="Free online airdrop eligibility checker template — paste a wallet address and check it against an editable rule set, with a per-rule pass/fail breakdown.">
+<link rel="canonical" href="https://shipwright-studio.pages.dev/lab/airdrop-checker/">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"WebApplication","name":"Airdrop Checker Template","url":"https://shipwright-studio.pages.dev/lab/airdrop-checker/","description":"Airdrop Checker Template is a free online tool that checks a wallet address against an editable set of token-airdrop eligibility rules and shows an eligible or not-eligible verdict with a per-rule pass/fail breakdown, using sample data only.","applicationCategory":"FinanceApplication","operatingSystem":"Web","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"}}
+</script>
+<style>
+:root{--bg:#0a0c0f;--panel:#101318;--line:#1c2128;--txt:#e8e4da;--mut:#9aa3b2;--brass:#d2a24c;--green:#7fb069;--red:#e0655f}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--txt);font-family:Fraunces,Georgia,serif;line-height:1.65;padding:2rem 1.2rem 4rem;max-width:960px;margin:0 auto}
+a{color:var(--brass)}
+.nav{display:flex;gap:1.2rem;font-size:.85rem;margin-bottom:1.2rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.nav a{color:var(--mut);text-decoration:none}.nav a:hover{color:var(--brass)}
+.eyebrow{font-size:.75rem;letter-spacing:.22em;text-transform:uppercase;color:var(--mut);font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+h1{font-weight:600;font-size:clamp(2.1rem,5vw,3rem);margin:.5rem 0 .7rem}
+.define{color:var(--mut);max-width:46rem;margin-bottom:1.8rem;font-size:1rem}.define strong{color:var(--txt)}
+.demo-banner{border:1px solid var(--brass);border-radius:12px;padding:.9rem 1.2rem;margin-bottom:1.4rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif;font-size:.9rem;color:var(--txt)}
+.demo-banner .tag{display:inline-block;background:var(--brass);color:#0a0c0f;font-weight:700;font-size:.7rem;letter-spacing:.14em;border-radius:4px;padding:.15rem .45rem;margin-right:.6rem;vertical-align:middle}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:1.4rem;margin-bottom:1.4rem}
+.cardlabel{font-size:.72rem;letter-spacing:.18em;text-transform:uppercase;color:var(--mut);margin-bottom:.8rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.ui{font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.mono{font-family:"JetBrains Mono",ui-monospace,monospace}
+input.addr{width:100%;background:#08090c;color:var(--txt);border:1px solid var(--line);border-radius:10px;padding:.8rem 1rem;font-size:.95rem;font-family:"JetBrains Mono",ui-monospace,monospace}
+input.addr:focus{outline:2px solid var(--brass);border-color:var(--brass)}
+input.addr.invalid{border-color:var(--red)}
+.err{color:var(--red);font-size:.88rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif;margin-top:.6rem;display:none}
+.btn{font-size:.9rem;border:1px solid var(--brass);background:transparent;color:var(--brass);border-radius:999px;padding:.55rem 1.2rem;cursor:pointer;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.btn:hover{background:rgba(210,162,76,.12)}.btn.ghost{border-color:var(--line);color:var(--mut)}.btn.ghost:hover{color:var(--txt);border-color:var(--mut)}
+.btn.solid{background:var(--brass);color:#0a0c0f;font-weight:600}.btn.solid:hover{background:#dcb264}
+.btn:disabled{opacity:.5;cursor:default}
+.btnrow{display:flex;gap:.7rem;flex-wrap:wrap;align-items:center;margin-top:.9rem}
+.note{color:var(--mut);font-size:.85rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif;margin-top:.8rem}
+.verdict{border-radius:12px;padding:1.1rem 1.3rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.verdict.neutral{border:1px solid var(--line);color:var(--mut)}
+.verdict.green{border:1px solid var(--green);color:var(--txt)}.verdict.green b{color:var(--green)}
+.verdict.red{border:1px solid var(--red);color:var(--txt)}.verdict.red b{color:var(--red)}
+.verdict p{font-size:.9rem;color:var(--mut);margin-top:.3rem}
+.statgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:.9rem;margin-top:1rem}
+@media(max-width:640px){.statgrid{grid-template-columns:repeat(2,1fr)}}
+.tile{background:#08090c;border:1px solid var(--line);border-radius:10px;padding:1rem}
+.tile .n{font-family:"JetBrains Mono",ui-monospace,monospace;font-size:1.2rem;color:var(--brass);word-break:break-all}
+.tile .l{font-size:.78rem;color:var(--mut);font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif;margin-top:.2rem}
+.rules{list-style:none;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif;font-size:.92rem}
+.rules li{padding:.55rem 0;border-bottom:1px solid var(--line);display:flex;gap:.6rem;align-items:baseline}
+.rules li:last-child{border-bottom:0}
+.ok{color:var(--green)}.bad{color:var(--red)}.dim{color:var(--mut)}
+.rule-row{display:flex;gap:1rem;align-items:flex-start;padding:.9rem 0;border-bottom:1px solid var(--line);font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.rule-row:last-child{border-bottom:0}
+.rule-row.off{opacity:.55}
+.rule-main{flex:1;min-width:0}
+.rule-name{font-size:.95rem;color:var(--txt)}
+.rule-desc{font-size:.85rem;color:var(--mut);margin-top:.15rem}
+.rule-val{display:flex;gap:.6rem;align-items:center;flex-shrink:0}
+.rule-val input{width:7.5rem;background:#08090c;color:var(--txt);border:1px solid var(--line);border-radius:8px;padding:.45rem .6rem;font-size:.9rem;font-family:"JetBrains Mono",ui-monospace,monospace}
+.rule-val input:focus{outline:2px solid var(--brass);border-color:var(--brass)}
+.rule-val .unit{font-size:.85rem;color:var(--mut)}
+.chip{font-size:.75rem;font-weight:600;border-radius:999px;padding:.2rem .6rem;white-space:nowrap}
+.chip.pass{background:rgba(127,176,105,.15);color:var(--green)}
+.chip.fail{background:rgba(224,101,95,.15);color:var(--red)}
+.chip.skip{background:rgba(154,163,178,.15);color:var(--mut)}
+.chip.none{background:transparent;border:1px solid var(--line);color:var(--mut)}
+.switch{position:relative;width:38px;height:22px;flex-shrink:0;margin-top:.2rem}
+.switch input{opacity:0;width:0;height:0}
+.slider{position:absolute;inset:0;background:#1c2128;border-radius:999px;cursor:pointer;transition:background .15s}
+.slider:before{content:"";position:absolute;width:16px;height:16px;left:3px;top:3px;background:#9aa3b2;border-radius:50%;transition:transform .15s,background .15s}
+.switch input:checked + .slider{background:rgba(210,162,76,.35)}
+.switch input:checked + .slider:before{transform:translateX(16px);background:var(--brass)}
+@media(max-width:640px){.rule-row{flex-wrap:wrap}.rule-val{width:100%}.rule-val input{flex:1}}
+details.explain{border:1px solid var(--line);border-radius:10px;padding:.9rem 1.1rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif;font-size:.88rem;color:var(--mut)}
+details.explain summary{cursor:pointer;color:var(--txt);font-size:.95rem}
+details.explain p{margin-top:.5rem}
+footer{margin-top:2.5rem;color:var(--mut);font-size:.85rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+</style>
+</head>
+<body>
+<nav class="nav"><a href="/">Shipwright Studio</a><a href="/ideas/">Lab</a></nav>
+<p class="eyebrow">Lab — Web3 tool</p>
+<h1>Airdrop Checker Template</h1>
+<p class="define"><strong>Airdrop Checker Template is a free online tool that</strong> checks a wallet address against an editable set of token-airdrop eligibility rules and shows an eligible or not-eligible verdict with a per-rule pass/fail breakdown — so builders can prototype an airdrop claim page and anyone can see how eligibility rules work, using sample data only.</p>
+
+<div class="demo-banner"><span class="tag">DEMO</span>Demo only — sample data, no real chain connection. Stats are generated in your browser from the address and are not real balances.</div>
+
+<div class="card">
+<p class="cardlabel">Wallet address to check</p>
+<input class="addr" id="addr" type="text" value="" placeholder="0x…" autocomplete="off" spellcheck="false" aria-label="Wallet address">
+<p class="err" id="addrErr">That doesn&rsquo;t look like a wallet address — expected <span class="mono">0x</span> followed by 40 hex characters (0&ndash;9, a&ndash;f).</p>
+<div class="btnrow">
+<button class="btn solid" id="btnCheck">Check eligibility</button>
+<button class="btn ghost" data-sample="0x0000000000000000000000000000000000000001">Eligible sample</button>
+<button class="btn ghost" data-sample="0x0000000000000000000000000000000000000002">Not-eligible sample</button>
+<button class="btn ghost" data-sample="0x1234abcd">Invalid sample</button>
+<button class="btn ghost" id="btnClear">Clear</button>
+</div>
+<p class="note">Nothing leaves this page: no lookup, no wallet connection, no network request. The stats below are derived from the address itself, so the same address always gives the same result.</p>
+</div>
+
+<div class="card">
+<p class="cardlabel">Eligibility rules — edit, toggle, re-check live</p>
+<div id="ruleBuilder"></div>
+<div class="btnrow"><button class="btn ghost" id="btnReset">Reset rules to defaults</button></div>
+</div>
+
+<div class="card">
+<p class="cardlabel">Verdict</p>
+<div class="verdict neutral" id="verdict"><b>Paste an address above.</b><p>Press “Check eligibility” to run it against the rules.</p></div>
+<div class="statgrid" id="stats">
+<div class="tile"><div class="n" id="stBalance">—</div><div class="l">Balance (tokens)</div></div>
+<div class="tile"><div class="n" id="stHolding">—</div><div class="l">Holding (days)</div></div>
+<div class="tile"><div class="n" id="stTx">—</div><div class="l">Transactions</div></div>
+<div class="tile"><div class="n" id="stFirst">—</div><div class="l">First activity</div></div>
+</div>
+<p class="cardlabel" style="margin-top:1.4rem">Per-rule breakdown</p>
+<ul class="rules" id="breakdown"><li class="dim">Run a check to see each rule pass or fail.</li></ul>
+</div>
+
+<details class="explain"><summary>How the demo works</summary>
+<p>Every stat is derived deterministically from the address itself with a small hash function (FNV-1a), so the same address always produces the same balance, holding period, transaction count, and first-activity date — try checking the same address twice. A stat exactly equal to its threshold passes. The snapshot rule passes when the address&rsquo;s first activity is on or before the snapshot date. None of this touches a blockchain: there is no RPC call, no wallet connection, and no real airdrop to claim.</p>
+</details>
+
+<footer>Built by Shipwright Studio · <a href="/ideas/">More experiments in the Lab</a></footer>
+
+<script>
+// ---- PURE LOGIC (node-testable) ----
+function isValidAddress(addr){
+  return typeof addr === 'string' && /^0x[0-9a-fA-F]{40}$/.test(addr.trim());
+}
+function fnv1a(str){
+  let h = 0x811c9dc5;
+  for (let i = 0; i < str.length; i++){ h ^= str.charCodeAt(i); h = Math.imul(h, 0x01000193) >>> 0; }
+  return h >>> 0;
+}
+function demoStatsFor(addr){
+  const a = addr.toLowerCase().trim();
+  const balance = (fnv1a(a + ':balance') % 1000) / 100;
+  const holdingDays = fnv1a(a + ':holding') % 731;
+  const txCount = fnv1a(a + ':tx') % 1501;
+  const firstActivity = new Date(Date.UTC(2024, 0, 1) + (fnv1a(a + ':first') % 701) * 86400000);
+  return { balance: balance, holdingDays: holdingDays, txCount: txCount, firstActivity: firstActivity };
+}
+var DEFAULT_RULES = [
+  { id: 'balance', name: 'Minimum balance', desc: 'Wallet must hold at least this many tokens.', type: 'number', value: 1.00, step: 0.01, min: 0, unit: 'tokens', enabled: true },
+  { id: 'holding', name: 'Minimum holding period', desc: 'Wallet must have held tokens for at least this many days.', type: 'number', value: 90, step: 1, min: 0, unit: 'days', enabled: true },
+  { id: 'tx', name: 'Minimum transactions', desc: 'Wallet must have made at least this many transactions.', type: 'number', value: 10, step: 1, min: 0, unit: 'txs', enabled: true },
+  { id: 'snapshot', name: 'Snapshot date', desc: 'First activity must be on or before this date.', type: 'date', value: '2025-07-01', unit: '', enabled: true }
+];
+function evaluateRules(stats, rules){
+  const results = rules.map(function(r){
+    if (!r.enabled) return { id: r.id, name: r.name, status: 'skipped', detail: 'Skipped — rule is off' };
+    if (r.id === 'balance') return { id: r.id, name: r.name, status: stats.balance >= r.value ? 'pass' : 'fail', detail: 'Balance ' + stats.balance.toFixed(2) + ' ≥ ' + Number(r.value).toFixed(2) + ' tokens' };
+    if (r.id === 'holding') return { id: r.id, name: r.name, status: stats.holdingDays >= r.value ? 'pass' : 'fail', detail: 'Holding ' + stats.holdingDays + ' ≥ ' + r.value + ' days' };
+    if (r.id === 'tx') return { id: r.id, name: r.name, status: stats.txCount >= r.value ? 'pass' : 'fail', detail: 'Transactions ' + stats.txCount + ' ≥ ' + r.value };
+    if (r.id === 'snapshot'){
+      const snap = new Date(r.value + 'T00:00:00Z');
+      const ok = stats.firstActivity.getTime() <= snap.getTime();
+      return { id: r.id, name: r.name, status: ok ? 'pass' : 'fail', detail: 'First activity ' + stats.firstActivity.toISOString().slice(0, 10) + ' ≤ ' + r.value };
+    }
+    return { id: r.id, name: r.name, status: 'skipped', detail: 'Unknown rule' };
+  });
+  const enabled = results.filter(function(x){ return x.status !== 'skipped'; });
+  const failed = enabled.filter(function(x){ return x.status === 'fail'; });
+  return { results: results, eligible: enabled.length > 0 && failed.length === 0, failedCount: failed.length, enabledCount: enabled.length };
+}
+// ---- END PURE LOGIC ----
+
+if (typeof document !== 'undefined') {
+  var rules = JSON.parse(JSON.stringify(DEFAULT_RULES));
+  var lastStats = null;
+  var addrInput = document.getElementById('addr');
+  var addrErr = document.getElementById('addrErr');
+  var verdictEl = document.getElementById('verdict');
+  var breakdownEl = document.getElementById('breakdown');
+  var btnCheck = document.getElementById('btnCheck');
+
+  function fmtDate(d){ return d.toISOString().slice(0, 10); }
+
+  function buildRuleRows(){
+    var wrap = document.getElementById('ruleBuilder');
+    wrap.innerHTML = '';
+    rules.forEach(function(r, i){
+      var row = document.createElement('div');
+      row.className = 'rule-row' + (r.enabled ? '' : ' off');
+      row.dataset.rule = r.id;
+      var valInput = r.type === 'date'
+        ? '<input type="date" value="' + r.value + '" aria-label="' + r.name + ' value">'
+        : '<input type="number" value="' + r.value + '" step="' + r.step + '" min="' + r.min + '" aria-label="' + r.name + ' value">';
+      row.innerHTML =
+        '<label class="switch"><input type="checkbox"' + (r.enabled ? ' checked' : '') + ' aria-label="Enable ' + r.name + '"><span class="slider"></span></label>' +
+        '<div class="rule-main"><div class="rule-name">' + r.name + '</div><div class="rule-desc">' + r.desc + '</div></div>' +
+        '<div class="rule-val">' + valInput + (r.unit ? '<span class="unit">' + r.unit + '</span>' : '') + '<span class="chip none" data-chip>—</span></div>';
+      var toggle = row.querySelector('input[type=checkbox]');
+      toggle.addEventListener('change', function(){
+        rules[i].enabled = toggle.checked;
+        row.classList.toggle('off', !toggle.checked);
+        rerunIfChecked();
+      });
+      var input = row.querySelector('.rule-val input');
+      input.addEventListener('change', function(){
+        if (r.type === 'date'){
+          if (!input.value){ input.value = r.value; return; }
+          rules[i].value = input.value;
+        } else {
+          var v = parseFloat(input.value);
+          if (isNaN(v) || v < 0){ input.value = r.value; return; }
+          rules[i].value = v;
+        }
+        rerunIfChecked();
+      });
+      wrap.appendChild(row);
+    });
+  }
+
+  function renderChips(result){
+    document.querySelectorAll('.rule-row').forEach(function(row){
+      var chip = row.querySelector('[data-chip]');
+      var res = result ? result.results.find(function(x){ return x.id === row.dataset.rule; }) : null;
+      if (!res){ chip.className = 'chip none'; chip.textContent = '—'; return; }
+      chip.className = 'chip ' + res.status;
+      chip.textContent = res.status === 'pass' ? 'Pass' : res.status === 'fail' ? 'Fail' : 'Skipped';
+    });
+  }
+
+  function renderStats(stats){
+    document.getElementById('stBalance').textContent = stats.balance.toFixed(2);
+    document.getElementById('stHolding').textContent = stats.holdingDays;
+    document.getElementById('stTx').textContent = stats.txCount;
+    document.getElementById('stFirst').textContent = fmtDate(stats.firstActivity);
+  }
+
+  function clearStats(){
+    ['stBalance','stHolding','stTx','stFirst'].forEach(function(id){ document.getElementById(id).textContent = '—'; });
+  }
+
+  function runCheck(){
+    var raw = addrInput.value.trim();
+    if (raw === ''){
+      addrErr.style.display = 'none'; addrInput.classList.remove('invalid');
+      verdictEl.className = 'verdict neutral';
+      verdictEl.innerHTML = '<b>Paste an address above.</b><p>Press “Check eligibility” to run it against the rules.</p>';
+      breakdownEl.innerHTML = '<li class="dim">Run a check to see each rule pass or fail.</li>';
+      renderChips(null); clearStats(); lastStats = null;
+      return;
+    }
+    if (!isValidAddress(raw)){
+      addrErr.style.display = 'block'; addrInput.classList.add('invalid');
+      verdictEl.className = 'verdict neutral';
+      verdictEl.innerHTML = '<b>Fix the address above to run a check.</b><p>Expected 0x followed by 40 hex characters.</p>';
+      breakdownEl.innerHTML = '<li class="dim">Run a check to see each rule pass or fail.</li>';
+      renderChips(null); clearStats(); lastStats = null;
+      return;
+    }
+    addrErr.style.display = 'none'; addrInput.classList.remove('invalid');
+    var stats = demoStatsFor(raw);
+    lastStats = stats;
+    var result = evaluateRules(stats, rules);
+    renderStats(stats);
+    renderChips(result);
+    breakdownEl.innerHTML = result.results.map(function(r){
+      var cls = r.status === 'pass' ? 'ok' : r.status === 'fail' ? 'bad' : 'dim';
+      var mark = r.status === 'pass' ? '✓' : r.status === 'fail' ? '✗' : '–';
+      return '<li><span class="' + cls + '">' + mark + '</span><span><b>' + r.name + '</b> — ' + r.detail + '</span></li>';
+    }).join('');
+    if (result.eligible){
+      verdictEl.className = 'verdict green';
+      verdictEl.innerHTML = '<b>✓ Eligible for the airdrop</b><p>All ' + result.enabledCount + ' enabled rule' + (result.enabledCount === 1 ? '' : 's') + ' passed. Demo result only — no real airdrop is being claimed.</p>';
+    } else {
+      verdictEl.className = 'verdict red';
+      verdictEl.innerHTML = '<b>✗ Not eligible</b><p>' + result.failedCount + ' of ' + result.enabledCount + ' enabled rule' + (result.enabledCount === 1 ? '' : 's') + ' failed. Adjust the rules or try another address.</p>';
+    }
+  }
+
+  function rerunIfChecked(){ if (lastStats) runCheck(); }
+
+  btnCheck.addEventListener('click', function(){
+    btnCheck.disabled = true; btnCheck.textContent = 'Checking…';
+    setTimeout(function(){ runCheck(); btnCheck.disabled = false; btnCheck.textContent = 'Check eligibility'; }, 350);
+  });
+  addrInput.addEventListener('input', function(){
+    if (addrInput.value.trim() === '') runCheck();
+    else { addrErr.style.display = 'none'; addrInput.classList.remove('invalid'); }
+  });
+  addrInput.addEventListener('keydown', function(e){ if (e.key === 'Enter') btnCheck.click(); });
+  document.querySelectorAll('[data-sample]').forEach(function(btn){
+    btn.addEventListener('click', function(){ addrInput.value = btn.dataset.sample; runCheck(); });
+  });
+  document.getElementById('btnClear').addEventListener('click', function(){ addrInput.value = ''; runCheck(); });
+  document.getElementById('btnReset').addEventListener('click', function(){
+    rules = JSON.parse(JSON.stringify(DEFAULT_RULES));
+    buildRuleRows(); renderChips(lastStats ? evaluateRules(lastStats, rules) : null);
+    rerunIfChecked();
+  });
+
+  buildRuleRows();
+}
+</script>
+</body>
+</html>

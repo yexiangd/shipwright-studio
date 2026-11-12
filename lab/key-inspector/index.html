@@ -1,0 +1,608 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Key Inspector · Shipwright Studio</title>
+<meta name="description" content="Press any key and instantly see its event.code, event.key, keyCode, modifiers, and location — a free keyboard event inspector that runs entirely in your browser.">
+<link rel="canonical" href="https://shipwright-studio.pages.dev/lab/key-inspector/">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
+  "name": "Key Inspector",
+  "description": "A free online keyboard event inspector: press any key and see its event.code, event.key, keyCode, modifiers, and location, with a plain-English description.",
+  "applicationCategory": "DeveloperApplication",
+  "operatingSystem": "Web",
+  "url": "https://shipwright-studio.pages.dev/lab/key-inspector/",
+  "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+}
+</script>
+<style>
+  :root {
+    --bg: #0a0c0f;
+    --surface: #11141a;
+    --surface-2: #161a21;
+    --border: #1e242c;
+    --brass: #d2a24c;
+    --brass-dim: rgba(210, 162, 76, 0.18);
+    --text: #e8e6e1;
+    --muted: #9aa3ad;
+    --mono: ui-monospace, "SF Mono", "Cascadia Code", Menlo, Consolas, monospace;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: "Inter", system-ui, -apple-system, sans-serif;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+  a { color: var(--brass); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  .wrap { max-width: 760px; margin: 0 auto; padding: 0 20px 80px; }
+  header.masthead {
+    padding: 28px 0 8px;
+    font-family: "Fraunces", Georgia, serif;
+    font-size: 15px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+  header.masthead a { color: var(--text); }
+  header.masthead a:hover { color: var(--brass); text-decoration: none; }
+  header.masthead span { color: var(--brass); }
+  h1 {
+    font-family: "Fraunces", Georgia, serif;
+    font-weight: 600;
+    font-size: clamp(2rem, 6vw, 3rem);
+    line-height: 1.15;
+    margin: 28px 0 12px;
+  }
+  .summary { color: var(--muted); font-size: 1.05rem; max-width: 60ch; }
+  .summary strong { color: var(--text); font-weight: 600; }
+
+  /* Live display */
+  .live-card {
+    margin-top: 36px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 32px 24px 24px;
+    text-align: center;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  }
+  .live-card.flash {
+    border-color: var(--brass);
+    box-shadow: 0 0 0 1px var(--brass), 0 0 32px rgba(210, 162, 76, 0.15);
+  }
+  .glyph {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 96px;
+    min-height: 96px;
+    padding: 12px 24px;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    font-family: var(--mono);
+    font-size: 2.4rem;
+    font-weight: 600;
+    color: var(--brass);
+    margin-bottom: 8px;
+  }
+  .glyph.idle { color: var(--muted); font-size: 1.6rem; }
+  .prompt { color: var(--muted); font-size: 0.95rem; margin-bottom: 20px; }
+  .description { color: var(--text); font-size: 1.05rem; min-height: 1.6em; margin-bottom: 20px; }
+  .description.idle { color: var(--muted); }
+  .fields {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 10px;
+    text-align: left;
+  }
+  .field {
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 10px 12px;
+  }
+  .field .label {
+    display: block;
+    font-size: 0.7rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 2px;
+  }
+  .field .value {
+    font-family: var(--mono);
+    font-size: 0.95rem;
+    word-break: break-all;
+  }
+
+  /* Modifier chips */
+  .chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    justify-content: center;
+    margin-top: 20px;
+  }
+  .chip {
+    font-family: var(--mono);
+    font-size: 0.85rem;
+    padding: 8px 16px;
+    border-radius: 999px;
+    border: 1px solid var(--border);
+    background: var(--surface-2);
+    color: var(--muted);
+    transition: background 0.12s ease, color 0.12s ease, border-color 0.12s ease;
+  }
+  .chip.active {
+    background: var(--brass);
+    border-color: var(--brass);
+    color: #14100a;
+    font-weight: 600;
+  }
+
+  /* Virtual keys */
+  .section-title {
+    font-family: "Fraunces", Georgia, serif;
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin: 40px 0 6px;
+  }
+  .section-note { color: var(--muted); font-size: 0.92rem; margin-bottom: 14px; }
+  .vkeys {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .vkey {
+    min-width: 48px;
+    min-height: 48px;
+    padding: 10px 14px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    color: var(--text);
+    font-family: var(--mono);
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: border-color 0.12s ease, background 0.12s ease;
+  }
+  .vkey:hover { border-color: var(--brass); }
+  .vkey:active, .vkey.pressed { background: var(--brass-dim); border-color: var(--brass); color: var(--brass); }
+  .vkey.wide { min-width: 84px; }
+
+  /* Actions */
+  .actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 32px; }
+  .btn {
+    padding: 12px 20px;
+    border-radius: 10px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    border: 1px solid var(--brass);
+    transition: opacity 0.12s ease;
+  }
+  .btn:hover { opacity: 0.85; }
+  .btn-primary { background: var(--brass); color: #14100a; }
+  .btn-ghost { background: transparent; color: var(--brass); }
+  .btn:disabled { opacity: 0.4; cursor: default; }
+  .json-fallback {
+    display: none;
+    margin-top: 14px;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px;
+    font-family: var(--mono);
+    font-size: 0.85rem;
+    white-space: pre-wrap;
+    word-break: break-all;
+    color: var(--text);
+  }
+  .json-fallback.show { display: block; }
+
+  /* History */
+  .history { list-style: none; margin-top: 12px; }
+  .history li {
+    display: grid;
+    grid-template-columns: 74px 1fr auto;
+    gap: 12px;
+    align-items: baseline;
+    padding: 10px 4px;
+    border-bottom: 1px solid var(--border);
+    font-size: 0.92rem;
+  }
+  .history .time { font-family: var(--mono); font-size: 0.8rem; color: var(--muted); }
+  .history .h-key { font-family: var(--mono); font-weight: 600; }
+  .history .h-key .h-code { color: var(--muted); font-weight: 400; font-size: 0.85rem; }
+  .history .h-meta { color: var(--muted); font-size: 0.82rem; text-align: right; }
+  .history .repeat-badge {
+    color: var(--brass);
+    font-size: 0.78rem;
+    border: 1px solid var(--brass);
+    border-radius: 999px;
+    padding: 1px 7px;
+    margin-left: 6px;
+    white-space: nowrap;
+  }
+  .history-empty { color: var(--muted); padding: 16px 4px; }
+
+  .privacy {
+    margin-top: 40px;
+    padding: 16px 18px;
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--brass);
+    border-radius: 8px;
+    color: var(--muted);
+    font-size: 0.92rem;
+    background: var(--surface);
+  }
+  footer {
+    margin-top: 56px;
+    padding-top: 24px;
+    border-top: 1px solid var(--border);
+    color: var(--muted);
+    font-size: 0.9rem;
+  }
+  @media (max-width: 520px) {
+    .live-card { padding: 24px 16px 18px; }
+    .glyph { min-width: 72px; min-height: 72px; font-size: 1.9rem; }
+    .history li { grid-template-columns: 62px 1fr; }
+    .history .h-meta { grid-column: 2; text-align: left; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="masthead"><a href="/">Shipwright <span>Studio</span></a></header>
+
+  <h1>Key Inspector</h1>
+  <p class="summary"><strong>Key Inspector is a free online tool that shows exactly what your keyboard sends to the browser.</strong> Press any key and it reveals the event's <code>code</code>, <code>key</code>, <code>keyCode</code>, held modifiers, and physical location — with a plain-English explanation, so developers can debug shortcuts and anyone can satisfy their curiosity.</p>
+
+  <section class="live-card" id="liveCard" aria-live="polite">
+    <div class="glyph idle" id="glyph">⌨</div>
+    <p class="prompt" id="prompt">Press any key…</p>
+    <p class="description idle" id="description">Waiting for a keypress.</p>
+    <div class="fields">
+      <div class="field"><span class="label">event.code</span><span class="value" id="fCode">—</span></div>
+      <div class="field"><span class="label">event.key</span><span class="value" id="fKey">—</span></div>
+      <div class="field"><span class="label">keyCode</span><span class="value" id="fKeyCode">—</span></div>
+      <div class="field"><span class="label">Location</span><span class="value" id="fLocation">—</span></div>
+      <div class="field"><span class="label">Repeat</span><span class="value" id="fRepeat">—</span></div>
+    </div>
+    <div class="chips" id="chips" aria-label="Modifier keys held">
+      <span class="chip" data-mod="shiftKey">Shift</span>
+      <span class="chip" data-mod="ctrlKey">Ctrl</span>
+      <span class="chip" data-mod="altKey">Alt</span>
+      <span class="chip" data-mod="metaKey">Meta</span>
+    </div>
+  </section>
+
+  <h2 class="section-title">Try it without a keyboard</h2>
+  <p class="section-note">On a phone or tablet? Tap a key below — it runs through the same display as a real keypress.</p>
+  <div class="vkeys" id="vkeys" role="group" aria-label="Virtual keys"></div>
+
+  <div class="actions">
+    <button class="btn btn-primary" id="copyBtn" type="button" disabled>Copy event as JSON</button>
+    <button class="btn btn-ghost" id="clearBtn" type="button" disabled>Clear history</button>
+  </div>
+  <pre class="json-fallback" id="jsonFallback" aria-label="Event JSON"></pre>
+
+  <h2 class="section-title">History</h2>
+  <p class="section-note">The most recent 20 key events, latest first. Holding a key down counts as one entry.</p>
+  <ul class="history" id="history"></ul>
+  <p class="history-empty" id="historyEmpty">No keys yet — press a key to begin.</p>
+
+  <p class="privacy">Everything runs in your browser. No keystrokes are recorded, stored, or sent anywhere.</p>
+
+  <footer>Built by <a href="/ideas/">Shipwright Studio</a></footer>
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  var MODIFIER_PROPS = { Shift: "shiftKey", Control: "ctrlKey", Alt: "altKey", Meta: "metaKey" };
+  var MODIFIER_NAME_BY_PROP = { shiftKey: "Shift", ctrlKey: "Control", altKey: "Alt", metaKey: "Meta" };
+  var LOCATION_NAMES = { 0: "Standard", 1: "Left", 2: "Right", 3: "Numpad" };
+  var MAX_HISTORY = 20;
+
+  var state = { lastEvent: null, history: [] };
+
+  var els = {
+    glyph: document.getElementById("glyph"),
+    prompt: document.getElementById("prompt"),
+    description: document.getElementById("description"),
+    fCode: document.getElementById("fCode"),
+    fKey: document.getElementById("fKey"),
+    fKeyCode: document.getElementById("fKeyCode"),
+    fLocation: document.getElementById("fLocation"),
+    fRepeat: document.getElementById("fRepeat"),
+    liveCard: document.getElementById("liveCard"),
+    chips: document.getElementById("chips"),
+    history: document.getElementById("history"),
+    historyEmpty: document.getElementById("historyEmpty"),
+    copyBtn: document.getElementById("copyBtn"),
+    clearBtn: document.getElementById("clearBtn"),
+    jsonFallback: document.getElementById("jsonFallback"),
+    vkeys: document.getElementById("vkeys")
+  };
+
+  /* ---- Core logic: pure functions, verified by node tests ---- */
+
+  function isModifierKey(key) {
+    return Object.prototype.hasOwnProperty.call(MODIFIER_PROPS, key);
+  }
+
+  function modifierNames(ev) {
+    var names = [];
+    ["Shift", "Control", "Alt", "Meta"].forEach(function (name) {
+      if (ev[MODIFIER_PROPS[name]]) names.push(name);
+    });
+    return names;
+  }
+
+  function locationName(code) {
+    return LOCATION_NAMES[code] || "Unknown";
+  }
+
+  function displayGlyph(key) {
+    if (key === " ") return "Space";
+    if (key === "Enter") return "↵";
+    if (key === "Tab") return "⇥";
+    if (key === "Escape") return "Esc";
+    if (key === "Backspace") return "⌫";
+    if (key === "Delete") return "⌦";
+    if (key === "ArrowUp") return "↑";
+    if (key === "ArrowDown") return "↓";
+    if (key === "ArrowLeft") return "←";
+    if (key === "ArrowRight") return "→";
+    if (key === "Dead") return "Dead";
+    if (key.length === 1) return key.toUpperCase();
+    return key;
+  }
+
+  function describeEvent(ev) {
+    var mods = modifierNames(ev);
+    var modsLabel = mods.length ? mods.join(" + ") + " + " : "";
+    var keyLabel = ev.key === " " ? "Space" : ev.key;
+
+    if (isModifierKey(ev.key) && mods.length === 1) {
+      return ev.key + " alone — modifier key, no character.";
+    }
+    if (ev.key === "Dead") {
+      return modsLabel + "Dead key — produces no character until combined with another key.";
+    }
+    if (ev.key === "Unidentified") {
+      return "Unidentified key — the browser could not determine what was pressed.";
+    }
+    if (ev.repeat) {
+      return modsLabel + keyLabel + " (held — repeating).";
+    }
+    if (mods.length) {
+      return modsLabel + keyLabel + ".";
+    }
+    if (ev.key.length === 1) {
+      return "The " + (/[a-zA-Z]/.test(ev.key) ? "letter " : "character ") + "“" + ev.key + "”" +
+        (ev.code ? " (" + ev.code + ")" : "") + ".";
+    }
+    return keyLabel + " key pressed.";
+  }
+
+  function eventToRecord(ev) {
+    return {
+      key: ev.key,
+      code: ev.code || "",
+      keyCode: ev.keyCode || 0,
+      location: locationName(ev.location),
+      locationCode: ev.location || 0,
+      modifiers: modifierNames(ev),
+      repeat: !!ev.repeat,
+      time: new Date().toISOString()
+    };
+  }
+
+  function eventToJson(ev) {
+    return JSON.stringify(eventToRecord(ev), null, 2);
+  }
+
+  /* ---- Rendering ---- */
+
+  function renderEvent(rec) {
+    els.glyph.textContent = displayGlyph(rec.key);
+    els.glyph.classList.remove("idle");
+    els.prompt.textContent = "Last key pressed";
+    els.description.textContent = rec.description;
+    els.description.classList.remove("idle");
+    els.fCode.textContent = rec.code || "—";
+    els.fKey.textContent = rec.key === " " ? "Space" : rec.key;
+    els.fKeyCode.textContent = rec.keyCode ? String(rec.keyCode) : "—";
+    els.fLocation.textContent = rec.location;
+    els.fRepeat.textContent = rec.repeat ? "Yes (held)" : "No";
+
+    var chips = els.chips.querySelectorAll(".chip");
+    chips.forEach(function (chip) {
+      var name = MODIFIER_NAME_BY_PROP[chip.dataset.mod];
+      chip.classList.toggle("active", rec.modifiers.indexOf(name) !== -1);
+    });
+
+    els.liveCard.classList.remove("flash");
+    void els.liveCard.offsetWidth; // restart the flash animation
+    els.liveCard.classList.add("flash");
+
+    els.copyBtn.disabled = false;
+    els.clearBtn.disabled = false;
+  }
+
+  function renderHistory() {
+    els.history.innerHTML = "";
+    state.history.forEach(function (rec) {
+      var li = document.createElement("li");
+      var time = document.createElement("span");
+      time.className = "time";
+      time.textContent = new Date(rec.time).toLocaleTimeString([], { hour12: false });
+      var keyEl = document.createElement("span");
+      keyEl.className = "h-key";
+      keyEl.textContent = rec.key === " " ? "Space" : rec.key;
+      var codeEl = document.createElement("span");
+      codeEl.className = "h-code";
+      codeEl.textContent = "  " + (rec.code || "—");
+      keyEl.appendChild(codeEl);
+      if (rec.repeat) {
+        var badge = document.createElement("span");
+        badge.className = "repeat-badge";
+        badge.textContent = "held ×" + rec.repeatCount;
+        keyEl.appendChild(badge);
+      }
+      var meta = document.createElement("span");
+      meta.className = "h-meta";
+      var parts = [];
+      if (rec.modifiers.length) parts.push(rec.modifiers.join("+"));
+      parts.push(rec.location);
+      meta.textContent = parts.join(" · ");
+      li.appendChild(time);
+      li.appendChild(keyEl);
+      li.appendChild(meta);
+      els.history.appendChild(li);
+    });
+    els.historyEmpty.style.display = state.history.length ? "none" : "";
+  }
+
+  /* ---- Event handling ---- */
+
+  function handleKeyEvent(ev) {
+    // Never trap browser shortcuts: leave Meta/Ctrl combos (Cmd+R, Ctrl+T…)
+    // alone so the browser can do its job. Only block keys that would
+    // otherwise move focus or scroll the page away from the demo.
+    if (ev.key === " " || ev.key === "Tab") {
+      // Space scrolls the page; Tab moves focus. Prevent only when the
+      // target is the page itself, not an input or button the user is using.
+      var tag = (ev.target && ev.target.tagName) || "";
+      if (tag !== "INPUT" && tag !== "TEXTAREA" && tag !== "SELECT") {
+        ev.preventDefault();
+      }
+    }
+
+    var rec = eventToRecord(ev);
+    rec.description = describeEvent(ev);
+    state.lastEvent = rec;
+
+    if (ev.repeat && state.history.length &&
+        state.history[0].code === rec.code && state.history[0].key === rec.key) {
+      // Held key: update the live display and bump the repeat count
+      // instead of flooding the log.
+      state.history[0].repeat = true;
+      state.history[0].repeatCount = (state.history[0].repeatCount || 1) + 1;
+      state.history[0].description = rec.description;
+    } else {
+      rec.repeatCount = 1;
+      state.history.unshift(rec);
+      if (state.history.length > MAX_HISTORY) state.history.length = MAX_HISTORY;
+    }
+    renderEvent(rec);
+    renderHistory();
+  }
+
+  document.addEventListener("keydown", handleKeyEvent);
+
+  /* ---- Virtual keys (touch fallback) ---- */
+
+  var VIRTUAL_KEYS = [
+    { label: "A", key: "a", code: "KeyA", keyCode: 65 },
+    { label: "S", key: "s", code: "KeyS", keyCode: 83 },
+    { label: "D", key: "d", code: "KeyD", keyCode: 68 },
+    { label: "F", key: "f", code: "KeyF", keyCode: 70 },
+    { label: "1", key: "1", code: "Digit1", keyCode: 49 },
+    { label: "Enter", key: "Enter", code: "Enter", keyCode: 13, wide: true },
+    { label: "Space", key: " ", code: "Space", keyCode: 32, wide: true },
+    { label: "←", key: "ArrowLeft", code: "ArrowLeft", keyCode: 37 },
+    { label: "↑", key: "ArrowUp", code: "ArrowUp", keyCode: 38 },
+    { label: "↓", key: "ArrowDown", code: "ArrowDown", keyCode: 40 },
+    { label: "→", key: "ArrowRight", code: "ArrowRight", keyCode: 39 },
+    { label: "Shift", key: "Shift", code: "ShiftLeft", keyCode: 16, mods: { shiftKey: true } },
+    { label: "Ctrl", key: "Control", code: "ControlLeft", keyCode: 17, mods: { ctrlKey: true } },
+    { label: "Alt", key: "Alt", code: "AltLeft", keyCode: 18, mods: { altKey: true } }
+  ];
+
+  VIRTUAL_KEYS.forEach(function (vk) {
+    var btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "vkey" + (vk.wide ? " wide" : "");
+    btn.textContent = vk.label;
+    btn.setAttribute("aria-label", "Simulate " + vk.label + " key");
+    btn.addEventListener("click", function () {
+      var fake = {
+        key: vk.key,
+        code: vk.code,
+        keyCode: vk.keyCode,
+        location: 0,
+        repeat: false,
+        shiftKey: !!(vk.mods && vk.mods.shiftKey),
+        ctrlKey: !!(vk.mods && vk.mods.ctrlKey),
+        altKey: !!(vk.mods && vk.mods.altKey),
+        metaKey: false,
+        target: document.body,
+        preventDefault: function () {}
+      };
+      btn.classList.add("pressed");
+      setTimeout(function () { btn.classList.remove("pressed"); }, 150);
+      handleKeyEvent(fake);
+    });
+    els.vkeys.appendChild(btn);
+  });
+
+  /* ---- Copy & clear ---- */
+
+  els.copyBtn.addEventListener("click", function () {
+    if (!state.lastEvent) return;
+    var json = eventToJson(state.lastEvent);
+    var done = function () {
+      els.copyBtn.textContent = "Copied ✓";
+      setTimeout(function () { els.copyBtn.textContent = "Copy event as JSON"; }, 2000);
+    };
+    var fail = function () {
+      els.copyBtn.textContent = "Copy failed — JSON below";
+      els.jsonFallback.textContent = json;
+      els.jsonFallback.classList.add("show");
+      setTimeout(function () { els.copyBtn.textContent = "Copy event as JSON"; }, 3000);
+    };
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(json).then(done, fail);
+    } else {
+      fail();
+    }
+  });
+
+  els.clearBtn.addEventListener("click", function () {
+    state.history = [];
+    state.lastEvent = null;
+    renderHistory();
+    els.glyph.textContent = "⌨";
+    els.glyph.classList.add("idle");
+    els.prompt.textContent = "Press any key…";
+    els.description.textContent = "Waiting for a keypress.";
+    els.description.classList.add("idle");
+    els.fCode.textContent = "—";
+    els.fKey.textContent = "—";
+    els.fKeyCode.textContent = "—";
+    els.fLocation.textContent = "—";
+    els.fRepeat.textContent = "—";
+    els.chips.querySelectorAll(".chip").forEach(function (c) { c.classList.remove("active"); });
+    els.jsonFallback.classList.remove("show");
+    els.copyBtn.disabled = true;
+    els.clearBtn.disabled = true;
+  });
+
+  renderHistory();
+})();
+</script>
+</body>
+</html>
