@@ -1,5 +1,5 @@
 {
-  "updated": "2026-11-12",
+  "updated": "2026-11-13",
   "ideas": [
     {
       "id": "idea-000a",
@@ -321,7 +321,9 @@
       "tagline": "Run, jump, and wall-slide through 12 hand-made levels.",
       "priority": 64,
       "effort": "L",
-      "status": "todo"
+      "status": "done",
+      "url": "/lab/tiny-platformer/",
+      "shipped": "2026-11-13"
     },
     {
       "id": "idea-026",
@@ -681,7 +683,9 @@
       "tagline": "Preview link cards for X, Slack, and iMessage.",
       "priority": 64,
       "effort": "S",
-      "status": "todo"
+      "status": "done",
+      "url": "/lab/og-preview/",
+      "shipped": "2026-11-13"
     },
     {
       "id": "idea-057",

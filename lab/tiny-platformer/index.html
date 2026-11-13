@@ -1,0 +1,866 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tiny Platformer · Shipwright Studio</title>
+<meta name="description" content="Run, jump, wall-slide, and wall-jump through 12 hand-made levels in a free browser platformer — coins, gems, best times, and no install.">
+<link rel="canonical" href="https://shipwright-studio.pages.dev/lab/tiny-platformer/">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
+  "name": "Tiny Platformer",
+  "description": "A free online platformer game: run, jump, wall-slide, and wall-jump through 12 hand-made levels, collecting coins and gems and racing your best time — right in the browser.",
+  "applicationCategory": "GameApplication",
+  "operatingSystem": "Web",
+  "url": "https://shipwright-studio.pages.dev/lab/tiny-platformer/",
+  "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+}
+</script>
+<style>
+  :root {
+    --bg: #0a0c0f;
+    --surface: #11141a;
+    --surface-2: #161a21;
+    --border: #1e242c;
+    --brass: #d2a24c;
+    --brass-dim: rgba(210, 162, 76, 0.18);
+    --text: #e8e6e1;
+    --muted: #9aa3ad;
+    --danger: #c05555;
+    --gem: #6fd3e7;
+    --mono: ui-monospace, "SF Mono", "Cascadia Code", Menlo, Consolas, monospace;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: "Inter", system-ui, -apple-system, sans-serif;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+  a { color: var(--brass); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  .wrap { max-width: 980px; margin: 0 auto; padding: 0 20px 80px; }
+  header.masthead {
+    padding: 28px 0 8px;
+    font-family: "Fraunces", Georgia, serif;
+    font-size: 15px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+  header.masthead a { color: var(--text); }
+  header.masthead a:hover { color: var(--brass); text-decoration: none; }
+  header.masthead span { color: var(--brass); }
+  h1 {
+    font-family: "Fraunces", Georgia, serif;
+    font-weight: 600;
+    font-size: clamp(2rem, 6vw, 3rem);
+    line-height: 1.15;
+    margin: 28px 0 12px;
+  }
+  h2 {
+    font-family: "Fraunces", Georgia, serif;
+    font-weight: 600;
+    font-size: 1.4rem;
+    margin: 44px 0 12px;
+  }
+  .summary { color: var(--muted); font-size: 1.05rem; max-width: 62ch; }
+  .summary strong { color: var(--text); font-weight: 600; }
+
+  /* HUD */
+  .hud {
+    margin-top: 32px;
+    display: flex; flex-wrap: wrap; gap: 8px 20px; align-items: center;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 12px 16px;
+    font-size: 0.92rem;
+  }
+  .hud .lvl { font-family: "Fraunces", Georgia, serif; font-size: 1.05rem; }
+  .hud .stat { color: var(--muted); }
+  .hud .stat b { color: var(--text); font-family: var(--mono); font-weight: 600; }
+  .hud .stat .gem-on { color: var(--gem); }
+  .hud .spacer { flex: 1; }
+  .btn {
+    font: inherit; font-size: 0.88rem; font-weight: 600;
+    background: transparent; color: var(--text);
+    border: 1px solid var(--border); border-radius: 8px;
+    padding: 7px 14px; cursor: pointer;
+    transition: border-color 0.15s ease, background 0.15s ease;
+  }
+  .btn:hover { border-color: var(--brass); }
+  .btn.primary { background: var(--brass); border-color: var(--brass); color: #14100a; }
+  .btn.primary:hover { background: #e0b264; }
+
+  /* Stage */
+  .stage {
+    position: relative;
+    margin-top: 12px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    overflow: hidden;
+  }
+  .stage.flash { animation: hitflash 0.35s ease; }
+  @keyframes hitflash { 0% { box-shadow: inset 0 0 0 3px var(--danger); } 100% { box-shadow: inset 0 0 0 0 transparent; } }
+  canvas { display: block; width: 100%; height: auto; image-rendering: pixelated; cursor: pointer; }
+  .overlay {
+    position: absolute; inset: 0;
+    display: none; flex-direction: column; align-items: center; justify-content: center;
+    gap: 10px; text-align: center;
+    background: rgba(10, 12, 15, 0.82);
+    padding: 20px;
+  }
+  .overlay.show { display: flex; }
+  .overlay h3 { font-family: "Fraunces", Georgia, serif; font-size: 1.7rem; font-weight: 600; }
+  .overlay p { color: var(--muted); max-width: 46ch; }
+  .overlay .big-time { font-family: var(--mono); font-size: 1.6rem; color: var(--brass); }
+  .overlay .newbest {
+    color: var(--brass); font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; font-size: 0.85rem;
+  }
+  .overlay .row { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; margin-top: 6px; }
+
+  /* Touch controls */
+  .touch {
+    display: flex; justify-content: space-between; gap: 16px;
+    margin-top: 12px; user-select: none; -webkit-user-select: none;
+  }
+  .touch .group { display: flex; gap: 10px; }
+  .tbtn {
+    width: 64px; height: 64px; border-radius: 14px;
+    background: var(--surface); border: 1px solid var(--border);
+    color: var(--text); font-size: 1.5rem; font-weight: 600;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; touch-action: none;
+  }
+  .tbtn.wide { width: 96px; font-size: 1rem; letter-spacing: 0.04em; }
+  .tbtn.held { background: var(--brass-dim); border-color: var(--brass); color: var(--brass); }
+  .hint { margin-top: 12px; color: var(--muted); font-size: 0.88rem; text-align: center; }
+  .hint kbd {
+    font-family: var(--mono); font-size: 0.8rem;
+    background: var(--surface-2); border: 1px solid var(--border); border-radius: 4px;
+    padding: 1px 6px; color: var(--text);
+  }
+
+  /* Level select */
+  .alldone {
+    display: none; margin-top: 20px; padding: 14px 18px;
+    border: 1px solid var(--brass); border-radius: 12px;
+    background: var(--brass-dim); color: var(--text);
+  }
+  .alldone.show { display: block; }
+  .alldone b { color: var(--brass); }
+  .levels {
+    margin-top: 16px;
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px;
+  }
+  .lvl-btn {
+    font: inherit; text-align: left; cursor: pointer;
+    background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+    padding: 12px 14px; color: var(--text);
+    transition: border-color 0.15s ease;
+  }
+  .lvl-btn:hover { border-color: var(--brass); }
+  .lvl-btn.active { border-color: var(--brass); background: var(--brass-dim); }
+  .lvl-btn .num { font-family: "Fraunces", Georgia, serif; font-size: 1.15rem; }
+  .lvl-btn .name { display: block; font-size: 0.88rem; color: var(--muted); margin-top: 2px; }
+  .lvl-btn .meta { display: block; font-family: var(--mono); font-size: 0.78rem; color: var(--muted); margin-top: 6px; }
+  .lvl-btn .meta .gem-on { color: var(--gem); }
+  @media (max-width: 640px) {
+    .levels { grid-template-columns: repeat(3, 1fr); }
+    .tbtn { width: 60px; height: 60px; }
+  }
+  .howto { color: var(--muted); max-width: 62ch; }
+  .howto li { margin: 6px 0 6px 20px; }
+  .howto strong { color: var(--text); }
+  footer {
+    margin-top: 64px; padding-top: 24px;
+    border-top: 1px solid var(--border);
+    color: var(--muted); font-size: 0.9rem;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="masthead"><a href="/">Shipwright <span>Studio</span></a></header>
+
+  <h1>Tiny Platformer</h1>
+  <p class="summary"><strong>Tiny Platformer is a free online tool that</strong> lets you play a precision platformer right in your browser — run, jump, wall-slide, and wall-jump through 12 hand-made levels, grab every coin and gem, and chase your best time. No install, no account, nothing to download.</p>
+
+  <div class="hud" id="hud">
+    <span class="lvl" id="hud-level">Level 1 · First Steps</span>
+    <span class="stat">Time <b id="hud-time">0:00.00</b></span>
+    <span class="stat">Deaths <b id="hud-deaths">0</b></span>
+    <span class="stat">Coins <b id="hud-coins">0/0</b></span>
+    <span class="stat">Gem <b id="hud-gem">◇</b></span>
+    <span class="stat">Best <b id="hud-best">—</b></span>
+    <span class="spacer"></span>
+    <button class="btn" id="btn-pause" type="button">Pause</button>
+    <button class="btn" id="btn-restart" type="button">Restart</button>
+    <button class="btn" id="btn-mute" type="button" aria-label="Toggle sound">Sound on</button>
+  </div>
+
+  <div class="stage" id="stage">
+    <canvas id="game" width="960" height="480"></canvas>
+    <div class="overlay show" id="ov-start">
+      <h3>Ready?</h3>
+      <p>Reach the brass flag. Coins are worth grabbing; the gem is worth the risk.</p>
+      <div class="row"><button class="btn primary" id="btn-start" type="button">Start level</button></div>
+    </div>
+    <div class="overlay" id="ov-pause">
+      <h3>Paused</h3>
+      <p>Take a breath. The spikes will wait.</p>
+      <div class="row">
+        <button class="btn primary" id="btn-resume" type="button">Resume</button>
+        <button class="btn" id="btn-pause-restart" type="button">Restart level</button>
+        <button class="btn" id="btn-pause-levels" type="button">Level select</button>
+      </div>
+    </div>
+    <div class="overlay" id="ov-clear">
+      <h3 id="clear-title">Level clear!</h3>
+      <p class="newbest" id="clear-newbest" hidden>★ New best time</p>
+      <p class="big-time" id="clear-time">0:00.00</p>
+      <p id="clear-stats">Coins 0/0 · Gem ◇</p>
+      <p id="clear-all" hidden>🏆 You finished all 12 levels. The whole set is yours.</p>
+      <div class="row">
+        <button class="btn primary" id="btn-next" type="button">Next level</button>
+        <button class="btn" id="btn-replay" type="button">Replay</button>
+        <button class="btn" id="btn-clear-levels" type="button">Level select</button>
+      </div>
+    </div>
+    <div class="overlay" id="ov-nocanvas" hidden>
+      <h3>Canvas needed</h3>
+      <p>This demo needs a browser with canvas support.</p>
+    </div>
+  </div>
+
+  <div class="touch" id="touch">
+    <div class="group">
+      <button class="tbtn" id="t-left" type="button" aria-label="Move left">◀</button>
+      <button class="tbtn" id="t-right" type="button" aria-label="Move right">▶</button>
+    </div>
+    <div class="group">
+      <button class="tbtn wide" id="t-jump" type="button" aria-label="Jump">JUMP</button>
+    </div>
+  </div>
+  <p class="hint"><kbd>←</kbd> <kbd>→</kbd> or <kbd>A</kbd> <kbd>D</kbd> move &nbsp;·&nbsp; <kbd>Space</kbd> jump &nbsp;·&nbsp; hold toward a wall mid-air to slide, jump off it to wall-jump &nbsp;·&nbsp; <kbd>R</kbd> restart &nbsp;·&nbsp; <kbd>P</kbd> pause</p>
+
+  <h2>Levels</h2>
+  <div class="alldone" id="alldone">🏆 <b>All 12 levels complete.</b> Every flag reached, every best time recorded. Run it back and beat your own times.</div>
+  <div class="levels" id="levels"></div>
+
+  <h2>How to play</h2>
+  <ul class="howto">
+    <li><strong>Run and jump</strong> — hold a direction and jump. Hold jump a little longer to jump a little higher.</li>
+    <li><strong>Wall-slide</strong> — while falling next to a wall, hold toward it to slide down slowly instead of dropping.</li>
+    <li><strong>Wall-jump</strong> — press jump while sliding to kick off the wall. Chain slides and jumps to climb shafts.</li>
+    <li><strong>Coins and gems</strong> — coins line the natural path; each level hides one gem somewhere riskier. Spikes and pits send you back to the start.</li>
+    <li><strong>Best times</strong> — the timer starts on your first move and your best time per level is stored only in this browser.</li>
+  </ul>
+
+  <footer>Built by <a href="/ideas/">Shipwright Studio</a> · Tiny Platformer runs entirely in your browser — no data leaves the page.</footer>
+</div>
+
+<script>
+"use strict";
+/* ============ Constants ============ */
+const TILE = 32, COLS = 30, ROWS = 15, W = 960, H = 480;
+const GRAV = 0.55, ACC = 0.45, MAXV = 3.4, FRICTION = 0.72;
+const JUMP_V = 11.6, WALL_SLIDE_V = 1.6, WALL_JUMP_X = 4.6, WALL_JUMP_Y = 11.4;
+const COYOTE = 6, BUFFER = 6, PW = 22, PH = 28;
+
+/* ============ Levels (tile maps) ============
+   # solid · = one-way platform · ^ spikes · o coin · * gem · S spawn · G goal */
+const LEVELS = [
+{ name: "First Steps", map: [
+"##############################",
+"#............................#",
+"#............................#",
+"#............................#",
+"#............................#",
+"#............................#",
+"#............................#",
+"#............................#",
+"#............................#",
+"#..........*.................#",
+"#........o.....o.............#",
+"#......#####....###..........#",
+"#.......................o....#",
+"#..S.....o......o....o...G...#",
+"##############################"] },
+{ name: "Mind the Gap", map: [
+"##############################",
+"#............................#",
+"#............................#",
+"#............................#",
+"#............................#",
+"#............................#",
+"#............................#",
+"#............................#",
+"#............................#",
+"#...................*........#",
+"#.........o......o...........#",
+"#............................#",
+"#......................o.....#",
+"#..S....o......o......o...G..#",
+"########..########...#########"] },
+{ name: "High Climb", map: [
+"##############################",
+"#...................*..G.....#",
+"#....................####....#",
+"#............................#",
+"#...............o............#",
+"#..............####..........#",
+"#............................#",
+"#..........o.................#",
+"#........####................#",
+"#............................#",
+"#....o.......................#",
+"#..####......................#",
+"#............................#",
+"#..S.........................#",
+"##############################"] },
+{ name: "Spike Alley", map: [
+"##############################",
+"#............................#",
+"#............................#",
+"#............................#",
+"#............................#",
+"#............................#",
+"#............................#",
+"#............................#",
+"#............................#",
+"#............................#",
+"#............................#",
+"#....o.....o.*...o.....o.....#",
+"#.......................o....#",
+"#..S..^^..^^^..^^..^^^...G...#",
+"##############################"] },
+{ name: "Wall School", map: [
+"##############################",
+"#....................o.....G.#",
+"#..................#########.#",
+"#..............*.............#",
+"#.............#..#...........#",
+"#.............#..#...........#",
+"#.............#..#...........#",
+"#.............#..#...........#",
+"#.............#..#...........#",
+"#.............#..#...........#",
+"#.......o.....#..#...........#",
+"#.............#..#...........#",
+"#............................#",
+"#..S.........................#",
+"##############################"] },
+{ name: "One-Way Up", map: [
+"##############################",
+"#...................*......G.#",
+"#........................===.#",
+"#............................#",
+"#...................o........#",
+"#.................=====......#",
+"#............................#",
+"#............o...............#",
+"#..........=====.............#",
+"#............................#",
+"#.....o......................#",
+"#...=====....................#",
+"#............................#",
+"#..S.........................#",
+"##############################"] },
+{ name: "Gem Vault", map: [
+"##############################",
+"#.............*..............#",
+"#............................#",
+"#............#..#............#",
+"#............#..#............#",
+"#............#..#............#",
+"#.....o......#..#....o.......#",
+"#............#..#............#",
+"#............#..#............#",
+"#............#..#............#",
+"#............#..#............#",
+"#............#..#............#",
+"#......................o.....#",
+"#..S.....................G...#",
+"##############################"] },
+{ name: "The Gauntlet", map: [
+"##############################",
+"#............................#",
+"#............................#",
+"#............................#",
+"#............................#",
+"#............................#",
+"#............................#",
+"#...................*........#",
+"#....................o.......#",
+"#..................####......#",
+"#......o......o..............#",
+"#....#####...#####...^^......#",
+"#............................#",
+"#..S......o.......o......G...#",
+"########..######..############"] },
+{ name: "Twin Towers", map: [
+"##############################",
+"#.....................o....G.#",
+"#...................########.#",
+"#............................#",
+"#..................#..#......#",
+"#........*....######..#......#",
+"#........#..#......#..#......#",
+"#........#.o#......#.o#......#",
+"#........#..#......#..#......#",
+"#........#..#......#..#......#",
+"#........#..#......#..#......#",
+"#........#..#......#..#......#",
+"#..................#..#......#",
+"#..S...............#..#......#",
+"##############################"] },
+{ name: "Sky Bridge", map: [
+"##############################",
+"#..........................G.#",
+"#........................###.#",
+"#............................#",
+"#..................o.====....#",
+"#...............=====........#",
+"#............................#",
+"#..........*.................#",
+"#........=====...............#",
+"#............................#",
+"#....o.......................#",
+"#..=====.....................#",
+"#............................#",
+"#..S.........................#",
+"######...........#############"] },
+{ name: "Spike Garden", map: [
+"##############################",
+"#............................#",
+"#............................#",
+"#............................#",
+"#............................#",
+"#............................#",
+"#............................#",
+"#............................#",
+"#............................#",
+"#............................#",
+"#.......o....*...o.....o.....#",
+"#.....#####...#####..........#",
+"#............................#",
+"#..S...^^..^^^..^^..^^^..G...#",
+"##############################"] },
+{ name: "Final Ascent", map: [
+"##############################",
+"#............................#",
+"#............*...............#",
+"#...........###.........G....#",
+"#......................####..#",
+"#......o..........=====......#",
+"#....=====...................#",
+"#.............o..............#",
+"#...........=====............#",
+"#............................#",
+"#..................o.........#",
+"#................=====.......#",
+"#............................#",
+"#..S..^^..^^^................#",
+"##############################"] }
+];
+
+/* ============ Pure level helpers (shared by game + node tests) ============ */
+function parseLevel(def) {
+  const grid = def.map.map(r => r.split(""));
+  const coins = [], spikes = [];
+  let spawn = null, goal = null, gem = null;
+  for (let y = 0; y < ROWS; y++) for (let x = 0; x < COLS; x++) {
+    const c = grid[y][x];
+    if (c === "S") spawn = { x: x * TILE + 5, y: y * TILE + 4 };
+    else if (c === "G") goal = { x: x * TILE, y: y * TILE, w: TILE, h: TILE };
+    else if (c === "o") coins.push({ x: x * TILE + 8, y: y * TILE + 8, r: 8, taken: false });
+    else if (c === "*") gem = { x: x * TILE + 7, y: y * TILE + 7, r: 9, taken: false };
+    else if (c === "^") spikes.push({ x: x * TILE, y: y * TILE, w: TILE, h: TILE });
+  }
+  return { grid, coins, spikes, spawn, goal, gem, totalCoins: coins.length };
+}
+function tileAt(g, cx, cy) {
+  if (cx < 0 || cx >= COLS) return "#";
+  if (cy < 0) return ".";
+  if (cy >= ROWS) return "#";
+  return g.grid[cy][cx];
+}
+function isSolid(g, cx, cy) { return tileAt(g, cx, cy) === "#"; }
+function overlaps(ax, ay, aw, ah, bx, by, bw, bh) {
+  return ax < bx + bw && ax + aw > bx && ay < by + bh && ay + ah > by;
+}
+
+/* One frame of physics. Mutates p. Returns events. Pure: no DOM/audio. */
+function stepPlayer(p, inp, g) {
+  const ev = { died: false, goal: false, coin: -1, gem: false };
+  if (p.dead) return ev;
+  // horizontal
+  if (p.lock > 0) p.lock--;
+  const steer = p.lock > 0 ? 0 : (inp.right ? 1 : 0) - (inp.left ? 1 : 0);
+  if (steer !== 0) {
+    p.vx += steer * ACC;
+    if (p.vx > MAXV) p.vx = MAXV;
+    if (p.vx < -MAXV) p.vx = -MAXV;
+    p.face = steer;
+  } else if (p.grounded) {
+    p.vx *= FRICTION;
+    if (Math.abs(p.vx) < 0.05) p.vx = 0;
+  } else {
+    p.vx *= 0.995;
+  }
+  // jump buffering + wall jump
+  if (inp.jumpPressed) p.buf = BUFFER;
+  else if (p.buf > 0) p.buf--;
+  if (p.buf > 0 && (p.grounded || p.coyote > 0)) {
+    p.vy = -JUMP_V; p.grounded = false; p.coyote = 0; p.buf = 0; p.jumped = true;
+  } else if (p.buf > 0 && p.wallDir !== 0) {
+    p.vx = -p.wallDir * WALL_JUMP_X; p.vy = -WALL_JUMP_Y;
+    p.lock = 8; p.buf = 0; p.wallDir = 0; p.jumped = true;
+  }
+  // variable jump height: releasing jump early cuts the rise
+  if (!inp.jump && p.vy < 0 && p.jumped) { p.vy *= 0.55; p.jumped = false; }
+  // gravity (+ wall slide cap)
+  p.vy += GRAV;
+  if (p.vy > 14) p.vy = 14;
+  const wasGrounded = p.grounded;
+  // --- move X ---
+  p.x += p.vx;
+  let c0 = Math.floor(p.x / TILE), c1 = Math.floor((p.x + PW - 0.01) / TILE);
+  let r0 = Math.floor(p.y / TILE), r1 = Math.floor((p.y + PH - 0.01) / TILE);
+  for (let cy = r0; cy <= r1; cy++) for (let cx = c0; cx <= c1; cx++) {
+    if (!isSolid(g, cx, cy)) continue;
+    if (p.vx > 0) p.x = cx * TILE - PW - 0.01;
+    else if (p.vx < 0) p.x = (cx + 1) * TILE + 0.01;
+    else { if (p.x + PW / 2 < (cx + 0.5) * TILE) p.x = cx * TILE - PW - 0.01; else p.x = (cx + 1) * TILE + 0.01; }
+    p.vx = 0;
+  }
+  if (p.x < 0) { p.x = 0; p.vx = 0; }
+  if (p.x > W - PW) { p.x = W - PW; p.vx = 0; }
+  // --- wall slide detection (after X, before Y) ---
+  p.wallDir = 0;
+  if (!p.grounded && p.vy > 0) {
+    const dir = (inp.right ? 1 : 0) - (inp.left ? 1 : 0);
+    if (dir !== 0) {
+      const sideX = dir > 0 ? Math.floor((p.x + PW + 1) / TILE) : Math.floor((p.x - 1) / TILE);
+      const midY = Math.floor((p.y + PH / 2) / TILE);
+      if (isSolid(g, sideX, midY) || isSolid(g, sideX, Math.floor((p.y + 2) / TILE))) {
+        p.wallDir = dir;
+        if (p.vy > WALL_SLIDE_V) p.vy = WALL_SLIDE_V;
+      }
+    }
+  }
+  // --- move Y ---
+  const prevBottom = p.y + PH;
+  p.y += p.vy;
+  p.grounded = false;
+  c0 = Math.floor(p.x / TILE); c1 = Math.floor((p.x + PW - 0.01) / TILE);
+  r0 = Math.floor(p.y / TILE); r1 = Math.floor((p.y + PH - 0.01) / TILE);
+  for (let cy = r0; cy <= r1; cy++) for (let cx = c0; cx <= c1; cx++) {
+    const t = tileAt(g, cx, cy);
+    const solid = t === "#" || (t === "=" && p.vy >= 0 && prevBottom <= cy * TILE + 6);
+    if (!solid) continue;
+    if (p.vy > 0) { p.y = cy * TILE - PH - 0.01; p.grounded = true; }
+    else if (p.vy < 0) { p.y = (cy + 1) * TILE + 0.01; }
+    p.vy = 0;
+  }
+  if (wasGrounded && !p.grounded && p.coyote <= 0) p.coyote = COYOTE;
+  if (p.coyote > 0) p.coyote--;
+  if (p.grounded) p.coyote = 0;
+  // --- hazards / pickups / goal ---
+  if (p.y > H + 20) { ev.died = true; return ev; }
+  for (const s of g.spikes) {
+    if (overlaps(p.x + 4, p.y + 10, PW - 8, PH - 10, s.x + 5, s.y + 12, s.w - 10, s.h - 12)) { ev.died = true; return ev; }
+  }
+  for (let i = 0; i < g.coins.length; i++) {
+    const c = g.coins[i];
+    if (!c.taken && overlaps(p.x, p.y, PW, PH, c.x - c.r, c.y - c.r, c.r * 2, c.r * 2)) { c.taken = true; ev.coin = i; }
+  }
+  if (g.gem && !g.gem.taken && overlaps(p.x, p.y, PW, PH, g.gem.x - g.gem.r, g.gem.y - g.gem.r, g.gem.r * 2, g.gem.r * 2)) {
+    g.gem.taken = true; ev.gem = true;
+  }
+  if (g.goal && overlaps(p.x, p.y, PW, PH, g.goal.x + 4, g.goal.y, g.goal.w - 8, g.goal.h)) ev.goal = true;
+  return ev;
+}
+function newPlayer(g) {
+  return { x: g.spawn.x, y: g.spawn.y, vx: 0, vy: 0, grounded: false, coyote: 0, buf: 0, wallDir: 0, lock: 0, face: 1, jumped: false, dead: false };
+}
+
+/* ============ Browser game ============ */
+const $ = id => document.getElementById(id);
+const canvas = $("game"), ctx = canvas.getContext("2d");
+const stage = $("stage");
+let muted = false, audioCtx = null;
+function beep(freq, dur, type) {
+  if (muted) return;
+  try {
+    audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
+    const o = audioCtx.createOscillator(), gn = audioCtx.createGain();
+    o.type = type || "square"; o.frequency.value = freq;
+    gn.gain.setValueAtTime(0.06, audioCtx.currentTime);
+    gn.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + dur);
+    o.connect(gn); gn.connect(audioCtx.destination);
+    o.start(); o.stop(audioCtx.currentTime + dur);
+  } catch (e) { /* audio unavailable — silent */ }
+}
+const store = {
+  get(k) { try { return localStorage.getItem(k); } catch (e) { return null; } },
+  set(k, v) { try { localStorage.setItem(k, v); } catch (e) { /* private mode — best times just don't persist */ } }
+};
+function fmt(ms) {
+  if (ms == null) return "—";
+  const m = Math.floor(ms / 60000), s = Math.floor(ms % 60000 / 1000), c = Math.floor(ms % 1000 / 10);
+  return m + ":" + String(s).padStart(2, "0") + "." + String(c).padStart(2, "0");
+}
+function best(i) { const v = store.get("tp_best_" + i); return v == null ? null : parseInt(v, 10); }
+function gemGot(i) { return store.get("tp_gem_" + i) === "1"; }
+function allDone() { for (let i = 0; i < LEVELS.length; i++) if (best(i) == null) return false; return true; }
+
+let cur = 0, g = null, p = null, mode = "ready";
+let keys = { left: false, right: false, jump: false, jumpPressed: false, prevJump: false };
+let runTime = 0, started = false, deaths = 0, coinsGot = 0, gemCollected = false, deadT = 0;
+let particles = [];
+
+function loadLevel(i) {
+  cur = i;
+  g = parseLevel(LEVELS[i]);
+  p = newPlayer(g);
+  runTime = 0; started = false; deaths = 0; coinsGot = 0; gemCollected = false; deadT = 0;
+  particles = [];
+  mode = "ready";
+  showOverlay("ov-start");
+  render();
+  updateHUD();
+  document.querySelectorAll(".lvl-btn").forEach(b => b.classList.toggle("active", +b.dataset.i === i));
+  $("hud-level").textContent = "Level " + (i + 1) + " · " + LEVELS[i].name;
+  $("hud-best").textContent = fmt(best(i));
+}
+function showOverlay(id) {
+  document.querySelectorAll(".overlay").forEach(o => o.classList.remove("show"));
+  if (id) $(id).classList.add("show");
+}
+function startPlay() {
+  if (mode === "play") return;
+  mode = "play";
+  showOverlay(null);
+}
+function pauseGame() {
+  if (mode !== "play") return;
+  mode = "pause";
+  showOverlay("ov-pause");
+}
+function resumeGame() {
+  if (mode !== "pause") return;
+  mode = "play";
+  showOverlay(null);
+}
+function die() {
+  deaths++;
+  p.dead = true; deadT = 28;
+  stage.classList.remove("flash"); void stage.offsetWidth; stage.classList.add("flash");
+  beep(130, 0.25, "sawtooth");
+  updateHUD();
+}
+function respawn() {
+  const keepCoins = g.coins.filter(c => c.taken).length, keepGem = g.gem && g.gem.taken;
+  const keep = { coins: keepCoins, gem: keepGem };
+  p = newPlayer(g);
+  g.coins.forEach((c, i) => { c.taken = i < keep.coins; });
+  if (g.gem) g.gem.taken = keep.gem;
+  coinsGot = keep.coins; gemCollected = keep.gem;
+  updateHUD();
+}
+function clearLevel() {
+  mode = "clear";
+  const t = runTime, prev = best(cur);
+  const isBest = prev == null || t < prev;
+  if (isBest) store.set("tp_best_" + cur, String(t));
+  if (gemCollected) store.set("tp_gem_" + cur, "1");
+  $("clear-title").textContent = cur === LEVELS.length - 1 && allDone() ? "You beat the final level!" : "Level clear!";
+  $("clear-newbest").hidden = !isBest;
+  $("clear-time").textContent = fmt(t);
+  $("clear-stats").textContent = "Coins " + coinsGot + "/" + g.totalCoins + " · Gem " + (gemCollected ? "◆ collected" : "◇ missed") + " · Deaths " + deaths;
+  $("clear-all").hidden = !allDone();
+  $("btn-next").style.display = cur === LEVELS.length - 1 ? "none" : "";
+  showOverlay("ov-clear");
+  beep(523, 0.12, "square"); setTimeout(() => beep(659, 0.12, "square"), 120); setTimeout(() => beep(784, 0.2, "square"), 240);
+  renderLevelSelect();
+  updateHUD();
+}
+function updateHUD() {
+  $("hud-time").textContent = fmt(runTime);
+  $("hud-deaths").textContent = deaths;
+  $("hud-coins").textContent = coinsGot + "/" + (g ? g.totalCoins : 0);
+  const gemEl = $("hud-gem");
+  gemEl.textContent = gemCollected ? "◆" : "◇";
+  gemEl.className = gemCollected ? "gem-on" : "";
+  $("hud-best").textContent = fmt(best(cur));
+}
+function spawnParticles(x, y, color) {
+  for (let i = 0; i < 10; i++) {
+    particles.push({ x, y, vx: (Math.random() - 0.5) * 4, vy: -Math.random() * 3 - 1, life: 22, color });
+  }
+}
+
+/* ---- game loop ---- */
+let last = 0;
+function loop(ts) {
+  requestAnimationFrame(loop);
+  const dt = Math.min(50, ts - last || 16); last = ts;
+  if (mode === "play") {
+    if (!p.dead) {
+      if (keys.left || keys.right || keys.jump) started = true;
+      if (started) runTime += dt;
+      const inp = { left: keys.left, right: keys.right, jump: keys.jump, jumpPressed: keys.jumpPressed };
+      keys.jumpPressed = false;
+      const ev = stepPlayer(p, inp, g);
+      if (ev.coin >= 0) { coinsGot++; spawnParticles(g.coins[ev.coin].x, g.coins[ev.coin].y, "#d2a24c"); beep(880, 0.07, "square"); }
+      if (ev.gem) { gemCollected = true; spawnParticles(g.gem.x, g.gem.y, "#6fd3e7"); beep(1046, 0.15, "sine"); }
+      if (ev.died) die();
+      else if (ev.goal) { updateHUD(); render(); clearLevel(); return; }
+      updateHUD();
+    } else if (--deadT <= 0) respawn();
+  }
+  render();
+}
+function render() {
+  if (!ctx || !g || !p) return;
+  ctx.clearRect(0, 0, W, H);
+  ctx.fillStyle = "#0d1014"; ctx.fillRect(0, 0, W, H);
+  // tiles
+  for (let y = 0; y < ROWS; y++) for (let x = 0; x < COLS; x++) {
+    const t = g.grid[y][x];
+    if (t === "#") {
+      ctx.fillStyle = "#1a1f27"; ctx.fillRect(x * TILE, y * TILE, TILE, TILE);
+      ctx.fillStyle = "#262d38"; ctx.fillRect(x * TILE, y * TILE, TILE, 3);
+    } else if (t === "=") {
+      ctx.fillStyle = "#3a2f1c"; ctx.fillRect(x * TILE, y * TILE + 4, TILE, 7);
+      ctx.fillStyle = "#d2a24c"; ctx.fillRect(x * TILE, y * TILE + 4, TILE, 2);
+    }
+  }
+  // spikes
+  ctx.fillStyle = "#c05555";
+  for (const s of g.spikes) {
+    ctx.beginPath();
+    ctx.moveTo(s.x + 2, s.y + TILE); ctx.lineTo(s.x + 10, s.y + 12); ctx.lineTo(s.x + 16, s.y + TILE);
+    ctx.moveTo(s.x + 16, s.y + TILE); ctx.lineTo(s.x + 24, s.y + 12); ctx.lineTo(s.x + 30, s.y + TILE);
+    ctx.fill();
+  }
+  // goal flag
+  if (g.goal) {
+    ctx.fillStyle = "#9aa3ad"; ctx.fillRect(g.goal.x + 24, g.goal.y + 2, 3, TILE - 2);
+    ctx.fillStyle = "#d2a24c";
+    ctx.beginPath(); ctx.moveTo(g.goal.x + 27, g.goal.y + 2); ctx.lineTo(g.goal.x + 6, g.goal.y + 9); ctx.lineTo(g.goal.x + 27, g.goal.y + 16); ctx.closePath(); ctx.fill();
+  }
+  // coins
+  for (const c of g.coins) {
+    if (c.taken) continue;
+    ctx.fillStyle = "#d2a24c"; ctx.beginPath(); ctx.arc(c.x, c.y, c.r, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = "#8a6a2a"; ctx.beginPath(); ctx.arc(c.x, c.y, 4, 0, Math.PI * 2); ctx.fill();
+  }
+  // gem
+  if (g.gem && !g.gem.taken) {
+    ctx.fillStyle = "#6fd3e7";
+    ctx.beginPath(); ctx.moveTo(g.gem.x, g.gem.y - 9); ctx.lineTo(g.gem.x + 8, g.gem.y); ctx.lineTo(g.gem.x, g.gem.y + 9); ctx.lineTo(g.gem.x - 8, g.gem.y); ctx.closePath(); ctx.fill();
+  }
+  // particles
+  particles = particles.filter(pt => pt.life > 0);
+  for (const pt of particles) {
+    pt.x += pt.vx; pt.y += pt.vy; pt.vy += 0.15; pt.life--;
+    ctx.fillStyle = pt.color; ctx.globalAlpha = Math.max(0, pt.life / 22);
+    ctx.fillRect(pt.x - 2, pt.y - 2, 4, 4);
+  }
+  ctx.globalAlpha = 1;
+  // player
+  if (!p.dead) {
+    const slide = p.wallDir !== 0;
+    ctx.fillStyle = "#d2a24c";
+    const px = Math.round(p.x), py = Math.round(p.y);
+    ctx.beginPath();
+    ctx.roundRect(px, py, PW, PH, 6); ctx.fill();
+    // eyes look toward movement / wall
+    const ex = p.face >= 0 ? px + 13 : px + 4;
+    ctx.fillStyle = "#14100a";
+    ctx.fillRect(ex, py + 8, 3, 4); ctx.fillRect(ex + (p.face >= 0 ? 0 : 2), py + 8, 0, 0);
+    ctx.fillRect(p.face >= 0 ? px + 13 : px + 6, py + 8, 3, 4);
+    if (slide) { // dust puffs while sliding
+      ctx.fillStyle = "rgba(232,230,225,0.5)";
+      ctx.fillRect(px + (p.wallDir > 0 ? PW - 2 : -2), py + PH - 6, 4, 3);
+    }
+  }
+}
+
+/* ---- level select ---- */
+function renderLevelSelect() {
+  const el = $("levels");
+  el.innerHTML = "";
+  LEVELS.forEach((lv, i) => {
+    const b = document.createElement("button");
+    b.type = "button"; b.className = "lvl-btn" + (i === cur ? " active" : ""); b.dataset.i = i;
+    const btime = fmt(best(i)), got = gemGot(i);
+    b.innerHTML = '<span class="num">' + (i + 1) + '</span><span class="name"></span><span class="meta">Best ' + btime + ' &nbsp;<span class="' + (got ? "gem-on" : "") + '">' + (got ? "◆ gem" : "◇ gem") + "</span></span>";
+    b.querySelector(".name").textContent = lv.name;
+    b.addEventListener("click", () => { loadLevel(i); document.querySelector(".stage").scrollIntoView({ behavior: "smooth", block: "center" }); });
+    el.appendChild(b);
+  });
+  $("alldone").classList.toggle("show", allDone());
+}
+
+/* ---- input ---- */
+const KEYMAP = { ArrowLeft: "left", KeyA: "left", ArrowRight: "right", KeyD: "right", ArrowUp: "jump", KeyW: "jump", Space: "jump" };
+window.addEventListener("keydown", e => {
+  if (e.code === "KeyR") { loadLevel(cur); return; }
+  if (e.code === "KeyP") { mode === "play" ? pauseGame() : mode === "pause" ? resumeGame() : 0; return; }
+  if (e.code === "KeyM") { muted = !muted; $("btn-mute").textContent = muted ? "Sound off" : "Sound on"; return; }
+  const k = KEYMAP[e.code];
+  if (!k) return;
+  e.preventDefault();
+  if (k === "jump" && !keys.jump) keys.jumpPressed = true;
+  keys[k] = true;
+  if (mode === "ready") startPlay();
+  else if (mode === "clear" && e.code === "Space") { /* ignore — use buttons */ }
+});
+window.addEventListener("keyup", e => {
+  const k = KEYMAP[e.code];
+  if (k) keys[k] = false;
+});
+function bindTouch(id, key) {
+  const el = $(id);
+  const on = e => { e.preventDefault(); if (key === "jump" && !keys.jump) keys.jumpPressed = true; keys[key] = true; el.classList.add("held"); if (mode === "ready") startPlay(); };
+  const off = e => { e.preventDefault(); keys[key] = false; el.classList.remove("held"); };
+  el.addEventListener("pointerdown", on);
+  el.addEventListener("pointerup", off);
+  el.addEventListener("pointercancel", off);
+  el.addEventListener("pointerleave", off);
+}
+bindTouch("t-left", "left"); bindTouch("t-right", "right"); bindTouch("t-jump", "jump");
+$("btn-start").addEventListener("click", startPlay);
+$("btn-pause").addEventListener("click", () => mode === "play" ? pauseGame() : mode === "pause" ? resumeGame() : 0);
+$("btn-restart").addEventListener("click", () => loadLevel(cur));
+$("btn-pause-restart").addEventListener("click", () => loadLevel(cur));
+$("btn-resume").addEventListener("click", resumeGame);
+$("btn-next").addEventListener("click", () => loadLevel(Math.min(cur + 1, LEVELS.length - 1)));
+$("btn-replay").addEventListener("click", () => loadLevel(cur));
+$("btn-pause-levels").addEventListener("click", () => { showOverlay(null); mode = "ready"; loadLevel(cur); $("levels").scrollIntoView({ behavior: "smooth" }); });
+$("btn-clear-levels").addEventListener("click", () => { loadLevel(cur); $("levels").scrollIntoView({ behavior: "smooth" }); });
+$("btn-mute").addEventListener("click", () => { muted = !muted; $("btn-mute").textContent = muted ? "Sound off" : "Sound on"; });
+canvas.addEventListener("click", () => { if (mode === "ready") startPlay(); });
+
+/* ---- boot ---- */
+if (!ctx) { $("ov-nocanvas").hidden = false; showOverlay("ov-nocanvas"); }
+renderLevelSelect();
+loadLevel(0);
+requestAnimationFrame(loop);
+
+/* Exposed for automated verification (node test harness). */
+window.__tp = { LEVELS, parseLevel, stepPlayer, newPlayer, TILE, COLS, ROWS, W, H, GRAV, JUMP_V, WALL_SLIDE_V };
+</script>
+</body>
+</html>

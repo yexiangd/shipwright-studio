@@ -1,0 +1,774 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OG Preview · Shipwright Studio</title>
+<meta name="description" content="See how your link card will look on X, Slack, and iMessage before you share it — a free OG preview tool that runs entirely in your browser.">
+<link rel="canonical" href="https://shipwright-studio.pages.dev/lab/og-preview/">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
+  "name": "OG Preview",
+  "description": "A free online tool that previews how a link card will look on X, Slack, and iMessage, with character-count guidance and a copyable og:/twitter: meta-tag snippet.",
+  "applicationCategory": "DeveloperApplication",
+  "operatingSystem": "Web",
+  "url": "https://shipwright-studio.pages.dev/lab/og-preview/",
+  "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+}
+</script>
+<style>
+  :root {
+    --bg: #0a0c0f;
+    --surface: #11141a;
+    --surface-2: #161a21;
+    --border: #1e242c;
+    --brass: #d2a24c;
+    --brass-dim: rgba(210, 162, 76, 0.18);
+    --text: #e8e6e1;
+    --muted: #9aa3ad;
+    --danger: #e07856;
+    --mono: ui-monospace, "SF Mono", "Cascadia Code", Menlo, Consolas, monospace;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: "Inter", system-ui, -apple-system, sans-serif;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+  a { color: var(--brass); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  .wrap { max-width: 860px; margin: 0 auto; padding: 0 20px 80px; }
+  header.masthead {
+    padding: 28px 0 8px;
+    font-family: "Fraunces", Georgia, serif;
+    font-size: 15px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+  header.masthead a { color: var(--text); }
+  header.masthead a:hover { color: var(--brass); text-decoration: none; }
+  header.masthead span { color: var(--brass); }
+  h1 {
+    font-family: "Fraunces", Georgia, serif;
+    font-weight: 600;
+    font-size: clamp(2rem, 6vw, 3rem);
+    line-height: 1.15;
+    margin: 12px 0 12px;
+  }
+  .lede { color: var(--muted); font-size: 1.05rem; max-width: 62ch; }
+  .lede strong { color: var(--text); font-weight: 600; }
+  .note {
+    margin-top: 14px;
+    padding: 10px 14px;
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--brass);
+    background: var(--surface);
+    color: var(--muted);
+    font-size: 0.9rem;
+    border-radius: 6px;
+  }
+  h2 {
+    font-family: "Fraunces", Georgia, serif;
+    font-weight: 600;
+    font-size: 1.35rem;
+    margin: 36px 0 14px;
+  }
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 20px;
+  }
+  .field { margin-bottom: 16px; }
+  .field:last-child { margin-bottom: 0; }
+  label {
+    display: block;
+    font-size: 0.85rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    margin-bottom: 6px;
+    color: var(--text);
+  }
+  label .hint { font-weight: 400; color: var(--muted); }
+  input[type="text"], input[type="url"], textarea {
+    width: 100%;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: var(--text);
+    font-family: inherit;
+    font-size: 0.95rem;
+    padding: 10px 12px;
+    outline: none;
+  }
+  input:focus, textarea:focus { border-color: var(--brass); }
+  input.invalid, textarea.invalid { border-color: var(--danger); }
+  textarea { resize: vertical; min-height: 64px; }
+  .count {
+    margin-top: 5px;
+    font-size: 0.8rem;
+    color: var(--muted);
+    font-family: var(--mono);
+  }
+  .count.over { color: var(--danger); }
+  .count .ok { color: var(--muted); }
+  .presets { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 18px; }
+  .presets-label {
+    width: 100%;
+    font-size: 0.85rem;
+    font-weight: 600;
+    margin-bottom: 2px;
+  }
+  button {
+    font-family: inherit;
+    font-size: 0.9rem;
+    cursor: pointer;
+    border-radius: 6px;
+    padding: 9px 16px;
+    min-height: 44px;
+  }
+  .btn-ghost {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text);
+  }
+  .btn-ghost:hover { border-color: var(--brass); color: var(--brass); }
+  .btn-ghost.active { border-color: var(--brass); color: var(--brass); background: var(--brass-dim); }
+  .btn-primary {
+    background: var(--brass);
+    border: 1px solid var(--brass);
+    color: #14100a;
+    font-weight: 600;
+  }
+  .btn-primary:hover { filter: brightness(1.08); }
+  .image-row { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-top: 6px; }
+  .swatch {
+    width: 48px; height: 48px;
+    border-radius: 8px;
+    border: 2px solid transparent;
+    padding: 0;
+    cursor: pointer;
+  }
+  .swatch.active { border-color: var(--brass); }
+  .swatch.brass { background: linear-gradient(135deg, #d2a24c, #8a6a2a); }
+  .swatch.ocean { background: linear-gradient(135deg, #2e6f8e, #12283a); }
+  .swatch.forest { background: linear-gradient(135deg, #3d7a4e, #14281a); }
+  .swatch.sunset { background: linear-gradient(135deg, #c65d3b, #3a1c2e); }
+  .thumb {
+    width: 96px; height: 54px;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    background: var(--surface-2);
+    display: flex; align-items: center; justify-content: center;
+    color: var(--muted);
+    font-size: 0.75rem;
+    background-size: cover;
+    background-position: center;
+    flex-shrink: 0;
+  }
+  .upload-label {
+    display: inline-flex; align-items: center;
+    border: 1px dashed var(--border);
+    border-radius: 6px;
+    padding: 9px 14px;
+    min-height: 44px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    color: var(--text);
+  }
+  .upload-label:hover { border-color: var(--brass); color: var(--brass); }
+  input[type="file"] { position: absolute; width: 1px; height: 1px; opacity: 0; overflow: hidden; }
+  .img-error { color: var(--danger); font-size: 0.85rem; margin-top: 8px; display: none; }
+  .warnings {
+    display: none;
+    margin-top: 16px;
+    padding: 12px 14px;
+    border: 1px solid rgba(224, 120, 86, 0.5);
+    border-radius: 8px;
+    background: rgba(224, 120, 86, 0.07);
+    font-size: 0.9rem;
+  }
+  .warnings.show { display: block; }
+  .warnings li { list-style: none; margin: 3px 0; color: #f0a58e; }
+  .warnings li::before { content: "⚠ "; }
+  .tabs {
+    display: flex; gap: 4px;
+    border-bottom: 1px solid var(--border);
+    margin: 36px 0 20px;
+    overflow-x: auto;
+  }
+  .tab {
+    background: none; border: none;
+    color: var(--muted);
+    font-size: 0.95rem;
+    font-weight: 500;
+    padding: 10px 16px;
+    border-bottom: 2px solid transparent;
+    border-radius: 0;
+    white-space: nowrap;
+  }
+  .tab:hover { color: var(--text); }
+  .tab.active { color: var(--brass); border-bottom-color: var(--brass); }
+  .preview-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+  @media (min-width: 720px) {
+    .preview-grid.all { grid-template-columns: 1fr 1fr; }
+    .preview-grid.all .preview-block:first-child { grid-column: 1 / -1; }
+  }
+  .preview-block h3 {
+    font-size: 0.8rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 10px;
+  }
+  .preview-block.hidden { display: none; }
+  /* --- X card --- */
+  .x-card {
+    background: #000;
+    border: 1px solid #2f3336;
+    border-radius: 16px;
+    overflow: hidden;
+    max-width: 520px;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  }
+  .x-card .x-img {
+    aspect-ratio: 16 / 9;
+    background-size: cover;
+    background-position: center;
+    border-bottom: 1px solid #2f3336;
+  }
+  .x-card .x-body { padding: 12px 14px; }
+  .x-card .x-title {
+    color: #e7e9ea;
+    font-size: 15px;
+    font-weight: 700;
+    line-height: 1.3;
+  }
+  .x-card .x-desc {
+    color: #71767b;
+    font-size: 14px;
+    line-height: 1.35;
+    margin-top: 2px;
+  }
+  .x-card .x-domain {
+    color: #71767b;
+    font-size: 13px;
+    margin-top: 6px;
+    display: flex; align-items: center; gap: 5px;
+  }
+  .x-card .x-domain svg { flex-shrink: 0; }
+  /* --- Slack card --- */
+  .slack-card {
+    background: #1a1d21;
+    border-left: 4px solid #36a64f;
+    border-radius: 0 8px 8px 0;
+    padding: 12px 14px;
+    max-width: 520px;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  }
+  .slack-card .s-site { color: #e8e6e1; font-size: 14px; font-weight: 700; }
+  .slack-card .s-title {
+    color: #1264a3;
+    font-size: 15px;
+    font-weight: 700;
+    line-height: 1.3;
+    margin-top: 2px;
+  }
+  .slack-card .s-main { display: flex; gap: 12px; align-items: flex-start; }
+  .slack-card .s-text { flex: 1; min-width: 0; }
+  .slack-card .s-desc { color: #b9babd; font-size: 14px; line-height: 1.4; margin-top: 4px; }
+  .slack-card .s-thumb {
+    width: 72px; height: 72px;
+    border-radius: 6px;
+    background-size: cover;
+    background-position: center;
+    flex-shrink: 0;
+  }
+  .slack-card .s-domain { color: #8b8d90; font-size: 12px; margin-top: 8px; }
+  /* --- iMessage card --- */
+  .im-card {
+    background: #1c1c1e;
+    border-radius: 16px;
+    overflow: hidden;
+    display: flex;
+    max-width: 520px;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    min-height: 96px;
+  }
+  .im-card .im-img {
+    width: 120px;
+    min-height: 96px;
+    background-size: cover;
+    background-position: center;
+    flex-shrink: 0;
+  }
+  .im-card .im-body {
+    padding: 12px 14px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    min-width: 0;
+  }
+  .im-card .im-title {
+    color: #fff;
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 1.3;
+  }
+  .im-card .im-domain { color: #98989d; font-size: 12px; margin-top: 4px; }
+  .placeholder { color: var(--muted); font-style: italic; }
+  pre.snippet {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 14px;
+    overflow-x: auto;
+    font-family: var(--mono);
+    font-size: 0.82rem;
+    line-height: 1.55;
+    color: #c9d1d9;
+    white-space: pre;
+    margin-bottom: 14px;
+  }
+  .snippet-note { color: var(--muted); font-size: 0.85rem; margin-top: 10px; }
+  .actions { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+  .flash { animation: flash 1.2s ease; }
+  @keyframes flash {
+    0% { box-shadow: 0 0 0 3px var(--brass-dim); }
+    100% { box-shadow: 0 0 0 0 transparent; }
+  }
+  footer {
+    margin-top: 56px;
+    padding-top: 20px;
+    border-top: 1px solid var(--border);
+    color: var(--muted);
+    font-size: 0.9rem;
+  }
+  @media (max-width: 560px) {
+    .card { padding: 16px; }
+    .im-card .im-img { width: 96px; }
+    .slack-card .s-thumb { width: 56px; height: 56px; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="masthead"><a href="/">Shipwright <span>Studio</span></a></header>
+
+  <h1>OG Preview</h1>
+  <p class="lede"><strong>OG Preview is a free online tool that shows how your link will look when shared on X, Slack, and iMessage — before you post it.</strong> Type a URL, title, and description, pick an image, and see each platform's link card update live, with character-count guidance and a copyable set of meta tags.</p>
+  <p class="note">Previews are rendered from the values you type — this page never fetches the URL, so real cards may differ slightly (platforms cache images and sometimes rewrite titles).</p>
+
+  <h2>Your link</h2>
+  <section class="card" id="editor" aria-label="Link editor">
+    <div class="field">
+      <label for="f-url">URL</label>
+      <input type="url" id="f-url" placeholder="https://example.com/my-page" autocomplete="off" spellcheck="false">
+    </div>
+    <div class="field">
+      <label for="f-title">Title <span class="hint">— shown on every card</span></label>
+      <input type="text" id="f-title" placeholder="Your page title" autocomplete="off" maxlength="300">
+      <div class="count" id="count-title"></div>
+    </div>
+    <div class="field">
+      <label for="f-desc">Description <span class="hint">— shown under the title</span></label>
+      <textarea id="f-desc" placeholder="A short summary of the page" maxlength="400"></textarea>
+      <div class="count" id="count-desc"></div>
+    </div>
+    <div class="field">
+      <label for="f-site">Site name <span class="hint">— optional, defaults to the URL's hostname</span></label>
+      <input type="text" id="f-site" placeholder="Example Site" autocomplete="off">
+    </div>
+    <div class="field">
+      <label>Card image</label>
+      <div class="image-row">
+        <div class="thumb" id="img-thumb">No image</div>
+        <label class="upload-label" for="f-img">Upload image…</label>
+        <input type="file" id="f-img" accept="image/*">
+        <button class="swatch brass" type="button" data-grad="brass" title="Brass gradient" aria-label="Brass gradient"></button>
+        <button class="swatch ocean" type="button" data-grad="ocean" title="Ocean gradient" aria-label="Ocean gradient"></button>
+        <button class="swatch forest" type="button" data-grad="forest" title="Forest gradient" aria-label="Forest gradient"></button>
+        <button class="swatch sunset" type="button" data-grad="sunset" title="Sunset gradient" aria-label="Sunset gradient"></button>
+        <button class="btn-ghost" type="button" id="btn-noimg">No image</button>
+      </div>
+      <div class="img-error" id="img-error">That file doesn't look like an image — try a PNG or JPG.</div>
+    </div>
+    <div class="presets">
+      <span class="presets-label">Try a preset:</span>
+      <button class="btn-ghost" type="button" data-preset="studio">Shipwright Studio page</button>
+      <button class="btn-ghost" type="button" data-preset="blog">Blog post</button>
+      <button class="btn-ghost" type="button" data-preset="product">Product page</button>
+    </div>
+    <ul class="warnings" id="warnings" aria-live="polite"></ul>
+  </section>
+
+  <nav class="tabs" role="tablist" aria-label="Platform view">
+    <button class="tab active" type="button" role="tab" aria-selected="true" data-view="all">All platforms</button>
+    <button class="tab" type="button" role="tab" aria-selected="false" data-view="x">X</button>
+    <button class="tab" type="button" role="tab" aria-selected="false" data-view="slack">Slack</button>
+    <button class="tab" type="button" role="tab" aria-selected="false" data-view="imessage">iMessage</button>
+  </nav>
+
+  <div class="preview-grid all" id="preview-grid">
+    <div class="preview-block" data-platform="x">
+      <h3>X (Twitter) — large summary card</h3>
+      <div class="x-card">
+        <div class="x-img" id="x-img"></div>
+        <div class="x-body">
+          <div class="x-title" id="x-title"></div>
+          <div class="x-desc" id="x-desc"></div>
+          <div class="x-domain"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#71767b" stroke-width="2" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg><span id="x-domain"></span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="preview-block" data-platform="slack">
+      <h3>Slack — link unfurl</h3>
+      <div class="slack-card">
+        <div class="s-main">
+          <div class="s-text">
+            <div class="s-site" id="s-site"></div>
+            <div class="s-title" id="s-title"></div>
+            <div class="s-desc" id="s-desc"></div>
+          </div>
+          <div class="s-thumb" id="s-thumb"></div>
+        </div>
+        <div class="s-domain" id="s-domain"></div>
+      </div>
+    </div>
+
+    <div class="preview-block" data-platform="imessage">
+      <h3>iMessage — rich link</h3>
+      <div class="im-card">
+        <div class="im-img" id="im-img"></div>
+        <div class="im-body">
+          <div class="im-title" id="im-title"></div>
+          <div class="im-domain" id="im-domain"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <h2>Meta tags</h2>
+  <section class="card" aria-label="Generated meta tags">
+    <pre class="snippet" id="snippet" tabindex="0"></pre>
+    <div class="actions">
+      <button class="btn-primary" type="button" id="btn-copy">Copy meta tags</button>
+      <span class="snippet-note" id="copy-note">Generated from the fields above — paste into your page's <code>&lt;head&gt;</code>.</span>
+    </div>
+    <p class="snippet-note">The <code>og:image</code> value points at <code>/og-image.png</code> on your site's domain. If you uploaded an image here, host that file first, then replace the URL with its real address.</p>
+  </section>
+
+  <footer>Built by <a href="/ideas/">Shipwright Studio</a></footer>
+</div>
+
+<script>
+/* PURE-LOGIC-START */
+var LIMITS = {
+  x:       { title: 70,  desc: 200 },
+  slack:   { title: 300, desc: 300 },
+  imessage:{ title: 90,  desc: 120 }
+};
+var GRADIENTS = {
+  brass:  "linear-gradient(135deg, #d2a24c, #8a6a2a)",
+  ocean:  "linear-gradient(135deg, #2e6f8e, #12283a)",
+  forest: "linear-gradient(135deg, #3d7a4e, #14281a)",
+  sunset: "linear-gradient(135deg, #c65d3b, #3a1c2e)"
+};
+function truncateFor(text, limit) {
+  text = (text || "").trim();
+  if (text.length <= limit) return text;
+  return text.slice(0, limit - 1).trimEnd() + "…";
+}
+function isValidUrl(value) {
+  var v = (value || "").trim();
+  if (!/^https?:\/\//i.test(v)) return false;
+  try {
+    var u = new URL(v);
+    return !!u.hostname && u.hostname.indexOf(".") !== -1;
+  } catch (e) { return false; }
+}
+function domainOf(value) {
+  var v = (value || "").trim();
+  try { return new URL(v).hostname; }
+  catch (e) { return v || "example.com"; }
+}
+function escapeAttr(s) {
+  return String(s == null ? "" : s)
+    .replace(/&/g, "&amp;").replace(/"/g, "&quot;")
+    .replace(/</g, "&lt;").replace(/>/g, "&gt;");
+}
+function escapeHtml(s) {
+  return String(s == null ? "" : s)
+    .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+}
+function ogImageUrl(urlValue) {
+  var v = (urlValue || "").trim();
+  try {
+    var u = new URL(v);
+    return u.origin + "/og-image.png";
+  } catch (e) { return "https://example.com/og-image.png"; }
+}
+function buildMetaSnippet(state) {
+  var title = (state.title || "").trim();
+  var desc = (state.description || "").trim();
+  var url = (state.url || "").trim();
+  var image = ogImageUrl(url);
+  var lines = [
+    '<meta property="og:title" content="' + escapeAttr(title) + '">',
+    '<meta property="og:description" content="' + escapeAttr(desc) + '">',
+    '<meta property="og:url" content="' + escapeAttr(url) + '">',
+    '<meta property="og:type" content="website">',
+    '<meta property="og:image" content="' + escapeAttr(image) + '">',
+    '<meta name="twitter:card" content="summary_large_image">',
+    '<meta name="twitter:title" content="' + escapeAttr(title) + '">',
+    '<meta name="twitter:description" content="' + escapeAttr(desc) + '">',
+    '<meta name="twitter:image" content="' + escapeAttr(image) + '">'
+  ];
+  return lines.join("\n");
+}
+var PRESETS = {
+  studio: {
+    url: "https://shipwright-studio.pages.dev/ideas/",
+    title: "Shipwright Studio — Idea Lab",
+    description: "A working lab of small, useful tools — built in public, one idea at a time.",
+    site: "Shipwright Studio",
+    image: { kind: "gradient", value: "brass" }
+  },
+  blog: {
+    url: "https://example.com/blog/shipwright-notes",
+    title: "Notes from the workshop: shipping small tools every day",
+    description: "What I learned building ninety small demos in public — and why the spec comes before the code.",
+    site: "Example Blog",
+    image: { kind: "gradient", value: "ocean" }
+  },
+  product: {
+    url: "https://example.com/products/forge",
+    title: "Forge — Estimate inference cost before you ship",
+    description: "Plug in your model, tokens, and traffic. Forge estimates your monthly inference bill in seconds.",
+    site: "Example Store",
+    image: { kind: "gradient", value: "forest" }
+  }
+};
+/* PURE-LOGIC-END */
+
+var state = {
+  url: "", title: "", description: "", site: "",
+  image: { kind: "gradient", value: "brass" } // {kind:"gradient"|"upload"|"none", value: key|dataURL|null}
+};
+
+var $ = function (id) { return document.getElementById(id); };
+
+function setText(id, text, placeholder) {
+  var el = $(id);
+  if (text) { el.textContent = text; el.classList.remove("placeholder"); }
+  else { el.textContent = placeholder; el.classList.add("placeholder"); }
+}
+
+function applyImageTo(el, isThumb) {
+  if (!el) return;
+  if (state.image.kind === "none") {
+    el.style.display = "none";
+    return;
+  }
+  el.style.display = "";
+  if (state.image.kind === "upload") {
+    el.style.backgroundImage = "url(" + state.image.value + ")";
+    el.style.background = "url(" + state.image.value + ") center / cover";
+  } else {
+    el.style.backgroundImage = GRADIENTS[state.image.value] || GRADIENTS.brass;
+    el.style.background = GRADIENTS[state.image.value] || GRADIENTS.brass;
+  }
+}
+
+function render() {
+  var url = state.url.trim();
+  var title = state.title.trim();
+  var desc = state.description.trim();
+  var domain = domainOf(url);
+  var site = state.site.trim() || domain;
+
+  // X
+  setText("x-title", truncateFor(title, LIMITS.x.title), "Your title here");
+  setText("x-desc", truncateFor(desc, LIMITS.x.desc), "Your description will appear here.");
+  $("x-domain").textContent = domain;
+  applyImageTo($("x-img"));
+
+  // Slack
+  setText("s-site", site, "example.com");
+  setText("s-title", truncateFor(title, LIMITS.slack.title), "Your title here");
+  setText("s-desc", truncateFor(desc, LIMITS.slack.desc), "Your description will appear here.");
+  $("s-domain").textContent = domain;
+  applyImageTo($("s-thumb"));
+
+  // iMessage
+  setText("im-title", truncateFor(title, LIMITS.imessage.title), "Your title here");
+  $("im-domain").textContent = domain;
+  applyImageTo($("im-img"));
+
+  // Counts
+  var tLen = state.title.length, dLen = state.description.length;
+  var tCount = $("count-title"), dCount = $("count-desc");
+  tCount.innerHTML = "Title: " + tLen + " chars — X truncates at " + LIMITS.x.title +
+    " · iMessage ~" + LIMITS.imessage.title + " · Slack " + LIMITS.slack.title;
+  dCount.innerHTML = "Description: " + dLen + " chars — X truncates at " + LIMITS.x.desc +
+    " · iMessage ~" + LIMITS.imessage.desc + " · Slack " + LIMITS.slack.desc;
+  tCount.classList.toggle("over", tLen > LIMITS.x.title);
+  dCount.classList.toggle("over", dLen > LIMITS.x.desc);
+
+  // URL validity
+  $("f-url").classList.toggle("invalid", url !== "" && !isValidUrl(url));
+
+  // Warnings
+  var warns = [];
+  if (url !== "" && !isValidUrl(url)) warns.push("URL looks invalid — enter a full URL starting with https://");
+  if (!title) warns.push("Title is empty — cards will show placeholder text");
+  if (!desc) warns.push("Description is empty — cards will show placeholder text");
+  if (tLen > LIMITS.x.title) warns.push("Title is " + (tLen - LIMITS.x.title) + " chars over X's ~" + LIMITS.x.title + "-char limit — it will be cut off on X");
+  if (tLen > LIMITS.imessage.title) warns.push("Title is over iMessage's ~" + LIMITS.imessage.title + "-char limit — it will be cut off in iMessage");
+  if (dLen > LIMITS.x.desc) warns.push("Description is over X's ~" + LIMITS.x.desc + "-char limit — it will be cut off on X");
+  if (state.image.kind === "none") warns.push("No image set — cards will render text-only, which gets far fewer clicks");
+  var wEl = $("warnings");
+  wEl.innerHTML = warns.map(function (w) { return "<li>" + escapeHtml(w) + "</li>"; }).join("");
+  wEl.classList.toggle("show", warns.length > 0);
+
+  // Image thumbnail + swatch states
+  var thumb = $("img-thumb");
+  if (state.image.kind === "none") {
+    thumb.style.background = "";
+    thumb.textContent = "No image";
+  } else if (state.image.kind === "upload") {
+    thumb.style.background = "url(" + state.image.value + ") center / cover";
+    thumb.textContent = "";
+  } else {
+    thumb.style.background = GRADIENTS[state.image.value];
+    thumb.textContent = "";
+  }
+  document.querySelectorAll(".swatch").forEach(function (s) {
+    s.classList.toggle("active", state.image.kind === "gradient" && s.dataset.grad === state.image.value);
+  });
+
+  // Snippet
+  $("snippet").textContent = buildMetaSnippet(state);
+}
+
+function applyPreset(key) {
+  var p = PRESETS[key];
+  if (!p) return;
+  state.url = p.url; state.title = p.title; state.description = p.description;
+  state.site = p.site; state.image = { kind: p.image.kind, value: p.image.value };
+  $("f-url").value = p.url;
+  $("f-title").value = p.title;
+  $("f-desc").value = p.description;
+  $("f-site").value = p.site;
+  $("f-img").value = "";
+  $("img-error").style.display = "none";
+  render();
+  var ed = $("editor");
+  ed.classList.remove("flash"); void ed.offsetWidth; ed.classList.add("flash");
+}
+
+function bind(id, key) {
+  $(id).addEventListener("input", function (e) {
+    state[key] = e.target.value;
+    render();
+  });
+}
+bind("f-url", "url");
+bind("f-title", "title");
+bind("f-desc", "description");
+bind("f-site", "site");
+
+$("f-img").addEventListener("change", function (e) {
+  var file = e.target.files && e.target.files[0];
+  if (!file) return;
+  if (!/^image\//.test(file.type)) {
+    $("img-error").style.display = "block";
+    e.target.value = "";
+    return;
+  }
+  $("img-error").style.display = "none";
+  var reader = new FileReader();
+  reader.onload = function () {
+    state.image = { kind: "upload", value: reader.result };
+    render();
+  };
+  reader.readAsDataURL(file);
+});
+
+document.querySelectorAll(".swatch").forEach(function (s) {
+  s.addEventListener("click", function () {
+    state.image = { kind: "gradient", value: s.dataset.grad };
+    $("f-img").value = "";
+    $("img-error").style.display = "none";
+    render();
+  });
+});
+$("btn-noimg").addEventListener("click", function () {
+  state.image = { kind: "none", value: null };
+  $("f-img").value = "";
+  render();
+});
+
+document.querySelectorAll("[data-preset]").forEach(function (b) {
+  b.addEventListener("click", function () { applyPreset(b.dataset.preset); });
+});
+
+document.querySelectorAll(".tab").forEach(function (tab) {
+  tab.addEventListener("click", function () {
+    document.querySelectorAll(".tab").forEach(function (t) {
+      t.classList.remove("active"); t.setAttribute("aria-selected", "false");
+    });
+    tab.classList.add("active");
+    tab.setAttribute("aria-selected", "true");
+    var view = tab.dataset.view;
+    var grid = $("preview-grid");
+    grid.classList.toggle("all", view === "all");
+    document.querySelectorAll(".preview-block").forEach(function (block) {
+      block.classList.toggle("hidden", view !== "all" && block.dataset.platform !== view);
+    });
+  });
+});
+
+$("btn-copy").addEventListener("click", function () {
+  var btn = $("btn-copy");
+  var note = $("copy-note");
+  var text = $("snippet").textContent;
+  function done(ok) {
+    if (ok) {
+      btn.textContent = "Copied ✓";
+      note.textContent = "Copied — paste it into your page's <head>.";
+      setTimeout(function () {
+        btn.textContent = "Copy meta tags";
+        note.textContent = "Generated from the fields above — paste into your page's <head>.";
+      }, 2000);
+    } else {
+      note.textContent = "Copy failed — select the text in the box above manually.";
+      var range = document.createRange();
+      range.selectNodeContents($("snippet"));
+      var sel = window.getSelection();
+      sel.removeAllRanges(); sel.addRange(range);
+    }
+  }
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(text).then(function () { done(true); }, function () { done(false); });
+  } else { done(false); }
+});
+
+// Start with the Shipwright Studio preset so previews are never blank.
+applyPreset("studio");
+</script>
+</body>
+</html>

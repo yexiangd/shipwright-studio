@@ -67,6 +67,8 @@ AI 搜索不看排名看"可引用性"。打法：
 
 ## 运行日志
 
+- **2026-11-13**：Phase 3-① `llms.txt` 持续维护 —— "Recent additions" 更新为今日新上线的两个实验（Tiny Platformer：免费在线平台跳跃游戏，跑跳+墙滑+墙跳穿越 12 个手工关卡，带金币/宝石/计时与本地最佳成绩，全浏览器运行；OG Preview：免费在线链接卡片预览器，输入 URL/标题/描述即见 X、Slack、iMessage 三平台卡片效果，带各平台字符数提示与可复制 og:/twitter: 标签片段，全浏览器运行），实验总数 92→94；移除较早的 Pipe Loop / Fluid Type Calc 条目以控制长度（保留最近 12 条）。另：当日两个 lab 新页（tiny-platformer、og-preview）均按构建 checklist 自带 canonical/title/description/quotable 定义段/WebApplication JSON-LD（每页恰 1 个 h1、无 mailto、无密钥痕迹、回链 /ideas/；seo-check.py 本地 97 页全通过；tiny-platformer 核心逻辑经 node 校验 138/138 通过——12 关地图合规性/跳跃高度 3.82 格/墙滑上限/目标与宝石可达性（宏搜索经真实 stepPlayer），构建中修了 FRICT/FRICTION 变量名真 bug 与 L3/L5/L12 关卡几何问题并回写 spec；og-preview 核心逻辑经 node 校验 59/59 通过——各平台截断边界/URL 校验/9 个 meta 标签片段生成/三档预设）；sitemap 经 `generate-sitemap.py` 重生成为 96 个 URL（CI 在 push 后也会重生成）。跳过：og 社交卡片（待用户拍板，见 §5）、GSC 验证（需人工）、Lighthouse 性能基线（Phase 1-⑤，按季度节奏）。下一步候选：Lighthouse 性能基线（Phase 1-⑤）或 og 社交卡片（等用户拍板）。
+
 - **2026-11-12**：Phase 3-① `llms.txt` 持续维护 —— "Recent additions" 更新为今日新上线的两个实验（Key Inspector：免费在线键盘事件检查器，按任意键即见 code/key/keyCode/修饰键与按键历史、触屏虚拟键，全浏览器运行；Airdrop Checker Template：免费在线空投资格检查模板，粘贴钱包地址按可编辑规则集逐条判定通过/失败、确定性演示数据），实验总数 90→92；移除较早的 Grid Builder / Ethereum Unit Converter 条目以控制长度（保留最近 12 条）。另：当日两个 lab 新页（key-inspector、airdrop-checker）均按构建 checklist 自带 canonical/title/description/quotable 定义段/WebApplication JSON-LD（每页恰 1 个 h1、无 mailto、无密钥痕迹、回链 /ideas/；seo-check.py 本地 95 页全通过；key-inspector 核心逻辑经 node 校验 9/9 通过——常规键/修饰键单独按压/Ctrl+K/e.repeat/keyCode 与位置解码/死键/JSON 复制载荷；airdrop-checker 核心逻辑经 node 校验 18/18 通过——地址格式校验/确定性/规则开关/边界值/样本资格判定）；sitemap 经 `generate-sitemap.py` 重生成为 94 个 URL（CI 在 push 后也会重生成）。跳过：og 社交卡片（待用户拍板，见 §5）、GSC 验证（需人工）、Lighthouse 性能基线（Phase 1-⑤，按季度节奏）。下一步候选：Lighthouse 性能基线（Phase 1-⑤）或 og 社交卡片（等用户拍板）。
 
 
