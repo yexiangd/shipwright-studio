@@ -1,0 +1,604 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bridge Fee Comparator · Shipwright Studio</title>
+<meta name="description" content="Compare cross-chain bridge fees side by side — see which bridge is cheapest and fastest for your route, with an illustrative cost breakdown.">
+<link rel="canonical" href="https://shipwright-studio.pages.dev/lab/bridge-fee-compare/">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
+  "name": "Bridge Fee Comparator",
+  "description": "A free online tool that compares cross-chain bridge fees side by side, ranking well-known bridges by cost and speed for a chosen route and amount.",
+  "applicationCategory": "FinanceApplication",
+  "operatingSystem": "Web",
+  "url": "https://shipwright-studio.pages.dev/lab/bridge-fee-compare/",
+  "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+}
+</script>
+<style>
+  :root {
+    --bg: #0a0c0f;
+    --surface: #11141a;
+    --surface-2: #161a21;
+    --border: #1e242c;
+    --brass: #d2a24c;
+    --brass-dim: rgba(210, 162, 76, 0.18);
+    --text: #e8e6e1;
+    --muted: #9aa3ad;
+    --danger: #e07856;
+    --mono: ui-monospace, "SF Mono", "Cascadia Code", Menlo, Consolas, monospace;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: "Inter", system-ui, -apple-system, sans-serif;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+  a { color: var(--brass); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  .wrap { max-width: 860px; margin: 0 auto; padding: 0 20px 80px; }
+  header.masthead {
+    padding: 28px 0 8px;
+    font-family: "Fraunces", Georgia, serif;
+    font-size: 15px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+  header.masthead a { color: var(--text); }
+  header.masthead a:hover { color: var(--brass); text-decoration: none; }
+  header.masthead span { color: var(--brass); }
+  h1 {
+    font-family: "Fraunces", Georgia, serif;
+    font-weight: 600;
+    font-size: clamp(2rem, 6vw, 3rem);
+    line-height: 1.15;
+    margin: 12px 0 12px;
+  }
+  .lede { color: var(--muted); font-size: 1.05rem; max-width: 62ch; }
+  .lede strong { color: var(--text); font-weight: 600; }
+  .note {
+    margin-top: 14px;
+    padding: 10px 14px;
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--brass);
+    background: var(--surface);
+    color: var(--muted);
+    font-size: 0.9rem;
+    border-radius: 6px;
+  }
+  h2 {
+    font-family: "Fraunces", Georgia, serif;
+    font-weight: 600;
+    font-size: 1.35rem;
+    margin: 36px 0 14px;
+  }
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 20px;
+  }
+  .field { margin-bottom: 16px; }
+  .field:last-child { margin-bottom: 0; }
+  label {
+    display: block;
+    font-size: 0.85rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    margin-bottom: 6px;
+    color: var(--text);
+  }
+  label .hint { font-weight: 400; color: var(--muted); }
+  select, input[type="text"], input[type="number"] {
+    width: 100%;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: var(--text);
+    font-family: inherit;
+    font-size: 0.95rem;
+    padding: 10px 12px;
+    outline: none;
+    min-height: 44px;
+  }
+  select:focus, input:focus { border-color: var(--brass); }
+  input.invalid { border-color: var(--danger); }
+  .amount-wrap { position: relative; }
+  .amount-wrap::before {
+    content: "$";
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--muted);
+    font-size: 0.95rem;
+  }
+  .amount-wrap input { padding-left: 28px; }
+  .chain-row {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    gap: 10px;
+    align-items: end;
+  }
+  .swap-btn {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text);
+    border-radius: 6px;
+    width: 44px;
+    height: 44px;
+    font-size: 1.1rem;
+    padding: 0;
+    flex-shrink: 0;
+  }
+  .swap-btn:hover { border-color: var(--brass); color: var(--brass); }
+  button {
+    font-family: inherit;
+    font-size: 0.9rem;
+    cursor: pointer;
+    border-radius: 6px;
+    padding: 9px 16px;
+    min-height: 44px;
+  }
+  .btn-ghost {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text);
+  }
+  .btn-ghost:hover { border-color: var(--brass); color: var(--brass); }
+  .btn-ghost.active { border-color: var(--brass); color: #14100a; background: var(--brass); font-weight: 600; }
+  .seg { display: flex; flex-wrap: wrap; gap: 8px; }
+  .presets { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 18px; }
+  .presets-label {
+    width: 100%;
+    font-size: 0.85rem;
+    font-weight: 600;
+    margin-bottom: 2px;
+  }
+  .errors {
+    display: none;
+    margin-top: 16px;
+    padding: 12px 14px;
+    border: 1px solid rgba(224, 120, 86, 0.5);
+    border-radius: 8px;
+    background: rgba(224, 120, 86, 0.07);
+    font-size: 0.9rem;
+  }
+  .errors.show { display: block; }
+  .errors li { list-style: none; margin: 3px 0; color: #f0a58e; }
+  .errors li::before { content: "⚠ "; }
+  .summary {
+    margin: 20px 0 14px;
+    font-size: 1.02rem;
+  }
+  .summary strong { color: var(--brass); }
+  table.results {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.95rem;
+  }
+  table.results th {
+    text-align: left;
+    font-size: 0.78rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--muted);
+    padding: 8px 10px;
+    border-bottom: 1px solid var(--border);
+  }
+  table.results td {
+    padding: 12px 10px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: middle;
+  }
+  table.results tr:last-child td { border-bottom: none; }
+  table.results tr.best { border-left: 3px solid var(--brass); }
+  table.results td.num, table.results th.num { text-align: right; font-family: var(--mono); font-size: 0.88rem; }
+  .bridge-name { font-weight: 600; }
+  .fee-detail { color: var(--muted); font-size: 0.82rem; display: block; margin-top: 2px; }
+  .badge {
+    display: inline-block;
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: #14100a;
+    background: var(--brass);
+    border-radius: 4px;
+    padding: 2px 7px;
+    margin-left: 6px;
+    vertical-align: middle;
+    white-space: nowrap;
+  }
+  .badge.fast { background: transparent; color: var(--brass); border: 1px solid var(--brass); }
+  tr.unavailable td { color: var(--muted); }
+  .bars { margin-top: 8px; }
+  .bar-row {
+    display: grid;
+    grid-template-columns: 120px 1fr 90px;
+    gap: 12px;
+    align-items: center;
+    margin: 10px 0;
+    font-size: 0.9rem;
+  }
+  .bar-row .bar-name { font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .bar-track {
+    height: 10px;
+    background: var(--surface-2);
+    border-radius: 5px;
+    overflow: hidden;
+  }
+  .bar-fill {
+    height: 100%;
+    background: #3a414c;
+    border-radius: 5px;
+    min-width: 2px;
+  }
+  .bar-fill.cheapest { background: var(--brass); }
+  .bar-row .bar-value { text-align: right; font-family: var(--mono); font-size: 0.85rem; }
+  .model-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.88rem;
+  }
+  .model-table th, .model-table td {
+    text-align: left;
+    padding: 7px 10px;
+    border-bottom: 1px solid var(--border);
+  }
+  .model-table th { color: var(--muted); font-size: 0.78rem; letter-spacing: 0.06em; text-transform: uppercase; }
+  .model-table td.num, .model-table th.num { text-align: right; font-family: var(--mono); }
+  .model-table tr:last-child td { border-bottom: none; }
+  .fine { color: var(--muted); font-size: 0.88rem; margin-top: 12px; }
+  .hidden { display: none !important; }
+  .flash { animation: flash 1.2s ease; }
+  @keyframes flash {
+    0% { box-shadow: 0 0 0 3px var(--brass-dim); }
+    100% { box-shadow: 0 0 0 0 transparent; }
+  }
+  footer {
+    margin-top: 56px;
+    padding-top: 20px;
+    border-top: 1px solid var(--border);
+    color: var(--muted);
+    font-size: 0.9rem;
+  }
+  @media (max-width: 640px) {
+    .card { padding: 16px; }
+    .chain-row { grid-template-columns: 1fr; }
+    .swap-btn { width: 100%; }
+    table.results thead { display: none; }
+    table.results, table.results tbody, table.results tr, table.results td { display: block; width: 100%; }
+    table.results tr {
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      margin-bottom: 12px;
+      padding: 6px 4px;
+    }
+    table.results tr.best { border-left: 3px solid var(--brass); }
+    table.results td { border-bottom: none; padding: 6px 12px; }
+    table.results td::before {
+      content: attr(data-label);
+      display: block;
+      font-size: 0.72rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+    table.results td.num { text-align: left; }
+    .bar-row { grid-template-columns: 96px 1fr 78px; gap: 8px; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="masthead"><a href="/">Shipwright <span>Studio</span></a></header>
+
+  <h1>Bridge Fee Comparator</h1>
+  <p class="lede"><strong>Bridge Fee Comparator is a free online tool that compares cross-chain bridge costs side by side, so you can see which bridge is cheapest and which is fastest for your route before you move any funds.</strong> Pick a source chain, a destination chain, and an amount — the ranked comparison updates instantly, with a fee breakdown, estimated time, and total cost for each bridge.</p>
+  <p class="note">All fees and times are illustrative demo estimates for comparison — not live prices. Real bridge costs change with gas, liquidity, and market conditions. No wallet connection is needed; nothing leaves this page.</p>
+
+  <h2>Your route</h2>
+  <section class="card" id="comparator" aria-label="Bridge comparison inputs">
+    <div class="chain-row">
+      <div class="field">
+        <label for="f-from">From chain</label>
+        <select id="f-from"></select>
+      </div>
+      <button class="swap-btn" type="button" id="btn-swap" title="Swap source and destination" aria-label="Swap source and destination">⇄</button>
+      <div class="field">
+        <label for="f-to">To chain</label>
+        <select id="f-to"></select>
+      </div>
+    </div>
+    <div class="field">
+      <label for="f-amount">Amount <span class="hint">— in USD</span></label>
+      <div class="amount-wrap">
+        <input type="number" id="f-amount" min="1" max="1000000" step="any" inputmode="decimal" autocomplete="off" placeholder="1000">
+      </div>
+    </div>
+    <div class="field">
+      <label>Optimise for</label>
+      <div class="seg" role="group" aria-label="Optimisation preference">
+        <button class="btn-ghost active" type="button" data-pref="cheapest">Cheapest</button>
+        <button class="btn-ghost" type="button" data-pref="fastest">Fastest</button>
+        <button class="btn-ghost" type="button" data-pref="balanced">Balanced</button>
+      </div>
+    </div>
+    <div class="presets">
+      <span class="presets-label">Try a preset route:</span>
+      <button class="btn-ghost" type="button" data-preset="eth-arb-100">$100 · Ethereum → Arbitrum</button>
+      <button class="btn-ghost" type="button" data-preset="eth-base-1000">$1,000 · Ethereum → Base</button>
+      <button class="btn-ghost" type="button" data-preset="poly-eth-5000">$5,000 · Polygon → Ethereum</button>
+    </div>
+    <ul class="errors" id="errors" aria-live="polite"></ul>
+  </section>
+
+  <section id="results" aria-label="Comparison results">
+    <p class="summary" id="summary"></p>
+
+    <h2>Ranked bridges</h2>
+    <div class="card">
+      <table class="results">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Bridge</th>
+            <th>Fee</th>
+            <th>Est. time</th>
+            <th class="num">Total cost</th>
+            <th class="num">You receive</th>
+          </tr>
+        </thead>
+        <tbody id="results-body"></tbody>
+      </table>
+    </div>
+
+    <h2>Cost comparison</h2>
+    <div class="card">
+      <div class="bars" id="bars"></div>
+      <p class="fine">Bars show each bridge's total cost relative to the most expensive option on this route. Illustrative estimates only.</p>
+    </div>
+  </section>
+
+  <h2>How fees are calculated</h2>
+  <section class="card" aria-label="Fee model">
+    <p>Each bridge charges a flat fee plus a percentage of the amount bridged: <strong>fee = flat fee + amount × percentage</strong>. Total cost is the fee; you receive the amount minus the fee. Times are the bridge's typical range from submission to funds arriving on the destination chain.</p>
+    <table class="model-table" style="margin-top: 14px;">
+      <thead>
+        <tr><th>Bridge</th><th class="num">Flat fee</th><th class="num">Percentage</th><th>Typical time</th><th>Chains</th></tr>
+      </thead>
+      <tbody id="model-body"></tbody>
+    </table>
+    <p class="fine">These models are illustrative demo values chosen to show how the bridges differ — they are not live quotes and do not include destination-chain gas or slippage. Always check the bridge's own quote before bridging.</p>
+  </section>
+
+  <footer>Built by <a href="/ideas/">Shipwright Studio</a></footer>
+</div>
+
+<script>
+/* PURE-LOGIC-START */
+var CHAINS = ["Ethereum", "Arbitrum", "Optimism", "Base", "Polygon", "BNB Chain", "Avalanche", "Solana"];
+var EVM_CHAINS = ["Ethereum", "Arbitrum", "Optimism", "Base", "Polygon", "BNB Chain", "Avalanche"];
+// Illustrative demo fee models — NOT live prices.
+var BRIDGES = [
+  { name: "Across",   flat: 0.50, pct: 0.05, timeMin: 2,  timeMax: 8,  chains: EVM_CHAINS },
+  { name: "Hop",      flat: 1.00, pct: 0.08, timeMin: 5,  timeMax: 20, chains: ["Ethereum", "Arbitrum", "Optimism", "Base", "Polygon"] },
+  { name: "Stargate", flat: 0.75, pct: 0.06, timeMin: 3,  timeMax: 15, chains: EVM_CHAINS },
+  { name: "Synapse",  flat: 1.50, pct: 0.10, timeMin: 5,  timeMax: 25, chains: EVM_CHAINS },
+  { name: "cBridge",  flat: 0.25, pct: 0.12, timeMin: 10, timeMax: 30, chains: CHAINS },
+  { name: "Wormhole", flat: 2.00, pct: 0.04, timeMin: 15, timeMax: 45, chains: CHAINS }
+];
+var MAX_AMOUNT = 1000000;
+
+function supportsRoute(bridge, from, to) {
+  return bridge.chains.indexOf(from) !== -1 && bridge.chains.indexOf(to) !== -1;
+}
+function feeFor(bridge, amount) {
+  return bridge.flat + amount * bridge.pct / 100;
+}
+function timeMid(bridge) {
+  return (bridge.timeMin + bridge.timeMax) / 2;
+}
+function validateRoute(from, to, amount) {
+  var errors = [];
+  if (from === to) errors.push("Source and destination must be different chains — pick two different chains.");
+  if (!(amount > 0) || isNaN(amount) || amount > MAX_AMOUNT) errors.push("Enter an amount between $1 and $1,000,000.");
+  return errors;
+}
+function compareBridges(from, to, amount, pref) {
+  var available = [];
+  var unavailable = [];
+  BRIDGES.forEach(function (b) {
+    if (supportsRoute(b, from, to)) {
+      var fee = feeFor(b, amount);
+      available.push({
+        name: b.name, flat: b.flat, pct: b.pct,
+        timeMin: b.timeMin, timeMax: b.timeMax, timeMid: timeMid(b),
+        fee: fee, received: amount - fee
+      });
+    } else {
+      unavailable.push({ name: b.name });
+    }
+  });
+  var byCost = available.slice().sort(function (a, b) { return a.fee - b.fee; });
+  var byTime = available.slice().sort(function (a, b) { return a.timeMid - b.timeMid; });
+  var costRank = {}, timeRank = {};
+  byCost.forEach(function (r, i) { costRank[r.name] = i; });
+  byTime.forEach(function (r, i) { timeRank[r.name] = i; });
+  var ranked = available.slice();
+  if (pref === "fastest") {
+    ranked.sort(function (a, b) { return a.timeMid - b.timeMid || a.fee - b.fee; });
+  } else if (pref === "balanced") {
+    ranked.sort(function (a, b) {
+      var sa = costRank[a.name] + timeRank[a.name];
+      var sb = costRank[b.name] + timeRank[b.name];
+      return sa - sb || a.fee - b.fee;
+    });
+  } else {
+    ranked.sort(function (a, b) { return a.fee - b.fee; });
+  }
+  var cheapest = byCost.length ? byCost[0] : null;
+  var fastest = byTime.length ? byTime[0] : null;
+  return { ranked: ranked, unavailable: unavailable, cheapest: cheapest, fastest: fastest };
+}
+function formatUsd(n) {
+  return "$" + n.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+function formatTime(min, max) {
+  return min + "–" + max + " min";
+}
+function bestPickLine(result, pref, amount, from, to) {
+  if (!result.ranked.length) return "";
+  var top = result.ranked[0];
+  var label = pref === "fastest" ? "fastest" : pref === "balanced" ? "best balanced pick" : "cheapest";
+  return top.name + " is the " + label + " for " + formatUsd(amount) + " from " + from +
+    " to " + to + " — " + formatUsd(top.fee) + " total, so you receive " + formatUsd(top.received) + ".";
+}
+var PRESETS = {
+  "eth-arb-100":    { from: "Ethereum", to: "Arbitrum", amount: 100 },
+  "eth-base-1000":  { from: "Ethereum", to: "Base",     amount: 1000 },
+  "poly-eth-5000":  { from: "Polygon",  to: "Ethereum", amount: 5000 }
+};
+/* PURE-LOGIC-END */
+
+var state = { from: "Ethereum", to: "Base", amount: 1000, pref: "cheapest" };
+
+var $ = function (id) { return document.getElementById(id); };
+function escapeHtml(s) {
+  return String(s == null ? "" : s)
+    .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+}
+
+function initSelects() {
+  ["f-from", "f-to"].forEach(function (id) {
+    var sel = $(id);
+    CHAINS.forEach(function (c) {
+      var opt = document.createElement("option");
+      opt.value = c; opt.textContent = c;
+      sel.appendChild(opt);
+    });
+  });
+  $("f-from").value = state.from;
+  $("f-to").value = state.to;
+  $("f-amount").value = state.amount;
+}
+
+function renderModelTable() {
+  $("model-body").innerHTML = BRIDGES.map(function (b) {
+    return "<tr><td>" + escapeHtml(b.name) + "</td><td class=\"num\">" + formatUsd(b.flat) +
+      "</td><td class=\"num\">" + b.pct.toFixed(2) + "%</td><td>" + formatTime(b.timeMin, b.timeMax) +
+      "</td><td>" + (b.chains.length === CHAINS.length ? "All chains" : b.chains.length + " chains") + "</td></tr>";
+  }).join("");
+}
+
+function render() {
+  var errors = validateRoute(state.from, state.to, state.amount);
+  var errEl = $("errors");
+  errEl.innerHTML = errors.map(function (e) { return "<li>" + escapeHtml(e) + "</li>"; }).join("");
+  errEl.classList.toggle("show", errors.length > 0);
+  $("f-amount").classList.toggle("invalid", !(state.amount > 0) || isNaN(state.amount) || state.amount > MAX_AMOUNT);
+
+  var resultsEl = $("results");
+  if (errors.length > 0) {
+    resultsEl.classList.add("hidden");
+    return;
+  }
+  resultsEl.classList.remove("hidden");
+
+  var result = compareBridges(state.from, state.to, state.amount, state.pref);
+  $("summary").innerHTML = "<strong>" + escapeHtml(bestPickLine(result, state.pref, state.amount, state.from, state.to)) + "</strong>";
+
+  var body = $("results-body");
+  var rows = result.ranked.map(function (r, i) {
+    var badges = "";
+    if (result.cheapest && r.name === result.cheapest.name) badges += "<span class=\"badge\">Cheapest</span>";
+    if (result.fastest && r.name === result.fastest.name) badges += "<span class=\"badge fast\">Fastest</span>";
+    var cls = (result.cheapest && r.name === result.cheapest.name) ? " class=\"best\"" : "";
+    return "<tr" + cls + ">" +
+      "<td data-label=\"Rank\">" + (i + 1) + "</td>" +
+      "<td data-label=\"Bridge\"><span class=\"bridge-name\">" + escapeHtml(r.name) + "</span>" + badges + "</td>" +
+      "<td data-label=\"Fee\">" + formatUsd(r.fee) +
+        "<span class=\"fee-detail\">" + formatUsd(r.flat) + " flat + " + r.pct.toFixed(2) + "%</span></td>" +
+      "<td data-label=\"Est. time\">" + formatTime(r.timeMin, r.timeMax) + "</td>" +
+      "<td data-label=\"Total cost\" class=\"num\">" + formatUsd(r.fee) + "</td>" +
+      "<td data-label=\"You receive\" class=\"num\">" + formatUsd(r.received) + "</td>" +
+      "</tr>";
+  });
+  result.unavailable.forEach(function (u) {
+    rows.push("<tr class=\"unavailable\">" +
+      "<td data-label=\"Rank\">—</td>" +
+      "<td data-label=\"Bridge\"><span class=\"bridge-name\">" + escapeHtml(u.name) + "</span></td>" +
+      "<td data-label=\"Fee\" colspan=\"4\">Not available on this route</td>" +
+      "</tr>");
+  });
+  body.innerHTML = rows.join("");
+
+  var barsEl = $("bars");
+  if (!result.ranked.length) {
+    barsEl.innerHTML = "<p class=\"fine\">No bridges support this route in the demo dataset.</p>";
+  } else {
+    var maxFee = Math.max.apply(null, result.ranked.map(function (r) { return r.fee; }));
+    barsEl.innerHTML = result.ranked.map(function (r) {
+      var pctW = maxFee > 0 ? Math.max(2, r.fee / maxFee * 100) : 0;
+      var isCheapest = result.cheapest && r.name === result.cheapest.name;
+      return "<div class=\"bar-row\"><span class=\"bar-name\">" + escapeHtml(r.name) + "</span>" +
+        "<div class=\"bar-track\"><div class=\"bar-fill" + (isCheapest ? " cheapest" : "") +
+        "\" style=\"width:" + pctW.toFixed(1) + "%\"></div></div>" +
+        "<span class=\"bar-value\">" + formatUsd(r.fee) + "</span></div>";
+    }).join("");
+  }
+}
+
+function applyPreset(key) {
+  var p = PRESETS[key];
+  if (!p) return;
+  state.from = p.from; state.to = p.to; state.amount = p.amount;
+  $("f-from").value = p.from;
+  $("f-to").value = p.to;
+  $("f-amount").value = p.amount;
+  render();
+  var panel = $("comparator");
+  panel.classList.remove("flash"); void panel.offsetWidth; panel.classList.add("flash");
+}
+
+function readAmount() {
+  var raw = $("f-amount").value.trim();
+  if (raw === "") return NaN;
+  return Number(raw);
+}
+
+$("f-from").addEventListener("change", function (e) { state.from = e.target.value; render(); });
+$("f-to").addEventListener("change", function (e) { state.to = e.target.value; render(); });
+$("f-amount").addEventListener("input", function () { state.amount = readAmount(); render(); });
+$("btn-swap").addEventListener("click", function () {
+  var tmp = state.from; state.from = state.to; state.to = tmp;
+  $("f-from").value = state.from;
+  $("f-to").value = state.to;
+  render();
+});
+document.querySelectorAll("[data-pref]").forEach(function (b) {
+  b.addEventListener("click", function () {
+    state.pref = b.dataset.pref;
+    document.querySelectorAll("[data-pref]").forEach(function (x) { x.classList.toggle("active", x === b); });
+    render();
+  });
+});
+document.querySelectorAll("[data-preset]").forEach(function (b) {
+  b.addEventListener("click", function () { applyPreset(b.dataset.preset); });
+});
+
+initSelects();
+renderModelTable();
+render();
+</script>
+</body>
+</html>

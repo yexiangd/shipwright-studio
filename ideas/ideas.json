@@ -1,5 +1,5 @@
 {
-  "updated": "2026-11-13",
+  "updated": "2026-11-14",
   "ideas": [
     {
       "id": "idea-000a",
@@ -1065,7 +1065,9 @@
       "tagline": "Believable excuses for every missed deadline.",
       "priority": 64,
       "effort": "S",
-      "status": "todo"
+      "status": "done",
+      "url": "/lab/excuse-generator/",
+      "shipped": "2026-11-14"
     },
     {
       "id": "idea-092",
@@ -1477,7 +1479,9 @@
       "tagline": "Side-by-side cross-chain bridge cost comparison.",
       "priority": 64,
       "effort": "S",
-      "status": "todo"
+      "status": "done",
+      "url": "/lab/bridge-fee-compare/",
+      "shipped": "2026-11-14"
     },
     {
       "id": "idea-128",

@@ -1,0 +1,626 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Excuse Generator · Shipwright Studio</title>
+<meta name="description" content="Generate a believable excuse for a missed deadline, a late arrival, or an unanswered message — pick the scenario, tone, and boldness, then copy and send.">
+<link rel="canonical" href="https://shipwright-studio.pages.dev/lab/excuse-generator/">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,600;1,9..144,500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
+  "name": "Excuse Generator",
+  "description": "A free online tool that generates a believable excuse for a missed deadline, a late arrival, a missed call, or a late reply — with scenario, tone, and believability controls and a plausibility meter.",
+  "applicationCategory": "UtilitiesApplication",
+  "operatingSystem": "Web",
+  "url": "https://shipwright-studio.pages.dev/lab/excuse-generator/",
+  "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+}
+</script>
+<style>
+  :root {
+    --bg: #0a0c0f;
+    --surface: #11141a;
+    --surface-2: #161a21;
+    --border: #1e242c;
+    --brass: #d2a24c;
+    --brass-dim: rgba(210, 162, 76, 0.18);
+    --text: #e8e6e1;
+    --muted: #9aa3ad;
+    --mono: ui-monospace, "SF Mono", "Cascadia Code", Menlo, Consolas, monospace;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: "Inter", system-ui, -apple-system, sans-serif;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+  a { color: var(--brass); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  .wrap { max-width: 860px; margin: 0 auto; padding: 0 20px 80px; }
+  header.masthead {
+    padding: 28px 0 8px;
+    font-family: "Fraunces", Georgia, serif;
+    font-size: 15px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+  header.masthead a { color: var(--text); }
+  header.masthead a:hover { color: var(--brass); text-decoration: none; }
+  header.masthead span { color: var(--brass); }
+  h1 {
+    font-family: "Fraunces", Georgia, serif;
+    font-weight: 600;
+    font-size: clamp(2rem, 6vw, 3rem);
+    line-height: 1.15;
+    margin: 12px 0 12px;
+  }
+  .lede { color: var(--muted); font-size: 1.05rem; max-width: 62ch; }
+  .lede strong { color: var(--text); font-weight: 600; }
+  .note {
+    margin-top: 14px;
+    padding: 10px 14px;
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--brass);
+    background: var(--surface);
+    color: var(--muted);
+    font-size: 0.9rem;
+    border-radius: 6px;
+  }
+  h2 {
+    font-family: "Fraunces", Georgia, serif;
+    font-weight: 600;
+    font-size: 1.35rem;
+    margin: 36px 0 14px;
+  }
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 20px;
+  }
+  .group { margin-bottom: 20px; }
+  .group:last-of-type { margin-bottom: 0; }
+  .group-label {
+    display: block;
+    font-size: 0.85rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    margin-bottom: 8px;
+  }
+  .group-label .hint { font-weight: 400; color: var(--muted); }
+  .pills { display: flex; flex-wrap: wrap; gap: 8px; }
+  button {
+    font-family: inherit;
+    font-size: 0.9rem;
+    cursor: pointer;
+    border-radius: 6px;
+    padding: 9px 16px;
+    min-height: 44px;
+  }
+  .pill {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text);
+  }
+  .pill:hover { border-color: var(--brass); color: var(--brass); }
+  .pill.active { border-color: var(--brass); color: var(--brass); background: var(--brass-dim); }
+  .btn-primary {
+    background: var(--brass);
+    border: 1px solid var(--brass);
+    color: #14100a;
+    font-weight: 600;
+  }
+  .btn-primary:hover { filter: brightness(1.08); }
+  .btn-ghost {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text);
+  }
+  .btn-ghost:hover { border-color: var(--brass); color: var(--brass); }
+  .btn-ghost:disabled { opacity: 0.4; cursor: not-allowed; }
+  .btn-ghost:disabled:hover { border-color: var(--border); color: var(--text); }
+  input[type="text"] {
+    width: 100%;
+    max-width: 320px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: var(--text);
+    font-family: inherit;
+    font-size: 0.95rem;
+    padding: 10px 12px;
+    outline: none;
+  }
+  input[type="text"]:focus { border-color: var(--brass); }
+  .actions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 22px; }
+  .result {
+    margin-top: 28px;
+    padding: 28px 24px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    min-height: 220px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+  .result .greeting {
+    font-size: 0.95rem;
+    color: var(--muted);
+    margin-bottom: 10px;
+  }
+  .result .excuse {
+    font-family: "Fraunces", Georgia, serif;
+    font-style: italic;
+    font-weight: 500;
+    font-size: clamp(1.25rem, 3.4vw, 1.6rem);
+    line-height: 1.5;
+  }
+  .result .placeholder-text {
+    font-family: "Fraunces", Georgia, serif;
+    font-style: italic;
+    font-size: clamp(1.15rem, 3vw, 1.4rem);
+    line-height: 1.5;
+    color: var(--muted);
+  }
+  .meter-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+    margin-top: 22px;
+    padding-top: 18px;
+    border-top: 1px solid var(--border);
+  }
+  .meter-label { font-size: 0.85rem; color: var(--muted); }
+  .dots { display: inline-flex; gap: 6px; }
+  .dot {
+    width: 12px; height: 12px;
+    border-radius: 50%;
+    background: #2a2f37;
+    border: 1px solid var(--border);
+  }
+  .dot.filled { background: var(--brass); border-color: var(--brass); }
+  .meter-word { font-size: 0.9rem; font-weight: 600; color: var(--brass); }
+  .counter {
+    margin-top: 10px;
+    font-size: 0.82rem;
+    color: var(--muted);
+    font-family: var(--mono);
+  }
+  .copy-row {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    align-items: center;
+    margin-top: 16px;
+  }
+  .copy-note { color: var(--muted); font-size: 0.85rem; }
+  .steps { list-style: none; counter-reset: step; }
+  .steps li {
+    counter-increment: step;
+    padding: 10px 0 10px 44px;
+    position: relative;
+    color: var(--muted);
+    border-bottom: 1px solid var(--border);
+  }
+  .steps li:last-child { border-bottom: none; }
+  .steps li::before {
+    content: counter(step);
+    position: absolute;
+    left: 0; top: 10px;
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    border: 1px solid var(--brass);
+    color: var(--brass);
+    font-family: "Fraunces", Georgia, serif;
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .steps li strong { color: var(--text); }
+  footer {
+    margin-top: 56px;
+    padding-top: 20px;
+    border-top: 1px solid var(--border);
+    color: var(--muted);
+    font-size: 0.9rem;
+  }
+  @media (max-width: 560px) {
+    .card { padding: 16px; }
+    .result { padding: 22px 18px; min-height: 190px; }
+    .actions button { flex: 1 1 100%; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="masthead"><a href="/">Shipwright <span>Studio</span></a></header>
+
+  <h1>Excuse Generator</h1>
+  <p class="lede"><strong>Excuse Generator is a free online tool that writes a believable excuse for a missed deadline, a late arrival, a missed call, or a reply that's days overdue.</strong> Pick the situation, set the tone, choose how bold you're feeling — and get a ready-to-send excuse, with a plausibility meter so you know exactly how far you're stretching it.</p>
+  <p class="note">Every excuse here is written to be plausible, not provable — use the bold ones at your own risk.</p>
+
+  <h2>Build your excuse</h2>
+  <section class="card" aria-label="Excuse controls">
+    <div class="group">
+      <span class="group-label">Scenario</span>
+      <div class="pills" id="scenario-pills" role="group" aria-label="Scenario">
+        <button type="button" class="pill active" data-scenario="deadline">Missed deadline</button>
+        <button type="button" class="pill" data-scenario="meeting">Late to a meeting</button>
+        <button type="button" class="pill" data-scenario="call">Missed call</button>
+        <button type="button" class="pill" data-scenario="reply">Late reply</button>
+        <button type="button" class="pill" data-scenario="event">Missed an event</button>
+        <button type="button" class="pill" data-scenario="delivery">Running late on a delivery</button>
+      </div>
+    </div>
+
+    <div class="group">
+      <span class="group-label">Tone</span>
+      <div class="pills" id="tone-pills" role="group" aria-label="Tone">
+        <button type="button" class="pill active" data-tone="professional">Professional</button>
+        <button type="button" class="pill" data-tone="casual">Casual</button>
+        <button type="button" class="pill" data-tone="creative">Creative</button>
+      </div>
+    </div>
+
+    <div class="group">
+      <span class="group-label">Believability <span class="hint">— bold unlocks the wilder excuses</span></span>
+      <div class="pills" id="level-pills" role="group" aria-label="Believability">
+        <button type="button" class="pill active" data-level="solid">Rock solid</button>
+        <button type="button" class="pill" data-level="plausible">Plausible</button>
+        <button type="button" class="pill" data-level="bold">Bold</button>
+      </div>
+    </div>
+
+    <div class="group">
+      <label class="group-label" for="f-name">Their name <span class="hint">— optional, adds a greeting line</span></label>
+      <input type="text" id="f-name" placeholder="e.g. Alex" autocomplete="off" maxlength="40">
+    </div>
+
+    <div class="actions">
+      <button type="button" class="btn-primary" id="btn-generate">Generate excuse</button>
+      <button type="button" class="btn-ghost" id="btn-regenerate">Regenerate</button>
+      <button type="button" class="btn-ghost" id="btn-surprise">Surprise me</button>
+    </div>
+  </section>
+
+  <section class="result" id="result" aria-live="polite" aria-label="Generated excuse">
+    <p class="placeholder-text" id="excuse-text">Your excuse will appear here. Pick a scenario, a tone, and how bold you're feeling — then hit Generate.</p>
+    <p class="greeting" id="greeting" hidden></p>
+    <div class="meter-row" id="meter-row" hidden>
+      <span class="meter-label">Plausibility</span>
+      <span class="dots" id="dots" aria-hidden="true"></span>
+      <span class="meter-word" id="meter-word"></span>
+    </div>
+    <p class="counter" id="counter" hidden></p>
+  </section>
+
+  <div class="copy-row">
+    <button type="button" class="btn-primary" id="btn-copy" disabled>Copy excuse</button>
+    <span class="copy-note" id="copy-note"></span>
+  </div>
+
+  <h2>How it works</h2>
+  <ol class="steps">
+    <li><strong>Pick your situation</strong> — the scenario, the tone, and how bold you're willing to be.</li>
+    <li><strong>Generate</strong> — every excuse is drawn from a hand-written library, and none repeats until the whole pool has been shown.</li>
+    <li><strong>Copy and send</strong> — check the plausibility meter first. Five dots means nobody will blink; one dot means you should probably send it from a different time zone.</li>
+  </ol>
+
+  <footer>Built by <a href="/ideas/">Shipwright Studio</a></footer>
+</div>
+
+<script>
+/* PURE-LOGIC-START */
+var SCENARIOS = {
+  deadline: "Missed deadline",
+  meeting: "Late to a meeting",
+  call: "Missed call",
+  reply: "Late reply",
+  event: "Missed an event",
+  delivery: "Running late on a delivery"
+};
+var TONES = { professional: "Professional", casual: "Casual", creative: "Creative" };
+var LEVELS = {
+  solid: { label: "Rock solid", minScore: 4 },
+  plausible: { label: "Plausible", minScore: 3 },
+  bold: { label: "Bold", minScore: 1 }
+};
+// Each excuse: text, scenario, tone, score (1 = risky, 5 = rock solid).
+var EXCUSES = [
+  // --- Missed deadline ---
+  { scenario: "deadline", tone: "professional", score: 5, text: "I hit a blocker on the final review that I couldn't clear without input from another team, so I held the delivery rather than send something half-finished. It's with me now and I'll have it to you by end of day tomorrow." },
+  { scenario: "deadline", tone: "professional", score: 4, text: "I underestimated how long the last round of changes would take — the draft is further along than it looks, but I need one more day to land it properly." },
+  { scenario: "deadline", tone: "professional", score: 3, text: "A dependency I was waiting on landed late, and it pushed everything behind it. The work is done — I'm just waiting on one final check before I send it." },
+  { scenario: "deadline", tone: "casual", score: 4, text: "I thought I had this wrapped up yesterday, then the last section fought back. It's nearly there — I'll send it over first thing tomorrow." },
+  { scenario: "deadline", tone: "casual", score: 3, text: "My day got eaten by back-to-back calls I couldn't move, and this slipped past the finish line. It's my top priority tomorrow morning." },
+  { scenario: "deadline", tone: "creative", score: 4, text: "The file I needed was buried in an old laptop backup, and by the time I dug it out the day was gone. I've got it now — sending it tomorrow." },
+  { scenario: "deadline", tone: "creative", score: 2, text: "My internet dropped right as I was uploading the final version, and by the time it came back the window had closed. It's ready to go — resending in the morning." },
+  { scenario: "deadline", tone: "creative", score: 1, text: "My cat walked across the keyboard and somehow filed the draft in the wrong folder. I found it, I've fixed it, and the real version is on its way." },
+  // --- Late to a meeting ---
+  { scenario: "meeting", tone: "professional", score: 5, text: "My previous meeting ran over and I couldn't leave without cutting off a client mid-sentence. Apologies for the delay — I'm here now and up to speed." },
+  { scenario: "meeting", tone: "professional", score: 4, text: "I got pulled into an urgent issue ten minutes before this started and had to hand it off before I could join." },
+  { scenario: "meeting", tone: "professional", score: 3, text: "I was finishing a note for the last meeting and it took longer than I planned. I'm caught up — please carry on." },
+  { scenario: "meeting", tone: "casual", score: 4, text: "Sorry I'm late — the meeting before this one just would not end. I'm here now." },
+  { scenario: "meeting", tone: "casual", score: 3, text: "I lost track of time prepping for this and showed up a few minutes behind. Won't happen again." },
+  { scenario: "meeting", tone: "creative", score: 4, text: "I took the wrong elevator bank and ended up on the wrong floor — by the time I found the right room, I was already late." },
+  { scenario: "meeting", tone: "creative", score: 2, text: "My calendar reminder fired fifteen minutes late, so I only realised this had started when I saw the invite pop up. Sorry about that." },
+  { scenario: "meeting", tone: "creative", score: 1, text: "I joined the meeting, but I was on mute in the wrong call for the first five minutes. I'm here now, promise." },
+  // --- Missed call ---
+  { scenario: "call", tone: "professional", score: 5, text: "I was in a meeting with my phone on silent and only saw your call when I came out. Sorry I missed you — is now a good time, or shall I call back at a time that suits you?" },
+  { scenario: "call", tone: "professional", score: 4, text: "My phone was on Do Not Disturb after a focus block and I didn't see the call come through. I'm free now if you are." },
+  { scenario: "call", tone: "professional", score: 3, text: "I was on another call that ran long and couldn't pick up yours in time. Happy to talk now if you're free." },
+  { scenario: "call", tone: "casual", score: 4, text: "Sorry I missed your call — I was driving and couldn't pick up safely. What's up?" },
+  { scenario: "call", tone: "casual", score: 3, text: "My phone was on silent and buried in my bag, so I only spotted the missed call an hour later. Sorry about that." },
+  { scenario: "call", tone: "creative", score: 4, text: "I saw your call flash up right as I stepped into a lift with no signal. By the time I got out, it had gone to voicemail." },
+  { scenario: "call", tone: "creative", score: 2, text: "My phone died right before you called — it was on 2% all afternoon and finally gave up. It's charging now, sorry I missed you." },
+  { scenario: "call", tone: "creative", score: 1, text: "I answered, but my earbuds connected to the wrong device and I was talking to my laptop for thirty seconds. Calling you back now." },
+  // --- Late reply ---
+  { scenario: "reply", tone: "professional", score: 5, text: "Your message came in during a packed week and I wanted to give it a proper reply rather than a rushed one — that took longer than it should have. Here's the answer now." },
+  { scenario: "reply", tone: "professional", score: 4, text: "I read your message, drafted a reply in my head, and then never actually sent it. That's entirely on me — here's the real answer." },
+  { scenario: "reply", tone: "professional", score: 3, text: "I needed to check one thing before replying and the answer took longer to come back than I expected. Thanks for your patience." },
+  { scenario: "reply", tone: "casual", score: 4, text: "Sorry for the slow reply — your message got buried under a pile of others and I only just dug it out." },
+  { scenario: "reply", tone: "casual", score: 3, text: "I meant to reply yesterday and then the day ran away from me. Better late than never — here's what I think." },
+  { scenario: "reply", tone: "creative", score: 4, text: "I typed out a reply, got distracted mid-sentence, and only just realised I never hit send. Sorry about the wait." },
+  { scenario: "reply", tone: "creative", score: 2, text: "Your message arrived while I was mid-deadline and I starred it to answer later — then promptly forgot where 'later' was. Here I am now." },
+  { scenario: "reply", tone: "creative", score: 1, text: "I replied to your message in my head so convincingly that I was sure I'd sent it. It turns out I had not. Sorry — replying for real now." },
+  // --- Missed an event ---
+  { scenario: "event", tone: "professional", score: 5, text: "Something urgent came up at work that I couldn't step away from, and I missed the event. I'm sorry — I'd love to catch up properly this week." },
+  { scenario: "event", tone: "professional", score: 4, text: "I had a clash I couldn't resolve in time and the event lost out. I was sorry to miss it — how did it go?" },
+  { scenario: "event", tone: "professional", score: 3, text: "A last-minute commitment I couldn't move landed on the same evening. I was disappointed to miss it — let's reschedule soon." },
+  { scenario: "event", tone: "casual", score: 4, text: "Sorry I couldn't make it — the day got away from me and by the time I looked up, it was too late to get there. Hope it was a good one." },
+  { scenario: "event", tone: "casual", score: 3, text: "I had every intention of coming, then my afternoon fell apart and I couldn't get there in time. Next time, I promise." },
+  { scenario: "event", tone: "creative", score: 4, text: "I set off in plenty of time, then hit traffic that turned a twenty-minute trip into an hour. I turned around rather than arrive halfway through." },
+  { scenario: "event", tone: "creative", score: 2, text: "I wrote down the wrong start time — I had it an hour later in my head, and by the time I realised, the event was half over." },
+  { scenario: "event", tone: "creative", score: 1, text: "I turned up at last year's venue. Same place, different year — the room was empty and I was very confused. Sorry I missed it." },
+  // --- Running late on a delivery ---
+  { scenario: "delivery", tone: "professional", score: 5, text: "The shipment is delayed at the carrier's sorting hub — it's scanned in, just not moving yet. I'm tracking it daily and will update you the moment it shifts." },
+  { scenario: "delivery", tone: "professional", score: 4, text: "The supplier sent the wrong batch and we caught it in quality control, so we held the delivery rather than send the wrong item. The replacement is on its way." },
+  { scenario: "delivery", tone: "professional", score: 3, text: "We're waiting on one final component before we can ship, and the supplier's estimate slipped by a day. I'll confirm the new date as soon as it's in hand." },
+  { scenario: "delivery", tone: "casual", score: 4, text: "Sorry it's running late — the courier missed the pickup and it went out on the next run instead. It's in transit now." },
+  { scenario: "delivery", tone: "casual", score: 3, text: "This took longer to pack than I expected and it missed the courier cut-off. It's going out first thing tomorrow." },
+  { scenario: "delivery", tone: "creative", score: 4, text: "The label printed wrong and the parcel did a tour of the depot before anyone noticed. It's back on track now — new arrival date to follow." },
+  { scenario: "delivery", tone: "creative", score: 2, text: "The delivery van broke down halfway through the route, and your parcel is still on board waiting for the replacement van. Should be moving again today." },
+  { scenario: "delivery", tone: "creative", score: 1, text: "The parcel was delivered — to the house three doors down. I've knocked, apologised, and it's on its way to you now." }
+];
+
+function mulberry32(seed) {
+  var a = seed >>> 0;
+  return function () {
+    a |= 0; a = (a + 0x6D2B79F5) | 0;
+    var t = Math.imul(a ^ (a >>> 15), 1 | a);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+function shuffledCopy(arr, seed) {
+  var out = arr.slice();
+  var rand = mulberry32(seed);
+  for (var i = out.length - 1; i > 0; i--) {
+    var j = Math.floor(rand() * (i + 1));
+    var tmp = out[i]; out[i] = out[j]; out[j] = tmp;
+  }
+  return out;
+}
+function levelMinScore(level) {
+  return (LEVELS[level] || LEVELS.solid).minScore;
+}
+// Exact filter: scenario + tone + believability floor. Falls back to any tone
+// within the scenario, then to the whole library, so a draw never comes up empty.
+function filterPool(scenario, tone, level) {
+  var min = levelMinScore(level);
+  var exact = EXCUSES.filter(function (e) {
+    return e.scenario === scenario && e.tone === tone && e.score >= min;
+  });
+  if (exact.length > 0) return { pool: exact, fallback: false };
+  var anyTone = EXCUSES.filter(function (e) {
+    return e.scenario === scenario && e.score >= min;
+  });
+  if (anyTone.length > 0) return { pool: anyTone, fallback: true };
+  return { pool: EXCUSES.slice(), fallback: true };
+}
+function makeDeck(scenario, tone, level, seed) {
+  var f = filterPool(scenario, tone, level);
+  return {
+    pool: shuffledCopy(f.pool, seed == null ? (Date.now() % 2147483647) : seed),
+    fallback: f.fallback,
+    index: 0
+  };
+}
+// Draws the next excuse; reshuffles (new seed) when the pool is exhausted.
+function drawNext(deck, seed) {
+  if (deck.index >= deck.pool.length) {
+    deck.pool = shuffledCopy(deck.pool, seed == null ? (Date.now() % 2147483647) : seed);
+    deck.index = 0;
+    deck.reshuffled = true;
+  } else {
+    deck.reshuffled = false;
+  }
+  var item = deck.pool[deck.index];
+  deck.index += 1;
+  return item;
+}
+function plausibilityLabel(score) {
+  if (score >= 5) return "Rock solid";
+  if (score === 4) return "Plausible";
+  if (score === 3) return "Believable-ish";
+  if (score === 2) return "Bold";
+  return "Risky — do not try this at work";
+}
+function greetingFor(name) {
+  var n = (name || "").trim();
+  return n ? "Hi " + n + "," : "";
+}
+function copyTextFor(excuse, name) {
+  var g = greetingFor(name);
+  return g ? g + "\n\n" + excuse.text : excuse.text;
+}
+function scenarioLabel(key) { return SCENARIOS[key] || key; }
+function toneLabel(key) { return TONES[key] || key; }
+/* PURE-LOGIC-END */
+
+var state = {
+  scenario: "deadline",
+  tone: "professional",
+  level: "solid",
+  name: "",
+  deck: null,
+  current: null,
+  currentPosition: 0,
+  reshuffledNote: false
+};
+
+var $ = function (id) { return document.getElementById(id); };
+
+function setActivePills(containerId, attr, value) {
+  document.querySelectorAll("#" + containerId + " .pill").forEach(function (p) {
+    p.classList.toggle("active", p.dataset[attr] === value);
+  });
+}
+
+function resetDeck() {
+  state.deck = makeDeck(state.scenario, state.tone, state.level);
+  state.current = null;
+  state.currentPosition = 0;
+}
+
+function clearResult(hint) {
+  $("greeting").hidden = true;
+  $("meter-row").hidden = true;
+  $("counter").hidden = true;
+  var el = $("excuse-text");
+  el.className = "placeholder-text";
+  el.textContent = hint || "Your excuse will appear here. Pick a scenario, a tone, and how bold you're feeling — then hit Generate.";
+  $("btn-copy").disabled = true;
+  $("copy-note").textContent = "";
+}
+
+function renderCurrent() {
+  var ex = state.current;
+  var greeting = greetingFor(state.name);
+  var gEl = $("greeting");
+  if (greeting) { gEl.textContent = greeting; gEl.hidden = false; }
+  else { gEl.hidden = true; }
+  var el = $("excuse-text");
+  el.className = "excuse";
+  el.textContent = ex.text;
+
+  var dots = $("dots");
+  dots.innerHTML = "";
+  for (var i = 1; i <= 5; i++) {
+    var d = document.createElement("span");
+    d.className = "dot" + (i <= ex.score ? " filled" : "");
+    dots.appendChild(d);
+  }
+  $("meter-word").textContent = plausibilityLabel(ex.score);
+  $("meter-row").hidden = false;
+
+  var c = $("counter");
+  var parts = [
+    "Excuse " + state.currentPosition + " of " + state.deck.pool.length + " in this pool",
+    scenarioLabel(state.scenario),
+    toneLabel(state.tone),
+    LEVELS[state.level].label
+  ];
+  if (state.deck.fallback) parts.push("Showing a close match");
+  if (state.currentPosition === state.deck.pool.length) parts.push("That's the whole pool");
+  if (state.reshuffledNote) parts.push("Pool reshuffled — excuses may repeat now");
+  c.textContent = parts.join(" · ");
+  c.hidden = false;
+
+  $("btn-copy").disabled = false;
+}
+
+function generate() {
+  if (!state.deck) resetDeck();
+  var ex = drawNext(state.deck);
+  state.current = ex;
+  state.currentPosition = state.deck.index;
+  state.reshuffledNote = !!state.deck.reshuffled;
+  renderCurrent();
+}
+
+function onFilterChange() {
+  resetDeck();
+  clearResult("Filters changed — generate a fresh excuse.");
+}
+
+document.querySelectorAll("#scenario-pills .pill").forEach(function (p) {
+  p.addEventListener("click", function () {
+    state.scenario = p.dataset.scenario;
+    setActivePills("scenario-pills", "scenario", state.scenario);
+    onFilterChange();
+  });
+});
+document.querySelectorAll("#tone-pills .pill").forEach(function (p) {
+  p.addEventListener("click", function () {
+    state.tone = p.dataset.tone;
+    setActivePills("tone-pills", "tone", state.tone);
+    onFilterChange();
+  });
+});
+document.querySelectorAll("#level-pills .pill").forEach(function (p) {
+  p.addEventListener("click", function () {
+    state.level = p.dataset.level;
+    setActivePills("level-pills", "level", state.level);
+    onFilterChange();
+  });
+});
+
+$("f-name").addEventListener("input", function (e) {
+  state.name = e.target.value;
+  if (state.current) renderCurrent();
+});
+
+$("btn-generate").addEventListener("click", generate);
+$("btn-regenerate").addEventListener("click", generate);
+$("btn-surprise").addEventListener("click", function () {
+  var scenarios = Object.keys(SCENARIOS);
+  var tones = Object.keys(TONES);
+  state.scenario = scenarios[Math.floor(Math.random() * scenarios.length)];
+  state.tone = tones[Math.floor(Math.random() * tones.length)];
+  setActivePills("scenario-pills", "scenario", state.scenario);
+  setActivePills("tone-pills", "tone", state.tone);
+  resetDeck();
+  generate();
+});
+
+$("btn-copy").addEventListener("click", function () {
+  if (!state.current) return;
+  var btn = $("btn-copy");
+  var note = $("copy-note");
+  var text = copyTextFor(state.current, state.name);
+  function done(ok) {
+    if (ok) {
+      btn.textContent = "Copied ✓";
+      note.textContent = "Copied — paste it into your message and send.";
+      setTimeout(function () {
+        btn.textContent = "Copy excuse";
+        note.textContent = "";
+      }, 2000);
+    } else {
+      note.textContent = "Copy failed — select the text in the box above manually.";
+      var range = document.createRange();
+      range.selectNodeContents($("result"));
+      var sel = window.getSelection();
+      sel.removeAllRanges(); sel.addRange(range);
+    }
+  }
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(text).then(function () { done(true); }, function () { done(false); });
+  } else { done(false); }
+});
+
+resetDeck();
+</script>
+</body>
+</html>
