@@ -1,5 +1,5 @@
 {
-  "updated": "2026-11-14",
+  "updated": "2026-11-15",
   "ideas": [
     {
       "id": "idea-000a",
@@ -735,7 +735,9 @@
       "tagline": "Find any open tab by title — prototype of the extension.",
       "priority": 63,
       "effort": "M",
-      "status": "todo"
+      "status": "done",
+      "url": "/lab/tab-search/",
+      "shipped": "2026-11-15"
     },
     {
       "id": "idea-062",
@@ -1491,7 +1493,9 @@
       "tagline": "Manually entered holdings as allocation charts.",
       "priority": 63,
       "effort": "S",
-      "status": "todo"
+      "status": "done",
+      "url": "/lab/wallet-pie/",
+      "shipped": "2026-11-15"
     },
     {
       "id": "idea-129",

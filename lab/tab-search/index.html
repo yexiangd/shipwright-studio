@@ -1,0 +1,742 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tab Search · Shipwright Studio</title>
+<meta name="description" content="Find any open tab by title or URL — search, filter and jump between tabs with the keyboard in this free prototype of a browser-extension tab search.">
+<link rel="canonical" href="https://shipwright-studio.pages.dev/lab/tab-search/">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
+  "name": "Tab Search",
+  "description": "A free online tool that finds any open tab by title or URL, letting you search, filter and jump between tabs with the keyboard.",
+  "applicationCategory": "UtilitiesApplication",
+  "operatingSystem": "Web",
+  "url": "https://shipwright-studio.pages.dev/lab/tab-search/",
+  "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+}
+</script>
+<style>
+  :root {
+    --bg: #0a0c0f;
+    --surface: #11141a;
+    --surface-2: #161a21;
+    --border: #1e242c;
+    --brass: #d2a24c;
+    --brass-dim: rgba(210, 162, 76, 0.18);
+    --text: #e8e6e1;
+    --muted: #9aa3ad;
+    --mono: ui-monospace, "SF Mono", "Cascadia Code", Menlo, Consolas, monospace;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: "Inter", system-ui, -apple-system, sans-serif;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+  a { color: var(--brass); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  .wrap { max-width: 860px; margin: 0 auto; padding: 0 20px 80px; }
+  header.masthead {
+    padding: 28px 0 8px;
+    font-family: "Fraunces", Georgia, serif;
+    font-size: 15px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+  header.masthead a { color: var(--text); }
+  header.masthead a:hover { color: var(--brass); text-decoration: none; }
+  header.masthead span { color: var(--brass); }
+  h1 {
+    font-family: "Fraunces", Georgia, serif;
+    font-weight: 600;
+    font-size: clamp(2rem, 6vw, 3rem);
+    line-height: 1.15;
+    margin: 12px 0 12px;
+  }
+  .lede { color: var(--muted); font-size: 1.05rem; max-width: 62ch; }
+  .lede strong { color: var(--text); font-weight: 600; }
+  .note {
+    margin-top: 14px;
+    padding: 10px 14px;
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--brass);
+    background: var(--surface);
+    color: var(--muted);
+    font-size: 0.9rem;
+    border-radius: 6px;
+  }
+  h2 {
+    font-family: "Fraunces", Georgia, serif;
+    font-weight: 600;
+    font-size: 1.35rem;
+    margin: 36px 0 14px;
+  }
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 20px;
+  }
+  .search-wrap { position: relative; }
+  .search-wrap::before {
+    content: "⌕";
+    position: absolute;
+    left: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--muted);
+    font-size: 1.15rem;
+  }
+  input[type="text"] {
+    width: 100%;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: var(--text);
+    font-family: inherit;
+    font-size: 1rem;
+    padding: 12px 14px 12px 40px;
+    outline: none;
+    min-height: 48px;
+  }
+  input[type="text"]:focus { border-color: var(--brass); }
+  .kbd-hint {
+    margin-top: 10px;
+    color: var(--muted);
+    font-size: 0.85rem;
+  }
+  kbd {
+    font-family: var(--mono);
+    font-size: 0.78rem;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-bottom-width: 2px;
+    border-radius: 4px;
+    padding: 1px 6px;
+  }
+  .filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 16px;
+    align-items: center;
+  }
+  .filters select {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: var(--text);
+    font-family: inherit;
+    font-size: 0.9rem;
+    padding: 9px 10px;
+    min-height: 44px;
+    outline: none;
+  }
+  .filters select:focus { border-color: var(--brass); }
+  button {
+    font-family: inherit;
+    font-size: 0.9rem;
+    cursor: pointer;
+    border-radius: 6px;
+    padding: 9px 16px;
+    min-height: 44px;
+  }
+  .btn-ghost {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text);
+  }
+  .btn-ghost:hover { border-color: var(--brass); color: var(--brass); }
+  .btn-ghost.active { border-color: var(--brass); color: #14100a; background: var(--brass); font-weight: 600; }
+  .counts { margin-top: 16px; color: var(--muted); font-size: 0.9rem; }
+  .counts strong { color: var(--brass); }
+  .group { margin-top: 28px; }
+  .group-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 10px;
+  }
+  .group-head h3 {
+    font-family: "Fraunces", Georgia, serif;
+    font-weight: 600;
+    font-size: 1.1rem;
+  }
+  .group-head h3 .count { color: var(--muted); font-family: "Inter", sans-serif; font-size: 0.85rem; font-weight: 400; margin-left: 6px; }
+  .group-toggle {
+    background: transparent;
+    border: none;
+    color: var(--muted);
+    font-size: 0.85rem;
+    padding: 4px 8px;
+    min-height: 32px;
+  }
+  .group-toggle:hover { color: var(--brass); }
+  .tab-list { list-style: none; }
+  .tab-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 12px;
+    margin-bottom: 8px;
+    min-height: 56px;
+    cursor: pointer;
+  }
+  .tab-row:hover { border-color: var(--brass); }
+  .tab-row.highlighted {
+    border-color: var(--brass);
+    box-shadow: 0 0 0 2px var(--brass-dim);
+  }
+  .favicon {
+    flex-shrink: 0;
+    width: 32px;
+    height: 32px;
+    border-radius: 7px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 0.95rem;
+    color: #fff;
+  }
+  .tab-main { flex: 1; min-width: 0; }
+  .tab-title {
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .tab-url {
+    color: var(--muted);
+    font-family: var(--mono);
+    font-size: 0.8rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .badges { display: flex; gap: 6px; flex-shrink: 0; flex-wrap: wrap; justify-content: flex-end; }
+  .badge {
+    display: inline-block;
+    font-size: 0.68rem;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--muted);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 2px 6px;
+    white-space: nowrap;
+  }
+  .badge.active { color: #14100a; background: var(--brass); border-color: var(--brass); }
+  .badge.audio { color: var(--brass); border-color: var(--brass); }
+  .close-btn {
+    flex-shrink: 0;
+    background: transparent;
+    border: none;
+    color: var(--muted);
+    font-size: 1.1rem;
+    line-height: 1;
+    padding: 0;
+    width: 44px;
+    height: 44px;
+    min-height: 44px;
+    border-radius: 6px;
+  }
+  .close-btn:hover { color: var(--text); background: var(--surface-2); }
+  .empty {
+    text-align: center;
+    color: var(--muted);
+    padding: 36px 16px;
+  }
+  .empty p { margin-bottom: 14px; }
+  .toast {
+    position: fixed;
+    left: 50%;
+    bottom: 24px;
+    transform: translateX(-50%) translateY(16px);
+    background: var(--surface-2);
+    border: 1px solid var(--brass);
+    border-radius: 8px;
+    padding: 12px 16px;
+    font-size: 0.92rem;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease, transform 0.2s ease;
+    max-width: calc(100vw - 40px);
+    z-index: 10;
+    display: flex;
+    gap: 14px;
+    align-items: center;
+  }
+  .toast.show { opacity: 1; pointer-events: auto; transform: translateX(-50%) translateY(0); }
+  .toast button {
+    background: transparent;
+    border: none;
+    color: var(--brass);
+    font-weight: 600;
+    padding: 4px 0;
+    min-height: 0;
+  }
+  .shortcuts-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.92rem;
+  }
+  .shortcuts-table td {
+    padding: 8px 10px;
+    border-bottom: 1px solid var(--border);
+  }
+  .shortcuts-table tr:last-child td { border-bottom: none; }
+  .shortcuts-table td:first-child { white-space: nowrap; width: 170px; }
+  .fine { color: var(--muted); font-size: 0.88rem; margin-top: 12px; }
+  .hidden { display: none !important; }
+  footer {
+    margin-top: 56px;
+    padding-top: 20px;
+    border-top: 1px solid var(--border);
+    color: var(--muted);
+    font-size: 0.9rem;
+  }
+  @media (max-width: 640px) {
+    .card { padding: 16px; }
+    .filters select { width: 100%; }
+    .tab-url { display: block; }
+    .badges { display: none; }
+    .tab-row.active-tab .badges { display: flex; }
+    .shortcuts-table td:first-child { width: 130px; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="masthead"><a href="/">Shipwright <span>Studio</span></a></header>
+
+  <h1>Tab Search</h1>
+  <p class="lede"><strong>Tab Search is a free online tool that finds any open tab by title or URL, so you can jump straight to the tab you need instead of hunting through windows.</strong> Type a few letters, pick a result with the arrow keys, and press Enter — the prototype below works exactly like the extension would, on sample data.</p>
+  <p class="note">Prototype demo: a web page cannot read your real browser tabs, so this demo searches a realistic sample dataset of 18 tabs across 3 windows. No data leaves this page.</p>
+
+  <h2>Search your tabs</h2>
+  <section class="card" aria-label="Tab search">
+    <div class="search-wrap">
+      <input type="text" id="q" placeholder="Search tabs by title or URL… try “git” or “youtube”" autocomplete="off" spellcheck="false" aria-label="Search tabs">
+    </div>
+    <p class="kbd-hint"><kbd>↑</kbd> <kbd>↓</kbd> to move · <kbd>Enter</kbd> to switch · <kbd>Esc</kbd> to clear</p>
+    <div class="filters" role="group" aria-label="Tab filters">
+      <button class="btn-ghost active" type="button" data-filter="all">All tabs</button>
+      <button class="btn-ghost" type="button" data-filter="pinned">Pinned</button>
+      <button class="btn-ghost" type="button" data-filter="audio">Playing audio</button>
+      <select id="f-window" aria-label="Filter by window">
+        <option value="all">All windows</option>
+        <option value="1">Window 1 — Work</option>
+        <option value="2">Window 2 — Research</option>
+        <option value="3">Window 3 — Personal</option>
+      </select>
+      <button class="btn-ghost" type="button" id="btn-reset" style="margin-left:auto">Reset demo</button>
+    </div>
+    <p class="counts" id="counts" aria-live="polite"></p>
+  </section>
+
+  <section id="results" aria-label="Matching tabs" aria-live="polite"></section>
+
+  <div class="empty hidden" id="empty">
+    <p id="empty-msg"></p>
+    <button class="btn-ghost" type="button" id="btn-clear">Clear search</button>
+  </div>
+
+  <h2>How it works</h2>
+  <section class="card" aria-label="How tab search works">
+    <p>Search matches tab titles and URLs. A title match ranks above a URL-only match, and a match at the start of a title ranks above one buried in the middle — so the tab you are thinking of usually lands first. Results stay grouped by window, and the extension version would read your real tabs through the browser's tab API and switch to one instantly.</p>
+    <table class="shortcuts-table" style="margin-top: 14px;">
+      <tbody>
+        <tr><td><kbd>↑</kbd> / <kbd>↓</kbd></td><td>Move the highlight through the results</td></tr>
+        <tr><td><kbd>Enter</kbd></td><td>Switch to the highlighted tab</td></tr>
+        <tr><td><kbd>Esc</kbd></td><td>Clear the search</td></tr>
+        <tr><td>Click a row</td><td>Switch to that tab</td></tr>
+        <tr><td>Click ×</td><td>Close the tab (Undo in the toast)</td></tr>
+      </tbody>
+    </table>
+    <p class="fine">Sample data is illustrative only — these are not real tabs and closing one here closes nothing in your browser.</p>
+  </section>
+
+  <footer>Built by <a href="/ideas/">Shipwright Studio</a></footer>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite">
+  <span id="toast-msg"></span>
+  <button type="button" id="toast-undo" class="hidden">Undo</button>
+</div>
+
+<script>
+/* PURE-LOGIC-START */
+var FAVICON_COLORS = ["#6b8afd", "#e07856", "#3d9970", "#d2a24c", "#8e6cc8", "#4a90a4", "#c05a7e", "#5a7d3c"];
+
+var SAMPLE_TABS = [
+  { id: 1,  windowId: 1, windowName: "Work",     title: "GitHub — Pull requests · yexiangd/shipwright-studio", url: "github.com/yexiangd/shipwright-studio/pulls", pinned: true,  audible: false, muted: false, active: false },
+  { id: 2,  windowId: 1, windowName: "Work",     title: "Figma — Shipwright homepage", url: "figma.com/design/shipwright-homepage", pinned: false, audible: false, muted: false, active: true },
+  { id: 3,  windowId: 1, windowName: "Work",     title: "Gmail — Inbox (12 unread)", url: "mail.google.com/mail/u/0/#inbox", pinned: true,  audible: false, muted: false, active: false },
+  { id: 4,  windowId: 1, windowName: "Work",     title: "MDN — Array.prototype.filter()", url: "developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/filter", pinned: false, audible: false, muted: false, active: false },
+  { id: 5,  windowId: 1, windowName: "Work",     title: "Stack Overflow — How to debounce input in vanilla JS", url: "stackoverflow.com/questions/24004791", pinned: false, audible: false, muted: false, active: false },
+  { id: 6,  windowId: 1, windowName: "Work",     title: "YouTube — Lo-fi beats to focus to", url: "youtube.com/watch?v=jfKfPfyJRdk", pinned: false, audible: true,  muted: false, active: false },
+  { id: 7,  windowId: 1, windowName: "Work",     title: "Notion — Sprint board · Week 46", url: "notion.so/sprint-board-week-46", pinned: false, audible: false, muted: false, active: false },
+  { id: 8,  windowId: 1, windowName: "Work",     title: "Linear — Fix tab search ranking", url: "linear.app/shipwright/issue/SHIP-42", pinned: false, audible: false, muted: false, active: false },
+  { id: 9,  windowId: 2, windowName: "Research", title: "Wikipedia — Tab (browser)", url: "en.wikipedia.org/wiki/Tab_(browser)", pinned: false, audible: false, muted: false, active: false },
+  { id: 10, windowId: 2, windowName: "Research", title: "Hacker News — front page", url: "news.ycombinator.com", pinned: false, audible: false, muted: false, active: false },
+  { id: 11, windowId: 2, windowName: "Research", title: "arXiv — Attention Is All You Need", url: "arxiv.org/abs/1706.03762", pinned: false, audible: false, muted: false, active: false },
+  { id: 12, windowId: 2, windowName: "Research", title: "Chrome Web Store — Tab Search extension", url: "chromewebstore.google.com/detail/tab-search", pinned: false, audible: false, muted: false, active: false },
+  { id: 13, windowId: 2, windowName: "Research", title: "MDN — KeyboardEvent reference", url: "developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent", pinned: false, audible: false, muted: false, active: false },
+  { id: 14, windowId: 3, windowName: "Personal", title: "YouTube — How to sharpen a chef's knife", url: "youtube.com/watch?v=knife-sharpening", pinned: false, audible: true,  muted: true,  active: false },
+  { id: 15, windowId: 3, windowName: "Personal", title: "Amazon — Chef's knife, 8-inch", url: "amazon.com/dp/B08KNIFE", pinned: false, audible: false, muted: false, active: false },
+  { id: 16, windowId: 3, windowName: "Personal", title: "Reddit — r/Cooking: best knife under $100?", url: "reddit.com/r/Cooking/comments/knife100", pinned: false, audible: false, muted: false, active: false },
+  { id: 17, windowId: 3, windowName: "Personal", title: "Spotify — Daily Mix 2", url: "open.spotify.com/playlist/dailymix2", pinned: false, audible: true,  muted: false, active: false },
+  { id: 18, windowId: 3, windowName: "Personal", title: "Google Calendar — November", url: "calendar.google.com/calendar/u/0/r/month", pinned: false, audible: false, muted: false, active: false }
+];
+
+function cloneTabs(tabs) {
+  return tabs.map(function (t) {
+    var c = {};
+    for (var k in t) c[k] = t[k];
+    return c;
+  });
+}
+
+function domainOf(url) {
+  return url.split("/")[0];
+}
+
+function faviconColor(url) {
+  var d = domainOf(url);
+  var h = 0;
+  for (var i = 0; i < d.length; i++) h = (h * 31 + d.charCodeAt(i)) >>> 0;
+  return FAVICON_COLORS[h % FAVICON_COLORS.length];
+}
+
+function faviconLetter(tab) {
+  var d = domainOf(tab.url).replace(/^www\./, "");
+  return d.charAt(0).toUpperCase();
+}
+
+/* Score a tab against a query: 0 = no match.
+   3 = query at the start of the title, 2 = title contains, 1 = URL contains. */
+function scoreTab(tab, q) {
+  if (!q) return 1;
+  var title = tab.title.toLowerCase();
+  var url = tab.url.toLowerCase();
+  if (title.indexOf(q) === 0) return 3;
+  if (title.indexOf(q) !== -1) return 2;
+  if (url.indexOf(q) !== -1) return 1;
+  return 0;
+}
+
+function searchTabs(tabs, query) {
+  var q = (query || "").trim().toLowerCase();
+  if (!q) return tabs.slice();
+  var scored = [];
+  tabs.forEach(function (t, i) {
+    var s = scoreTab(t, q);
+    if (s > 0) scored.push({ tab: t, score: s, index: i });
+  });
+  scored.sort(function (a, b) { return b.score - a.score || a.index - b.index; });
+  return scored.map(function (s) { return s.tab; });
+}
+
+function applyFilters(tabs, filters) {
+  return tabs.filter(function (t) {
+    if (filters.pinnedOnly && !t.pinned) return false;
+    if (filters.audioOnly && !t.audible) return false;
+    if (filters.windowId && filters.windowId !== "all" && t.windowId !== Number(filters.windowId)) return false;
+    return true;
+  });
+}
+
+function groupTabs(tabs) {
+  var groups = [];
+  var byWindow = {};
+  tabs.forEach(function (t) {
+    if (!byWindow[t.windowId]) {
+      byWindow[t.windowId] = { windowId: t.windowId, windowName: t.windowName, tabs: [] };
+      groups.push(byWindow[t.windowId]);
+    }
+    byWindow[t.windowId].tabs.push(t);
+  });
+  return groups;
+}
+
+function flattenGroups(groups) {
+  var flat = [];
+  groups.forEach(function (g) { g.tabs.forEach(function (t) { flat.push(t); }); });
+  return flat;
+}
+
+/* Clamped keyboard navigation: never wraps, never leaves [0, length-1]. */
+function moveIndex(current, dir, length) {
+  if (length <= 0) return -1;
+  if (current < 0) return dir > 0 ? 0 : length - 1;
+  var next = current + dir;
+  if (next < 0) return 0;
+  if (next > length - 1) return length - 1;
+  return next;
+}
+
+function removeTab(tabs, id) {
+  var idx = -1;
+  var removed = null;
+  var kept = tabs.filter(function (t, i) {
+    if (t.id === id) { idx = i; removed = t; return false; }
+    return true;
+  });
+  return { tabs: kept, removed: removed, index: idx };
+}
+
+function insertTabAt(tabs, tab, index) {
+  var out = tabs.slice();
+  var at = Math.max(0, Math.min(index, out.length));
+  out.splice(at, 0, tab);
+  return out;
+}
+
+function switchActive(tabs, id) {
+  return tabs.map(function (t) {
+    var c = {};
+    for (var k in t) c[k] = t[k];
+    c.active = (t.id === id);
+    return c;
+  });
+}
+
+function countSummary(tabs) {
+  var windows = {};
+  tabs.forEach(function (t) { windows[t.windowId] = true; });
+  return { total: tabs.length, windows: Object.keys(windows).length };
+}
+/* PURE-LOGIC-END */
+
+var state = {
+  tabs: cloneTabs(SAMPLE_TABS),
+  query: "",
+  filter: "all",
+  windowId: "all",
+  highlight: -1,
+  collapsed: {}
+};
+var lastClosed = null;
+var toastTimer = null;
+
+var $ = function (id) { return document.getElementById(id); };
+function escapeHtml(s) {
+  return String(s == null ? "" : s)
+    .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+}
+
+function visibleTabs() {
+  var filtered = applyFilters(state.tabs, {
+    pinnedOnly: state.filter === "pinned",
+    audioOnly: state.filter === "audio",
+    windowId: state.windowId
+  });
+  return searchTabs(filtered, state.query);
+}
+
+function render() {
+  var visible = visibleTabs();
+  var total = countSummary(state.tabs);
+  var shown = visible.length;
+  var q = state.query.trim();
+  $("counts").innerHTML = shown === total.total
+    ? "<strong>" + total.total + " tabs</strong> across " + total.windows + " windows"
+    : "Showing <strong>" + shown + "</strong> of " + total.total + " tabs";
+
+  var resultsEl = $("results");
+  var emptyEl = $("empty");
+  if (shown === 0) {
+    resultsEl.innerHTML = "";
+    emptyEl.classList.remove("hidden");
+    $("empty-msg").textContent = q
+      ? "No tabs match \u201c" + q + "\u201d — try a different word, or clear the search."
+      : state.tabs.length === 0
+        ? "All tabs are closed. Reset the demo to bring the sample tabs back."
+        : "No tabs match the current filters.";
+    state.highlight = -1;
+    return;
+  }
+  emptyEl.classList.add("hidden");
+
+  var groups = groupTabs(visible);
+  var flat = flattenGroups(groups);
+  if (state.highlight >= flat.length) state.highlight = flat.length - 1;
+
+  resultsEl.innerHTML = groups.map(function (g) {
+    var collapsed = !!state.collapsed[g.windowId];
+    var rows = collapsed ? "" : "<ul class=\"tab-list\">" + g.tabs.map(function (t) {
+      var flatIdx = flat.indexOf(t);
+      var badges = "";
+      if (t.active) badges += "<span class=\"badge active\">Active</span>";
+      if (t.pinned) badges += "<span class=\"badge\">Pinned</span>";
+      if (t.audible && !t.muted) badges += "<span class=\"badge audio\">♪ Playing</span>";
+      if (t.muted) badges += "<span class=\"badge\">Muted</span>";
+      return "<li class=\"tab-row" + (flatIdx === state.highlight ? " highlighted" : "") +
+        (t.active ? " active-tab" : "") + "\" data-id=\"" + t.id + "\" data-flat=\"" + flatIdx + "\">" +
+        "<span class=\"favicon\" style=\"background:" + faviconColor(t.url) + "\">" + escapeHtml(faviconLetter(t)) + "</span>" +
+        "<span class=\"tab-main\"><span class=\"tab-title\">" + escapeHtml(t.title) + "</span>" +
+        "<span class=\"tab-url\">" + escapeHtml(t.url) + "</span></span>" +
+        "<span class=\"badges\">" + badges + "</span>" +
+        "<button class=\"close-btn\" type=\"button\" data-close=\"" + t.id + "\" title=\"Close tab\" aria-label=\"Close tab: " + escapeHtml(t.title) + "\">×</button>" +
+        "</li>";
+    }).join("") + "</ul>";
+    return "<div class=\"group\"><div class=\"group-head\"><h3>Window " + g.windowId + " · " + escapeHtml(g.windowName) +
+      "<span class=\"count\">" + g.tabs.length + (g.tabs.length === 1 ? " tab" : " tabs") + "</span></h3>" +
+      "<button class=\"group-toggle\" type=\"button\" data-group=\"" + g.windowId + "\">" +
+      (collapsed ? "Show" : "Hide") + "</button></div>" + rows + "</div>";
+  }).join("");
+
+  if (state.highlight >= 0) {
+    var hl = resultsEl.querySelector(".tab-row.highlighted");
+    if (hl) hl.scrollIntoView({ block: "nearest" });
+  }
+}
+
+function showToast(msg, withUndo) {
+  $("toast-msg").textContent = msg;
+  $("toast-undo").classList.toggle("hidden", !withUndo);
+  $("toast").classList.add("show");
+  if (toastTimer) clearTimeout(toastTimer);
+  toastTimer = setTimeout(function () { $("toast").classList.remove("show"); }, withUndo ? 6000 : 3000);
+}
+
+function switchToTab(id) {
+  state.tabs = switchActive(state.tabs, id);
+  var tab = null;
+  state.tabs.forEach(function (t) { if (t.id === id) tab = t; });
+  render();
+  if (tab) showToast("Switched to \u201c" + tab.title + "\u201d", false);
+}
+
+function closeTab(id) {
+  var res = removeTab(state.tabs, id);
+  if (!res.removed) return;
+  var wasActive = res.removed.active;
+  state.tabs = res.tabs;
+  if (wasActive && state.tabs.length) {
+    var next = state.tabs[Math.min(res.index, state.tabs.length - 1)];
+    state.tabs = switchActive(state.tabs, next.id);
+  }
+  lastClosed = { tab: res.removed, index: res.index };
+  state.highlight = -1;
+  render();
+  showToast("Closed \u201c" + res.removed.title + "\u201d", true);
+}
+
+function resetDemo() {
+  state.tabs = cloneTabs(SAMPLE_TABS);
+  state.query = "";
+  state.filter = "all";
+  state.windowId = "all";
+  state.highlight = -1;
+  state.collapsed = {};
+  lastClosed = null;
+  $("q").value = "";
+  $("f-window").value = "all";
+  document.querySelectorAll("[data-filter]").forEach(function (b) {
+    b.classList.toggle("active", b.dataset.filter === "all");
+  });
+  render();
+  showToast("Demo reset — sample tabs restored", false);
+}
+
+$("q").addEventListener("input", function (e) {
+  state.query = e.target.value;
+  state.highlight = -1;
+  render();
+});
+
+$("q").addEventListener("keydown", function (e) {
+  var visible = visibleTabs();
+  if (e.key === "ArrowDown" || e.key === "ArrowUp") {
+    e.preventDefault();
+    state.highlight = moveIndex(state.highlight, e.key === "ArrowDown" ? 1 : -1, visible.length);
+    render();
+  } else if (e.key === "Enter") {
+    if (state.highlight >= 0 && visible[state.highlight]) {
+      switchToTab(visible[state.highlight].id);
+    }
+  } else if (e.key === "Escape") {
+    e.target.value = "";
+    state.query = "";
+    state.highlight = -1;
+    render();
+  }
+});
+
+document.querySelectorAll("[data-filter]").forEach(function (b) {
+  b.addEventListener("click", function () {
+    state.filter = b.dataset.filter;
+    state.highlight = -1;
+    document.querySelectorAll("[data-filter]").forEach(function (x) { x.classList.toggle("active", x === b); });
+    render();
+    $("q").focus();
+  });
+});
+
+$("f-window").addEventListener("change", function (e) {
+  state.windowId = e.target.value;
+  state.highlight = -1;
+  render();
+  $("q").focus();
+});
+
+$("results").addEventListener("click", function (e) {
+  var closeBtn = e.target.closest("[data-close]");
+  if (closeBtn) {
+    e.stopPropagation();
+    closeTab(Number(closeBtn.dataset.close));
+    return;
+  }
+  var toggle = e.target.closest("[data-group]");
+  if (toggle) {
+    var wid = toggle.dataset.group;
+    state.collapsed[wid] = !state.collapsed[wid];
+    render();
+    return;
+  }
+  var row = e.target.closest(".tab-row");
+  if (row) {
+    switchToTab(Number(row.dataset.id));
+    $("q").focus();
+  }
+});
+
+$("btn-clear").addEventListener("click", function () {
+  $("q").value = "";
+  state.query = "";
+  state.highlight = -1;
+  render();
+  $("q").focus();
+});
+
+$("btn-reset").addEventListener("click", resetDemo);
+
+$("toast-undo").addEventListener("click", function () {
+  if (!lastClosed) return;
+  state.tabs = insertTabAt(state.tabs, lastClosed.tab, lastClosed.index);
+  var restored = lastClosed.tab;
+  lastClosed = null;
+  render();
+  showToast("Restored \u201c" + restored.title + "\u201d", false);
+});
+
+render();
+$("q").focus();
+</script>
+</body>
+</html>

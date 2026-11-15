@@ -401,6 +401,11 @@
     <priority>0.7</priority>
   </url>
   <url>
+    <loc>https://shipwright-studio.pages.dev/lab/tab-search/</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
     <loc>https://shipwright-studio.pages.dev/lab/tetris/</loc>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
@@ -462,6 +467,11 @@
   </url>
   <url>
     <loc>https://shipwright-studio.pages.dev/lab/vwap-tracker/</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://shipwright-studio.pages.dev/lab/wallet-pie/</loc>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>

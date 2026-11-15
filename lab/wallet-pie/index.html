@@ -1,0 +1,759 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Wallet Portfolio Pie · Shipwright Studio</title>
+<meta name="description" content="Enter your holdings by hand and see your portfolio as a donut chart — weights, totals and a holdings table, all stored locally in your browser.">
+<link rel="canonical" href="https://shipwright-studio.pages.dev/lab/wallet-pie/">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
+  "name": "Wallet Portfolio Pie",
+  "description": "A free online tool that turns manually entered holdings into a donut chart of portfolio allocation, with weights, totals and a holdings table stored locally in the browser.",
+  "applicationCategory": "FinanceApplication",
+  "operatingSystem": "Web",
+  "url": "https://shipwright-studio.pages.dev/lab/wallet-pie/",
+  "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+}
+</script>
+<style>
+  :root {
+    --bg: #0a0c0f;
+    --surface: #11141a;
+    --surface-2: #161a21;
+    --border: #1e242c;
+    --brass: #d2a24c;
+    --brass-dim: rgba(210, 162, 76, 0.18);
+    --text: #e8e6e1;
+    --muted: #9aa3ad;
+    --danger: #e07856;
+    --mono: ui-monospace, "SF Mono", "Cascadia Code", Menlo, Consolas, monospace;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: "Inter", system-ui, -apple-system, sans-serif;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+  a { color: var(--brass); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  .wrap { max-width: 860px; margin: 0 auto; padding: 0 20px 80px; }
+  header.masthead {
+    padding: 28px 0 8px;
+    font-family: "Fraunces", Georgia, serif;
+    font-size: 15px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+  header.masthead a { color: var(--text); }
+  header.masthead a:hover { color: var(--brass); text-decoration: none; }
+  header.masthead span { color: var(--brass); }
+  h1 {
+    font-family: "Fraunces", Georgia, serif;
+    font-weight: 600;
+    font-size: clamp(2rem, 6vw, 3rem);
+    line-height: 1.15;
+    margin: 12px 0 12px;
+  }
+  .lede { color: var(--muted); font-size: 1.05rem; max-width: 62ch; }
+  .lede strong { color: var(--text); font-weight: 600; }
+  .note {
+    margin-top: 14px;
+    padding: 10px 14px;
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--brass);
+    background: var(--surface);
+    color: var(--muted);
+    font-size: 0.9rem;
+    border-radius: 6px;
+  }
+  h2 {
+    font-family: "Fraunces", Georgia, serif;
+    font-weight: 600;
+    font-size: 1.35rem;
+    margin: 36px 0 14px;
+  }
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 20px;
+  }
+  .stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin-top: 28px;
+  }
+  .stat {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px 18px;
+  }
+  .stat .stat-label {
+    font-size: 0.78rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .stat .stat-value {
+    font-family: "Fraunces", Georgia, serif;
+    font-weight: 600;
+    font-size: 1.5rem;
+    margin-top: 4px;
+    color: var(--text);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .chart-layout {
+    display: grid;
+    grid-template-columns: minmax(220px, 320px) 1fr;
+    gap: 24px;
+    align-items: center;
+  }
+  .chart-wrap { position: relative; }
+  canvas#pie { width: 100%; height: auto; display: block; }
+  .empty-chart {
+    display: none;
+    text-align: center;
+    color: var(--muted);
+    padding: 56px 16px;
+    border: 1px dashed var(--border);
+    border-radius: 10px;
+    font-size: 0.95rem;
+  }
+  .empty-chart.show { display: block; }
+  .legend { list-style: none; }
+  .legend li {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 0.95rem;
+  }
+  .legend li:last-child { border-bottom: none; }
+  .swatch {
+    width: 12px; height: 12px;
+    border-radius: 3px;
+    flex-shrink: 0;
+  }
+  .legend .lg-name { font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .legend .lg-value { margin-left: auto; font-family: var(--mono); font-size: 0.88rem; color: var(--muted); white-space: nowrap; }
+  .legend .lg-weight { font-family: var(--mono); font-size: 0.88rem; color: var(--brass); width: 62px; text-align: right; white-space: nowrap; }
+  .field { margin-bottom: 16px; }
+  .field:last-child { margin-bottom: 0; }
+  label {
+    display: block;
+    font-size: 0.85rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    margin-bottom: 6px;
+    color: var(--text);
+  }
+  label .hint { font-weight: 400; color: var(--muted); }
+  input[type="text"], input[type="number"] {
+    width: 100%;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: var(--text);
+    font-family: inherit;
+    font-size: 0.95rem;
+    padding: 10px 12px;
+    outline: none;
+    min-height: 44px;
+  }
+  input:focus { border-color: var(--brass); }
+  input.invalid { border-color: var(--danger); }
+  .form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+  .amount-wrap { position: relative; }
+  .amount-wrap::before {
+    content: "$";
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--muted);
+    font-size: 0.95rem;
+  }
+  .amount-wrap input { padding-left: 28px; }
+  .seg { display: flex; flex-wrap: wrap; gap: 8px; }
+  button {
+    font-family: inherit;
+    font-size: 0.9rem;
+    cursor: pointer;
+    border-radius: 6px;
+    padding: 9px 16px;
+    min-height: 44px;
+  }
+  .btn-primary {
+    background: var(--brass);
+    border: 1px solid var(--brass);
+    color: #14100a;
+    font-weight: 600;
+  }
+  .btn-primary:hover { opacity: 0.9; }
+  .btn-ghost {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text);
+  }
+  .btn-ghost:hover { border-color: var(--brass); color: var(--brass); }
+  .btn-ghost.active { border-color: var(--brass); color: #14100a; background: var(--brass); font-weight: 600; }
+  .btn-danger {
+    background: transparent;
+    border: 1px solid rgba(224, 120, 86, 0.5);
+    color: var(--danger);
+    min-height: 36px;
+    padding: 5px 12px;
+    font-size: 0.85rem;
+  }
+  .btn-danger:hover { border-color: var(--danger); }
+  .btn-link {
+    background: none;
+    border: none;
+    color: var(--brass);
+    min-height: 36px;
+    padding: 5px 10px;
+    font-size: 0.85rem;
+  }
+  .btn-link:hover { text-decoration: underline; }
+  .form-actions { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-top: 18px; }
+  .editing-note {
+    display: none;
+    font-size: 0.9rem;
+    color: var(--brass);
+    margin-top: 12px;
+  }
+  .editing-note.show { display: block; }
+  .errors {
+    display: none;
+    margin-top: 16px;
+    padding: 12px 14px;
+    border: 1px solid rgba(224, 120, 86, 0.5);
+    border-radius: 8px;
+    background: rgba(224, 120, 86, 0.07);
+    font-size: 0.9rem;
+  }
+  .errors.show { display: block; }
+  .errors li { list-style: none; margin: 3px 0; color: #f0a58e; }
+  .errors li::before { content: "⚠ "; }
+  table.holdings {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.95rem;
+  }
+  table.holdings th {
+    text-align: left;
+    font-size: 0.78rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--muted);
+    padding: 8px 10px;
+    border-bottom: 1px solid var(--border);
+  }
+  table.holdings td {
+    padding: 12px 10px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: middle;
+  }
+  table.holdings tr:last-child td { border-bottom: none; }
+  table.holdings td.num, table.holdings th.num { text-align: right; font-family: var(--mono); font-size: 0.88rem; }
+  .holding-name { font-weight: 600; }
+  .weight-bar {
+    height: 6px;
+    background: var(--surface-2);
+    border-radius: 3px;
+    overflow: hidden;
+    margin-top: 6px;
+    min-width: 80px;
+  }
+  .weight-fill { height: 100%; border-radius: 3px; }
+  .row-actions { white-space: nowrap; text-align: right; }
+  .empty-table {
+    color: var(--muted);
+    text-align: center;
+    padding: 24px 12px;
+    font-size: 0.95rem;
+  }
+  .toolbar { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 18px; }
+  .fine { color: var(--muted); font-size: 0.88rem; margin-top: 12px; }
+  .hidden { display: none !important; }
+  .flash { animation: flash 1.2s ease; }
+  @keyframes flash {
+    0% { box-shadow: 0 0 0 3px var(--brass-dim); }
+    100% { box-shadow: 0 0 0 0 transparent; }
+  }
+  footer {
+    margin-top: 56px;
+    padding-top: 20px;
+    border-top: 1px solid var(--border);
+    color: var(--muted);
+    font-size: 0.9rem;
+  }
+  @media (max-width: 640px) {
+    .card { padding: 16px; }
+    .stats { grid-template-columns: 1fr; }
+    .chart-layout { grid-template-columns: 1fr; }
+    .form-row { grid-template-columns: 1fr; }
+    table.holdings thead { display: none; }
+    table.holdings, table.holdings tbody, table.holdings tr, table.holdings td { display: block; width: 100%; }
+    table.holdings tr {
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      margin-bottom: 12px;
+      padding: 6px 4px;
+    }
+    table.holdings td { border-bottom: none; padding: 6px 12px; }
+    table.holdings td::before {
+      content: attr(data-label);
+      display: block;
+      font-size: 0.72rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+    table.holdings td.num { text-align: left; }
+    .row-actions { text-align: left; }
+    .row-actions::before { content: ""; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="masthead"><a href="/">Shipwright <span>Studio</span></a></header>
+
+  <h1>Wallet Portfolio Pie</h1>
+  <p class="lede"><strong>Wallet Portfolio Pie is a free online tool that turns manually entered holdings into a donut chart of portfolio allocation, so you can see at a glance how your money is spread across stocks, funds, crypto, cash and anything else you type in.</strong> Add each holding by name and value, and the chart, weights and totals update instantly — nothing is fetched from the internet and nothing leaves your browser.</p>
+  <p class="note">All values here are manually entered demo data — not live prices. Prices change constantly; this page never fetches market data, so the numbers you see are exactly the numbers you typed in.</p>
+
+  <div class="stats" aria-label="Portfolio totals">
+    <div class="stat"><div class="stat-label">Total value</div><div class="stat-value" id="stat-total">$0.00</div></div>
+    <div class="stat"><div class="stat-label">Holdings</div><div class="stat-value" id="stat-count">0</div></div>
+    <div class="stat"><div class="stat-label">Largest holding</div><div class="stat-value" id="stat-largest">—</div></div>
+  </div>
+
+  <h2>Allocation</h2>
+  <section class="card" id="chart-card" aria-label="Allocation chart">
+    <div class="chart-layout" id="chart-layout">
+      <div class="chart-wrap">
+        <canvas id="pie" width="320" height="320" role="img" aria-label="Donut chart of portfolio allocation"></canvas>
+        <div class="empty-chart" id="empty-chart">No holdings yet.<br>Add your first holding below, or load the sample portfolio to see the chart in action.</div>
+      </div>
+      <ul class="legend" id="legend"></ul>
+    </div>
+  </section>
+
+  <h2>Holdings</h2>
+  <section class="card" aria-label="Holdings table">
+    <table class="holdings">
+      <thead>
+        <tr>
+          <th>Holding</th>
+          <th class="num">Quantity</th>
+          <th class="num">Price</th>
+          <th class="num">Value</th>
+          <th class="num">Weight</th>
+          <th><span class="hidden">Actions</span></th>
+        </tr>
+      </thead>
+      <tbody id="holdings-body"></tbody>
+    </table>
+    <div class="empty-table" id="empty-table">Your holdings list is empty.</div>
+    <div class="toolbar">
+      <button class="btn-ghost" type="button" id="btn-sample">Load sample portfolio</button>
+      <button class="btn-danger" type="button" id="btn-clear">Clear all</button>
+    </div>
+    <p class="fine">Holdings are saved in this browser only (localStorage). Clearing your browser data removes them. Weights are value ÷ total, shown to one decimal place; because of rounding, the displayed weights may add to 99.9–100.1% while the underlying math sums to exactly 100%.</p>
+  </section>
+
+  <h2 id="form-heading">Add a holding</h2>
+  <section class="card" id="form-card" aria-label="Add or edit a holding">
+    <form id="holding-form" novalidate>
+      <div class="field">
+        <label for="f-name">Symbol or name</label>
+        <input type="text" id="f-name" maxlength="40" autocomplete="off" placeholder="e.g. VOO, Cash, Bitcoin">
+      </div>
+      <div class="field">
+        <label>How do you want to enter it?</label>
+        <div class="seg" role="group" aria-label="Entry mode">
+          <button class="btn-ghost active" type="button" data-mode="qty">Quantity × price</button>
+          <button class="btn-ghost" type="button" data-mode="value">Direct value</button>
+        </div>
+      </div>
+      <div class="form-row" id="qty-fields">
+        <div class="field">
+          <label for="f-qty">Quantity</label>
+          <input type="number" id="f-qty" min="0" step="any" inputmode="decimal" autocomplete="off" placeholder="10">
+        </div>
+        <div class="field">
+          <label for="f-price">Price per unit <span class="hint">— in USD</span></label>
+          <div class="amount-wrap">
+            <input type="number" id="f-price" min="0" step="any" inputmode="decimal" autocomplete="off" placeholder="500.00">
+          </div>
+        </div>
+      </div>
+      <div class="field hidden" id="value-field">
+        <label for="f-value">Total value <span class="hint">— in USD</span></label>
+        <div class="amount-wrap">
+          <input type="number" id="f-value" min="0" step="any" inputmode="decimal" autocomplete="off" placeholder="5000.00">
+        </div>
+      </div>
+      <div class="form-actions">
+        <button class="btn-primary" type="submit" id="btn-submit">Add holding</button>
+        <button class="btn-ghost hidden" type="button" id="btn-cancel-edit">Cancel edit</button>
+      </div>
+      <p class="editing-note" id="editing-note"></p>
+      <ul class="errors" id="errors" aria-live="polite"></ul>
+    </form>
+  </section>
+
+  <h2>How it works</h2>
+  <section class="card" aria-label="How the allocation is calculated">
+    <p>Each holding's value is either quantity × price per unit, or the direct
+    value you typed in. Its weight is its value divided by the total portfolio
+    value: <strong>weight = value ÷ total</strong>. The donut chart draws one
+    slice per holding, sized by weight, and the table sorts holdings by value,
+    largest first.</p>
+    <p class="fine">This is a planning and visualisation aid, not investment
+    advice. Values are entered by hand and are never checked against live
+    markets — double-check any number that matters before acting on it.</p>
+  </section>
+
+  <footer>Built by <a href="/ideas/">Shipwright Studio</a></footer>
+</div>
+
+<script>
+/* PURE-LOGIC-START */
+var PALETTE = ["#d2a24c", "#5fb8a6", "#7a9cc6", "#d98a7a", "#8fb573", "#a78bca", "#e8c87a", "#6a8a9e", "#c68a4c", "#9aa3ad"];
+var MAX_NUMBER = 1e12;
+var MAX_NAME_LEN = 40;
+
+var SAMPLE_HOLDINGS = [
+  { name: "VOO", qty: 20, price: 585.30 },
+  { name: "Cash", qty: 1, price: 8000 },
+  { name: "NVDA", qty: 15, price: 166.19 },
+  { name: "Bitcoin", qty: 0.25, price: 96000 },
+  { name: "Gold (GLD)", qty: 10, price: 380.50 }
+];
+
+function holdingValue(h) {
+  if (typeof h.value === "number" && isFinite(h.value)) return h.value;
+  if (typeof h.qty === "number" && typeof h.price === "number") return h.qty * h.price;
+  return NaN;
+}
+function withWeights(holdings) {
+  var total = holdings.reduce(function (sum, h) { return sum + holdingValue(h); }, 0);
+  return holdings.map(function (h) {
+    var v = holdingValue(h);
+    return {
+      id: h.id, name: h.name, qty: h.qty, price: h.price, value: v,
+      weight: total > 0 ? v / total * 100 : 0
+    };
+  }).sort(function (a, b) { return b.value - a.value; });
+}
+function portfolioTotals(holdings) {
+  var rows = withWeights(holdings);
+  var total = rows.reduce(function (sum, r) { return sum + r.value; }, 0);
+  var largest = rows.length ? rows[0] : null;
+  return {
+    total: total,
+    count: rows.length,
+    largest: largest ? { name: largest.name, weight: largest.weight } : null,
+    rows: rows
+  };
+}
+function validateHolding(name, mode, qty, price, value) {
+  var errors = [];
+  if (!name || !name.trim()) errors.push("Enter a symbol or name for the holding.");
+  if (name && name.trim().length > MAX_NAME_LEN) errors.push("Name must be " + MAX_NAME_LEN + " characters or fewer.");
+  if (mode === "qty") {
+    if (!(qty > 0) || !isFinite(qty) || qty > MAX_NUMBER) errors.push("Quantity must be a number greater than 0.");
+    if (!(price > 0) || !isFinite(price) || price > MAX_NUMBER) errors.push("Price per unit must be a number greater than 0.");
+  } else {
+    if (!(value > 0) || !isFinite(value) || value > MAX_NUMBER) errors.push("Value must be a number greater than 0.");
+  }
+  return errors;
+}
+function makeHolding(name, mode, qty, price, value) {
+  if (mode === "qty") return { name: name.trim(), qty: qty, price: price };
+  return { name: name.trim(), value: value };
+}
+function addHolding(holdings, holding) {
+  return holdings.concat([holding]);
+}
+function updateHolding(holdings, id, holding) {
+  return holdings.map(function (h) { return h.id === id ? holding : h; });
+}
+function deleteHolding(holdings, id) {
+  return holdings.filter(function (h) { return h.id !== id; });
+}
+function sampleHoldings() {
+  return SAMPLE_HOLDINGS.map(function (h, i) {
+    return { id: "sample-" + i, name: h.name, qty: h.qty, price: h.price };
+  });
+}
+function formatUsd(n) {
+  return "$" + n.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+function formatWeight(w) {
+  return w.toFixed(1) + "%";
+}
+function formatNumber(n) {
+  return n.toLocaleString("en-US", { maximumFractionDigits: 4 });
+}
+function colorFor(index) {
+  return PALETTE[index % PALETTE.length];
+}
+/* PURE-LOGIC-END */
+
+var STORAGE_KEY = "wallet-pie-holdings-v1";
+var state = { holdings: [], mode: "qty", editingId: null };
+var idCounter = 0;
+
+var $ = function (id) { return document.getElementById(id); };
+function escapeHtml(s) {
+  return String(s == null ? "" : s)
+    .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+}
+function newId() {
+  idCounter += 1;
+  return "h-" + Date.now().toString(36) + "-" + idCounter;
+}
+function loadHoldings() {
+  try {
+    var raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return [];
+    var parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed)) return [];
+    return parsed.filter(function (h) {
+      return h && typeof h.name === "string" && isFinite(holdingValue(h)) && holdingValue(h) > 0;
+    });
+  } catch (e) { return []; }
+}
+function saveHoldings() {
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state.holdings)); } catch (e) { /* storage unavailable — page still works in memory */ }
+}
+
+function drawPie(rows) {
+  var canvas = $("pie");
+  var ctx = canvas.getContext("2d");
+  var size = canvas.width;
+  var cx = size / 2, cy = size / 2;
+  var outer = size / 2 - 6, inner = size / 2 - 62;
+  ctx.clearRect(0, 0, size, size);
+  if (!rows.length) return;
+  var total = rows.reduce(function (s, r) { return s + r.value; }, 0);
+  var angle = -Math.PI / 2;
+  rows.forEach(function (r, i) {
+    var sweep = total > 0 ? r.value / total * Math.PI * 2 : 0;
+    ctx.beginPath();
+    ctx.arc(cx, cy, outer, angle, angle + sweep);
+    ctx.arc(cx, cy, inner, angle + sweep, angle, true);
+    ctx.closePath();
+    ctx.fillStyle = colorFor(i);
+    ctx.fill();
+    angle += sweep;
+  });
+  ctx.fillStyle = "#e8e6e1";
+  ctx.font = "600 22px Fraunces, Georgia, serif";
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  ctx.fillText(formatUsd(total), cx, cy - 10);
+  ctx.fillStyle = "#9aa3ad";
+  ctx.font = "12px Inter, system-ui, sans-serif";
+  ctx.fillText("total value", cx, cy + 14);
+}
+
+function render() {
+  var totals = portfolioTotals(state.holdings);
+  var rows = totals.rows;
+  $("stat-total").textContent = formatUsd(totals.total);
+  $("stat-count").textContent = String(totals.count);
+  $("stat-largest").textContent = totals.largest
+    ? totals.largest.name + " · " + formatWeight(totals.largest.weight)
+    : "—";
+
+  var hasRows = rows.length > 0;
+  $("pie").classList.toggle("hidden", !hasRows);
+  $("empty-chart").classList.toggle("show", !hasRows);
+  $("empty-table").classList.toggle("hidden", hasRows);
+  drawPie(rows);
+
+  $("legend").innerHTML = rows.map(function (r, i) {
+    return "<li><span class=\"swatch\" style=\"background:" + colorFor(i) + "\"></span>" +
+      "<span class=\"lg-name\">" + escapeHtml(r.name) + "</span>" +
+      "<span class=\"lg-value\">" + formatUsd(r.value) + "</span>" +
+      "<span class=\"lg-weight\">" + formatWeight(r.weight) + "</span></li>";
+  }).join("");
+
+  $("holdings-body").innerHTML = rows.map(function (r, i) {
+    var qtyCell = (typeof r.qty === "number")
+      ? formatNumber(r.qty) : "—";
+    var priceCell = (typeof r.price === "number")
+      ? formatUsd(r.price) : "—";
+    return "<tr>" +
+      "<td data-label=\"Holding\"><span class=\"holding-name\">" + escapeHtml(r.name) + "</span>" +
+        "<span class=\"weight-bar\"><span class=\"weight-fill\" style=\"display:block;width:" +
+        Math.max(1, r.weight).toFixed(1) + "%;background:" + colorFor(i) + "\"></span></span></td>" +
+      "<td data-label=\"Quantity\" class=\"num\">" + qtyCell + "</td>" +
+      "<td data-label=\"Price\" class=\"num\">" + priceCell + "</td>" +
+      "<td data-label=\"Value\" class=\"num\">" + formatUsd(r.value) + "</td>" +
+      "<td data-label=\"Weight\" class=\"num\">" + formatWeight(r.weight) + "</td>" +
+      "<td class=\"row-actions\"><button class=\"btn-link\" type=\"button\" data-edit=\"" + escapeHtml(r.id) + "\">Edit</button>" +
+      "<button class=\"btn-link\" type=\"button\" data-delete=\"" + escapeHtml(r.id) + "\">Delete</button></td>" +
+      "</tr>";
+  }).join("");
+}
+
+function flashChart() {
+  var card = $("chart-card");
+  card.classList.remove("flash"); void card.offsetWidth; card.classList.add("flash");
+}
+
+function readNumber(id) {
+  var raw = $(id).value.trim();
+  if (raw === "") return NaN;
+  return Number(raw);
+}
+
+function setMode(mode) {
+  state.mode = mode;
+  document.querySelectorAll("[data-mode]").forEach(function (b) {
+    b.classList.toggle("active", b.dataset.mode === mode);
+  });
+  $("qty-fields").classList.toggle("hidden", mode !== "qty");
+  $("value-field").classList.toggle("hidden", mode !== "value");
+}
+
+function resetForm() {
+  $("holding-form").reset();
+  state.editingId = null;
+  $("btn-submit").textContent = "Add holding";
+  $("form-heading").textContent = "Add a holding";
+  $("btn-cancel-edit").classList.add("hidden");
+  $("editing-note").classList.remove("show");
+  setMode("qty");
+  clearErrors();
+}
+
+function clearErrors() {
+  var errEl = $("errors");
+  errEl.innerHTML = "";
+  errEl.classList.remove("show");
+  ["f-name", "f-qty", "f-price", "f-value"].forEach(function (id) { $(id).classList.remove("invalid"); });
+}
+
+function showErrors(errors, badFields) {
+  var errEl = $("errors");
+  errEl.innerHTML = errors.map(function (e) { return "<li>" + escapeHtml(e) + "</li>"; }).join("");
+  errEl.classList.add("show");
+  (badFields || []).forEach(function (id) { $(id).classList.add("invalid"); });
+}
+
+$("holding-form").addEventListener("submit", function (e) {
+  e.preventDefault();
+  var name = $("f-name").value;
+  var qty = readNumber("f-qty");
+  var price = readNumber("f-price");
+  var value = readNumber("f-value");
+  var errors = validateHolding(name, state.mode, qty, price, value);
+  clearErrors();
+  if (errors.length) {
+    var bad = ["f-name"];
+    if (state.mode === "qty") { bad.push("f-qty", "f-price"); } else { bad.push("f-value"); }
+    showErrors(errors, bad);
+    return;
+  }
+  var holding = makeHolding(name, state.mode, qty, price, value);
+  if (state.editingId) {
+    holding.id = state.editingId;
+    state.holdings = updateHolding(state.holdings, state.editingId, holding);
+  } else {
+    holding.id = newId();
+    state.holdings = addHolding(state.holdings, holding);
+  }
+  saveHoldings();
+  resetForm();
+  render();
+  flashChart();
+});
+
+$("btn-cancel-edit").addEventListener("click", resetForm);
+
+document.querySelectorAll("[data-mode]").forEach(function (b) {
+  b.addEventListener("click", function () { setMode(b.dataset.mode); });
+});
+
+$("holdings-body").addEventListener("click", function (e) {
+  var editId = e.target.getAttribute && e.target.getAttribute("data-edit");
+  var deleteId = e.target.getAttribute && e.target.getAttribute("data-delete");
+  if (deleteId) {
+    state.holdings = deleteHolding(state.holdings, deleteId);
+    if (state.editingId === deleteId) resetForm();
+    saveHoldings();
+    render();
+    flashChart();
+    return;
+  }
+  if (editId) {
+    var h = state.holdings.find(function (x) { return x.id === editId; });
+    if (!h) return;
+    state.editingId = editId;
+    $("f-name").value = h.name;
+    if (typeof h.value === "number") {
+      setMode("value");
+      $("f-value").value = h.value;
+    } else {
+      setMode("qty");
+      $("f-qty").value = h.qty;
+      $("f-price").value = h.price;
+    }
+    $("btn-submit").textContent = "Save changes";
+    $("form-heading").textContent = "Edit holding";
+    $("btn-cancel-edit").classList.remove("hidden");
+    var note = $("editing-note");
+    note.textContent = "Editing “" + h.name + "” — save to apply, or cancel to discard.";
+    note.classList.add("show");
+    clearErrors();
+    $("form-card").scrollIntoView({ behavior: "smooth", block: "nearest" });
+    $("f-name").focus();
+  }
+});
+
+$("btn-sample").addEventListener("click", function () {
+  state.holdings = sampleHoldings();
+  saveHoldings();
+  resetForm();
+  render();
+  flashChart();
+});
+
+$("btn-clear").addEventListener("click", function () {
+  if (!state.holdings.length) return;
+  if (!window.confirm("Remove all holdings? This cannot be undone.")) return;
+  state.holdings = [];
+  saveHoldings();
+  resetForm();
+  render();
+});
+
+state.holdings = loadHoldings();
+render();
+</script>
+</body>
+</html>
