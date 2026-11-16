@@ -1,0 +1,1113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Chess Puzzles · Shipwright Studio</title>
+<meta name="description" content="Six mate-in-two chess puzzles, one at a time — find the single key move that forces checkmate on the next move, whatever Black replies.">
+<link rel="canonical" href="https://shipwright-studio.pages.dev/lab/chess-puzzles/">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
+  "name": "Chess Puzzles",
+  "description": "A free online tool that serves up mate-in-two chess puzzles, one at a time — find the single key move that forces checkmate on the next move, whatever Black replies.",
+  "applicationCategory": "GameApplication",
+  "operatingSystem": "Web",
+  "url": "https://shipwright-studio.pages.dev/lab/chess-puzzles/",
+  "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+}
+</script>
+<style>
+  :root {
+    --bg: #0a0c0f;
+    --surface: #11141a;
+    --surface-2: #161a21;
+    --border: #1e242c;
+    --brass: #d2a24c;
+    --brass-dim: rgba(210, 162, 76, 0.18);
+    --text: #e8e6e1;
+    --muted: #9aa3ad;
+    --danger: #e07856;
+    --light-sq: #ddd5c3;
+    --dark-sq: #8a7a63;
+    --mono: ui-monospace, "SF Mono", "Cascadia Code", Menlo, Consolas, monospace;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: "Inter", system-ui, -apple-system, sans-serif;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+  a { color: var(--brass); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  .wrap { max-width: 860px; margin: 0 auto; padding: 0 20px 80px; }
+  header.masthead {
+    padding: 28px 0 8px;
+    font-family: "Fraunces", Georgia, serif;
+    font-size: 15px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+  header.masthead a { color: var(--text); }
+  header.masthead a:hover { color: var(--brass); text-decoration: none; }
+  header.masthead span { color: var(--brass); }
+  h1 {
+    font-family: "Fraunces", Georgia, serif;
+    font-weight: 600;
+    font-size: clamp(2rem, 6vw, 3rem);
+    line-height: 1.15;
+    margin: 12px 0 12px;
+  }
+  .lede { color: var(--muted); font-size: 1.05rem; max-width: 62ch; }
+  .lede strong { color: var(--text); font-weight: 600; }
+  .note {
+    margin-top: 14px;
+    padding: 10px 14px;
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--brass);
+    background: var(--surface);
+    color: var(--muted);
+    font-size: 0.9rem;
+    border-radius: 6px;
+  }
+  h2 {
+    font-family: "Fraunces", Georgia, serif;
+    font-weight: 600;
+    font-size: 1.35rem;
+    margin: 36px 0 14px;
+  }
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 20px;
+  }
+  .stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin-top: 28px;
+  }
+  .stat {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px 18px;
+  }
+  .stat .stat-label {
+    font-size: 0.78rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .stat .stat-value {
+    font-family: "Fraunces", Georgia, serif;
+    font-weight: 600;
+    font-size: 1.5rem;
+    margin-top: 4px;
+    color: var(--text);
+  }
+  .puzzle-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 10px;
+    margin: 28px 0 14px;
+  }
+  .puzzle-head .puzzle-title {
+    font-family: "Fraunces", Georgia, serif;
+    font-weight: 600;
+    font-size: 1.35rem;
+  }
+  .badge {
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    border: 1px solid var(--brass);
+    color: var(--brass);
+    border-radius: 999px;
+    padding: 3px 10px;
+  }
+  .badge.easy { border-color: #8fb573; color: #8fb573; }
+  .badge.hard { border-color: var(--danger); color: var(--danger); }
+  .puzzle-head .to-move { color: var(--muted); font-size: 0.95rem; margin-left: auto; }
+  .board-wrap { display: flex; justify-content: center; }
+  .board {
+    display: grid;
+    grid-template-columns: repeat(8, minmax(0, 1fr));
+    width: min(100%, 480px);
+    border: 2px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+    user-select: none;
+  }
+  .sq {
+    position: relative;
+    aspect-ratio: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    font-family: inherit;
+  }
+  .sq.light { background: var(--light-sq); }
+  .sq.dark { background: var(--dark-sq); }
+  .sq .coord {
+    position: absolute;
+    font-size: 9px;
+    font-weight: 600;
+    line-height: 1;
+    pointer-events: none;
+  }
+  .sq.light .coord { color: var(--dark-sq); }
+  .sq.dark .coord { color: var(--light-sq); }
+  .coord.file { right: 3px; bottom: 2px; }
+  .coord.rank { left: 3px; top: 2px; }
+  .sq .piece {
+    font-size: clamp(26px, 7vw, 42px);
+    line-height: 1;
+    pointer-events: none;
+  }
+  .sq .piece.white { color: #f7f3e8; text-shadow: 0 1px 2px rgba(0,0,0,.85), 0 0 2px rgba(0,0,0,.6); }
+  .sq .piece.black { color: #17191d; text-shadow: 0 0 3px rgba(240,230,205,.45); }
+  .sq.selected { box-shadow: inset 0 0 0 3px var(--brass); }
+  .sq.last-move { box-shadow: inset 0 0 0 3px rgba(210, 162, 76, 0.55); }
+  .sq.hint-sq { box-shadow: inset 0 0 0 3px var(--brass), inset 0 0 0 6px rgba(210, 162, 76, 0.35); }
+  .sq.legal::after {
+    content: "";
+    position: absolute;
+    width: 26%;
+    height: 26%;
+    border-radius: 50%;
+    background: rgba(210, 162, 76, 0.85);
+    pointer-events: none;
+  }
+  .sq.legal.capture::after {
+    width: 92%;
+    height: 92%;
+    background: transparent;
+    border: 3px solid rgba(210, 162, 76, 0.9);
+  }
+  .status {
+    margin-top: 16px;
+    min-height: 1.6em;
+    font-size: 0.98rem;
+    color: var(--text);
+  }
+  .status.error { color: #f0a58e; }
+  .status.success { color: var(--brass); font-weight: 600; }
+  .moves {
+    margin-top: 10px;
+    font-family: var(--mono);
+    font-size: 0.9rem;
+    color: var(--muted);
+    min-height: 1.5em;
+  }
+  .moves strong { color: var(--text); }
+  .controls { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 16px; }
+  button {
+    font-family: inherit;
+    font-size: 0.9rem;
+    cursor: pointer;
+    border-radius: 6px;
+    padding: 9px 16px;
+    min-height: 44px;
+  }
+  button:disabled { opacity: 0.4; cursor: default; }
+  .btn-primary {
+    background: var(--brass);
+    border: 1px solid var(--brass);
+    color: #14100a;
+    font-weight: 600;
+  }
+  .btn-primary:hover:not(:disabled) { opacity: 0.9; }
+  .btn-ghost {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text);
+  }
+  .btn-ghost:hover:not(:disabled) { border-color: var(--brass); color: var(--brass); }
+  .btn-ghost.active { border-color: var(--brass); color: var(--brass); }
+  .solution-box {
+    display: none;
+    margin-top: 16px;
+    padding: 14px 16px;
+    border: 1px solid var(--brass-dim);
+    border-left: 3px solid var(--brass);
+    border-radius: 8px;
+    background: var(--surface-2);
+    font-size: 0.95rem;
+  }
+  .solution-box.show { display: block; }
+  .solution-box h3 {
+    font-family: "Fraunces", Georgia, serif;
+    font-size: 1.05rem;
+    margin-bottom: 8px;
+  }
+  .solution-box ul { list-style: none; }
+  .solution-box li { margin: 4px 0; font-family: var(--mono); font-size: 0.9rem; }
+  .solution-box li span { color: var(--muted); font-family: "Inter", system-ui, sans-serif; }
+  .picker { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 18px; }
+  .picker button {
+    min-width: 48px;
+    min-height: 44px;
+    padding: 9px 12px;
+  }
+  .picker button.solved { border-color: var(--brass); color: var(--brass); }
+  .picker button.solved::after { content: " ✓"; }
+  .fine { color: var(--muted); font-size: 0.88rem; margin-top: 12px; }
+  .flash { animation: flash 1.2s ease; }
+  @keyframes flash {
+    0% { box-shadow: 0 0 0 3px var(--brass-dim); }
+    100% { box-shadow: 0 0 0 0 transparent; }
+  }
+  footer {
+    margin-top: 56px;
+    padding-top: 20px;
+    border-top: 1px solid var(--border);
+    color: var(--muted);
+    font-size: 0.9rem;
+  }
+  @media (max-width: 640px) {
+    .card { padding: 16px; }
+    .stats { grid-template-columns: 1fr 1fr; }
+    .stats .stat:last-child { grid-column: 1 / -1; }
+    .puzzle-head .to-move { margin-left: 0; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="masthead"><a href="/">Shipwright <span>Studio</span></a></header>
+
+  <h1>Chess Puzzles</h1>
+  <p class="lede"><strong>Chess Puzzles is a free online tool that serves up mate-in-two chess tactics, one puzzle at a time — find the single key move that forces checkmate on the next move, whatever Black replies.</strong> Six puzzles, from a gentle warm-up to a quiet waiting move. No account, no clock, nothing leaves your browser.</p>
+  <p class="note">Every puzzle on this page was machine-verified as a genuine, unique mate in two: there is no mate in one, exactly one key move works, and every legal Black reply is mated on move two. If a move looks like it should work and doesn't, that is the puzzle.</p>
+
+  <div class="stats" aria-label="Your progress">
+    <div class="stat"><div class="stat-label">Solved</div><div class="stat-value" id="stat-solved">0 / 6</div></div>
+    <div class="stat"><div class="stat-label">Current streak</div><div class="stat-value" id="stat-streak">0</div></div>
+    <div class="stat"><div class="stat-label">Best streak</div><div class="stat-value" id="stat-best">0</div></div>
+  </div>
+
+  <div class="puzzle-head">
+    <span class="puzzle-title" id="puzzle-title">Puzzle 1</span>
+    <span class="badge" id="puzzle-badge">Easy</span>
+    <span class="to-move">White to move — mate in 2</span>
+  </div>
+
+  <section class="card" id="board-card" aria-label="Chess puzzle board">
+    <div class="board-wrap">
+      <div class="board" id="board" role="grid" aria-label="Chess board"></div>
+    </div>
+    <p class="status" id="status" aria-live="polite">Find the key move. Click a white piece, then a highlighted square.</p>
+    <p class="moves" id="moves" aria-label="Moves played"></p>
+    <div class="controls">
+      <button class="btn-ghost" type="button" id="btn-hint">Hint</button>
+      <button class="btn-ghost" type="button" id="btn-solution">Show solution</button>
+      <button class="btn-ghost" type="button" id="btn-reset">Reset puzzle</button>
+      <button class="btn-primary hidden" type="button" id="btn-next" style="display:none">Next puzzle →</button>
+    </div>
+    <div class="solution-box" id="solution-box" aria-live="polite"></div>
+  </section>
+
+  <div class="picker" id="picker" aria-label="Choose a puzzle"></div>
+  <p class="fine">A clean streak counts consecutive puzzles solved without a single wrong move — a hint never breaks it, but a wrong move does. Progress is saved in this browser only (localStorage).</p>
+
+  <h2>How it works</h2>
+  <section class="card" aria-label="How mate in two works">
+    <p><strong>Mate in 2</strong> means White can force checkmate on the second
+    move, no matter what Black does. First find the <strong>key move</strong> —
+    often a quiet move that creates an unstoppable threat. Black replies, and
+    then you deliver mate. There is exactly one key move in each puzzle; every
+    other legal move lets Black escape.</p>
+    <p class="fine">Click a piece to see where it can go (brass dots), then
+    click a destination. After the key move, Black's reply plays automatically
+    and you finish the job. Stuck? The hint shows only the square the key move
+    starts from. The solution shows the whole verified line — but a puzzle
+    finished that way doesn't count as solved.</p>
+  </section>
+
+  <footer>Built by <a href="/ideas/">Shipwright Studio</a></footer>
+</div>
+
+<script>
+// Minimal legal chess engine for mate-in-2 verification.
+// Supports K Q R B N P, pawn promotion (Q/R/B/N). No castling, no en passant
+// (verification positions must not rely on either).
+
+const FILES = 'abcdefgh';
+function sq(file, rank) { return rank * 8 + file; } // rank 0 = rank 1
+function fileOf(s) { return s & 7; }
+function rankOf(s) { return s >> 3; }
+function sqName(s) { return FILES[fileOf(s)] + (rankOf(s) + 1); }
+function parseSq(name) { return sq(FILES.indexOf(name[0]), parseInt(name[1], 10) - 1); }
+function isWhite(p) { return p >= 'A' && p <= 'Z'; }
+function isBlack(p) { return p >= 'a' && p <= 'z'; }
+
+function parseFen(fen) {
+  const parts = fen.trim().split(/\s+/);
+  const rows = parts[0].split('/');
+  if (rows.length !== 8) throw new Error('bad FEN: ' + fen);
+  const board = new Array(64).fill(null);
+  for (let r = 0; r < 8; r++) {
+    let f = 0;
+    for (const ch of rows[r]) {
+      if (/[1-8]/.test(ch)) { f += parseInt(ch, 10); }
+      else { board[sq(f, 7 - r)] = ch; f++; }
+    }
+    if (f !== 8) throw new Error('bad FEN row: ' + rows[r]);
+  }
+  return { board, turn: parts[1] === 'b' ? 'b' : 'w' };
+}
+
+function findKing(board, white) {
+  const k = white ? 'K' : 'k';
+  for (let i = 0; i < 64; i++) if (board[i] === k) return i;
+  return -1;
+}
+
+function attackedBy(board, target, byWhite) {
+  const tf = fileOf(target), tr = rankOf(target);
+  // Pawns
+  const pr = byWhite ? tr - 1 : tr + 1;
+  const pp = byWhite ? 'P' : 'p';
+  for (const df of [-1, 1]) {
+    const f = tf + df;
+    if (f >= 0 && f < 8 && pr >= 0 && pr < 8 && board[sq(f, pr)] === pp) return true;
+  }
+  // Knights
+  const np = byWhite ? 'N' : 'n';
+  for (const [df, dr] of [[1,2],[2,1],[2,-1],[1,-2],[-1,-2],[-2,-1],[-2,1],[-1,2]]) {
+    const f = tf + df, r = tr + dr;
+    if (f >= 0 && f < 8 && r >= 0 && r < 8 && board[sq(f, r)] === np) return true;
+  }
+  // King
+  const kp = byWhite ? 'K' : 'k';
+  for (let df = -1; df <= 1; df++) for (let dr = -1; dr <= 1; dr++) {
+    if (!df && !dr) continue;
+    const f = tf + df, r = tr + dr;
+    if (f >= 0 && f < 8 && r >= 0 && r < 8 && board[sq(f, r)] === kp) return true;
+  }
+  // Sliding: rook/queen orthogonal, bishop/queen diagonal
+  const rp = byWhite ? 'R' : 'r', bp = byWhite ? 'B' : 'b', qp = byWhite ? 'Q' : 'q';
+  const dirs = [
+    [1, 0, rp], [-1, 0, rp], [0, 1, rp], [0, -1, rp],
+    [1, 1, bp], [1, -1, bp], [-1, 1, bp], [-1, -1, bp]
+  ];
+  for (const [df, dr, line] of dirs) {
+    let f = tf + df, r = tr + dr;
+    while (f >= 0 && f < 8 && r >= 0 && r < 8) {
+      const p = board[sq(f, r)];
+      if (p) {
+        if (p === line || p === qp) return true;
+        break; // ray blocked by a non-attacker; try the next direction
+      }
+      f += df; r += dr;
+    }
+  }
+  return false;
+}
+
+function inCheck(board, white) {
+  const k = findKing(board, white);
+  if (k < 0) return false;
+  return attackedBy(board, k, !white);
+}
+
+// Generate pseudo-legal moves for side ('w' | 'b'), then filter by king safety.
+function genMoves(board, turn) {
+  const white = turn === 'w';
+  const moves = [];
+  const own = white ? isWhite : isBlack;
+  const foe = white ? isBlack : isWhite;
+  for (let s = 0; s < 64; s++) {
+    const p = board[s];
+    if (!p || !own(p)) continue;
+    const f = fileOf(s), r = rankOf(s);
+    const up = white ? 1 : -1;
+    const push = (to, promo) => {
+      if (to < 0 || to > 63) return;
+      const t = board[to];
+      if (t && own(t)) return;
+      moves.push({ from: s, to, piece: p, captured: t || null, promotion: promo || null });
+    };
+    const slide = (df, dr) => {
+      let nf = f + df, nr = r + dr;
+      while (nf >= 0 && nf < 8 && nr >= 0 && nr < 8) {
+        const to = sq(nf, nr);
+        const t = board[to];
+        if (t && own(t)) break;
+        moves.push({ from: s, to, piece: p, captured: t || null, promotion: null });
+        if (t) break;
+        nf += df; nr += dr;
+      }
+    };
+    switch (p.toUpperCase()) {
+      case 'P': {
+        const one = sq(f, r + up);
+        if (r + up >= 0 && r + up < 8 && !board[one]) {
+          if (r + up === (white ? 7 : 0)) {
+            for (const pr of ['Q', 'R', 'B', 'N']) moves.push({ from: s, to: one, piece: p, captured: null, promotion: white ? pr : pr.toLowerCase() });
+          } else {
+            moves.push({ from: s, to: one, piece: p, captured: null, promotion: null });
+            const start = white ? 1 : 6;
+            if (r === start) {
+              const two = sq(f, r + 2 * up);
+              if (!board[two]) moves.push({ from: s, to: two, piece: p, captured: null, promotion: null });
+            }
+          }
+        }
+        for (const df of [-1, 1]) {
+          const nf = f + df, nr = r + up;
+          if (nf < 0 || nf > 7 || nr < 0 || nr > 7) continue;
+          const to = sq(nf, nr);
+          const t = board[to];
+          if (t && foe(t)) {
+            if (nr === (white ? 7 : 0)) {
+              for (const pr of ['Q', 'R', 'B', 'N']) moves.push({ from: s, to, piece: p, captured: t, promotion: white ? pr : pr.toLowerCase() });
+            } else {
+              moves.push({ from: s, to, piece: p, captured: t, promotion: null });
+            }
+          }
+        }
+        break;
+      }
+      case 'N':
+        for (const [df, dr] of [[1,2],[2,1],[2,-1],[1,-2],[-1,-2],[-2,-1],[-2,1],[-1,2]]) {
+          const nf = f + df, nr = r + dr;
+          if (nf >= 0 && nf < 8 && nr >= 0 && nr < 8) push(sq(nf, nr));
+        }
+        break;
+      case 'B':
+        slide(1, 1); slide(1, -1); slide(-1, 1); slide(-1, -1);
+        break;
+      case 'R':
+        slide(1, 0); slide(-1, 0); slide(0, 1); slide(0, -1);
+        break;
+      case 'Q':
+        slide(1, 0); slide(-1, 0); slide(0, 1); slide(0, -1);
+        slide(1, 1); slide(1, -1); slide(-1, 1); slide(-1, -1);
+        break;
+      case 'K':
+        for (let df = -1; df <= 1; df++) for (let dr = -1; dr <= 1; dr++) {
+          if (!df && !dr) continue;
+          const nf = f + df, nr = r + dr;
+          if (nf >= 0 && nf < 8 && nr >= 0 && nr < 8) push(sq(nf, nr));
+        }
+        break;
+    }
+  }
+  // Filter: move must not leave own king in check.
+  return moves.filter(m => {
+    const nb = applyMove(board, m);
+    return !inCheck(nb, white);
+  });
+}
+
+function applyMove(board, m) {
+  const nb = board.slice();
+  nb[m.to] = m.promotion || m.piece;
+  nb[m.from] = null;
+  return nb;
+}
+
+function isCheckmate(board, turn) {
+  const white = turn === 'w';
+  return inCheck(board, white) && genMoves(board, turn).length === 0;
+}
+function isStalemate(board, turn) {
+  const white = turn === 'w';
+  return !inCheck(board, white) && genMoves(board, turn).length === 0;
+}
+
+// Basic SAN for a legal move (with disambiguation).
+function toSan(board, turn, m) {
+  const piece = m.piece.toUpperCase();
+  let san = '';
+  if (piece === 'P') {
+    if (m.captured) san += FILES[fileOf(m.from)] + 'x';
+    san += sqName(m.to);
+    if (m.promotion) san += '=' + m.promotion.toUpperCase();
+  } else {
+    san += piece;
+    const others = genMoves(board, turn).filter(o =>
+      o.piece === m.piece && o.to === m.to && o.from !== m.from);
+    if (others.length) {
+      const sameFile = others.some(o => fileOf(o.from) === fileOf(m.from));
+      const sameRank = others.some(o => rankOf(o.from) === rankOf(m.from));
+      if (!sameFile) san += FILES[fileOf(m.from)];
+      else if (!sameRank) san += (rankOf(m.from) + 1);
+      else san += sqName(m.from);
+    }
+    if (m.captured) san += 'x';
+    san += sqName(m.to);
+  }
+  const nb = applyMove(board, m);
+  const foe = turn === 'w' ? 'b' : 'w';
+  if (isCheckmate(nb, foe)) san += '#';
+  else if (inCheck(nb, foe === 'w')) san += '+';
+  return san;
+}
+
+var PUZZLES = [
+  {
+    "id": 1,
+    "difficulty": 1,
+    "label": "Easy",
+    "title": "Rook to the back rank",
+    "fen": "7k/5pp1/1b2R3/8/P7/PP2Q3/8/5K2 w - - 0 1",
+    "key": {
+      "san": "Qh3+",
+      "from": "e3",
+      "to": "h3"
+    },
+    "replies": [
+      {
+        "san": "Kg8",
+        "from": "h8",
+        "to": "g8",
+        "mates": [
+          "Re8#"
+        ]
+      }
+    ]
+  },
+  {
+    "id": 2,
+    "difficulty": 1,
+    "label": "Easy",
+    "title": "The bishop steps in",
+    "fen": "6k1/rb4pp/5p2/8/2P3Q1/2B1P3/2P5/6K1 w - - 0 1",
+    "key": {
+      "san": "Qe6+",
+      "from": "g4",
+      "to": "e6"
+    },
+    "replies": [
+      {
+        "san": "Kf8",
+        "from": "g8",
+        "to": "f8",
+        "mates": [
+          "Bb4#"
+        ]
+      },
+      {
+        "san": "Kh8",
+        "from": "g8",
+        "to": "h8",
+        "mates": [
+          "Qe8#"
+        ]
+      }
+    ]
+  },
+  {
+    "id": 3,
+    "difficulty": 2,
+    "label": "Medium",
+    "title": "Knight to the rescue",
+    "fen": "2r3k1/6pp/8/1RN1Q3/8/8/1P2KP2/8 w - - 0 1",
+    "key": {
+      "san": "Qe6+",
+      "from": "e5",
+      "to": "e6"
+    },
+    "replies": [
+      {
+        "san": "Kf8",
+        "from": "g8",
+        "to": "f8",
+        "mates": [
+          "Nd7#"
+        ]
+      },
+      {
+        "san": "Kh8",
+        "from": "g8",
+        "to": "h8",
+        "mates": [
+          "Qxc8#"
+        ]
+      }
+    ]
+  },
+  {
+    "id": 4,
+    "difficulty": 2,
+    "label": "Medium",
+    "title": "Take the pawn",
+    "fen": "7k/3R1pp1/4Q2p/8/8/5B2/P4K2/8 w - - 0 1",
+    "key": {
+      "san": "Qxf7",
+      "from": "e6",
+      "to": "f7"
+    },
+    "replies": [
+      {
+        "san": "h5",
+        "from": "h6",
+        "to": "h5",
+        "mates": [
+          "Qxg7#"
+        ]
+      },
+      {
+        "san": "g6",
+        "from": "g7",
+        "to": "g6",
+        "mates": [
+          "Rd8#",
+          "Qg7#",
+          "Qh7#",
+          "Qf8#",
+          "Qe8#"
+        ]
+      },
+      {
+        "san": "g5",
+        "from": "g7",
+        "to": "g5",
+        "mates": [
+          "Rd8#",
+          "Qg7#",
+          "Qh7#",
+          "Qf8#",
+          "Qe8#"
+        ]
+      },
+      {
+        "san": "Kh7",
+        "from": "h8",
+        "to": "h7",
+        "mates": [
+          "Qxg7#"
+        ]
+      }
+    ]
+  },
+  {
+    "id": 5,
+    "difficulty": 3,
+    "label": "Hard",
+    "title": "A quiet rook",
+    "fen": "6k1/6pp/8/8/2RQ4/1PP4P/2N1K3/8 w - - 0 1",
+    "key": {
+      "san": "Rc7",
+      "from": "c4",
+      "to": "c7"
+    },
+    "replies": [
+      {
+        "san": "g6",
+        "from": "g7",
+        "to": "g6",
+        "mates": [
+          "Qd8#",
+          "Qg7#"
+        ]
+      },
+      {
+        "san": "g5",
+        "from": "g7",
+        "to": "g5",
+        "mates": [
+          "Qd8#",
+          "Qg7#"
+        ]
+      },
+      {
+        "san": "h6",
+        "from": "h7",
+        "to": "h6",
+        "mates": [
+          "Qxg7#"
+        ]
+      },
+      {
+        "san": "h5",
+        "from": "h7",
+        "to": "h5",
+        "mates": [
+          "Qxg7#"
+        ]
+      },
+      {
+        "san": "Kf8",
+        "from": "g8",
+        "to": "f8",
+        "mates": [
+          "Qd8#"
+        ]
+      },
+      {
+        "san": "Kh8",
+        "from": "g8",
+        "to": "h8",
+        "mates": [
+          "Qd8#",
+          "Qxg7#",
+          "Rc8#"
+        ]
+      }
+    ]
+  },
+  {
+    "id": 6,
+    "difficulty": 3,
+    "label": "Hard",
+    "title": "Wait for it",
+    "fen": "7k/5p1p/6p1/R7/4P3/4Q3/P1K5/8 w - - 0 1",
+    "key": {
+      "san": "Qh6",
+      "from": "e3",
+      "to": "h6"
+    },
+    "replies": [
+      {
+        "san": "g5",
+        "from": "g6",
+        "to": "g5",
+        "mates": [
+          "Ra8#",
+          "Qf8#"
+        ]
+      },
+      {
+        "san": "f6",
+        "from": "f7",
+        "to": "f6",
+        "mates": [
+          "Ra8#",
+          "Qf8#"
+        ]
+      },
+      {
+        "san": "f5",
+        "from": "f7",
+        "to": "f5",
+        "mates": [
+          "Ra8#",
+          "Qf8#"
+        ]
+      },
+      {
+        "san": "Kg8",
+        "from": "h8",
+        "to": "g8",
+        "mates": [
+          "Ra8#"
+        ]
+      }
+    ]
+  }
+];
+
+/* ---- progress (localStorage) ---- */
+var STORAGE_KEY = "chess-puzzles-v1";
+function loadProgress() {
+  try {
+    var raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return { solved: [], streak: 0, best: 0 };
+    var p = JSON.parse(raw);
+    if (!p || !Array.isArray(p.solved)) return { solved: [], streak: 0, best: 0 };
+    return { solved: p.solved.filter(function (id) { return typeof id === "number"; }),
+             streak: p.streak | 0, best: p.best | 0 };
+  } catch (e) { return { solved: [], streak: 0, best: 0 }; }
+}
+function saveProgress() {
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(progress)); } catch (e) { /* storage unavailable — page still works in memory */ }
+}
+var progress = loadProgress();
+
+/* ---- state ---- */
+var state = {
+  idx: 0,
+  board: null,
+  stage: "key", // key | anim | mate | done | revealed
+  tries: 0,
+  wrongThisPuzzle: false,
+  hintUsed: false,
+  selected: -1,
+  legalTargets: [],
+  lastMove: null,
+  currentReply: null,
+  moveSans: []
+};
+
+var $ = function (id) { return document.getElementById(id); };
+var PIECES = { K: "♔", Q: "♕", R: "♖", B: "♗", N: "♘", P: "♙",
+               k: "♚", q: "♛", r: "♜", b: "♝", n: "♞", p: "♟" };
+
+function currentPuzzle() { return PUZZLES[state.idx]; }
+
+function setStatus(text, kind) {
+  var el = $("status");
+  el.textContent = text;
+  el.className = "status" + (kind ? " " + kind : "");
+}
+
+function renderStats() {
+  $("stat-solved").textContent = progress.solved.length + " / " + PUZZLES.length;
+  $("stat-streak").textContent = String(progress.streak);
+  $("stat-best").textContent = String(progress.best);
+}
+
+function renderPicker() {
+  $("picker").innerHTML = PUZZLES.map(function (p, i) {
+    var cls = "btn-ghost" + (i === state.idx ? " active" : "") + (progress.solved.indexOf(p.id) >= 0 ? " solved" : "");
+    return "<button type=\"button\" class=\"" + cls + "\" data-puzzle=\"" + i + "\">" + p.id + "</button>";
+  }).join("");
+  document.querySelectorAll("[data-puzzle]").forEach(function (b) {
+    b.addEventListener("click", function () { loadPuzzle(parseInt(b.dataset.puzzle, 10)); });
+  });
+}
+
+function renderMoves() {
+  if (!state.moveSans.length) { $("moves").innerHTML = ""; return; }
+  var html = "";
+  for (var i = 0; i < state.moveSans.length; i += 2) {
+    var n = i / 2 + 1;
+    html += "<strong>" + n + ".</strong> " + state.moveSans[i];
+    if (state.moveSans[i + 1]) html += " " + state.moveSans[i + 1];
+    html += " &nbsp;";
+  }
+  $("moves").innerHTML = html;
+}
+
+function renderBoard() {
+  var boardEl = $("board");
+  var html = "";
+  for (var r = 7; r >= 0; r--) {
+    for (var f = 0; f < 8; f++) {
+      var s = r * 8 + f;
+      var p = state.board[s];
+      var cls = "sq " + (((f + r) % 2 === 0) ? "dark" : "light");
+      if (state.selected === s) cls += " selected";
+      if (state.lastMove && (state.lastMove.from === s || state.lastMove.to === s)) cls += " last-move";
+      if (state.hintUsed && state.stage === "key" && parseSq(currentPuzzle().key.from) === s) cls += " hint-sq";
+      var target = state.legalTargets.find(function (m) { return m.to === s; });
+      if (target) cls += " legal" + (target.captured ? " capture" : "");
+      var coord = "";
+      if (r === 0) coord += "<span class=\"coord file\">" + FILES[f] + "</span>";
+      if (f === 0) coord += "<span class=\"coord rank\">" + (r + 1) + "</span>";
+      var piece = p ? "<span class=\"piece " + (isWhite(p) ? "white" : "black") + "\">" + PIECES[p] + "</span>" : "";
+      html += "<button type=\"button\" class=\"" + cls + "\" data-sq=\"" + s + "\" aria-label=\"" +
+        (p ? PIECES[p] + " on " : "Empty square ") + sqName(s) + "\">" + coord + piece + "</button>";
+    }
+  }
+  boardEl.innerHTML = html;
+  boardEl.querySelectorAll("[data-sq]").forEach(function (el) {
+    el.addEventListener("click", function () { onSquare(parseInt(el.dataset.sq, 10)); });
+  });
+}
+
+function renderAll() {
+  renderBoard();
+  renderMoves();
+  renderStats();
+  renderPicker();
+}
+
+function loadPuzzle(idx) {
+  state.idx = idx;
+  var p = currentPuzzle();
+  state.board = parseFen(p.fen).board;
+  state.stage = "key";
+  state.tries = 0;
+  state.wrongThisPuzzle = false;
+  state.hintUsed = false;
+  state.selected = -1;
+  state.legalTargets = [];
+  state.lastMove = null;
+  state.currentReply = null;
+  state.moveSans = [];
+  $("puzzle-title").textContent = "Puzzle " + p.id + " — " + p.title;
+  var badge = $("puzzle-badge");
+  badge.textContent = p.label;
+  badge.className = "badge " + p.label.toLowerCase();
+  $("solution-box").className = "solution-box";
+  $("solution-box").innerHTML = "";
+  $("btn-next").style.display = "none";
+  $("btn-hint").disabled = false;
+  $("btn-solution").disabled = false;
+  setStatus("Find the key move. Click a white piece, then a highlighted square.");
+  renderAll();
+}
+
+function legalMovesFrom(from) {
+  return genMoves(state.board, "w").filter(function (m) { return m.from === from; });
+}
+
+function findMove(from, to) {
+  var moves = legalMovesFrom(from).filter(function (m) { return m.to === to; });
+  if (!moves.length) return null;
+  // Auto-promote to queen (no puzzle position can promote, but stay safe).
+  return moves.find(function (m) { return m.promotion === "Q"; }) || moves[0];
+}
+
+function applyAndRecord(move, turn) {
+  var san = toSan(state.board, turn, move);
+  state.board = applyMove(state.board, move);
+  state.lastMove = { from: move.from, to: move.to };
+  state.moveSans.push(san);
+  return san;
+}
+
+function onSquare(s) {
+  if (state.stage === "anim" || state.stage === "done" || state.stage === "revealed") return;
+  var p = state.board[s];
+  // Clicked a white piece: select it.
+  if (p && isWhite(p)) {
+    state.selected = s;
+    state.legalTargets = legalMovesFrom(s);
+    renderBoard();
+    return;
+  }
+  // Clicked a legal destination for the selected piece.
+  if (state.selected >= 0) {
+    var target = state.legalTargets.find(function (m) { return m.to === s; });
+    if (target) {
+      attemptMove(target);
+      return;
+    }
+  }
+  // Otherwise: deselect.
+  state.selected = -1;
+  state.legalTargets = [];
+  renderBoard();
+}
+
+function wrongMove(message) {
+  state.tries += 1;
+  state.wrongThisPuzzle = true;
+  state.selected = -1;
+  state.legalTargets = [];
+  setStatus(message + " (tries: " + state.tries + ")", "error");
+  renderBoard();
+}
+
+function attemptMove(move) {
+  var puzzle = currentPuzzle();
+  if (state.stage === "key") {
+    if (move.from === parseSq(puzzle.key.from) && move.to === parseSq(puzzle.key.to)) {
+      var san = applyAndRecord(move, "w");
+      state.selected = -1;
+      state.legalTargets = [];
+      state.stage = "anim";
+      setStatus("Key move — " + san + "! Black replies…", "success");
+      renderAll();
+      var card = $("board-card");
+      card.classList.remove("flash"); void card.offsetWidth; card.classList.add("flash");
+      setTimeout(playBlackReply, 750);
+    } else {
+      wrongMove("That's a legal move, but it doesn't force mate in two. Try again.");
+    }
+    return;
+  }
+  if (state.stage === "mate") {
+    var trial = applyMove(state.board, move);
+    if (isCheckmate(trial, "b")) {
+      var mateSan = applyAndRecord(move, "w");
+      state.selected = -1;
+      state.legalTargets = [];
+      state.stage = "done";
+      onSolved(mateSan);
+    } else {
+      wrongMove("Not checkmate — the black king escapes. Try again.");
+    }
+    return;
+  }
+}
+
+function playBlackReply() {
+  var puzzle = currentPuzzle();
+  var reply = puzzle.replies[Math.floor(Math.random() * puzzle.replies.length)];
+  state.currentReply = reply;
+  var moves = genMoves(state.board, "b").filter(function (m) {
+    return m.from === parseSq(reply.from) && m.to === parseSq(reply.to);
+  });
+  if (!moves.length) { // should never happen — replies are pre-verified
+    setStatus("Something went wrong playing Black's reply. Reset the puzzle and try again.", "error");
+    state.stage = "key";
+    return;
+  }
+  var san = applyAndRecord(moves[0], "b");
+  state.stage = "mate";
+  setStatus("Black played " + san + " — now deliver checkmate.", "");
+  renderAll();
+}
+
+function onSolved(mateSan) {
+  var puzzle = currentPuzzle();
+  var alreadySolved = progress.solved.indexOf(puzzle.id) >= 0;
+  if (!alreadySolved) progress.solved.push(puzzle.id);
+  if (state.wrongThisPuzzle) {
+    progress.streak = 0;
+  } else {
+    progress.streak += 1;
+    if (progress.streak > progress.best) progress.best = progress.streak;
+  }
+  saveProgress();
+  var line = "1. " + puzzle.key.san + " " + (state.currentReply ? state.currentReply.san : "") + " 2. " + mateSan;
+  setStatus("Checkmate! Solved in " + (state.tries + 1) + " " + (state.tries === 0 ? "try" : "tries") +
+    (state.wrongThisPuzzle ? " — a wrong move broke the streak, but the puzzle is solved." : " — clean solve, streak grows!"), "success");
+  showSolutionBox(line, true);
+  var nextBtn = $("btn-next");
+  if (state.idx < PUZZLES.length - 1) {
+    nextBtn.style.display = "";
+    nextBtn.onclick = function () { loadPuzzle(state.idx + 1); };
+  }
+  $("btn-hint").disabled = true;
+  $("btn-solution").disabled = true;
+  renderAll();
+}
+
+function showSolutionBox(line, solved) {
+  var puzzle = currentPuzzle();
+  var box = $("solution-box");
+  var html = "<h3>" + (solved ? "Solution" : "Solution — revealed, not solved") + "</h3><ul>";
+  puzzle.replies.forEach(function (rep) {
+    html += "<li>1. " + puzzle.key.san + " " + rep.san + " &nbsp;2. " + rep.mates.join(" / ") +
+      " <span>— after " + rep.san + ", mate by " + rep.mates.join(" or ") + "</span></li>";
+  });
+  html += "</ul>";
+  if (!solved) html += "<p class=\"fine\">This puzzle won't count as solved — reset it and find the key yourself to earn it.</p>";
+  box.innerHTML = html;
+  box.className = "solution-box show";
+}
+
+$("btn-hint").addEventListener("click", function () {
+  if (state.stage !== "key") return;
+  var puzzle = currentPuzzle();
+  state.hintUsed = true;
+  setStatus("Hint: the key move starts with the piece on " + puzzle.key.from + ".", "");
+  renderBoard();
+});
+
+$("btn-solution").addEventListener("click", function () {
+  if (state.stage === "done" || state.stage === "revealed") return;
+  state.stage = "revealed";
+  state.selected = -1;
+  state.legalTargets = [];
+  showSolutionBox("", false);
+  setStatus("Solution revealed. Reset the puzzle to try it yourself.", "");
+  renderAll();
+});
+
+$("btn-reset").addEventListener("click", function () { loadPuzzle(state.idx); });
+
+loadPuzzle(0);
+</script>
+</body>
+</html>

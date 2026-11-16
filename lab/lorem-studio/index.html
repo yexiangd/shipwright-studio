@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lorem Studio · Shipwright Studio</title>
+<meta name="description" content="Generate themed placeholder text in seconds — classic Latin lorem ipsum, startup buzzword copy, or pirate-speak — then copy it as plain text or HTML.">
+<link rel="canonical" href="https://shipwright-studio.pages.dev/lab/lorem-studio/">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
+  "name": "Lorem Studio",
+  "description": "A free online tool that generates themed placeholder text — classic Latin lorem ipsum, startup buzzword copy, or pirate-speak — with copy, HTML export and download, all in the browser.",
+  "applicationCategory": "UtilitiesApplication",
+  "operatingSystem": "Web",
+  "url": "https://shipwright-studio.pages.dev/lab/lorem-studio/",
+  "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+}
+</script>
+<style>
+  :root {
+    --bg: #0a0c0f;
+    --surface: #11141a;
+    --surface-2: #161a21;
+    --border: #1e242c;
+    --brass: #d2a24c;
+    --brass-dim: rgba(210, 162, 76, 0.18);
+    --text: #e8e6e1;
+    --muted: #9aa3ad;
+    --danger: #e07856;
+    --mono: ui-monospace, "SF Mono", "Cascadia Code", Menlo, Consolas, monospace;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: "Inter", system-ui, -apple-system, sans-serif;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+  a { color: var(--brass); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  .wrap { max-width: 860px; margin: 0 auto; padding: 0 20px 80px; }
+  header.masthead {
+    padding: 28px 0 8px;
+    font-family: "Fraunces", Georgia, serif;
+    font-size: 15px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+  header.masthead a { color: var(--text); }
+  header.masthead a:hover { color: var(--brass); text-decoration: none; }
+  header.masthead span { color: var(--brass); }
+  h1 {
+    font-family: "Fraunces", Georgia, serif;
+    font-weight: 600;
+    font-size: clamp(2rem, 6vw, 3rem);
+    line-height: 1.15;
+    margin: 12px 0 12px;
+  }
+  .lede { color: var(--muted); font-size: 1.05rem; max-width: 62ch; }
+  .lede strong { color: var(--text); font-weight: 600; }
+  .note {
+    margin-top: 14px;
+    padding: 10px 14px;
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--brass);
+    background: var(--surface);
+    color: var(--muted);
+    font-size: 0.9rem;
+    border-radius: 6px;
+  }
+  h2 {
+    font-family: "Fraunces", Georgia, serif;
+    font-weight: 600;
+    font-size: 1.35rem;
+    margin: 36px 0 14px;
+  }
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 20px;
+  }
+  .stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin-top: 28px;
+  }
+  .stat {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px 18px;
+  }
+  .stat .stat-label {
+    font-size: 0.78rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .stat .stat-value {
+    font-family: "Fraunces", Georgia, serif;
+    font-weight: 600;
+    font-size: 1.5rem;
+    margin-top: 4px;
+    color: var(--text);
+  }
+  .field { margin-bottom: 18px; }
+  .field:last-child { margin-bottom: 0; }
+  label, .field-label {
+    display: block;
+    font-size: 0.85rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    margin-bottom: 8px;
+    color: var(--text);
+  }
+  label .hint, .field-label .hint { font-weight: 400; color: var(--muted); }
+  .seg { display: flex; flex-wrap: wrap; gap: 8px; }
+  button {
+    font-family: inherit;
+    font-size: 0.9rem;
+    cursor: pointer;
+    border-radius: 6px;
+    padding: 9px 16px;
+    min-height: 44px;
+  }
+  .btn-primary {
+    background: var(--brass);
+    border: 1px solid var(--brass);
+    color: #14100a;
+    font-weight: 600;
+  }
+  .btn-primary:hover { opacity: 0.9; }
+  .btn-ghost {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text);
+  }
+  .btn-ghost:hover { border-color: var(--brass); color: var(--brass); }
+  .btn-ghost.active { border-color: var(--brass); color: #14100a; background: var(--brass); font-weight: 600; }
+  .btn-ghost:disabled { opacity: 0.45; cursor: not-allowed; }
+  .btn-ghost:disabled:hover { border-color: var(--border); color: var(--text); }
+  .theme-btn small {
+    display: block;
+    font-size: 0.78rem;
+    font-weight: 400;
+    opacity: 0.75;
+    margin-top: 2px;
+    font-style: italic;
+  }
+  .theme-btn { text-align: left; flex: 1 1 30%; min-width: 150px; }
+  .slider-row { display: flex; align-items: center; gap: 14px; }
+  input[type="range"] {
+    flex: 1;
+    accent-color: var(--brass);
+    min-height: 44px;
+  }
+  .slider-value {
+    font-family: var(--mono);
+    font-size: 1.1rem;
+    color: var(--brass);
+    min-width: 2ch;
+    text-align: center;
+  }
+  .check-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    cursor: pointer;
+    font-size: 0.95rem;
+  }
+  .check-row input {
+    width: 18px; height: 18px;
+    margin-top: 3px;
+    accent-color: var(--brass);
+    flex-shrink: 0;
+  }
+  .check-row.disabled { opacity: 0.45; cursor: not-allowed; }
+  .check-row .hint { color: var(--muted); font-size: 0.85rem; display: block; }
+  .form-actions { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-top: 20px; }
+  .output { font-size: 1.02rem; }
+  .output p { margin-bottom: 1.1em; }
+  .output p:last-child { margin-bottom: 0; }
+  .output.sample p { color: var(--muted); }
+  .sample-badge {
+    display: inline-block;
+    font-size: 0.75rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--brass);
+    border: 1px solid var(--brass-dim);
+    border-radius: 4px;
+    padding: 3px 8px;
+    margin-bottom: 12px;
+  }
+  .toolbar { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 18px; }
+  .status {
+    display: none;
+    margin-top: 14px;
+    padding: 10px 14px;
+    border: 1px solid var(--brass-dim);
+    border-radius: 6px;
+    background: rgba(210, 162, 76, 0.07);
+    font-size: 0.9rem;
+    color: var(--text);
+  }
+  .status.show { display: block; }
+  .fine { color: var(--muted); font-size: 0.88rem; margin-top: 12px; }
+  .flash { animation: flash 1.2s ease; }
+  @keyframes flash {
+    0% { box-shadow: 0 0 0 3px var(--brass-dim); }
+    100% { box-shadow: 0 0 0 0 transparent; }
+  }
+  footer {
+    margin-top: 56px;
+    padding-top: 20px;
+    border-top: 1px solid var(--border);
+    color: var(--muted);
+    font-size: 0.9rem;
+  }
+  @media (max-width: 640px) {
+    .card { padding: 16px; }
+    .stats { grid-template-columns: 1fr; }
+    .theme-btn { flex: 1 1 100%; }
+    .toolbar button { flex: 1 1 100%; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="masthead"><a href="/">Shipwright <span>Studio</span></a></header>
+
+  <h1>Lorem Studio</h1>
+  <p class="lede"><strong>Lorem Studio is a free online tool that generates themed placeholder text — classic Latin lorem ipsum, startup buzzword copy, or pirate-speak — so your mockups sound like the finished product before a single real word is written.</strong> Pick a theme, choose how much text you need, and copy it out as plain text or HTML in one click.</p>
+  <p class="note">Everything runs in your browser — no accounts, no uploads, no network calls. The text is generated from built-in sentence banks, so every click gives you a fresh variation.</p>
+
+  <h2>Controls</h2>
+  <section class="card" aria-label="Generator controls">
+    <div class="field">
+      <span class="field-label" id="theme-label">Theme</span>
+      <div class="seg" role="group" aria-labelledby="theme-label" id="theme-picker">
+        <button class="btn-ghost theme-btn active" type="button" data-theme="classic">Classic<small>Lorem ipsum dolor sit amet…</small></button>
+        <button class="btn-ghost theme-btn" type="button" data-theme="startup">Startup<small>We're building the future of…</small></button>
+        <button class="btn-ghost theme-btn" type="button" data-theme="pirate">Pirate<small>Arrr, matey — the treasure…</small></button>
+      </div>
+    </div>
+    <div class="field">
+      <label for="para-count">Paragraphs <span class="hint">— 1 to 10</span></label>
+      <div class="slider-row">
+        <input type="range" id="para-count" min="1" max="10" step="1" value="3" aria-describedby="para-count-value">
+        <span class="slider-value" id="para-count-value">3</span>
+      </div>
+    </div>
+    <div class="field">
+      <span class="field-label" id="length-label">Paragraph length</span>
+      <div class="seg" role="group" aria-labelledby="length-label" id="length-picker">
+        <button class="btn-ghost" type="button" data-length="short">Short <span class="hint">· 2–3 sentences</span></button>
+        <button class="btn-ghost active" type="button" data-length="medium">Medium <span class="hint">· 4–5 sentences</span></button>
+        <button class="btn-ghost" type="button" data-length="long">Long <span class="hint">· 6–8 sentences</span></button>
+      </div>
+    </div>
+    <div class="field">
+      <label class="check-row" id="lorem-row">
+        <input type="checkbox" id="start-lorem" checked>
+        <span>Start with “Lorem ipsum…” <span class="hint">Classic theme only — the first paragraph opens with the traditional Lorem ipsum sentence.</span></span>
+      </label>
+    </div>
+    <div class="form-actions">
+      <button class="btn-primary" type="button" id="btn-generate">Generate</button>
+    </div>
+  </section>
+
+  <div class="stats" aria-label="Text counts">
+    <div class="stat"><div class="stat-label">Paragraphs</div><div class="stat-value" id="stat-paras">0</div></div>
+    <div class="stat"><div class="stat-label">Words</div><div class="stat-value" id="stat-words">0</div></div>
+    <div class="stat"><div class="stat-label">Characters</div><div class="stat-value" id="stat-chars">0</div></div>
+  </div>
+
+  <h2>Your text</h2>
+  <section class="card" id="output-card" aria-label="Generated text">
+    <div class="output sample" id="output" tabindex="0"></div>
+    <div class="toolbar">
+      <button class="btn-ghost" type="button" id="btn-copy">Copy plain text</button>
+      <button class="btn-ghost" type="button" id="btn-copy-html">Copy as HTML</button>
+      <button class="btn-ghost" type="button" id="btn-download">Download .txt</button>
+    </div>
+    <p class="status" id="status" aria-live="polite"></p>
+    <p class="fine">Copy as HTML wraps each paragraph in <code>&lt;p&gt;…&lt;/p&gt;</code> tags, ready to paste into a markup file. The download is named after the theme, e.g. <code>lorem-studio-startup.txt</code>.</p>
+  </section>
+
+  <h2>How it works</h2>
+  <section class="card" aria-label="How the text is generated">
+    <p>Each theme has its own bank of sentences, written in that voice —
+    traditional Latin for Classic, boardroom-ready buzzwords for Startup,
+    and full pirate dialect for Pirate. Every time you press Generate, the
+    bank is shuffled with a fresh seed and sentences are dealt out into
+    paragraphs, so repeated clicks give different text and no two paragraphs
+    in one output are ever identical. Short paragraphs hold 2–3 sentences,
+    medium 4–5, and long 6–8.</p>
+    <p class="fine">Placeholder text is a stand-in, not a message — swap it
+    for real copy before anything goes live.</p>
+  </section>
+
+  <footer>Built by <a href="/ideas/">Shipwright Studio</a></footer>
+</div>
+
+<script>
+/* PURE-LOGIC-START */
+var LOREM_OPENER = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.";
+
+var BANKS = {
+  classic: [
+    "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
+    "Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.",
+    "Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.",
+    "Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.",
+    "Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam.",
+    "Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt.",
+    "Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit, sed quia non numquam eius modi tempora incidunt ut labore et dolore magnam aliquam quaerat voluptatem.",
+    "At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis praesentium voluptatum deleniti atque corrupti quos dolores et quas molestias excepturi sint occaecati cupiditate non provident.",
+    "Similique sunt in culpa qui officia deserunt mollitia animi, id est laborum et dolorum fuga.",
+    "Et harum quidem rerum facilis est et expedita distinctio.",
+    "Nam libero tempore, cum soluta nobis est eligendi optio cumque nihil impedit quo minus id quod maxime placeat facere possimus.",
+    "Temporibus autem quibusdam et aut officiis debitis aut rerum necessitatibus saepe eveniet ut et voluptates repudiandae sint et molestiae non recusandae.",
+    "Itaque earum rerum hic tenetur a sapiente delectus, ut aut reiciendis voluptatibus maiores alias consequatur aut perferendis doloribus asperiores repellat.",
+    "Quis autem vel eum iure reprehenderit qui in ea voluptate velit esse quam nihil molestiae consequatur, vel illum qui dolorem eum fugiat quo voluptas nulla pariatur.",
+    "Proin gravida nibh vel velit auctor aliquet, aenean sollicitudin, lorem quis bibendum auctor, nisi elit consequat ipsum, nec sagittis sem nibh id elit.",
+    "Cras mattis consectetur purus sit amet fermentum, donec sed odio dui, aenean lacinia bibendum nulla sed consectetur."
+  ],
+  startup: [
+    "We're building the operating system for modern teams — one workflow at a time.",
+    "Our AI-powered platform turns scattered data into decisions in seconds, not sprints.",
+    "Backed by world-class investors, we're scaling fast and hiring across every function.",
+    "From day one, we obsessed over the developer experience — because great tools compound.",
+    "We help ambitious teams ship faster, measure what matters, and delight their customers at every touchpoint.",
+    "Our mission is simple: make the complex feel effortless, and the effortless feel magical.",
+    "Trusted by thousands of forward-thinking companies, from scrappy startups to global enterprises.",
+    "We raised our Series B to double down on product, expand into new markets, and keep our burn rate boring.",
+    "Every feature we ship starts with a customer conversation, not a roadmap checkbox.",
+    "Our north star metric is customer love — measured in renewals, referrals, and five-star reviews.",
+    "We move fast, break things carefully, and document everything we learn along the way.",
+    "The future of work is async, distributed, and deeply human — and we're building the infrastructure for it.",
+    "Join our waitlist today and be first in line when we open the next cohort.",
+    "We believe in radical transparency: our pricing, our roadmap, and even our mistakes are public.",
+    "From seed to scale, we've stayed relentlessly focused on one thing — our users' success.",
+    "This is just the beginning. The next chapter is bigger, bolder, and built with you."
+  ],
+  pirate: [
+    "Arrr, matey — the treasure map be hidden where the seven seas meet the morning tide.",
+    "Hoist the sails and ready the cannons, for we sail at dawn toward uncharted waters.",
+    "The captain's word be law aboard this ship, and any scallywag what disobeys walks the plank.",
+    "We found the chest buried beneath the old palm, filled with gold doubloons and jewels beyond countin'.",
+    "Ye best keep yer cutlass sharp and yer wits sharper, for the sea shows no mercy to fools.",
+    "A pirate's life be a merry one — rum by the barrel, songs by the fire, and gold in every pocket.",
+    "The black flag flies high, and every merchant ship on the horizon be fair game for plunder.",
+    "Dead men tell no tales, but the old sea dog's logbook tells plenty, if ye know where to look.",
+    "We weathered the fiercest storm the Caribbean ever brewed, and lived to toast about it.",
+    "Shiver me timbers! That be the biggest whale I ever laid eyes upon, and it nearly swallowed the whole crew.",
+    "The parrot squawked the secret code, and the crew cheered, for the treasure be within reach at last.",
+    "Yo ho ho, and a bottle of rum — the crew sang till the stars faded and the sun rose over the bow.",
+    "No quarter given and none asked, for a pirate's honour be worth more than all the gold in Tortuga.",
+    "The crow's nest lookout spied land at last, and the whole crew roared with joy fit to wake the deep.",
+    "Mind the kraken, lads — it lurks beneath the waves, waitin' for ships what stray too far from shore.",
+    "We buried the loot on the isle of skulls, marked with an X and guarded by a curse most foul."
+  ]
+};
+
+var LENGTH_RANGES = { short: [2, 3], medium: [4, 5], long: [6, 8] };
+
+function mulberry32(seed) {
+  return function () {
+    seed |= 0; seed = seed + 0x6D2B79F5 | 0;
+    var t = Math.imul(seed ^ seed >>> 15, 1 | seed);
+    t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+    return ((t ^ t >>> 14) >>> 0) / 4294967296;
+  };
+}
+function shuffle(arr, rand) {
+  var a = arr.slice();
+  for (var i = a.length - 1; i > 0; i--) {
+    var j = Math.floor(rand() * (i + 1));
+    var tmp = a[i]; a[i] = a[j]; a[j] = tmp;
+  }
+  return a;
+}
+function sentencesPerParagraph(length, rand) {
+  var range = LENGTH_RANGES[length] || LENGTH_RANGES.medium;
+  return range[0] + Math.floor(rand() * (range[1] - range[0] + 1));
+}
+function generateParagraphs(theme, count, length, startLorem, seed) {
+  var bank = BANKS[theme];
+  if (!bank) throw new Error("Unknown theme: " + theme);
+  var n = Math.round(count);
+  if (!isFinite(n)) n = 3;
+  count = Math.max(1, Math.min(10, n));
+  var rand = mulberry32(seed == null ? (Date.now() ^ 0x9e3779b9) : seed);
+  var useOpener = theme === "classic" && !!startLorem;
+  var pool = useOpener
+    ? bank.filter(function (s) { return s !== LOREM_OPENER; })
+    : bank.slice();
+  var deck = [];
+  function draw() {
+    if (!deck.length) {
+      deck = shuffle(pool, rand);
+    }
+    return deck.pop();
+  }
+  var paragraphs = [];
+  var seen = {};
+  for (var p = 0; p < count; p++) {
+    var n = sentencesPerParagraph(length, rand);
+    var text = null;
+    for (var attempt = 0; attempt < 20; attempt++) {
+      var sentences = [];
+      if (p === 0 && useOpener) {
+        sentences.push(LOREM_OPENER);
+        while (sentences.length < n) sentences.push(draw());
+      } else {
+        while (sentences.length < n) sentences.push(draw());
+      }
+      var candidate = sentences.join(" ");
+      if (!seen[candidate]) { text = candidate; break; }
+    }
+    if (text == null) text = sentences.join(" ");
+    seen[text] = true;
+    paragraphs.push(text);
+  }
+  return paragraphs;
+}
+function paragraphsToPlain(paragraphs) {
+  return paragraphs.join("\n\n");
+}
+function paragraphsToHtml(paragraphs) {
+  return paragraphs.map(function (p) { return "<p>" + p + "</p>"; }).join("\n");
+}
+function countWords(text) {
+  var words = text.split(/\s+/).filter(function (w) { return w.length > 0; });
+  return words.length;
+}
+function countStats(paragraphs) {
+  var plain = paragraphsToPlain(paragraphs);
+  return {
+    paragraphs: paragraphs.length,
+    words: countWords(plain),
+    characters: plain.length
+  };
+}
+function sampleParagraph() {
+  return generateParagraphs("classic", 1, "medium", true, 20261116)[0];
+}
+/* PURE-LOGIC-END */
+
+var state = { theme: "classic", length: "medium", generated: false, paragraphs: [] };
+var $ = function (id) { return document.getElementById(id); };
+
+function escapeHtml(s) {
+  return String(s == null ? "" : s)
+    .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+}
+function showStatus(msg) {
+  var el = $("status");
+  el.textContent = msg;
+  el.classList.add("show");
+  clearTimeout(showStatus._t);
+  showStatus._t = setTimeout(function () { el.classList.remove("show"); }, 3500);
+}
+function renderOutput(paragraphs, isSample) {
+  var out = $("output");
+  out.classList.toggle("sample", !!isSample);
+  out.innerHTML = (isSample ? "<span class=\"sample-badge\">Sample — press Generate</span>" : "") +
+    paragraphs.map(function (p) { return "<p>" + escapeHtml(p) + "</p>"; }).join("");
+}
+function renderCounts(stats) {
+  $("stat-paras").textContent = String(stats.paragraphs);
+  $("stat-words").textContent = stats.words.toLocaleString("en-US");
+  $("stat-chars").textContent = stats.characters.toLocaleString("en-US");
+}
+function updateLoremToggle() {
+  var isClassic = state.theme === "classic";
+  $("start-lorem").disabled = !isClassic;
+  $("lorem-row").classList.toggle("disabled", !isClassic);
+}
+function generate() {
+  var count = Number($("para-count").value);
+  var startLorem = $("start-lorem").checked;
+  state.paragraphs = generateParagraphs(state.theme, count, state.length, startLorem);
+  state.generated = true;
+  renderOutput(state.paragraphs, false);
+  renderCounts(countStats(state.paragraphs));
+  $("output-card").classList.remove("flash"); void $("output-card").offsetWidth;
+  $("output-card").classList.add("flash");
+}
+function copyText(text, okMsg) {
+  function fallback() {
+    var range = document.createRange();
+    range.selectNodeContents($("output"));
+    var sel = window.getSelection();
+    sel.removeAllRanges();
+    sel.addRange(range);
+    showStatus("Clipboard unavailable — the text is selected, press Ctrl/Cmd+C to copy.");
+  }
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(text).then(
+      function () { showStatus(okMsg); },
+      function () { fallback(); }
+    );
+  } else {
+    fallback();
+  }
+}
+
+document.querySelectorAll("#theme-picker [data-theme]").forEach(function (b) {
+  b.addEventListener("click", function () {
+    state.theme = b.dataset.theme;
+    document.querySelectorAll("#theme-picker [data-theme]").forEach(function (x) {
+      x.classList.toggle("active", x === b);
+    });
+    updateLoremToggle();
+    generate();
+  });
+});
+document.querySelectorAll("#length-picker [data-length]").forEach(function (b) {
+  b.addEventListener("click", function () {
+    state.length = b.dataset.length;
+    document.querySelectorAll("#length-picker [data-length]").forEach(function (x) {
+      x.classList.toggle("active", x === b);
+    });
+    if (state.generated) generate();
+  });
+});
+$("para-count").addEventListener("input", function () {
+  $("para-count-value").textContent = $("para-count").value;
+});
+$("para-count").addEventListener("change", function () {
+  if (state.generated) generate();
+});
+$("start-lorem").addEventListener("change", function () {
+  if (state.generated) generate();
+});
+$("btn-generate").addEventListener("click", generate);
+$("btn-copy").addEventListener("click", function () {
+  if (!state.generated) { showStatus("Press Generate first — there is nothing to copy yet."); return; }
+  copyText(paragraphsToPlain(state.paragraphs), "Copied plain text to the clipboard.");
+});
+$("btn-copy-html").addEventListener("click", function () {
+  if (!state.generated) { showStatus("Press Generate first — there is nothing to copy yet."); return; }
+  copyText(paragraphsToHtml(state.paragraphs), "Copied as HTML paragraphs.");
+});
+$("btn-download").addEventListener("click", function () {
+  if (!state.generated) { showStatus("Press Generate first — there is nothing to download yet."); return; }
+  var blob = new Blob([paragraphsToPlain(state.paragraphs)], { type: "text/plain;charset=utf-8" });
+  var a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "lorem-studio-" + state.theme + ".txt";
+  document.body.appendChild(a);
+  a.click();
+  setTimeout(function () {
+    URL.revokeObjectURL(a.href);
+    a.remove();
+  }, 100);
+  showStatus("Downloaded lorem-studio-" + state.theme + ".txt.");
+});
+
+updateLoremToggle();
+renderOutput([sampleParagraph()], true);
+renderCounts({ paragraphs: 0, words: 0, characters: 0 });
+</script>
+</body>
+</html>

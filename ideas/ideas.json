@@ -1,5 +1,5 @@
 {
-  "updated": "2026-11-15",
+  "updated": "2026-11-16",
   "ideas": [
     {
       "id": "idea-000a",
@@ -333,7 +333,9 @@
       "tagline": "Mate-in-two tactics, one puzzle at a time.",
       "priority": 62,
       "effort": "M",
-      "status": "todo"
+      "status": "done",
+      "url": "/lab/chess-puzzles/",
+      "shipped": "2026-11-16"
     },
     {
       "id": "idea-027",
@@ -695,7 +697,9 @@
       "tagline": "Themed placeholder text: startup, pirate, or classic.",
       "priority": 62,
       "effort": "S",
-      "status": "todo"
+      "status": "done",
+      "url": "/lab/lorem-studio/",
+      "shipped": "2026-11-16"
     },
     {
       "id": "idea-058",
