@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bitcoin Halving Countdown · Shipwright Studio</title>
+<meta name="description" content="A free online countdown to the next Bitcoin halving at block 1,050,000 — blocks remaining, an estimated date, epoch progress and the reward change from 3.125 to 1.5625 BTC.">
+<link rel="canonical" href="https://shipwright-studio.pages.dev/lab/block-countdown/">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"WebApplication","name":"Bitcoin Halving Countdown","url":"https://shipwright-studio.pages.dev/lab/block-countdown/","description":"A free online tool that counts down to the next Bitcoin halving at block 1,050,000, showing blocks remaining, an estimated halving date, progress through the current halving epoch, and the block reward change from 3.125 to 1.5625 BTC.","applicationCategory":"FinanceApplication","operatingSystem":"Web","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"}}
+</script>
+<style>
+:root{--bg:#0a0c0f;--panel:#11141a;--line:#232a35;--txt:#e8e4da;--mut:#9aa3b2;--brass:#d2a24c;--red:#e0655f}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--txt);font-family:Inter,system-ui,sans-serif;line-height:1.6;padding:2.5rem 1.25rem 4rem;max-width:980px;margin:0 auto;text-align:center}
+a{color:var(--brass)}
+.eyebrow{font-size:.75rem;letter-spacing:.22em;text-transform:uppercase;color:var(--mut)}
+h1{font-family:Fraunces,serif;font-weight:600;font-size:clamp(2rem,4.5vw,3rem);margin:.4rem 0 .6rem}
+.define{color:var(--mut);max-width:52rem;margin:0 auto 1.5rem}
+.define strong{color:var(--txt)}
+.note{border:1px solid var(--brass);border-radius:10px;padding:.8rem 1.1rem;max-width:640px;margin:0 auto 2rem;font-size:.88rem;color:var(--mut);text-align:left}
+.note strong{color:var(--brass)}
+.cards{display:grid;grid-template-columns:repeat(4,1fr);gap:.9rem;max-width:640px;margin:0 auto}
+@media(max-width:560px){.cards{grid-template-columns:repeat(2,1fr);max-width:380px}}
+.face{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:1.1rem .4rem}
+.face .num{font-family:Fraunces,serif;font-size:clamp(2.4rem,8vw,3.6rem);font-weight:600;font-variant-numeric:tabular-nums;line-height:1}
+.face .lab{font-size:.72rem;letter-spacing:.18em;text-transform:uppercase;color:var(--mut);margin-top:.5rem}
+.dateline{margin-top:1.4rem;font-size:1rem}
+.dateline span{display:block}
+.dateline .local{font-family:Fraunces,serif;font-size:1.35rem;color:var(--brass)}
+.dateline .utc{font-size:.88rem;color:var(--mut);margin-top:.2rem}
+.bar{max-width:640px;margin:1.8rem auto 0;background:#141821;border-radius:999px;height:8px;overflow:hidden}
+.bar i{display:block;height:100%;background:var(--brass);width:0;border-radius:999px;transition:width .5s}
+.barlab{font-size:.85rem;color:var(--mut);margin-top:.5rem}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:.9rem;max-width:860px;margin:2.2rem auto 0}
+@media(max-width:720px){.stats{grid-template-columns:repeat(2,1fr)}}
+.stat{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:1.1rem .8rem}
+.stat .v{font-family:Fraunces,serif;font-size:1.5rem;font-weight:600;font-variant-numeric:tabular-nums}
+.stat .v small{font-size:.85rem;color:var(--mut)}
+.stat .k{font-size:.72rem;letter-spacing:.16em;text-transform:uppercase;color:var(--mut);margin-top:.35rem}
+.badge{display:none;margin-top:.6rem;font-size:.78rem;color:var(--brass);border:1px solid var(--brass);border-radius:999px;padding:.15rem .7rem}
+.badge.on{display:inline-block}
+h2{font-family:Fraunces,serif;font-weight:600;font-size:1.5rem;margin:2.6rem 0 1rem}
+table{width:100%;max-width:640px;margin:0 auto;border-collapse:collapse;font-size:.92rem;text-align:left}
+th,td{padding:.65rem .8rem;border-bottom:1px solid var(--line)}
+th{font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;color:var(--mut)}
+td.num{font-variant-numeric:tabular-nums}
+tr.next td{color:var(--brass);font-weight:600}
+tr.next td:first-child{border-left:3px solid var(--brass)}
+.twrap{overflow-x:auto}
+.override{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:1.5rem;max-width:620px;margin:0 auto}
+.override .row{display:flex;gap:.75rem;justify-content:center;flex-wrap:wrap}
+.override input{background:#0d1015;border:1px solid var(--line);border-radius:8px;color:var(--txt);padding:.7rem .9rem;font-size:1rem;outline:none;font-family:inherit;width:220px;font-variant-numeric:tabular-nums}
+.override input:focus{border-color:var(--brass)}
+.override input.err{border-color:var(--red)}
+button.go{background:var(--brass);border:0;color:#14100a;font-weight:600;font-size:1rem;border-radius:8px;padding:.7rem 1.4rem;cursor:pointer;font-family:inherit}
+button.go:hover{filter:brightness(1.08)}
+button.ghost{background:transparent;border:1px solid var(--line);color:var(--mut);border-radius:8px;padding:.7rem 1.2rem;cursor:pointer;font-family:inherit;font-size:.95rem}
+button.ghost:hover{color:var(--brass);border-color:var(--brass)}
+.ferr{color:var(--red);font-size:.85rem;min-height:1.4em;margin-top:.5rem}
+.anchor{font-size:.82rem;color:var(--mut);margin-top:.4rem}
+.howto{max-width:640px;margin:0 auto;text-align:left;color:var(--mut);font-size:.95rem}
+.howto p{margin-bottom:.8rem}
+.howto strong{color:var(--txt)}
+#done{display:none;margin-top:1.4rem;font-family:Fraunces,serif;font-size:1.6rem;color:var(--brass)}
+.back{display:inline-block;margin-top:2.5rem;font-size:.9rem}
+footer{margin-top:2.5rem;font-size:.85rem;color:var(--mut)}
+</style>
+</head>
+<body>
+<p class="eyebrow">Shipwright Studio · Lab</p>
+<h1>Bitcoin Halving Countdown</h1>
+<p class="define"><strong>Bitcoin Halving Countdown is a free online tool that counts down to the next Bitcoin halving.</strong> Watch the blocks tick down to block 1,050,000, see roughly when the halving lands, and follow the block reward as it halves from 3.125 to 1.5625 BTC.</p>
+
+<div class="note"><strong>All figures on this page are estimates.</strong> This page fetches no live chain data. The current block height is estimated from a documented anchor — block <strong>976,255</strong> at <strong>2026-11-17 09:55 UTC</strong> — advancing at the protocol's target pace of one block every 10 minutes. Real block times vary, so the estimated date will drift; use a block explorer for the exact live height.</div>
+
+<div class="cards">
+  <div class="face"><div class="num" id="n-d">–</div><div class="lab">Days</div></div>
+  <div class="face"><div class="num" id="n-h">–</div><div class="lab">Hours</div></div>
+  <div class="face"><div class="num" id="n-m">–</div><div class="lab">Minutes</div></div>
+  <div class="face"><div class="num" id="n-s">–</div><div class="lab">Seconds</div></div>
+</div>
+
+<p class="dateline"><span>Estimated halving</span><span class="local" id="date-local">–</span><span class="utc" id="date-utc">–</span></p>
+
+<div class="bar"><i id="barfill"></i></div>
+<p class="barlab" id="barlab">–</p>
+<div id="done">The halving block has arrived — check a block explorer to confirm 🎉</div>
+
+<div class="stats">
+  <div class="stat"><div class="v" id="s-height">–</div><div class="k">Estimated current block</div><span class="badge" id="badge">Using your height</span></div>
+  <div class="stat"><div class="v" id="s-remaining">–</div><div class="k">Blocks remaining</div></div>
+  <div class="stat"><div class="v">3.125 <small>BTC</small></div><div class="k">Current block reward</div></div>
+  <div class="stat"><div class="v">1.5625 <small>BTC</small></div><div class="k">Reward after halving</div></div>
+</div>
+
+<h2>Halvings so far</h2>
+<div class="twrap"><table>
+  <thead><tr><th>Date</th><th>Block</th><th>Reward before</th><th>Reward after</th></tr></thead>
+  <tbody>
+    <tr><td>28 Nov 2012</td><td class="num">210,000</td><td class="num">50 BTC</td><td class="num">25 BTC</td></tr>
+    <tr><td>9 Jul 2016</td><td class="num">420,000</td><td class="num">25 BTC</td><td class="num">12.5 BTC</td></tr>
+    <tr><td>11 May 2020</td><td class="num">630,000</td><td class="num">12.5 BTC</td><td class="num">6.25 BTC</td></tr>
+    <tr><td>20 Apr 2024</td><td class="num">840,000</td><td class="num">6.25 BTC</td><td class="num">3.125 BTC</td></tr>
+    <tr class="next"><td id="next-date">~Apr 2028 (estimated)</td><td class="num">1,050,000</td><td class="num">3.125 BTC</td><td class="num">1.5625 BTC</td></tr>
+  </tbody>
+</table></div>
+
+<h2>Set the current block height</h2>
+<div class="override">
+  <div class="row">
+    <input id="height" type="number" min="840001" max="1049999" step="1" placeholder="e.g. 976,255" inputmode="numeric">
+    <button class="go" id="set">Set height</button>
+    <button class="ghost" id="reset">Reset to estimate</button>
+  </div>
+  <div class="ferr" id="ferr"></div>
+  <p class="anchor">Anchor: block 976,255 at 2026-11-17 09:55 UTC, advancing one block every 10 minutes. Accepted range: 840,001 – 1,049,999 (this halving epoch).</p>
+</div>
+
+<h2>How it works</h2>
+<div class="howto">
+  <p><strong>Bitcoin halves its block reward every 210,000 blocks</strong> — roughly once every four years. Miners currently earn 3.125 BTC per block; at block 1,050,000 that drops to 1.5625 BTC, and new daily issuance falls from about 450 to about 225 BTC.</p>
+  <p><strong>The date is an estimate, not a schedule.</strong> The protocol targets one block every 10 minutes, but real blocks arrive faster or slower, and difficulty only retargets every 2,016 blocks. The countdown above assumes exactly 10 minutes per block, so the true halving date can land days either side of the estimate.</p>
+  <p><strong>Nothing here is live data.</strong> This page makes no network requests to any chain or price service. If you know the real current height from a block explorer, enter it above and the countdown, progress bar and date will recompute instantly.</p>
+</div>
+
+<a class="back" href="/ideas/">← Back to the idea bank</a>
+<footer>Built by Shipwright Studio</footer>
+
+<script>
+const $=id=>document.getElementById(id);
+const HALVING_BLOCK=1050000, EPOCH_START=840000, EPOCH_LEN=210000;
+const BLOCK_MS=10*60*1000;
+const ANCHOR_BLOCK=976255, ANCHOR_TIME=Date.UTC(2026,10,17,9,55,0);
+
+let overrideHeight=null, timer=null;
+
+function estimatedHeight(nowMs){
+  return ANCHOR_BLOCK+Math.max(0,Math.floor((nowMs-ANCHOR_TIME)/BLOCK_MS));
+}
+function currentHeight(nowMs){
+  return overrideHeight!==null?overrideHeight:estimatedHeight(nowMs);
+}
+function blocksRemaining(height){return HALVING_BLOCK-height;}
+function epochProgress(height){return (height-EPOCH_START)/EPOCH_LEN;}
+function halvingDateMs(height){
+  return Date.now()+blocksRemaining(height)*BLOCK_MS;
+}
+function clampHeight(v){
+  if(!Number.isFinite(v)||!Number.isInteger(v))return null;
+  if(v<EPOCH_START+1||v>HALVING_BLOCK-1)return null;
+  return v;
+}
+function fmtInt(n){return n.toLocaleString("en-GB");}
+function pad(n){return String(n).padStart(2,"0");}
+
+function tick(){
+  const now=Date.now();
+  const h=currentHeight(now);
+  const rem=blocksRemaining(h);
+  const pct=Math.min(100,Math.max(0,epochProgress(h)*100));
+
+  $("s-height").textContent=fmtInt(h);
+  $("s-remaining").textContent=fmtInt(Math.max(0,rem));
+  $("barfill").style.width=pct.toFixed(2)+"%";
+  $("barlab").textContent=pct.toFixed(2)+"% through this halving epoch — block "+fmtInt(h)+" of "+fmtInt(HALVING_BLOCK);
+
+  const targetMs=halvingDateMs(h);
+  const diff=targetMs-now;
+  if(diff<=0){
+    ["d","h","m","s"].forEach(k=>$("n-"+k).textContent="00");
+    $("done").style.display="block";
+    $("date-local").textContent="Reached";
+    $("date-utc").textContent="";
+    return;
+  }
+  $("done").style.display="none";
+  $("n-d").textContent=Math.floor(diff/864e5);
+  $("n-h").textContent=pad(Math.floor(diff/36e5)%24);
+  $("n-m").textContent=pad(Math.floor(diff/6e4)%60);
+  $("n-s").textContent=pad(Math.floor(diff/1e3)%60);
+
+  const d=new Date(targetMs);
+  $("date-local").textContent=d.toLocaleString(undefined,{weekday:"long",year:"numeric",month:"long",day:"numeric",hour:"2-digit",minute:"2-digit"});
+  $("date-utc").textContent=d.toISOString().slice(0,16).replace("T"," ")+" UTC";
+  $("next-date").textContent="~"+d.toLocaleString("en-GB",{month:"short",year:"numeric"})+" (estimated)";
+}
+
+$("set").onclick=()=>{
+  const raw=$("height").value.replace(/,/g,"").trim();
+  const v=clampHeight(Number(raw));
+  $("ferr").textContent="";$("height").classList.remove("err");
+  if(v===null){
+    $("ferr").textContent="Enter a whole block height between 840,001 and 1,049,999.";
+    $("height").classList.add("err");
+    return;
+  }
+  overrideHeight=v;
+  $("badge").classList.add("on");
+  tick();
+};
+$("reset").onclick=()=>{
+  overrideHeight=null;
+  $("badge").classList.remove("on");
+  $("height").value="";
+  $("ferr").textContent="";$("height").classList.remove("err");
+  tick();
+};
+
+tick();
+timer=setInterval(tick,1000);
+</script>
+</body>
+</html>

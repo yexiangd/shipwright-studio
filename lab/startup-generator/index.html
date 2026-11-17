@@ -1,0 +1,684 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Startup Idea Generator · Shipwright Studio</title>
+<meta name="description" content="Generate a complete startup pitch in one click — random audience, problem, technology, business model and twist, with slot locking, favourites and history.">
+<link rel="canonical" href="https://shipwright-studio.pages.dev/lab/startup-generator/">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
+  "name": "Startup Idea Generator",
+  "description": "A free online tool that generates complete startup pitches — a name, a tagline and a pitch paragraph — from a random audience, problem, technology, business model and twist, with slot locking, favourites and history.",
+  "applicationCategory": "BusinessApplication",
+  "operatingSystem": "Web",
+  "url": "https://shipwright-studio.pages.dev/lab/startup-generator/",
+  "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+}
+</script>
+<style>
+  :root {
+    --bg: #0a0c0f;
+    --surface: #11141a;
+    --surface-2: #161a21;
+    --border: #1e242c;
+    --brass: #d2a24c;
+    --brass-dim: rgba(210, 162, 76, 0.18);
+    --text: #e8e6e1;
+    --muted: #9aa3ad;
+    --danger: #e07856;
+    --mono: ui-monospace, "SF Mono", "Cascadia Code", Menlo, Consolas, monospace;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: "Inter", system-ui, -apple-system, sans-serif;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+  a { color: var(--brass); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  .wrap { max-width: 860px; margin: 0 auto; padding: 0 20px 80px; }
+  header.masthead {
+    padding: 28px 0 8px;
+    font-family: "Fraunces", Georgia, serif;
+    font-size: 15px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+  header.masthead a { color: var(--text); }
+  header.masthead a:hover { color: var(--brass); text-decoration: none; }
+  header.masthead span { color: var(--brass); }
+  h1 {
+    font-family: "Fraunces", Georgia, serif;
+    font-weight: 600;
+    font-size: clamp(2rem, 6vw, 3rem);
+    line-height: 1.15;
+    margin: 12px 0 12px;
+  }
+  .lede { color: var(--muted); font-size: 1.05rem; max-width: 62ch; }
+  .lede strong { color: var(--text); font-weight: 600; }
+  .note {
+    margin-top: 14px;
+    padding: 10px 14px;
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--brass);
+    background: var(--surface);
+    color: var(--muted);
+    font-size: 0.9rem;
+    border-radius: 6px;
+  }
+  h2 {
+    font-family: "Fraunces", Georgia, serif;
+    font-weight: 600;
+    font-size: 1.35rem;
+    margin: 36px 0 14px;
+  }
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 20px;
+  }
+  .stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin-top: 28px;
+  }
+  .stat {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px 18px;
+  }
+  .stat .stat-label {
+    font-size: 0.78rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .stat .stat-value {
+    font-family: "Fraunces", Georgia, serif;
+    font-weight: 600;
+    font-size: 1.5rem;
+    margin-top: 4px;
+    color: var(--text);
+  }
+  button {
+    font-family: inherit;
+    font-size: 0.9rem;
+    cursor: pointer;
+    border-radius: 6px;
+    padding: 9px 16px;
+    min-height: 44px;
+  }
+  .btn-primary {
+    background: var(--brass);
+    border: 1px solid var(--brass);
+    color: #14100a;
+    font-weight: 600;
+  }
+  .btn-primary:hover { opacity: 0.9; }
+  .btn-ghost {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text);
+  }
+  .btn-ghost:hover { border-color: var(--brass); color: var(--brass); }
+  .btn-ghost.active { border-color: var(--brass); color: #14100a; background: var(--brass); font-weight: 600; }
+  .slot-row {
+    display: grid;
+    grid-template-columns: 130px 1fr auto;
+    gap: 12px;
+    align-items: center;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .slot-row:last-of-type { border-bottom: none; }
+  .slot-label {
+    font-size: 0.78rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .slot-value { font-size: 1rem; }
+  .slot-value.locked { color: var(--brass); font-weight: 600; }
+  .lock-btn { min-width: 96px; padding: 7px 12px; min-height: 38px; }
+  .lock-btn.locked { border-color: var(--brass); color: var(--brass); }
+  .form-actions { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-top: 20px; }
+  .pitch-name {
+    font-family: "Fraunces", Georgia, serif;
+    font-weight: 600;
+    font-size: 1.9rem;
+    line-height: 1.2;
+  }
+  .pitch-tagline {
+    color: var(--brass);
+    font-size: 1.05rem;
+    margin-top: 6px;
+  }
+  .pitch-body { margin-top: 14px; font-size: 1.02rem; }
+  .sample-badge {
+    display: inline-block;
+    font-size: 0.75rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--brass);
+    border: 1px solid var(--brass-dim);
+    border-radius: 4px;
+    padding: 3px 8px;
+    margin-bottom: 12px;
+  }
+  .meta-note {
+    margin-top: 14px;
+    padding: 10px 14px;
+    border: 1px dashed var(--brass-dim);
+    border-radius: 6px;
+    color: var(--muted);
+    font-size: 0.9rem;
+  }
+  .toolbar { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 18px; }
+  .status {
+    display: none;
+    margin-top: 14px;
+    padding: 10px 14px;
+    border: 1px solid var(--brass-dim);
+    border-radius: 6px;
+    background: rgba(210, 162, 76, 0.07);
+    font-size: 0.9rem;
+    color: var(--text);
+  }
+  .status.show { display: block; }
+  .fine { color: var(--muted); font-size: 0.88rem; margin-top: 12px; }
+  .idea-list { list-style: none; }
+  .idea-list li { border-bottom: 1px solid var(--border); }
+  .idea-list li:last-child { border-bottom: none; }
+  .idea-item {
+    display: block;
+    width: 100%;
+    text-align: left;
+    background: none;
+    border: none;
+    padding: 12px 2px;
+    color: var(--text);
+    min-height: 0;
+  }
+  .idea-item:hover .idea-name { color: var(--brass); }
+  .idea-item .idea-name {
+    font-family: "Fraunces", Georgia, serif;
+    font-weight: 600;
+    font-size: 1.05rem;
+  }
+  .idea-item .idea-tag {
+    color: var(--muted);
+    font-size: 0.9rem;
+    margin-top: 2px;
+  }
+  .empty-msg { color: var(--muted); font-size: 0.95rem; }
+  .flash { animation: flash 1.2s ease; }
+  @keyframes flash {
+    0% { box-shadow: 0 0 0 3px var(--brass-dim); }
+    100% { box-shadow: 0 0 0 0 transparent; }
+  }
+  footer {
+    margin-top: 56px;
+    padding-top: 20px;
+    border-top: 1px solid var(--border);
+    color: var(--muted);
+    font-size: 0.9rem;
+  }
+  @media (max-width: 640px) {
+    .card { padding: 16px; }
+    .stats { grid-template-columns: 1fr; }
+    .slot-row { grid-template-columns: 1fr auto; grid-template-rows: auto auto; }
+    .slot-label { grid-column: 1; }
+    .slot-value { grid-column: 1; grid-row: 2; }
+    .lock-btn { grid-column: 2; grid-row: 1 / 3; }
+    .toolbar button, .form-actions button { flex: 1 1 100%; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="masthead"><a href="/">Shipwright <span>Studio</span></a></header>
+
+  <h1>Startup Idea Generator</h1>
+  <p class="lede"><strong>Startup Idea Generator is a free online tool that turns a random audience, problem, technology, business model and twist into a complete startup pitch — name, tagline and all — in a single click.</strong> Lock the parts you like, re-roll the rest, and keep the good ones in your favourites. Yes, it can generate the idea for itself.</p>
+  <p class="note">Everything runs in your browser — no AI, no accounts, no network calls. Ideas are combined from built-in word banks, so every click gives you a fresh variation.</p>
+
+  <div class="stats" aria-label="Session counts">
+    <div class="stat"><div class="stat-label">Ideas generated</div><div class="stat-value" id="stat-generated">0</div></div>
+    <div class="stat"><div class="stat-label">Favourites saved</div><div class="stat-value" id="stat-favs">0</div></div>
+    <div class="stat"><div class="stat-label">In history</div><div class="stat-value" id="stat-history">0</div></div>
+  </div>
+
+  <h2>The machine</h2>
+  <section class="card" aria-label="Generator controls">
+    <div id="slots">
+      <div class="slot-row" data-slot="audience">
+        <span class="slot-label">Audience</span>
+        <span class="slot-value" id="slot-audience">—</span>
+        <button class="btn-ghost lock-btn" type="button" data-lock="audience" aria-pressed="false">🔓 Lock</button>
+      </div>
+      <div class="slot-row" data-slot="problem">
+        <span class="slot-label">Problem</span>
+        <span class="slot-value" id="slot-problem">—</span>
+        <button class="btn-ghost lock-btn" type="button" data-lock="problem" aria-pressed="false">🔓 Lock</button>
+      </div>
+      <div class="slot-row" data-slot="technology">
+        <span class="slot-label">Technology</span>
+        <span class="slot-value" id="slot-technology">—</span>
+        <button class="btn-ghost lock-btn" type="button" data-lock="technology" aria-pressed="false">🔓 Lock</button>
+      </div>
+      <div class="slot-row" data-slot="model">
+        <span class="slot-label">Business model</span>
+        <span class="slot-value" id="slot-model">—</span>
+        <button class="btn-ghost lock-btn" type="button" data-lock="model" aria-pressed="false">🔓 Lock</button>
+      </div>
+      <div class="slot-row" data-slot="twist">
+        <span class="slot-label">Twist</span>
+        <span class="slot-value" id="slot-twist">—</span>
+        <button class="btn-ghost lock-btn" type="button" data-lock="twist" aria-pressed="false">🔓 Lock</button>
+      </div>
+    </div>
+    <div class="form-actions">
+      <button class="btn-primary" type="button" id="btn-generate">Generate a startup</button>
+      <button class="btn-ghost" type="button" id="btn-meta" title="Generate the idea for a startup idea generator">🪞 Meta — this tool, as a startup</button>
+    </div>
+  </section>
+
+  <h2>Your pitch</h2>
+  <section class="card" id="pitch-card" aria-label="Generated pitch">
+    <div id="pitch-sample-badge"></div>
+    <div class="pitch-name" id="pitch-name"></div>
+    <div class="pitch-tagline" id="pitch-tagline"></div>
+    <p class="pitch-body" id="pitch-body"></p>
+    <p class="meta-note" id="meta-note" hidden>Yes — this is the idea for the tool you are using right now. A startup idea generator, generated by a startup idea generator. It goes all the way down.</p>
+    <div class="toolbar">
+      <button class="btn-ghost" type="button" id="btn-copy">Copy pitch</button>
+      <button class="btn-ghost" type="button" id="btn-download">Download .txt</button>
+      <button class="btn-ghost" type="button" id="btn-fav" aria-pressed="false">☆ Favourite</button>
+    </div>
+    <p class="status" id="status" aria-live="polite"></p>
+  </section>
+
+  <h2>Favourites</h2>
+  <section class="card" aria-label="Favourite ideas">
+    <ul class="idea-list" id="fav-list"></ul>
+    <p class="empty-msg" id="fav-empty">Nothing favourited yet — star a pitch you like and it will live here, even after you reload the page.</p>
+  </section>
+
+  <h2>History</h2>
+  <section class="card" aria-label="Generated history">
+    <ul class="idea-list" id="history-list"></ul>
+    <p class="empty-msg" id="history-empty">No ideas yet — press Generate and your pitches will stack up here, newest first.</p>
+    <div class="toolbar">
+      <button class="btn-ghost" type="button" id="btn-clear-history">Clear history</button>
+    </div>
+  </section>
+
+  <h2>How it works</h2>
+  <section class="card" aria-label="How ideas are generated">
+    <p>Every pitch is built from five slots: an <strong>audience</strong> with a
+    <strong>problem</strong>, solved with a <strong>technology</strong>, sold as a
+    <strong>business model</strong>, and finished with a <strong>twist</strong>.
+    The name is coined from the roll, the tagline is picked from a few
+    templates, and the pitch paragraph stitches the five slots into one
+    sentence each. Lock any slot to hold it steady while the rest re-roll —
+    lock all five and Generate changes nothing at all.</p>
+    <p class="fine">The Meta button fixes the slots to the idea for this very
+    tool: aspiring founders, running out of startup ideas, solved by a random
+    idea generator. Some ideas are jokes. Some jokes are fundable. Tell them
+    apart at your own risk.</p>
+  </section>
+
+  <footer>Built by <a href="/ideas/">Shipwright Studio</a></footer>
+</div>
+
+<script>
+/* PURE-LOGIC-START */
+var SLOT_KEYS = ["audience", "problem", "technology", "model", "twist"];
+
+var BANKS = {
+  audience: [
+    "busy parents", "freelance designers", "amateur beekeepers",
+    "night-shift nurses", "indie game developers", "urban gardeners",
+    "remote-first teams", "first-time home buyers", "sourdough bakers",
+    "commuter cyclists", "small-town librarians", "aspiring founders",
+    "new dog owners", "weekend surfers"
+  ],
+  problem: [
+    "forget to water their plants", "lose track of every subscription they pay for",
+    "can't find a babysitter on short notice", "drown in unread email",
+    "never know what to cook with what's in the fridge",
+    "struggle to stay focused for more than ten minutes",
+    "spend weekends doing laundry they hate",
+    "can't tell if their dog is actually happy",
+    "miss every deadline because of meeting overload",
+    "have no idea what their houseplants need",
+    "keep buying duplicates of things they already own",
+    "can't find a gym buddy at 5 a.m.",
+    "run out of startup ideas before breakfast",
+    "forget every password they have ever set"
+  ],
+  technology: [
+    "on-device AI", "a swarm of tiny drones", "blockchain receipts",
+    "computer vision", "a community marketplace", "voice-first interfaces",
+    "satellite imagery", "smart sensors", "generative AI",
+    "augmented reality", "a fleet of e-bikes",
+    "quantum-inspired optimisation", "a random idea generator with a sense of humour"
+  ],
+  model: [
+    "subscription", "marketplace", "freemium SaaS", "pay-per-use",
+    "advertising-supported", "hardware + subscription", "B2B licensing",
+    "creator revenue-share"
+  ],
+  twist: [
+    "with a twist: every user gets a human coach on call.",
+    "with a twist: it only works on Tuesdays.",
+    "with a twist: the whole thing runs on a single Raspberry Pi.",
+    "with a twist: users earn tokens they can spend on coffee.",
+    "with a twist: it donates 1% of revenue to the cause it serves.",
+    "with a twist: it was originally built as a joke and accidentally took off.",
+    "with a twist: the founders have never met in person.",
+    "with a twist: it refuses to send push notifications, ever.",
+    "with a twist: it is also, somehow, a startup idea generator.",
+    "with a twist: the pitch deck is a single haiku."
+  ]
+};
+
+var NAME_ROOTS = [
+  "Paw", "Lumen", "Nimbus", "Fern", "Quill", "Beacon", "Halo", "Drift",
+  "Ember", "Willow", "Atlas", "Nova", "Cinder", "Meadow", "Pixel", "Orbit",
+  "Sable", "Tide", "Wren", "Copper", "Juniper", "Falcon", "Moss", "Zephyr",
+  "Harbor", "Flint", "Sorrel", "Onyx", "Briar", "Cosmo"
+];
+var NAME_SUFFIXES = [
+  "ly", "hub", "base", "labs", "loop", "forge", "wise", "stack",
+  "works", "mind", "ship", "path"
+];
+
+var TAGLINE_TEMPLATES = [
+  "{tech} for {audience} — finally.",
+  "The {model} way to help {audience} {problem}.",
+  "{tech}, but for {audience}."
+];
+
+var META_SLOTS = {
+  audience: "aspiring founders",
+  problem: "run out of startup ideas before breakfast",
+  technology: "a random idea generator with a sense of humour",
+  model: "freemium SaaS",
+  twist: "with a twist: it is also, somehow, a startup idea generator."
+};
+
+function mulberry32(seed) {
+  return function () {
+    seed |= 0; seed = seed + 0x6D2B79F5 | 0;
+    var t = Math.imul(seed ^ seed >>> 15, 1 | seed);
+    t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+    return ((t ^ t >>> 14) >>> 0) / 4294967296;
+  };
+}
+function pick(arr, rand) {
+  return arr[Math.floor(rand() * arr.length)];
+}
+function cap(s) {
+  return s.charAt(0).toUpperCase() + s.slice(1);
+}
+function generateName(rand) {
+  return pick(NAME_ROOTS, rand) + pick(NAME_SUFFIXES, rand);
+}
+function composeIdea(slots, rand) {
+  var name = generateName(rand);
+  var tech = cap(slots.technology);
+  var tagline = pick(TAGLINE_TEMPLATES, rand)
+    .replace("{tech}", tech)
+    .replace("{audience}", slots.audience)
+    .replace("{model}", slots.model)
+    .replace("{problem}", slots.problem);
+  var pitch = name + " is a " + slots.model + " startup that uses " +
+    slots.technology + " to help " + slots.audience + " " + slots.problem +
+    ". " + cap(slots.twist);
+  return { name: name, tagline: tagline, pitch: pitch, slots: slots };
+}
+function generateIdea(seed, locks, current) {
+  var rand = mulberry32(seed == null ? (Date.now() ^ 0x9e3779b9) : seed);
+  locks = locks || {};
+  var allLocked = current && SLOT_KEYS.every(function (k) { return !!locks[k]; });
+  if (allLocked) return current;
+  var slots = {};
+  SLOT_KEYS.forEach(function (k) {
+    if (locks[k] && current) {
+      slots[k] = current.slots[k];
+    } else {
+      slots[k] = pick(BANKS[k], rand);
+    }
+  });
+  return composeIdea(slots, rand);
+}
+function generateMetaIdea(seed) {
+  var rand = mulberry32(seed == null ? (Date.now() ^ 0x9e3779b9) : seed);
+  var slots = {};
+  SLOT_KEYS.forEach(function (k) { slots[k] = META_SLOTS[k]; });
+  var idea = composeIdea(slots, rand);
+  idea.isMeta = true;
+  return idea;
+}
+function buildPitchText(idea) {
+  return idea.name + "\n" + idea.tagline + "\n\n" + idea.pitch;
+}
+function addToHistory(history, idea, max) {
+  max = max || 20;
+  var pitch = idea.pitch;
+  if (history.length && history[0].pitch === pitch) return history;
+  var next = [idea].concat(history);
+  return next.slice(0, max);
+}
+function toggleFavourite(favs, idea) {
+  var idx = -1;
+  for (var i = 0; i < favs.length; i++) {
+    if (favs[i].pitch === idea.pitch) { idx = i; break; }
+  }
+  if (idx >= 0) {
+    return { favs: favs.slice(0, idx).concat(favs.slice(idx + 1)), added: false };
+  }
+  return { favs: [idea].concat(favs), added: true };
+}
+function isFavourite(favs, idea) {
+  return favs.some(function (f) { return f.pitch === idea.pitch; });
+}
+/* PURE-LOGIC-END */
+
+var state = {
+  current: null,
+  generated: false,
+  generatedCount: 0,
+  locks: { audience: false, problem: false, technology: false, model: false, twist: false },
+  history: [],
+  favs: []
+};
+var FAV_KEY = "startup-generator-favourites";
+var $ = function (id) { return document.getElementById(id); };
+
+function escapeHtml(s) {
+  return String(s == null ? "" : s)
+    .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+}
+function showStatus(msg) {
+  var el = $("status");
+  el.textContent = msg;
+  el.classList.add("show");
+  clearTimeout(showStatus._t);
+  showStatus._t = setTimeout(function () { el.classList.remove("show"); }, 3500);
+}
+function renderStats() {
+  $("stat-generated").textContent = String(state.generatedCount);
+  $("stat-favs").textContent = String(state.favs.length);
+  $("stat-history").textContent = String(state.history.length);
+}
+function renderSlots() {
+  SLOT_KEYS.forEach(function (k) {
+    var val = $("slot-" + k);
+    var locked = !!state.locks[k];
+    val.textContent = state.current ? state.current.slots[k] : "—";
+    val.classList.toggle("locked", locked);
+    var btn = document.querySelector('[data-lock="' + k + '"]');
+    btn.textContent = locked ? "🔒 Locked" : "🔓 Lock";
+    btn.classList.toggle("locked", locked);
+    btn.setAttribute("aria-pressed", locked ? "true" : "false");
+  });
+}
+function renderPitch(isSample) {
+  var idea = state.current;
+  $("pitch-sample-badge").innerHTML = isSample
+    ? '<span class="sample-badge">Sample — press Generate</span>' : "";
+  $("pitch-name").textContent = idea ? idea.name : "";
+  $("pitch-tagline").textContent = idea ? idea.tagline : "";
+  $("pitch-body").textContent = idea ? idea.pitch : "";
+  $("meta-note").hidden = !(idea && idea.isMeta);
+  var fav = idea ? isFavourite(state.favs, idea) : false;
+  $("btn-fav").textContent = fav ? "★ Favourited" : "☆ Favourite";
+  $("btn-fav").setAttribute("aria-pressed", fav ? "true" : "false");
+}
+function renderList(el, emptyEl, items) {
+  el.innerHTML = items.map(function (idea, i) {
+    return '<li><button class="idea-item" type="button" data-idx="' + i + '">' +
+      '<span class="idea-name">' + escapeHtml(idea.name) + '</span>' +
+      '<span class="idea-tag">' + escapeHtml(idea.tagline) + '</span>' +
+      '</button></li>';
+  }).join("");
+  emptyEl.style.display = items.length ? "none" : "";
+}
+function renderFavs() {
+  renderList($("fav-list"), $("fav-empty"), state.favs);
+}
+function renderHistory() {
+  renderList($("history-list"), $("history-empty"), state.history);
+}
+function flashPitch() {
+  var card = $("pitch-card");
+  card.classList.remove("flash"); void card.offsetWidth;
+  card.classList.add("flash");
+}
+function setCurrent(idea, isSample) {
+  state.current = idea;
+  renderSlots();
+  renderPitch(isSample);
+  renderStats();
+}
+function loadFavs() {
+  try {
+    var raw = localStorage.getItem(FAV_KEY);
+    if (raw) {
+      var parsed = JSON.parse(raw);
+      if (Array.isArray(parsed)) state.favs = parsed.filter(function (f) {
+        return f && f.name && f.pitch && f.slots;
+      });
+    }
+  } catch (e) { state.favs = []; }
+}
+function saveFavs() {
+  try { localStorage.setItem(FAV_KEY, JSON.stringify(state.favs)); } catch (e) {}
+}
+function generate(isMeta) {
+  var idea = isMeta ? generateMetaIdea() : generateIdea(null, state.locks, state.current);
+  state.generatedCount++;
+  state.history = addToHistory(state.history, idea);
+  setCurrent(idea, false);
+  renderHistory();
+  flashPitch();
+  showStatus(isMeta ? "Meta idea generated — the tool, as a startup." : "New startup idea generated.");
+}
+function copyText(text, okMsg) {
+  function fallback() {
+    var range = document.createRange();
+    range.selectNodeContents($("pitch-body"));
+    var sel = window.getSelection();
+    sel.removeAllRanges();
+    sel.addRange(range);
+    showStatus("Clipboard unavailable — the pitch is selected, press Ctrl/Cmd+C to copy.");
+  }
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(text).then(
+      function () { showStatus(okMsg); },
+      function () { fallback(); }
+    );
+  } else {
+    fallback();
+  }
+}
+
+document.querySelectorAll("[data-lock]").forEach(function (b) {
+  b.addEventListener("click", function () {
+    var k = b.dataset.lock;
+    state.locks[k] = !state.locks[k];
+    renderSlots();
+    showStatus(state.locks[k]
+      ? "Locked: " + k + " will stay put on the next roll."
+      : "Unlocked: " + k + " will re-roll next time.");
+  });
+});
+$("btn-generate").addEventListener("click", function () { generate(false); });
+$("btn-meta").addEventListener("click", function () { generate(true); });
+$("btn-copy").addEventListener("click", function () {
+  if (!state.current) { showStatus("Press Generate first — there is nothing to copy yet."); return; }
+  copyText(buildPitchText(state.current), "Copied the pitch to the clipboard.");
+});
+$("btn-download").addEventListener("click", function () {
+  if (!state.current) { showStatus("Press Generate first — there is nothing to download yet."); return; }
+  var blob = new Blob([buildPitchText(state.current)], { type: "text/plain;charset=utf-8" });
+  var a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "startup-idea-" + state.current.name.toLowerCase() + ".txt";
+  document.body.appendChild(a);
+  a.click();
+  setTimeout(function () {
+    URL.revokeObjectURL(a.href);
+    a.remove();
+  }, 100);
+  showStatus("Downloaded startup-idea-" + state.current.name.toLowerCase() + ".txt.");
+});
+$("btn-fav").addEventListener("click", function () {
+  if (!state.current) { showStatus("Press Generate first — there is nothing to favourite yet."); return; }
+  var res = toggleFavourite(state.favs, state.current);
+  state.favs = res.favs;
+  saveFavs();
+  renderPitch(false);
+  renderFavs();
+  renderStats();
+  showStatus(res.added ? "Added to favourites." : "Removed from favourites.");
+});
+$("btn-clear-history").addEventListener("click", function () {
+  state.history = [];
+  renderHistory();
+  renderStats();
+  showStatus("History cleared.");
+});
+$("fav-list").addEventListener("click", function (e) {
+  var btn = e.target.closest(".idea-item");
+  if (!btn) return;
+  setCurrent(state.favs[Number(btn.dataset.idx)], false);
+  flashPitch();
+});
+$("history-list").addEventListener("click", function (e) {
+  var btn = e.target.closest(".idea-item");
+  if (!btn) return;
+  setCurrent(state.history[Number(btn.dataset.idx)], false);
+  flashPitch();
+});
+
+loadFavs();
+setCurrent(generateIdea(20261117, {}, null), true);
+renderFavs();
+renderHistory();
+</script>
+</body>
+</html>

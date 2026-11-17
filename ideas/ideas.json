@@ -1,5 +1,5 @@
 {
-  "updated": "2026-11-16",
+  "updated": "2026-11-17",
   "ideas": [
     {
       "id": "idea-000a",
@@ -1083,7 +1083,9 @@
       "tagline": "It generates startup ideas. Like this one. Meta.",
       "priority": 62,
       "effort": "S",
-      "status": "todo"
+      "status": "done",
+      "url": "/lab/startup-generator/",
+      "shipped": "2026-11-17"
     },
     {
       "id": "idea-093",
@@ -1509,7 +1511,9 @@
       "tagline": "Block-height countdown to the next Bitcoin halving.",
       "priority": 62,
       "effort": "S",
-      "status": "todo"
+      "status": "done",
+      "url": "/lab/block-countdown/",
+      "shipped": "2026-11-17"
     },
     {
       "id": "idea-130",

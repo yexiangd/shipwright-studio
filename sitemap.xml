@@ -51,6 +51,11 @@
     <priority>0.7</priority>
   </url>
   <url>
+    <loc>https://shipwright-studio.pages.dev/lab/block-countdown/</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
     <loc>https://shipwright-studio.pages.dev/lab/breakout/</loc>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
@@ -397,6 +402,11 @@
   </url>
   <url>
     <loc>https://shipwright-studio.pages.dev/lab/snake/</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://shipwright-studio.pages.dev/lab/startup-generator/</loc>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
