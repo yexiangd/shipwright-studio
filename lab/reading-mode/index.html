@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Reading Mode · Shipwright Studio</title>
+<meta name="description" content="A free online reader view that strips any article to clean text — try it on three cluttered samples or paste your own HTML, with reading time, word count and typography controls.">
+<link rel="canonical" href="https://shipwright-studio.pages.dev/lab/reading-mode/">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"WebApplication","name":"Reading Mode","url":"https://shipwright-studio.pages.dev/lab/reading-mode/","description":"Reading Mode is a free online tool that strips any article to clean text, removing nav bars, ads, pop-ups and sidebars, and shows word count, reading time and typography controls for a calm reading view.","applicationCategory":"UtilitiesApplication","operatingSystem":"Web","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"}}
+</script>
+<style>
+:root{--bg:#0a0c0f;--panel:#11141a;--line:#232a35;--txt:#e8e4da;--mut:#9aa3b2;--brass:#d2a24c;--red:#e0655f}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--txt);font-family:Inter,system-ui,sans-serif;line-height:1.6;padding:2.5rem 1.25rem 4rem;max-width:980px;margin:0 auto;text-align:center}
+a{color:var(--brass)}
+.eyebrow{font-size:.75rem;letter-spacing:.22em;text-transform:uppercase;color:var(--mut)}
+h1{font-family:Fraunces,serif;font-weight:600;font-size:clamp(2rem,4.5vw,3rem);margin:.4rem 0 .6rem}
+.define{color:var(--mut);max-width:52rem;margin:0 auto 1.5rem}
+.define strong{color:var(--txt)}
+h2{font-family:Fraunces,serif;font-weight:600;font-size:1.5rem;margin:2.6rem 0 1rem}
+.tabs{display:flex;gap:.6rem;justify-content:center;flex-wrap:wrap;margin-bottom:1.2rem}
+.tab{background:var(--panel);border:1px solid var(--line);color:var(--mut);border-radius:999px;padding:.55rem 1.2rem;cursor:pointer;font-family:inherit;font-size:.92rem}
+.tab:hover{color:var(--brass);border-color:var(--brass)}
+.tab.on{background:var(--brass);border-color:var(--brass);color:#14100a;font-weight:600}
+.mock{border:1px solid var(--line);border-radius:14px;overflow:hidden;text-align:left;max-width:860px;margin:0 auto;background:#0d1015}
+.urlbar{background:#141821;padding:.55rem .9rem;font-size:.8rem;color:var(--mut);border-bottom:1px solid var(--line)}
+.urlbar b{color:var(--txt);font-weight:500}
+.cluttered{padding:0}
+.cluttered nav{background:#1a1f2a;padding:.7rem 1rem;display:flex;gap:1.1rem;align-items:center;font-size:.9rem;position:relative}
+.cluttered nav a{color:var(--txt);text-decoration:none}
+.cluttered nav .logo{font-family:Fraunces,serif;font-weight:600;color:var(--brass)}
+.tag{display:inline-block;font-size:.62rem;letter-spacing:.12em;text-transform:uppercase;color:#14100a;background:var(--brass);border-radius:4px;padding:.1rem .4rem;font-weight:600;vertical-align:middle;margin-left:.5rem}
+.ad-banner{background:#2a2113;border:1px dashed var(--brass);margin:.9rem 1rem 0;padding:.9rem;text-align:center;color:var(--brass);font-weight:600;font-size:.95rem}
+.cluttered .cols{display:flex;gap:1rem;padding:1rem}
+.cluttered article{flex:1;min-width:0}
+.cluttered article h2{font-family:Fraunces,serif;font-size:1.4rem;margin:0 0 .4rem;text-align:left}
+.cluttered article .byline{font-size:.82rem;color:var(--mut);margin-bottom:.8rem}
+.cluttered article p{font-size:.95rem;color:var(--txt);margin-bottom:.7rem}
+.cluttered article blockquote{border-left:3px solid var(--brass);padding-left:.9rem;color:var(--mut);font-style:italic;margin:.8rem 0}
+.cluttered article ul{padding-left:1.2rem;margin-bottom:.7rem;font-size:.95rem}
+.cluttered article li{margin-bottom:.3rem}
+.cluttered aside{width:180px;flex:none;background:#141821;border:1px solid var(--line);border-radius:8px;padding:.8rem;font-size:.85rem;color:var(--mut)}
+.cluttered aside h3{font-size:.8rem;letter-spacing:.12em;text-transform:uppercase;margin-bottom:.5rem;color:var(--txt)}
+.cluttered aside p{margin-bottom:.5rem}
+.cookie-banner{background:#1a1f2a;border-top:1px solid var(--line);padding:.7rem 1rem;font-size:.85rem;color:var(--mut);display:flex;justify-content:space-between;gap:1rem;align-items:center}
+.cookie-banner button{background:var(--brass);border:0;border-radius:6px;padding:.35rem .9rem;cursor:pointer;font-family:inherit;font-weight:600;font-size:.85rem;color:#14100a}
+.newsletter-popup{margin:0 1rem 1rem;border:1px dashed var(--brass);border-radius:8px;padding:.9rem;text-align:center;color:var(--brass);font-size:.92rem}
+.newsletter-popup button{background:transparent;border:1px solid var(--brass);color:var(--brass);border-radius:6px;padding:.35rem 1rem;cursor:pointer;font-family:inherit;margin-top:.5rem}
+@media(max-width:640px){.cluttered .cols{flex-direction:column}.cluttered aside{width:100%}}
+.enter{margin-top:1.6rem}
+button.go{background:var(--brass);border:0;color:#14100a;font-weight:600;font-size:1.05rem;border-radius:10px;padding:.85rem 1.8rem;cursor:pointer;font-family:inherit}
+button.go:hover{filter:brightness(1.08)}
+button.ghost{background:transparent;border:1px solid var(--line);color:var(--mut);border-radius:8px;padding:.7rem 1.2rem;cursor:pointer;font-family:inherit;font-size:.95rem}
+button.ghost:hover{color:var(--brass);border-color:var(--brass)}
+/* ---- reader ---- */
+#reader{display:none;max-width:860px;margin:2rem auto 0;text-align:left}
+#reader.on{display:block}
+.controls{display:flex;gap:.5rem;flex-wrap:wrap;align-items:center;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:.7rem .9rem;margin-bottom:0;position:sticky;top:0;z-index:5}
+.controls .grp{display:flex;gap:.35rem;align-items:center;margin-right:.6rem}
+.controls .grp span{font-size:.72rem;letter-spacing:.12em;text-transform:uppercase;color:var(--mut);margin-right:.15rem}
+.controls button{background:#0d1015;border:1px solid var(--line);color:var(--txt);border-radius:7px;padding:.35rem .7rem;cursor:pointer;font-family:inherit;font-size:.88rem}
+.controls button:hover{border-color:var(--brass);color:var(--brass)}
+.controls button.on{background:var(--brass);border-color:var(--brass);color:#14100a;font-weight:600}
+.progress{height:5px;background:#141821;border-radius:999px;overflow:hidden;margin:.9rem 0 .4rem}
+.progress i{display:block;height:100%;background:var(--brass);width:0}
+.meta{font-size:.88rem;color:var(--mut);margin-bottom:.6rem}
+.meta b{color:var(--brass);font-weight:600}
+.rbody{border:1px solid var(--line);border-radius:14px;max-height:68vh;overflow-y:auto;padding:2rem 2.2rem;background:var(--bg);color:var(--txt);font-size:19px;line-height:1.7}
+.rbody.serif{font-family:Fraunces,Georgia,serif}
+.rbody.sans{font-family:Inter,system-ui,sans-serif}
+.rbody[data-theme="sepia"]{background:#f4ead5;color:#2b2118;border-color:#d8c9a3}
+.rbody[data-theme="light"]{background:#fafaf7;color:#1c1a17;border-color:#ddd6c9}
+.rbody[data-theme="sepia"] h2,.rbody[data-theme="sepia"] blockquote{border-color:#b98a2e;color:#2b2118}
+.rbody[data-theme="light"] h2,.rbody[data-theme="light"] blockquote{border-color:#b98a2e}
+.rbody h2{font-size:1.5em;margin:0 0 .6em;text-align:left}
+.rbody p{margin-bottom:1em}
+.rbody blockquote{border-left:3px solid var(--brass);padding-left:1em;font-style:italic;opacity:.85;margin:1em 0}
+.rbody ul{padding-left:1.3em;margin-bottom:1em}
+.rbody li{margin-bottom:.35em}
+.rbody .empty{color:var(--mut);font-style:italic}
+.reader-actions{display:flex;gap:.75rem;justify-content:center;flex-wrap:wrap;margin-top:1.2rem}
+.copied{color:var(--brass);font-size:.9rem;min-height:1.4em;text-align:center;margin-top:.5rem}
+/* ---- paste your own ---- */
+.paste{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:1.5rem;max-width:860px;margin:0 auto;text-align:left}
+.paste textarea{width:100%;min-height:130px;background:#0d1015;border:1px solid var(--line);border-radius:8px;color:var(--txt);padding:.8rem;font-family:ui-monospace,monospace;font-size:.85rem;resize:vertical;outline:none}
+.paste textarea:focus{border-color:var(--brass)}
+.paste textarea.err{border-color:var(--red)}
+.paste .row{display:flex;gap:.75rem;align-items:center;flex-wrap:wrap;margin-top:.8rem}
+.ferr{color:var(--red);font-size:.85rem;min-height:1.4em;margin-top:.5rem}
+#paste-result{margin-top:1rem}
+#paste-result h2{font-size:1.3rem;margin:0 0 .6rem;text-align:left}
+#paste-result p{margin-bottom:.7rem}
+#paste-result blockquote{border-left:3px solid var(--brass);padding-left:.9rem;color:var(--mut);font-style:italic;margin:.8rem 0}
+#paste-result ul{padding-left:1.2rem;margin-bottom:.7rem}
+#paste-result li{margin-bottom:.3rem}
+#paste-result .meta{margin-bottom:.6rem}
+.howto{max-width:640px;margin:0 auto;text-align:left;color:var(--mut);font-size:.95rem}
+.howto p{margin-bottom:.8rem}
+.howto strong{color:var(--txt)}
+.back{display:inline-block;margin-top:2.5rem;font-size:.9rem}
+footer{margin-top:2.5rem;font-size:.85rem;color:var(--mut)}
+</style>
+</head>
+<body>
+<p class="eyebrow">Shipwright Studio · Lab</p>
+<h1>Reading Mode</h1>
+<p class="define"><strong>Reading Mode is a free online tool that strips any article to clean text.</strong> Pick a cluttered sample below, enter reading mode to remove the nav bars, ads and pop-ups, then tune the type — or paste your own HTML and run the same extraction on it.</p>
+
+<h2>Pick a sample article</h2>
+<div class="tabs" id="tabs">
+  <button class="tab on" data-sample="tech">Tech essay</button>
+  <button class="tab" data-sample="science">Science</button>
+  <button class="tab" data-sample="story">Short story</button>
+</div>
+
+<div class="mock">
+  <div class="urlbar">◉&nbsp; <b id="urlbar">example-news-site.com/why-interfaces-disappear</b></div>
+  <div class="cluttered" id="cluttered"></div>
+</div>
+
+<div class="enter">
+  <button class="go" id="enter">Enter reading mode →</button>
+</div>
+
+<div id="reader">
+  <div class="controls" id="controls">
+    <span class="grp"><span>Size</span><button id="fs-minus" aria-label="Smaller text">A−</button><button id="fs-plus" aria-label="Larger text">A+</button></span>
+    <span class="grp"><span>Spacing</span><button data-lh="1.5">Compact</button><button data-lh="1.7" class="on">Comfortable</button><button data-lh="1.9">Roomy</button></span>
+    <span class="grp"><span>Width</span><button data-w="480">Narrow</button><button data-w="640" class="on">Standard</button><button data-w="780">Wide</button></span>
+    <span class="grp"><span>Type</span><button id="font-toggle">Serif</button></span>
+    <span class="grp"><span>Theme</span><button data-theme="dark" class="on">Dark</button><button data-theme="sepia">Sepia</button><button data-theme="light">Light</button></span>
+  </div>
+  <div class="progress"><i id="pfill"></i></div>
+  <p class="meta" id="rmeta">–</p>
+  <div class="rbody serif" id="rbody" data-theme="dark" tabindex="0"></div>
+  <div class="reader-actions">
+    <button class="go" id="copy">Copy clean text</button>
+    <button class="ghost" id="exit">← Exit reading mode</button>
+  </div>
+  <p class="copied" id="copied"></p>
+</div>
+
+<h2>Paste your own HTML</h2>
+<div class="paste">
+  <textarea id="paste-input" placeholder="Paste raw article HTML here — e.g. copy a page's source and paste it in. The same extractor runs on it: nav bars, ads, scripts and sidebars are stripped, headings and paragraphs are kept."></textarea>
+  <div class="row">
+    <button class="go" id="extract">Extract clean text</button>
+    <button class="ghost" id="try-sample">Try it with the cluttered sample</button>
+  </div>
+  <div class="ferr" id="paste-err"></div>
+  <div id="paste-result"></div>
+</div>
+
+<h2>How it works</h2>
+<div class="howto">
+  <p><strong>Everything is removed except the words.</strong> The extractor deletes scripts, styles, navigation, sidebars, headers, footers and forms, plus anything labelled as an ad, pop-up, cookie banner, newsletter box or share bar — then keeps headings, paragraphs, lists and blockquotes, in their original order.</p>
+  <p><strong>Reading time assumes 200 words per minute</strong>, a standard average for adult readers. Word count is the number of words in the cleaned text, so the estimate reflects what you actually read, not the clutter around it.</p>
+  <p><strong>Nothing leaves your browser.</strong> The samples, the extraction and the typography controls all run locally on this page. No article text is sent to any server, and no URL fetching is possible from a static page — that is why paste-your-own takes raw HTML instead of a link.</p>
+</div>
+
+<a class="back" href="/ideas/">← Back to the idea bank</a>
+<footer>Built by Shipwright Studio</footer>
+
+<script>
+/* ---- Pure, testable core (no DOM access) ---- */
+const AD_WORDS = ["ad","advert","popup","cookie","newsletter","sidebar","share","banner","promo"];
+
+function stripBlocks(html, tag){
+  const re = new RegExp("<" + tag + "\\b[^>]*>[\\s\\S]*?<\\/" + tag + ">", "gi");
+  let out = html, prev;
+  do { prev = out; out = out.replace(re, ""); } while (out !== prev);
+  return out;
+}
+
+function stripAdElements(html){
+  const words = AD_WORDS.join("|");
+  let out = html, prev;
+  const reDq = new RegExp("<([a-z][a-z0-9]*)\\b[^>]*\\b(?:class|id)\\s*=\\s*\"[^\"]*\\b(" + words + ")\\b[^\"]*\"[^>]*>[\\s\\S]*?<\\/\\1>", "gi");
+  const reSq = new RegExp("<([a-z][a-z0-9]*)\\b[^>]*\\b(?:class|id)\\s*=\\s*'[^']*\\b(" + words + ")\\b[^']*'[^>]*>[\\s\\S]*?<\\/\\1>", "gi");
+  do { prev = out; out = out.replace(reDq, "").replace(reSq, ""); } while (out !== prev);
+  return out;
+}
+
+function decodeEntities(s){
+  return s.replace(/&amp;/g,"&").replace(/&lt;/g,"<").replace(/&gt;/g,">")
+    .replace(/&quot;/g,'"').replace(/&#39;|&apos;/g,"'").replace(/&nbsp;/g," ")
+    .replace(/&rsquo;|&#8217;/g,"’").replace(/&lsquo;|&#8216;/g,"‘")
+    .replace(/&rdquo;|&#8221;/g,"”").replace(/&ldquo;|&#8220;/g,"“")
+    .replace(/&mdash;|&#8212;/g,"—").replace(/&ndash;|&#8211;/g,"–")
+    .replace(/&hellip;|&#8230;/g,"…");
+}
+
+function extractReadable(html){
+  if (typeof html !== "string") return { blocks: [], text: "" };
+  let s = html.replace(/<!--[\s\S]*?-->/g, "");
+  ["script","style","nav","aside","header","footer","form","noscript","iframe","svg"].forEach(function(t){ s = stripBlocks(s, t); });
+  s = stripAdElements(s);
+  const blocks = [];
+  const re = /<(h[1-3]|p|li|blockquote)\b[^>]*>([\s\S]*?)<\/\1>/gi;
+  let m;
+  while ((m = re.exec(s)) !== null){
+    const txt = decodeEntities(m[2].replace(/<[^>]+>/g, " ")).replace(/\s+/g, " ").trim();
+    if (txt) blocks.push({ tag: m[1].toLowerCase(), text: txt });
+  }
+  return { blocks: blocks, text: blocks.map(function(b){ return b.text; }).join("\n\n") };
+}
+
+function countWords(text){
+  if (typeof text !== "string") return 0;
+  const t = text.trim();
+  return t ? t.split(/\s+/).length : 0;
+}
+
+function readingMinutes(wordCount, wpm){
+  const rate = (typeof wpm === "number" && wpm > 0) ? wpm : 200;
+  if (!wordCount || wordCount <= 0) return 0;
+  return Math.max(1, Math.ceil(wordCount / rate));
+}
+
+function renderBlocks(blocks){
+  let out = "", inList = false;
+  blocks.forEach(function(b){
+    const esc = b.text.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+    if (b.tag === "li"){
+      if (!inList){ out += "<ul>"; inList = true; }
+      out += "<li>" + esc + "</li>";
+    } else {
+      if (inList){ out += "</ul>"; inList = false; }
+      out += "<" + b.tag + ">" + esc + "</" + b.tag + ">";
+    }
+  });
+  if (inList) out += "</ul>";
+  return out;
+}
+
+/* ---- Sample articles (cluttered markup) ---- */
+const SAMPLES = {
+  tech: {
+    label: "Tech essay",
+    url: "example-news-site.com/why-interfaces-disappear",
+    title: "Why the Best Interfaces Disappear",
+    clutter: '<nav><span class="logo">TechDaily</span><a href="#">Home</a><a href="#">Reviews</a><a href="#">AI</a><a href="#">Sign in</a><span class="tag">demo clutter</span></nav>'
+      + '<div class="ad-banner">🔥 HOT DEAL — 70% off cloud storage, today only! <span class="tag">demo clutter</span></div>'
+      + '<div class="cols"><article><h2>Why the Best Interfaces Disappear</h2><p class="byline">By Mara Ellison · 8 min read · 4,102 comments</p>'
+      + '<p>The best interface is the one you never notice. When a tool works, your attention stays on the task — the writing, the photo, the message — and the chrome around it fades into the background.</p>'
+      + '<p>Early software wore its machinery on its sleeve: toolbars, menus, status bars, wizards. Each new feature added a button, and each button demanded a decision. The result was an interface that asked to be operated rather than used.</p>'
+      + '<blockquote>Good design is invisible. Great design is forgettable — in the best possible way.</blockquote>'
+      + '<p>The shift came when designers started counting the cost of every interaction. A dialog box is not free: it interrupts, it demands a choice, it breaks flow. The interfaces we love most are the ones that removed the most dialogs.</p>'
+      + '<ul><li>One clear action per screen, not five competing ones.</li><li>Defaults that are right most of the time.</li><li>Undo instead of confirmation dialogs.</li></ul>'
+      + '<p>Disappearing does not mean dumbing down. The power is still there — it is just one gesture away instead of one menu deep. The interface earns its invisibility by being predictable: the same action, in the same place, every time.</p>'
+      + '<p>So the next time you open an app and simply do the thing you came to do, notice what did not happen. No pop-up, no tour, no tooltip. That absence is the design.</p></article>'
+      + '<aside class="sidebar"><h3>Trending now</h3><p>1. The phone that folds twice</p><p>2. AI writes your emails now</p><p>3. Why your router is slow</p><span class="tag">demo clutter</span></aside></div>'
+      + '<div class="newsletter-popup">Never miss a story! Join 2M readers. <button>Subscribe</button> <span class="tag">demo clutter</span></div>'
+      + '<div class="cookie-banner"><span>We use cookies to improve your experience. Accept all?</span><button>Accept all</button><span class="tag">demo clutter</span></div>'
+  },
+  science: {
+    label: "Science",
+    url: "example-news-site.com/quiet-physics-falling-leaf",
+    title: "The Quiet Physics of a Falling Leaf",
+    clutter: '<nav><span class="logo">ScienceNow</span><a href="#">Home</a><a href="#">Space</a><a href="#">Nature</a><a href="#">Subscribe</a><span class="tag">demo clutter</span></nav>'
+      + '<div class="ad-banner">New: the mattress scientists sleep on. <span class="tag">demo clutter</span></div>'
+      + '<div class="cols"><article><h2>The Quiet Physics of a Falling Leaf</h2><p class="byline">By Dr. Tomás Rivera · 6 min read</p>'
+      + '<p>A leaf does not fall. It negotiates. Released from its branch, it is caught at once by the air, and what follows is less a drop than a slow, swaying argument between gravity and drag.</p>'
+      + '<p>A stone falls straight because the air barely notices it. A leaf is almost all surface and almost no weight, so the air notices it a great deal. Each flutter is the leaf shedding speed, trading a straight fall for a wandering one.</p>'
+      + '<blockquote>A leaf takes the longest possible route to the ground — and that is exactly the point.</blockquote>'
+      + '<p>Botanists have clocked leaves falling at barely a metre per second, while a stone of the same size would hit the ground in a fraction of the time. The leaf&rsquo;s flutter spreads its landing over metres of ground, away from the parent tree, where its seeds stand a better chance.</p>'
+      + '<ul><li>Terminal velocity scales with surface area, not just mass.</li><li>Fluttering increases air resistance and slows the descent.</li><li>Drift carries seeds away from the shade of the parent tree.</li></ul>'
+      + '<p>Watch one on a still autumn afternoon and you will see the whole flight plan: a tilt, a stall, a sideways glide, a recovery. It is aerodynamics written in a language older than wings.</p>'
+      + '<p>The leaf is not failing to fall. It is falling beautifully, on purpose, at exactly the speed evolution chose.</p></article>'
+      + '<aside class="sidebar"><h3>Most read</h3><p>1. Webb finds a new exoplanet</p><p>2. Why cats purr, explained</p><p>3. The ocean&rsquo;s twilight zone</p><span class="tag">demo clutter</span></aside></div>'
+      + '<div class="newsletter-popup">Get one science story a week. <button>Sign up free</button> <span class="tag">demo clutter</span></div>'
+      + '<div class="cookie-banner"><span>We value your privacy. Manage cookies?</span><button>Accept</button><span class="tag">demo clutter</span></div>'
+  },
+  story: {
+    label: "Short story",
+    url: "example-news-site.com/lighthouse-keepers-last-letter",
+    title: "The Lighthouse Keeper&rsquo;s Last Letter",
+    clutter: '<nav><span class="logo">StoryHouse</span><a href="#">Fiction</a><a href="#">Poetry</a><a href="#">Essays</a><a href="#">Log in</a><span class="tag">demo clutter</span></nav>'
+      + '<div class="ad-banner">Write your novel in 30 days — course starts Monday. <span class="tag">demo clutter</span></div>'
+      + '<div class="cols"><article><h2>The Lighthouse Keeper&rsquo;s Last Letter</h2><p class="byline">By Ana Whitfield · an excerpt</p>'
+      + '<p>Dear Elin, if this letter finds you, the light will have gone out, and that will be my doing. Forty-one years I kept it burning, and tonight I am letting it rest.</p>'
+      + '<p>Do you remember the winter the sea froze to the rocks? You were nine, and you stood at the gallery rail counting the ships that never came. I told you the light was not for the ships. It was for the people waiting for them.</p>'
+      + '<blockquote>The light was never for the ships. It was for the people waiting for them.</blockquote>'
+      + '<p>I have watched this coast long enough to know what the sea keeps and what it returns. It kept your mother&rsquo;s ring and your brother&rsquo;s boat. It returned, in time, a kind of peace I did not expect.</p>'
+      + '<ul><li>The lamp room key is under the third step.</li><li>The logbook goes to the maritime museum.</li><li>The brass compass is yours — it always was.</li></ul>'
+      + '<p>Do not mourn the dark tower. A lighthouse is only a promise made of glass and fire, and promises end. What matters is that someone, somewhere, once looked up and saw it, and steered home.</p>'
+      + '<p>All my love, always — Father</p></article>'
+      + '<aside class="sidebar"><h3>Editors&rsquo; picks</h3><p>1. The last train from Aldergate</p><p>2. What the river remembered</p><p>3. A field guide to ghosts</p><span class="tag">demo clutter</span></aside></div>'
+      + '<div class="newsletter-popup">Love short fiction? Get one story a week. <button>Join free</button> <span class="tag">demo clutter</span></div>'
+      + '<div class="cookie-banner"><span>This site uses cookies. Continue?</span><button>OK</button><span class="tag">demo clutter</span></div>'
+  }
+};
+
+/* === DOM wiring below (not tested in node) === */
+const $ = function(id){ return document.getElementById(id); };
+let currentSample = "tech";
+let currentCleanText = "";
+let fsIdx = 2;
+const FS_STEPS = [15, 17, 19, 21, 24];
+
+function showSample(key){
+  currentSample = key;
+  const s = SAMPLES[key];
+  $("urlbar").textContent = s.url;
+  $("cluttered").innerHTML = s.clutter;
+  document.querySelectorAll(".tab").forEach(function(t){ t.classList.toggle("on", t.dataset.sample === key); });
+  $("reader").classList.remove("on");
+  $("copied").textContent = "";
+}
+
+function enterReadingMode(blocks, text, label){
+  const words = countWords(text);
+  const mins = readingMinutes(words);
+  const body = $("rbody");
+  body.innerHTML = blocks.length ? renderBlocks(blocks) : '<p class="empty">Nothing readable found.</p>';
+  body.scrollTop = 0;
+  $("pfill").style.width = "0%";
+  $("rmeta").innerHTML = "<b>" + words.toLocaleString("en-GB") + " words</b> · " + mins + " min read" + (label ? " · " + label : "");
+  currentCleanText = text;
+  $("reader").classList.add("on");
+  $("copied").textContent = "";
+  $("reader").scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+function updateProgress(){
+  const body = $("rbody");
+  const max = body.scrollHeight - body.clientHeight;
+  const pct = max > 0 ? Math.min(100, (body.scrollTop / max) * 100) : 100;
+  $("pfill").style.width = pct.toFixed(1) + "%";
+}
+
+document.querySelectorAll(".tab").forEach(function(t){
+  t.addEventListener("click", function(){ showSample(t.dataset.sample); });
+});
+
+$("enter").addEventListener("click", function(){
+  const s = SAMPLES[currentSample];
+  const res = extractReadable(s.clutter);
+  enterReadingMode(res.blocks, res.text, s.title);
+});
+
+$("exit").addEventListener("click", function(){
+  $("reader").classList.remove("on");
+  $("copied").textContent = "";
+});
+
+$("rbody").addEventListener("scroll", updateProgress);
+
+$("fs-minus").addEventListener("click", function(){
+  fsIdx = Math.max(0, fsIdx - 1);
+  $("rbody").style.fontSize = FS_STEPS[fsIdx] + "px";
+});
+$("fs-plus").addEventListener("click", function(){
+  fsIdx = Math.min(FS_STEPS.length - 1, fsIdx + 1);
+  $("rbody").style.fontSize = FS_STEPS[fsIdx] + "px";
+});
+
+document.querySelectorAll("[data-lh]").forEach(function(b){
+  b.addEventListener("click", function(){
+    document.querySelectorAll("[data-lh]").forEach(function(x){ x.classList.remove("on"); });
+    b.classList.add("on");
+    $("rbody").style.lineHeight = b.dataset.lh;
+  });
+});
+document.querySelectorAll("[data-w]").forEach(function(b){
+  b.addEventListener("click", function(){
+    document.querySelectorAll("[data-w]").forEach(function(x){ x.classList.remove("on"); });
+    b.classList.add("on");
+    $("rbody").style.maxWidth = b.dataset.w + "px";
+    $("rbody").style.margin = "0 auto";
+  });
+});
+$("font-toggle").addEventListener("click", function(){
+  const body = $("rbody");
+  const serif = body.classList.toggle("serif");
+  body.classList.toggle("sans", !serif);
+  $("font-toggle").textContent = serif ? "Serif" : "Sans";
+});
+document.querySelectorAll("[data-theme]").forEach(function(b){
+  b.addEventListener("click", function(){
+    document.querySelectorAll("[data-theme]").forEach(function(x){ x.classList.remove("on"); });
+    b.classList.add("on");
+    $("rbody").dataset.theme = b.dataset.theme;
+  });
+});
+
+$("copy").addEventListener("click", function(){
+  const done = function(){ $("copied").textContent = "Copied ✓ — clean text is on your clipboard."; };
+  if (navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(currentCleanText).then(done, function(){ $("copied").textContent = "Copy failed — select the text manually."; });
+  } else {
+    const ta = document.createElement("textarea");
+    ta.value = currentCleanText;
+    document.body.appendChild(ta);
+    ta.select();
+    try { document.execCommand("copy"); done(); } catch (e) { $("copied").textContent = "Copy failed — select the text manually."; }
+    document.body.removeChild(ta);
+  }
+});
+
+$("extract").addEventListener("click", function(){
+  const input = $("paste-input").value;
+  const err = $("paste-err"), out = $("paste-result"), ta = $("paste-input");
+  err.textContent = ""; out.innerHTML = ""; ta.classList.remove("err");
+  if (!input.trim()){
+    err.textContent = "Paste some HTML first — the box is empty.";
+    ta.classList.add("err");
+    return;
+  }
+  let res;
+  try { res = extractReadable(input); } catch (e) { res = { blocks: [], text: "" }; }
+  if (!res.blocks.length){
+    out.innerHTML = '<p class="empty" style="color:var(--mut);font-style:italic">Nothing readable found in that HTML — no headings, paragraphs, lists or blockquotes survived the extraction.</p>';
+    return;
+  }
+  const words = countWords(res.text);
+  out.innerHTML = '<p class="meta"><b>' + words.toLocaleString("en-GB") + ' words</b> · ' + readingMinutes(words) + ' min read · extracted from your HTML</p>' + renderBlocks(res.blocks);
+  currentCleanText = res.text;
+});
+
+$("try-sample").addEventListener("click", function(){
+  $("paste-input").value = SAMPLES[currentSample].clutter;
+  $("extract").click();
+  $("paste-result").scrollIntoView({ behavior: "smooth", block: "start" });
+});
+
+showSample("tech");
+</script>
+</body>
+</html>

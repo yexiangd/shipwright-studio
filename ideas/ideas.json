@@ -1,5 +1,5 @@
 {
-  "updated": "2026-11-17",
+  "updated": "2026-11-18",
   "ideas": [
     {
       "id": "idea-000a",
@@ -751,7 +751,9 @@
       "tagline": "Strip any article to clean text — try it on a sample.",
       "priority": 61,
       "effort": "M",
-      "status": "todo"
+      "status": "done",
+      "url": "/lab/reading-mode/",
+      "shipped": "2026-11-18"
     },
     {
       "id": "idea-063",
@@ -1523,7 +1525,9 @@
       "tagline": "Flip-card game for crypto terminology.",
       "priority": 61,
       "effort": "S",
-      "status": "todo"
+      "status": "done",
+      "url": "/lab/web3-flashcards/",
+      "shipped": "2026-11-18"
     }
   ]
 }

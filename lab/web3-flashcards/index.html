@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Web3 Glossary Flashcards · Shipwright Studio</title>
+<meta name="description" content="A free online flip-card game that teaches 40 essential crypto and web3 terms — gas, MEV, rollups, DAOs and more — with plain-English definitions, Know / Still-learning piles and a review mode.">
+<link rel="canonical" href="https://shipwright-studio.pages.dev/lab/web3-flashcards/">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"WebApplication","name":"Web3 Glossary Flashcards","url":"https://shipwright-studio.pages.dev/lab/web3-flashcards/","description":"Web3 Glossary Flashcards is a free online tool that teaches crypto and web3 terminology through a deck of 40 flip cards with plain-English definitions, Know and Still-learning piles, category filters and a review mode for the terms you miss.","applicationCategory":"EducationalApplication","operatingSystem":"Web","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"}}
+</script>
+<style>
+:root{--bg:#0a0c0f;--panel:#11141a;--line:#232a35;--txt:#e8e4da;--mut:#9aa3b2;--brass:#d2a24c;--red:#e0655f;--green:#7fb069}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--txt);font-family:Inter,system-ui,sans-serif;line-height:1.6;padding:2.5rem 1.25rem 4rem;max-width:900px;margin:0 auto;text-align:center}
+a{color:var(--brass)}
+.eyebrow{font-size:.75rem;letter-spacing:.22em;text-transform:uppercase;color:var(--mut)}
+h1{font-family:Fraunces,serif;font-weight:600;font-size:clamp(2rem,4.5vw,3rem);margin:.4rem 0 .6rem}
+.define{color:var(--mut);max-width:52rem;margin:0 auto 1.2rem}
+.define strong{color:var(--txt)}
+.disclaimer{display:inline-block;border:1px solid var(--line);border-radius:999px;padding:.3rem .9rem;font-size:.8rem;color:var(--mut);margin-bottom:1.8rem}
+.filters{display:flex;gap:.5rem;justify-content:center;flex-wrap:wrap;margin-bottom:1.4rem}
+.filters button{background:transparent;border:1px solid var(--line);color:var(--mut);border-radius:999px;padding:.45rem 1rem;cursor:pointer;font-family:inherit;font-size:.9rem}
+.filters button:hover{color:var(--brass);border-color:var(--brass)}
+.filters button.on{background:var(--brass);border-color:var(--brass);color:#14100a;font-weight:600}
+.bar{max-width:560px;margin:0 auto;background:#141821;border-radius:999px;height:8px;overflow:hidden}
+.bar i{display:block;height:100%;background:var(--brass);width:0;border-radius:999px;transition:width .4s}
+.barlab{font-size:.9rem;color:var(--mut);margin-top:.5rem}
+.barlab strong{color:var(--txt);font-variant-numeric:tabular-nums}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:.9rem;max-width:640px;margin:1.4rem auto 0}
+@media(max-width:560px){.stats{grid-template-columns:repeat(2,1fr)}}
+.stat{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:.9rem .6rem}
+.stat .v{font-family:Fraunces,serif;font-size:1.5rem;font-weight:600;font-variant-numeric:tabular-nums}
+.stat .k{font-size:.7rem;letter-spacing:.14em;text-transform:uppercase;color:var(--mut);margin-top:.3rem}
+.badge{display:none;margin:1.2rem auto 0;font-size:.8rem;color:var(--brass);border:1px solid var(--brass);border-radius:999px;padding:.2rem .8rem}
+.badge.on{display:inline-block}
+.scene{perspective:1200px;max-width:560px;margin:1.6rem auto 0}
+.card{position:relative;height:300px;cursor:pointer;transform-style:preserve-3d;transition:transform .55s cubic-bezier(.4,.1,.2,1)}
+.card.flipped{transform:rotateY(180deg)}
+.face{position:absolute;inset:0;background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:2rem 1.8rem;display:flex;flex-direction:column;justify-content:center;align-items:center;backface-visibility:hidden;-webkit-backface-visibility:hidden}
+.face.back{transform:rotateY(180deg);border-color:var(--brass)}
+.face .tag{font-size:.7rem;letter-spacing:.2em;text-transform:uppercase;color:var(--brass);margin-bottom:.8rem}
+.face .term{font-family:Fraunces,serif;font-size:clamp(1.7rem,5vw,2.3rem);font-weight:600;line-height:1.2}
+.face .hint{font-size:.82rem;color:var(--mut);margin-top:1.1rem}
+.face .def{font-size:1.08rem;max-width:26rem}
+.face .defterm{font-family:Fraunces,serif;font-size:1.1rem;color:var(--brass);margin-bottom:.7rem}
+.actions{display:flex;gap:.7rem;justify-content:center;flex-wrap:wrap;margin-top:1.5rem}
+button{font-family:inherit;cursor:pointer;border-radius:8px;font-size:1rem;padding:.7rem 1.3rem}
+button:disabled{opacity:.4;cursor:not-allowed}
+button.know{background:var(--brass);border:0;color:#14100a;font-weight:600}
+button.know:hover:not(:disabled){filter:brightness(1.08)}
+button.learn{background:transparent;border:1px solid var(--line);color:var(--txt)}
+button.learn:hover:not(:disabled){border-color:var(--brass);color:var(--brass)}
+button.ghost{background:transparent;border:1px solid var(--line);color:var(--mut)}
+button.ghost:hover:not(:disabled){color:var(--brass);border-color:var(--brass)}
+.reviewrow{margin-top:1rem}
+.reviewrow button{background:transparent;border:1px solid var(--brass);color:var(--brass)}
+.reviewrow button:hover:not(:disabled){background:var(--brass);color:#14100a}
+.keys{font-size:.82rem;color:var(--mut);margin-top:1.2rem}
+.keys kbd{background:#141821;border:1px solid var(--line);border-radius:4px;padding:.05rem .4rem;font-family:inherit;font-size:.78rem}
+#done{display:none;max-width:560px;margin:1.6rem auto 0;background:var(--panel);border:1px solid var(--brass);border-radius:16px;padding:2rem 1.5rem}
+#done h2{font-family:Fraunces,serif;font-size:1.7rem;margin-bottom:.5rem}
+#done p{color:var(--mut);margin-bottom:1.2rem}
+#done .row{display:flex;gap:.7rem;justify-content:center;flex-wrap:wrap}
+h2.sec{font-family:Fraunces,serif;font-weight:600;font-size:1.5rem;margin:2.6rem 0 1rem}
+.howto{max-width:640px;margin:0 auto;text-align:left;color:var(--mut);font-size:.95rem}
+.howto p{margin-bottom:.8rem}
+.howto strong{color:var(--txt)}
+.back{display:inline-block;margin-top:2.5rem;font-size:.9rem}
+footer{margin-top:2.5rem;font-size:.85rem;color:var(--mut)}
+</style>
+</head>
+<body>
+<p class="eyebrow">Shipwright Studio · Lab</p>
+<h1>Web3 Glossary Flashcards</h1>
+<p class="define"><strong>Web3 Glossary Flashcards is a free online tool that teaches crypto and web3 terminology through a deck of 40 flip cards.</strong> Flip each card to reveal a plain-English definition, sort it into Know or Still-learning, and review the ones you missed until the whole deck sticks.</p>
+<p class="disclaimer">Educational only — not financial advice. No wallet needed, nothing to buy.</p>
+
+<div class="filters" id="filters" role="group" aria-label="Category filter"></div>
+
+<div class="bar"><i id="barfill"></i></div>
+<p class="barlab" id="barlab">Known <strong>0 / 40</strong></p>
+
+<div class="stats">
+  <div class="stat"><div class="v" id="st-seen">0</div><div class="k">Cards seen</div></div>
+  <div class="stat"><div class="v" id="st-known">0</div><div class="k">Known</div></div>
+  <div class="stat"><div class="v" id="st-learning">0</div><div class="k">Still learning</div></div>
+  <div class="stat"><div class="v" id="st-streak">0</div><div class="k">Streak</div></div>
+</div>
+
+<span class="badge" id="review-badge">Reviewing your still-learning pile</span>
+
+<div class="scene" id="scene">
+  <div class="card" id="card" role="button" tabindex="0" aria-label="Flashcard — activate to flip">
+    <div class="face front">
+      <div class="tag" id="card-tag">Basics</div>
+      <div class="term" id="card-term">Blockchain</div>
+      <div class="hint">Click, tap or press Space to flip</div>
+    </div>
+    <div class="face back">
+      <div class="defterm" id="def-term">Blockchain</div>
+      <div class="def" id="card-def"></div>
+      <div class="hint">Know it? Sort it below — or flip back with Space</div>
+    </div>
+  </div>
+</div>
+
+<div class="actions">
+  <button class="know" id="btn-know" disabled>I know this ✓</button>
+  <button class="learn" id="btn-learn" disabled>Still learning</button>
+  <button class="ghost" id="btn-shuffle">Shuffle</button>
+  <button class="ghost" id="btn-restart">Restart</button>
+</div>
+
+<div class="reviewrow">
+  <button id="btn-review" disabled>Review still-learning (0)</button>
+</div>
+
+<p class="keys"><kbd>Space</kbd> flip &nbsp;·&nbsp; <kbd>K</kbd> know &nbsp;·&nbsp; <kbd>L</kbd> still learning &nbsp;·&nbsp; <kbd>←</kbd> <kbd>→</kbd> move between cards &nbsp;·&nbsp; <kbd>R</kbd> shuffle</p>
+
+<div id="done">
+  <h2>Deck complete 🎉</h2>
+  <p id="done-text"></p>
+  <div class="row">
+    <button class="know" id="btn-review2">Review still-learning</button>
+    <button class="ghost" id="btn-restart2">Restart deck</button>
+  </div>
+</div>
+
+<h2 class="sec">How to use it</h2>
+<div class="howto">
+  <p><strong>Flip.</strong> Each card shows a term first — gas, MEV, rollup, DAO. Click it (or press Space) to see a plain-English definition, with no jargon assumed.</p>
+  <p><strong>Sort.</strong> If the definition clicks, press <strong>I know this</strong>. If it is still fuzzy, press <strong>Still learning</strong> — the card goes into a pile you will see again. Your streak counts consecutive Knows.</p>
+  <p><strong>Review.</strong> When the deck is done, hit <strong>Review still-learning</strong> to re-deal only the cards you missed. Filter by category to drill one area — Basics, DeFi, Infrastructure or Security — and shuffle whenever you want a fresh order.</p>
+  <p><strong>Nothing here is financial advice.</strong> These cards explain words, not investments. No wallet, no account, no data leaves your browser.</p>
+</div>
+
+<a class="back" href="/ideas/">← Back to the idea bank</a>
+<footer>Built by Shipwright Studio</footer>
+
+<script>
+const TERMS=[
+/* Basics */
+{term:"Blockchain",cat:"Basics",def:"A shared, append-only record of transactions that many computers hold copies of, so no single party can secretly rewrite history."},
+{term:"Wallet",cat:"Basics",def:"Software or a device that stores your private keys and lets you send, receive and check your crypto. The coins themselves live on the blockchain, not in the wallet."},
+{term:"Private Key",cat:"Basics",def:"A secret number that proves you own an address and lets you sign transactions. Anyone who has it can spend your funds, so it must never be shared."},
+{term:"Public Address",cat:"Basics",def:"A string of letters and numbers, derived from your public key, that works like an account number: share it freely to receive crypto."},
+{term:"Cryptocurrency",cat:"Basics",def:"Digital money secured by cryptography and recorded on a blockchain, designed to be transferred without a bank in the middle."},
+{term:"Token",cat:"Basics",def:"A digital asset created on top of an existing blockchain, such as an app's currency, a voting right or a digital collectible."},
+{term:"Transaction",cat:"Basics",def:"A signed instruction recorded on a blockchain, for example moving coins from one address to another."},
+{term:"Block",cat:"Basics",def:"A bundle of transactions, stamped with a time and linked to the block before it, forming the chain in blockchain."},
+{term:"Hash",cat:"Basics",def:"A short, fixed-length fingerprint produced from any piece of data. Change one character of the input and the hash changes completely."},
+{term:"Gas",cat:"Basics",def:"The fee paid to have a transaction processed on a network like Ethereum. When the network is busy, gas prices rise."},
+/* DeFi */
+{term:"DEX",cat:"DeFi",def:"Decentralised exchange: a trading app that runs on smart contracts, so you swap tokens directly from your wallet without an account or a company holding your funds."},
+{term:"AMM",cat:"DeFi",def:"Automated market maker: a smart contract that prices trades with a formula and a pool of tokens, instead of matching buyers with sellers."},
+{term:"Liquidity Pool",cat:"DeFi",def:"A pile of two tokens locked in a smart contract that traders swap against. People who add tokens earn a share of the trading fees."},
+{term:"Slippage",cat:"DeFi",def:"The difference between the price you expected and the price you actually got, caused by the price moving while your trade was processed."},
+{term:"Staking",cat:"DeFi",def:"Locking up crypto to help secure a proof-of-stake network. In return you earn rewards, usually paid in the same token."},
+{term:"Yield Farming",cat:"DeFi",def:"Moving crypto between lending and liquidity protocols to chase the highest returns, often paid in a protocol's own token."},
+{term:"Stablecoin",cat:"DeFi",def:"A token designed to hold a steady value, usually pegged 1:1 to a currency like the US dollar and backed by reserves or an algorithm."},
+{term:"Lending Protocol",cat:"DeFi",def:"A smart contract that lets you lend crypto to earn interest, or borrow against collateral you lock up, with no bank involved."},
+{term:"Liquidity Provider",cat:"DeFi",def:"Someone who deposits tokens into a liquidity pool and earns a cut of the trading fees in return."},
+{term:"Impermanent Loss",cat:"DeFi",def:"The loss a liquidity provider faces when the prices of the pooled tokens drift apart, compared with simply holding them."},
+/* Infrastructure */
+{term:"Layer 1",cat:"Infrastructure",def:"The base blockchain itself, such as Ethereum or Bitcoin, which handles security and final settlement of transactions."},
+{term:"Layer 2",cat:"Infrastructure",def:"A system built on top of a Layer 1 that processes transactions faster and cheaper, then settles the results back on the main chain."},
+{term:"Rollup",cat:"Infrastructure",def:"A Layer 2 that bundles hundreds of transactions into one batch, posts a compressed summary to the Layer 1, and inherits its security."},
+{term:"Smart Contract",cat:"Infrastructure",def:"A program stored on a blockchain that runs automatically when its conditions are met, with no one able to stop or change it mid-flight."},
+{term:"Oracle",cat:"Infrastructure",def:"A service that feeds real-world data, like asset prices or weather, into smart contracts, which otherwise cannot see outside the blockchain."},
+{term:"Node",cat:"Infrastructure",def:"A computer running blockchain software that stores a copy of the chain and helps check and relay transactions."},
+{term:"EIP-1559",cat:"Infrastructure",def:"An Ethereum upgrade that changed how gas fees work: a base fee that rises and falls with demand is burned, and users add an optional tip for speed."},
+{term:"Consensus",cat:"Infrastructure",def:"The process by which the computers in a network agree on which transactions are valid and in what order they happened."},
+{term:"Validator",cat:"Infrastructure",def:"A participant in a proof-of-stake network who locks up tokens as collateral and is chosen to propose and check new blocks."},
+{term:"DAO",cat:"Infrastructure",def:"Decentralised autonomous organisation: a group whose rules are written in smart contracts, and whose decisions are made by token holders voting, rather than by a board or a CEO."},
+/* Security */
+{term:"Multisig",cat:"Security",def:"A wallet that needs approval from several keys — for example 2 of 3 — before a transaction can go through, so no single key can move funds alone."},
+{term:"MEV",cat:"Security",def:"Maximal extractable value: the profit a block producer can make by choosing the order of transactions in a block, such as inserting their own trade ahead of yours."},
+{term:"Nonce",cat:"Security",def:"A counter attached to each transaction from an address. It rises by one every time, so transactions process in order and none can be replayed."},
+{term:"Zero-Knowledge Proof",cat:"Security",def:"A way to prove a statement is true — for example, that you are over 18 — without revealing the underlying information itself."},
+{term:"Seed Phrase",cat:"Security",def:"A list of 12 or 24 words that can recreate your wallet and all its keys. Whoever holds it controls your funds, so store it offline."},
+{term:"Cold Wallet",cat:"Security",def:"A wallet kept offline, such as a hardware device, so its private keys are never exposed to the internet."},
+{term:"Rug Pull",cat:"Security",def:"A scam where the creators of a token suddenly withdraw its liquidity or abandon the project, leaving holders with worthless tokens."},
+{term:"Phishing",cat:"Security",def:"A scam that tricks you into revealing a seed phrase or signing a malicious transaction, usually through a fake website, email or message."},
+{term:"51% Attack",cat:"Security",def:"An attack where one party controls more than half of a network's mining or staking power and can rewrite recent transactions."},
+{term:"Smart Contract Audit",cat:"Security",def:"An independent security review of a contract's code, looking for bugs and vulnerabilities before real money is at stake."}
+];
+const CATEGORIES=["All","Basics","DeFi","Infrastructure","Security"];
+
+function buildDeck(filter){
+  return TERMS.map((t,i)=>i).filter(i=>filter==="All"||TERMS[i].cat===filter);
+}
+function shuffle(arr,rand){
+  rand=rand||Math.random;
+  const a=arr.slice();
+  for(let i=a.length-1;i>0;i--){
+    const j=Math.floor(rand()*(i+1));
+    const tmp=a[i];a[i]=a[j];a[j]=tmp;
+  }
+  return a;
+}
+function createSession(filter,rand){
+  return {filter:filter,deck:shuffle(buildDeck(filter),rand),pos:0,known:new Set(),learning:new Set(),roundKnown:0,streak:0,best:0,seen:0,review:false,done:false};
+}
+function currentTerm(session){
+  if(session.done||session.pos>=session.deck.length)return null;
+  return TERMS[session.deck[session.pos]];
+}
+function mark(session,kind){
+  if(session.done||session.pos>=session.deck.length)return false;
+  const id=session.deck[session.pos];
+  session.known.delete(id);session.learning.delete(id);
+  if(kind==="know"){session.known.add(id);session.roundKnown++;session.streak++;if(session.streak>session.best)session.best=session.streak;}
+  else{session.learning.add(id);session.streak=0;}
+  session.seen++;
+  session.pos++;
+  if(session.pos>=session.deck.length)session.done=true;
+  return true;
+}
+function move(session,delta){
+  if(session.done)return false;
+  const next=session.pos+delta;
+  if(next<0||next>=session.deck.length)return false;
+  session.pos=next;
+  return true;
+}
+function progress(session){
+  return {roundKnown:session.roundKnown,total:session.deck.length,seen:session.seen,known:session.known.size,learning:session.learning.size,streak:session.streak,best:session.best,done:session.done,review:session.review};
+}
+function shuffleRemaining(session,rand){
+  // Reorders only the cards not yet sorted; sorted cards keep their place.
+  if(session.done)return false;
+  session.deck=session.deck.slice(0,session.pos).concat(shuffle(session.deck.slice(session.pos),rand));
+  return true;
+}
+function startReview(session,rand){
+  const pile=Array.from(session.learning);
+  if(pile.length===0)return false;
+  session.deck=shuffle(pile,rand);
+  session.pos=0;session.done=false;session.review=true;
+  session.roundKnown=0;session.seen=0;session.streak=0;
+  session.learning=new Set();
+  return true;
+}
+function restartSession(session,rand){
+  const fresh=createSession(session.filter,rand);
+  Object.keys(fresh).forEach(k=>{session[k]=fresh[k];});
+  return session;
+}
+if(typeof module!=="undefined"&&module.exports){
+  module.exports={TERMS,CATEGORIES,buildDeck,shuffle,shuffleRemaining,createSession,currentTerm,mark,move,progress,startReview,restartSession};
+}
+
+if(typeof document!=="undefined"){
+  const $=id=>document.getElementById(id);
+  let session=createSession("All");
+  let flipped=false;
+
+  const filtersEl=$("filters");
+  CATEGORIES.forEach(cat=>{
+    const b=document.createElement("button");
+    b.textContent=cat==="All"?"All (40)":cat+" ("+buildDeck(cat).length+")";
+    b.className=cat==="All"?"on":"";
+    b.onclick=()=>{session=createSession(cat);flipped=false;render();};
+    filtersEl.appendChild(b);
+  });
+
+  function setFlipped(v){
+    flipped=v;
+    $("card").classList.toggle("flipped",v);
+    $("btn-know").disabled=!v||session.done;
+    $("btn-learn").disabled=!v||session.done;
+  }
+  function render(){
+    document.querySelectorAll("#filters button").forEach((b,i)=>b.classList.toggle("on",CATEGORIES[i]===session.filter));
+    const p=progress(session);
+    $("barfill").style.width=(p.total?Math.round(p.roundKnown/p.total*100):0)+"%";
+    $("barlab").innerHTML="Known <strong>"+p.roundKnown+" / "+p.total+"</strong>"+(p.review?" in this review round":"");
+    $("st-seen").textContent=p.seen;
+    $("st-known").textContent=p.known;
+    $("st-learning").textContent=p.learning;
+    $("st-streak").textContent=p.streak;
+    $("review-badge").classList.toggle("on",p.review);
+    $("btn-review").disabled=p.learning===0;
+    $("btn-review").textContent="Review still-learning ("+p.learning+")";
+    $("btn-review2").disabled=p.learning===0;
+    if(p.done){
+      $("scene").style.display="none";
+      document.querySelector(".actions").style.display="none";
+      document.querySelector(".reviewrow").style.display="none";
+      $("done").style.display="block";
+      $("done-text").textContent="You knew "+p.known+" of "+p.total+" terms in this deck"+(p.best>1?(", with a best streak of "+p.best+" in a row"):"")+(p.learning>0?". "+p.learning+" still need work — review them now.":". A clean sweep — nicely done.");
+      setFlipped(false);
+      return;
+    }
+    $("scene").style.display="block";
+    document.querySelector(".actions").style.display="flex";
+    document.querySelector(".reviewrow").style.display="block";
+    $("done").style.display="none";
+    const t=currentTerm(session);
+    $("card-tag").textContent=t.cat;
+    $("card-term").textContent=t.term;
+    $("def-term").textContent=t.term;
+    $("card-def").textContent=t.def;
+    setFlipped(flipped);
+  }
+  function doMark(kind){
+    if(!flipped||session.done)return;
+    mark(session,kind);
+    flipped=false;
+    render();
+  }
+  function doReview(){
+    if(startReview(session)){
+      flipped=false;
+      render();
+      $("card").scrollIntoView({behavior:"smooth",block:"center"});
+    }
+  }
+  function doRestart(){
+    restartSession(session);
+    flipped=false;
+    render();
+  }
+  $("card").addEventListener("click",()=>setFlipped(!flipped));
+  $("card").addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();setFlipped(!flipped);}});
+  $("btn-know").onclick=()=>doMark("know");
+  $("btn-learn").onclick=()=>doMark("learning");
+  $("btn-shuffle").onclick=()=>{if(shuffleRemaining(session)){flipped=false;render();}};
+  $("btn-restart").onclick=doRestart;
+  $("btn-restart2").onclick=doRestart;
+  $("btn-review").onclick=doReview;
+  $("btn-review2").onclick=doReview;
+  document.addEventListener("keydown",e=>{
+    if(e.target&&/INPUT|TEXTAREA/.test(e.target.tagName))return;
+    if(e.key===" "){e.preventDefault();if(!session.done)setFlipped(!flipped);}
+    else if(e.key==="k"||e.key==="K")doMark("know");
+    else if(e.key==="l"||e.key==="L")doMark("learning");
+    else if(e.key==="ArrowRight"){if(move(session,1)){flipped=false;render();}}
+    else if(e.key==="ArrowLeft"){if(move(session,-1)){flipped=false;render();}}
+    else if(e.key==="r"||e.key==="R"){if(shuffleRemaining(session)){flipped=false;render();}}
+  });
+  render();
+}
+</script>
+</body>
+</html>
