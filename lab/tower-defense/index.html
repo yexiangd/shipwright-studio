@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mini Tower Defense · Shipwright Studio</title>
+<meta name="description" content="A free online tower defence game: place arrow, cannon and frost towers beside a winding path, earn gold for every kill, and survive all 20 waves.">
+<link rel="canonical" href="https://shipwright-studio.pages.dev/lab/tower-defense/">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"WebApplication","name":"Mini Tower Defense","url":"https://shipwright-studio.pages.dev/lab/tower-defense/","description":"Mini Tower Defense is a free online tool that lets you place arrow, cannon and frost towers along a winding path, earn gold for every enemy you stop, and try to survive all 20 waves without losing your base.","applicationCategory":"GameApplication","operatingSystem":"Web","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"}}
+</script>
+<style>
+:root{--bg:#0a0c0f;--panel:#11141a;--line:#232a35;--txt:#e8e4da;--mut:#9aa3b2;--brass:#d2a24c;--red:#e0655f;--blue:#7fb4d8;--green:#7fb069}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--txt);font-family:Inter,system-ui,sans-serif;line-height:1.6;padding:2.5rem 1.25rem 4rem;max-width:900px;margin:0 auto;text-align:center}
+a{color:var(--brass)}
+.eyebrow{font-size:.75rem;letter-spacing:.22em;text-transform:uppercase;color:var(--mut)}
+h1{font-family:Fraunces,serif;font-weight:600;font-size:clamp(2rem,4.5vw,3rem);margin:.4rem 0 .6rem}
+.define{color:var(--mut);max-width:52rem;margin:0 auto 1.6rem}
+.define strong{color:var(--txt)}
+.hud{display:flex;gap:.7rem;justify-content:center;flex-wrap:wrap;margin-bottom:1.2rem}
+.hud .stat{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:.6rem 1rem;min-width:104px}
+.hud .v{font-family:Fraunces,serif;font-size:1.35rem;font-weight:600;font-variant-numeric:tabular-nums}
+.hud .v.low{color:var(--red)}
+.hud .k{font-size:.68rem;letter-spacing:.14em;text-transform:uppercase;color:var(--mut)}
+.buildbar{display:flex;gap:.7rem;justify-content:center;flex-wrap:wrap;margin-bottom:1rem}
+.tower{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:.7rem .9rem;cursor:pointer;text-align:left;min-width:170px;color:var(--txt);font-family:inherit}
+.tower:hover{border-color:var(--brass)}
+.tower.sel{border-color:var(--brass);box-shadow:0 0 0 1px var(--brass)}
+.tower .name{font-family:Fraunces,serif;font-weight:600;font-size:1.05rem}
+.tower .name .dot{display:inline-block;width:.7rem;height:.7rem;border-radius:50%;margin-right:.4rem;vertical-align:middle}
+.tower .cost{color:var(--brass);font-weight:600;font-size:.9rem}
+.tower .spec{font-size:.8rem;color:var(--mut);margin-top:.2rem}
+.tower:disabled{opacity:.45;cursor:not-allowed}
+.selpanel{display:none;max-width:640px;margin:0 auto 1rem;background:var(--panel);border:1px solid var(--brass);border-radius:12px;padding:.8rem 1rem;font-size:.92rem}
+.selpanel.on{display:block}
+.selpanel .row{display:flex;gap:.6rem;justify-content:center;flex-wrap:wrap;margin-top:.5rem}
+.selpanel button{padding:.45rem 1rem;font-size:.9rem}
+button{font-family:inherit;cursor:pointer;border-radius:8px;font-size:1rem;padding:.7rem 1.3rem}
+button:disabled{opacity:.4;cursor:not-allowed}
+button.primary{background:var(--brass);border:0;color:#14100a;font-weight:600}
+button.primary:hover:not(:disabled){filter:brightness(1.08)}
+button.ghost{background:transparent;border:1px solid var(--line);color:var(--txt)}
+button.ghost:hover:not(:disabled){border-color:var(--brass);color:var(--brass)}
+button.danger{background:transparent;border:1px solid var(--red);color:var(--red)}
+button.danger:hover:not(:disabled){background:var(--red);color:#fff}
+.boardwrap{position:relative;max-width:640px;margin:0 auto}
+canvas{width:100%;height:auto;display:block;background:#0d1015;border:1px solid var(--line);border-radius:16px;cursor:pointer}
+.hint{min-height:1.4rem;font-size:.88rem;color:var(--mut);margin:.6rem 0 0}
+.hint.err{color:var(--red)}
+.preview{font-size:.92rem;color:var(--mut);margin-bottom:.8rem}
+.preview strong{color:var(--txt)}
+.controls{display:flex;gap:.7rem;justify-content:center;flex-wrap:wrap;margin-top:.8rem}
+.overlay{display:none;position:absolute;inset:0;background:rgba(10,12,15,.88);border-radius:16px;align-items:center;justify-content:center;padding:1.5rem}
+.overlay.on{display:flex}
+.overlay .box{max-width:420px}
+.overlay h2{font-family:Fraunces,serif;font-size:1.8rem;margin-bottom:.5rem}
+.overlay p{color:var(--mut);margin-bottom:1.2rem}
+.overlay .row{display:flex;gap:.7rem;justify-content:center;flex-wrap:wrap}
+h2.sec{font-family:Fraunces,serif;font-weight:600;font-size:1.5rem;margin:2.6rem 0 1rem}
+.howto{max-width:640px;margin:0 auto;text-align:left;color:var(--mut);font-size:.95rem}
+.howto p{margin-bottom:.8rem}
+.howto strong{color:var(--txt)}
+.back{display:inline-block;margin-top:2.5rem;font-size:.9rem}
+footer{margin-top:2.5rem;font-size:.85rem;color:var(--mut)}
+@media(max-width:560px){.tower{min-width:44%;flex:1}.hud .stat{min-width:44%;flex:1}}
+</style>
+</head>
+<body>
+<p class="eyebrow">Shipwright Studio · Lab</p>
+<h1>Mini Tower Defense</h1>
+<p class="define"><strong>Mini Tower Defense is a free online tool that lets you place towers along a winding path and stop waves of enemies before they reach your base.</strong> Pick from arrow, cannon and frost towers, earn gold for every kill, and see if you can survive all 20 waves.</p>
+
+<div class="hud" role="status" aria-live="polite">
+  <div class="stat"><div class="v" id="hud-gold">150</div><div class="k">Gold</div></div>
+  <div class="stat"><div class="v" id="hud-lives">20</div><div class="k">Lives</div></div>
+  <div class="stat"><div class="v" id="hud-wave">0 / 20</div><div class="k">Wave</div></div>
+  <div class="stat"><div class="v" id="hud-left">0</div><div class="k">Enemies left</div></div>
+  <div class="stat"><div class="v" id="hud-best">—</div><div class="k">Best wave</div></div>
+</div>
+
+<div class="buildbar" id="buildbar" role="group" aria-label="Build towers"></div>
+
+<div class="selpanel" id="selpanel">
+  <span id="sel-text"></span>
+  <div class="row">
+    <button class="primary" id="btn-upgrade">Upgrade</button>
+    <button class="danger" id="btn-sell">Sell</button>
+    <button class="ghost" id="btn-deselect">Done</button>
+  </div>
+</div>
+
+<div class="boardwrap">
+  <canvas id="board" width="576" height="384" aria-label="Tower defence map — click a tile to place the selected tower"></canvas>
+  <div class="overlay" id="overlay"><div class="box">
+    <h2 id="ov-title"></h2>
+    <p id="ov-text"></p>
+    <div class="row"><button class="primary" id="btn-again">Play again</button></div>
+  </div></div>
+</div>
+<p class="hint" id="hint">Pick a tower above, then click an empty tile beside the path to build it.</p>
+<p class="preview" id="preview"></p>
+
+<div class="controls">
+  <button class="primary" id="btn-start">Start wave 1</button>
+  <button class="ghost" id="btn-pause" disabled>Pause</button>
+  <button class="ghost" id="btn-speed">Speed 1×</button>
+  <button class="ghost" id="btn-restart">Restart</button>
+</div>
+
+<h2 class="sec">How to play</h2>
+<div class="howto">
+  <p><strong>Build.</strong> Choose a tower, then click any empty grass tile. Towers cannot go on the brass path. Arrow towers are cheap and quick, cannons hit hard with a small splash, and frost towers slow everything they touch.</p>
+  <p><strong>Defend.</strong> Press <strong>Start wave</strong> when your line is ready. Enemies follow the path from left to right; each one that slips through costs lives — grunts 1, tanks 2, the wave-20 boss 5.</p>
+  <p><strong>Economy.</strong> Every kill pays gold, and clearing a wave pays a bonus. Click a placed tower to upgrade it (up to level 3) or sell it back for 70% of what you invested. Spend between waves — there is no rush.</p>
+  <p><strong>Win or lose.</strong> Clear wave 20 and the base holds. Lose all 20 lives and the run is over. Your best wave is saved on this device, so you can chase it next time.</p>
+</div>
+
+<a class="back" href="/ideas/">← Back to the idea bank</a>
+<footer>Built by Shipwright Studio</footer>
+
+<script>
+/* ---- Pure game logic (no DOM) ---- */
+const COLS=12, ROWS=8, TILE=48;
+const WAYPOINTS=[[-0.6,1],[9,1],[9,4],[3,4],[3,6],[11,6],[12.6,6]]; // tile coords
+const TOWER_DEFS={
+  arrow:{name:"Arrow", color:"#d2a24c", cost:50,  range:2.2, damage:8,  rate:2.0, splash:0,   slow:0,    desc:"Cheap and quick — steady single-target damage."},
+  cannon:{name:"Cannon",color:"#e0655f", cost:100, range:1.8, damage:26, rate:0.7, splash:0.9, slow:0,    desc:"Slow, heavy shots that splash nearby enemies."},
+  frost:{name:"Frost",  color:"#7fb4d8", cost:75,  range:2.0, damage:3,  rate:1.5, splash:0,   slow:0.4,  desc:"Weak shots that slow enemies by 40% for 1.5 s."}
+};
+const ENEMY_DEFS={
+  grunt:{hp:20, speed:1.2, bounty:6,  lives:1, radius:9, color:"#e0655f"},
+  runner:{hp:12, speed:2.0, bounty:8,  lives:1, radius:7, color:"#e8a25f"},
+  tank:{hp:70, speed:0.8, bounty:16, lives:2, radius:12,color:"#b0524f"},
+  boss:{hp:350,speed:0.6, bounty:120,lives:5, radius:16,color:"#c93b3b"}
+};
+const START_GOLD=150, START_LIVES=20, MAX_WAVE=20, SELL_RATE=0.7;
+
+function pathTiles(){
+  const set=new Set();
+  for(let i=0;i<WAYPOINTS.length-1;i++){
+    const [x1,y1]=WAYPOINTS[i],[x2,y2]=WAYPOINTS[i+1];
+    const steps=Math.max(Math.abs(x2-x1),Math.abs(y2-y1));
+    for(let s=0;s<=steps;s++){
+      const c=Math.round(x1+(x2-x1)*s/steps), r=Math.round(y1+(y2-y1)*s/steps);
+      if(c>=0&&c<COLS&&r>=0&&r<ROWS)set.add(c+","+r);
+    }
+  }
+  return set;
+}
+const PATH_SET=pathTiles();
+function isBuildable(c,r){
+  return c>=0&&c<COLS&&r>=0&&r<ROWS&&!PATH_SET.has(c+","+r);
+}
+function hpScale(wave){ return Math.pow(1.15, wave-1); }
+function buildWave(wave){
+  // Returns spawn list: {type, hp, speed, bounty, lives}
+  const list=[];
+  const mk=(type,count)=>{ for(let i=0;i<count;i++){ const d=ENEMY_DEFS[type];
+    list.push({type:type, hp:Math.round(d.hp*hpScale(wave)), speed:d.speed*(1+0.02*(wave-1)), bounty:d.bounty+wave, lives:d.lives}); } };
+  if(wave===MAX_WAVE){ mk("boss",1); mk("tank",4); mk("grunt",6); return list; }
+  mk("grunt", 6+wave*2);
+  if(wave>=3) mk("runner", Math.floor(wave/2));
+  if(wave>=6) mk("tank", Math.floor((wave-3)/2));
+  return list;
+}
+function waveSummary(wave){
+  const counts={};
+  buildWave(wave).forEach(e=>{ counts[e.type]=(counts[e.type]||0)+1; });
+  return Object.keys(counts).map(t=>counts[t]+" "+(t==="boss"?"boss":t+"s")).join(", ");
+}
+function waveClearBonus(wave){ return 25+wave*5; }
+function towerStats(type,level){
+  const d=TOWER_DEFS[type];
+  return {damage:Math.round(d.damage*(1+0.5*(level-1))), range:d.range*(1+0.1*(level-1)), rate:d.rate, splash:d.splash, slow:d.slow, cost:d.cost, color:d.color, name:d.name};
+}
+function towerDps(type,level){ const s=towerStats(type,level); return s.damage*s.rate; }
+function upgradeCost(type,level){ return Math.round(TOWER_DEFS[type].cost*0.75*level); } // level = current level
+function sellValue(invested){ return Math.floor(invested*SELL_RATE); }
+function pathLengthTiles(){
+  let len=0;
+  for(let i=0;i<WAYPOINTS.length-1;i++) len+=Math.hypot(WAYPOINTS[i+1][0]-WAYPOINTS[i][0], WAYPOINTS[i+1][1]-WAYPOINTS[i][1]);
+  return len;
+}
+if(typeof module!=="undefined"&&module.exports){
+  module.exports={COLS,ROWS,TILE,WAYPOINTS,TOWER_DEFS,ENEMY_DEFS,START_GOLD,START_LIVES,MAX_WAVE,SELL_RATE,
+    pathTiles,isBuildable,hpScale,buildWave,waveSummary,waveClearBonus,towerStats,towerDps,upgradeCost,sellValue,pathLengthTiles};
+}
+
+/* ---- Browser UI ---- */
+if(typeof document!=="undefined"){
+const $=id=>document.getElementById(id);
+const cv=$("board"), ctx=cv.getContext("2d");
+const BEST_KEY="td-best-wave";
+
+let state=null;
+function newState(){
+  return {gold:START_GOLD, lives:START_LIVES, wave:0, running:false, paused:false, speed:1,
+    towers:[], enemies:[], queue:[], spawnTimer:0, effects:[], selected:null, buildType:"arrow",
+    over:false, won:false, goldEarned:0, kills:0, hover:null, built:0};
+}
+function saveBest(w){ const b=+(localStorage.getItem(BEST_KEY)||0); if(w>b) localStorage.setItem(BEST_KEY,String(w)); }
+function bestWave(){ return +(localStorage.getItem(BEST_KEY)||0); }
+
+function showHint(msg,err){ const h=$("hint"); h.textContent=msg; h.classList.toggle("err",!!err); }
+function fmtGold(n){ return "🪙 "+n; }
+
+function renderBuildBar(){
+  const bar=$("buildbar"); bar.innerHTML="";
+  Object.keys(TOWER_DEFS).forEach(type=>{
+    const d=TOWER_DEFS[type];
+    const b=document.createElement("button");
+    b.className="tower"+(state.buildType===type?" sel":"");
+    b.disabled=state.gold<d.cost;
+    b.innerHTML='<span class="name"><span class="dot" style="background:'+d.color+'"></span>'+d.name+
+      '</span> <span class="cost">'+fmtGold(d.cost)+'</span><div class="spec">Damage '+d.damage+' · '+d.rate+'/s · Range '+d.range+
+      (d.splash?' · Splash':'')+(d.slow?' · Slows 40%':'')+'</div><div class="spec">'+d.desc+'</div>';
+    b.onclick=()=>{ state.buildType=type; state.selected=null; renderBuildBar(); renderSelPanel(); draw(); };
+    bar.appendChild(b);
+  });
+}
+function renderSelPanel(){
+  const p=$("selpanel");
+  if(!state.selected){ p.classList.remove("on"); return; }
+  const t=state.selected, s=towerStats(t.type,t.level);
+  $("sel-text").textContent=t.type.charAt(0).toUpperCase()+t.type.slice(1)+" tower · Level "+t.level+
+    " · Damage "+s.damage+" · Range "+s.range.toFixed(1)+" · "+s.rate+"/s"+(s.splash?" · Splash":"")+(s.slow?" · Slows 40%":"")+
+    " · Invested "+fmtGold(t.invested);
+  $("btn-upgrade").disabled=t.level>=3||state.gold<upgradeCost(t.type,t.level);
+  $("btn-upgrade").textContent=t.level>=3?"Max level":"Upgrade — "+fmtGold(upgradeCost(t.type,t.level));
+  $("btn-sell").textContent="Sell — "+fmtGold(sellValue(t.invested));
+  p.classList.add("on");
+}
+let lastGold=-1, lastBuild=null;
+function renderHud(){
+  $("hud-gold").textContent=state.gold;
+  const lv=$("hud-lives"); lv.textContent=state.lives; lv.classList.toggle("low",state.lives<=5);
+  $("hud-wave").textContent=state.wave+" / "+MAX_WAVE;
+  $("hud-left").textContent=state.enemies.length+state.queue.length;
+  const b=bestWave(); $("hud-best").textContent=b>0?b+" / "+MAX_WAVE:"—";
+  const next=state.wave+1;
+  $("preview").innerHTML=state.over?"":(state.running
+    ?"Wave <strong>"+state.wave+"</strong> in progress — "+(state.enemies.length+state.queue.length)+" enemies left."
+    :(next<=MAX_WAVE?"Next: <strong>Wave "+next+"</strong> — "+waveSummary(next)+" · clear bonus "+fmtGold(waveClearBonus(next)):""));
+  $("btn-start").textContent=state.over?"Game over":(state.running?"Wave running…":"Start wave "+next);
+  $("btn-start").disabled=state.running||state.over;
+  $("btn-pause").disabled=!state.running;
+  $("btn-pause").textContent=state.paused?"Resume":"Pause";
+  $("btn-speed").textContent="Speed "+state.speed+"×";
+  if(state.gold!==lastGold||state.buildType!==lastBuild){ lastGold=state.gold; lastBuild=state.buildType; renderBuildBar(); }
+}
+function pointAt(dist){
+  // dist in tiles along the waypoint polyline -> {x,y} in pixels
+  let d=dist;
+  for(let i=0;i<WAYPOINTS.length-1;i++){
+    const [x1,y1]=WAYPOINTS[i],[x2,y2]=WAYPOINTS[i+1];
+    const seg=Math.hypot(x2-x1,y2-y1);
+    if(d<=seg){ const t=seg===0?0:d/seg; return {x:(x1+(x2-x1)*t+0.5)*TILE, y:(y1+(y2-y1)*t+0.5)*TILE}; }
+    d-=seg;
+  }
+  const last=WAYPOINTS[WAYPOINTS.length-1];
+  return {x:(last[0]+0.5)*TILE, y:(last[1]+0.5)*TILE};
+}
+function draw(){
+  ctx.clearRect(0,0,cv.width,cv.height);
+  // grass tiles
+  for(let r=0;r<ROWS;r++)for(let c=0;c<COLS;c++){
+    ctx.fillStyle=(c+r)%2===0?"#0e1218":"#0c0f14";
+    ctx.fillRect(c*TILE,r*TILE,TILE,TILE);
+  }
+  // path
+  ctx.strokeStyle="#3a2f18"; ctx.lineWidth=TILE*0.78; ctx.lineCap="round"; ctx.lineJoin="round";
+  ctx.beginPath();
+  WAYPOINTS.forEach(([x,y],i)=>{ const px=(x+0.5)*TILE, py=(y+0.5)*TILE; i===0?ctx.moveTo(px,py):ctx.lineTo(px,py); });
+  ctx.stroke();
+  ctx.strokeStyle="#d2a24c"; ctx.lineWidth=2;
+  ctx.beginPath();
+  WAYPOINTS.forEach(([x,y],i)=>{ const px=(x+0.5)*TILE, py=(y+0.5)*TILE; i===0?ctx.moveTo(px,py):ctx.lineTo(px,py); });
+  ctx.stroke();
+  // hover highlight
+  if(state.hover&&isBuildable(state.hover.c,state.hover.r)&&!state.selected){
+    ctx.fillStyle="rgba(210,162,76,.18)";
+    ctx.fillRect(state.hover.c*TILE,state.hover.r*TILE,TILE,TILE);
+  }
+  // range ring for selected tower
+  if(state.selected){
+    const s=towerStats(state.selected.type,state.selected.level);
+    ctx.beginPath(); ctx.arc((state.selected.c+0.5)*TILE,(state.selected.r+0.5)*TILE,s.range*TILE,0,Math.PI*2);
+    ctx.fillStyle="rgba(210,162,76,.08)"; ctx.fill();
+    ctx.strokeStyle="rgba(210,162,76,.5)"; ctx.lineWidth=1; ctx.stroke();
+  }
+  // towers
+  state.towers.forEach(t=>{
+    const x=(t.c+0.5)*TILE, y=(t.r+0.5)*TILE, s=towerStats(t.type,t.level);
+    ctx.beginPath(); ctx.arc(x,y,17,0,Math.PI*2);
+    ctx.fillStyle="#1a1f28"; ctx.fill(); ctx.strokeStyle=s.color; ctx.lineWidth=2; ctx.stroke();
+    ctx.fillStyle=s.color;
+    if(t.type==="arrow"){ ctx.beginPath(); ctx.moveTo(x,y-9); ctx.lineTo(x+8,y+7); ctx.lineTo(x-8,y+7); ctx.closePath(); ctx.fill(); }
+    else if(t.type==="cannon"){ ctx.beginPath(); ctx.arc(x,y,8,0,Math.PI*2); ctx.fill(); ctx.fillRect(x-2,y-13,4,8); }
+    else { ctx.font="bold 15px Inter,sans-serif"; ctx.textAlign="center"; ctx.textBaseline="middle"; ctx.fillText("✳",x,y+1); }
+    if(t.level>1){ ctx.font="bold 11px Inter,sans-serif"; ctx.fillStyle="#e8e4da"; ctx.textAlign="center"; ctx.fillText("Lv"+t.level,x,y+24); }
+  });
+  // enemies
+  state.enemies.forEach(e=>{
+    const p=pointAt(e.dist), d=ENEMY_DEFS[e.type];
+    ctx.beginPath(); ctx.arc(p.x,p.y,d.radius,0,Math.PI*2);
+    ctx.fillStyle=d.color; ctx.fill(); ctx.strokeStyle="rgba(0,0,0,.4)"; ctx.lineWidth=1; ctx.stroke();
+    if(e.type==="boss"){ ctx.font="bold 11px Inter,sans-serif"; ctx.fillStyle="#fff"; ctx.textAlign="center"; ctx.textBaseline="middle"; ctx.fillText("B",p.x,p.y); }
+    // hp bar
+    const w=d.radius*2, frac=Math.max(0,e.hp/e.maxHp);
+    ctx.fillStyle="rgba(0,0,0,.55)"; ctx.fillRect(p.x-w/2,p.y-d.radius-8,w,4);
+    ctx.fillStyle=frac>0.5?"#7fb069":(frac>0.25?"#e8a25f":"#e0655f");
+    ctx.fillRect(p.x-w/2,p.y-d.radius-8,w*frac,4);
+  });
+  // shot flashes
+  state.effects=state.effects.filter(f=>f.t>0);
+  state.effects.forEach(f=>{
+    ctx.strokeStyle=f.color; ctx.globalAlpha=Math.min(1,f.t*4); ctx.lineWidth=2;
+    ctx.beginPath(); ctx.moveTo(f.x1,f.y1); ctx.lineTo(f.x2,f.y2); ctx.stroke();
+    ctx.globalAlpha=1;
+  });
+}
+
+function startWave(){
+  if(state.running||state.over)return;
+  state.wave++;
+  state.queue=buildWave(state.wave);
+  state.spawnTimer=0.2;
+  state.running=true;
+  showHint("Wave "+state.wave+" — "+waveSummary(state.wave)+". Good luck.");
+  renderHud();
+}
+function endWave(){
+  state.running=false;
+  const bonus=waveClearBonus(state.wave);
+  state.gold+=bonus; state.goldEarned+=bonus;
+  if(state.wave>=MAX_WAVE){ endGame(true); return; }
+  showHint("Wave "+state.wave+" cleared! Bonus "+fmtGold(bonus)+". Build up, then start wave "+(state.wave+1)+".");
+  renderHud();
+}
+function endGame(won){
+  state.over=true; state.won=won; state.running=false;
+  saveBest(state.wave);
+  $("ov-title").textContent=won?"Victory — the base holds!":"The base has fallen";
+  $("ov-text").textContent=won
+    ?"All 20 waves cleared. Gold earned: "+state.goldEarned+" · Enemies stopped: "+state.kills+" · Towers built: "+state.built+". Best wave: "+Math.max(bestWave(),state.wave)+" / 20."
+    :"You reached wave "+state.wave+" of 20. Gold earned: "+state.goldEarned+" · Enemies stopped: "+state.kills+". Best wave: "+Math.max(bestWave(),state.wave)+" / 20 — try again and beat it.";
+  $("overlay").classList.add("on");
+  renderHud();
+}
+function resetGame(){
+  state=newState();
+  $("overlay").classList.remove("on");
+  showHint("Pick a tower above, then click an empty tile beside the path to build it.");
+  renderHud(); renderSelPanel(); draw();
+}
+function placeTower(c,r){
+  if(state.over)return;
+  if(!isBuildable(c,r)){ showHint("Can't build on the path — pick a grass tile.",true); return; }
+  const existing=state.towers.find(t=>t.c===c&&t.r===r);
+  if(existing){ state.selected=existing; renderSelPanel(); draw(); return; }
+  const def=TOWER_DEFS[state.buildType];
+  if(state.gold<def.cost){ showHint("Not enough gold for a "+def.name+" tower ("+fmtGold(def.cost)+").",true); return; }
+  state.gold-=def.cost;
+  state.towers.push({type:state.buildType,c:c,r:r,level:1,invested:def.cost,cd:0});
+  state.built++;
+  showHint(def.name+" tower built. Click it again to upgrade or sell.");
+  renderHud(); draw();
+}
+function step(dt){
+  dt*=state.speed;
+  // spawn
+  if(state.queue.length){
+    state.spawnTimer-=dt;
+    if(state.spawnTimer<=0){
+      const s=state.queue.shift();
+      state.enemies.push(Object.assign({},s,{dist:0,maxHp:s.hp,slowUntil:0}));
+      state.spawnTimer=0.8;
+    }
+  }
+  // towers fire
+  state.towers.forEach(t=>{
+    t.cd-=dt;
+    if(t.cd>0)return;
+    const s=towerStats(t.type,t.level);
+    const tx=(t.c+0.5)*TILE, ty=(t.r+0.5)*TILE;
+    let target=null;
+    state.enemies.forEach(e=>{
+      const p=pointAt(e.dist);
+      if(Math.hypot(p.x-tx,p.y-ty)<=s.range*TILE&&(!target||e.dist>target.dist))target=e;
+    });
+    if(!target)return;
+    t.cd=1/s.rate;
+    const p=pointAt(target.dist);
+    state.effects.push({x1:tx,y1:ty,x2:p.x,y2:p.y,color:s.color,t:0.12});
+    const hit=e=>{
+      const d=ENEMY_DEFS[e.type];
+      const pp=pointAt(e.dist);
+      if(Math.hypot(pp.x-p.x,pp.y-p.y)<=s.splash*TILE+ (e===target?0:0)){
+        e.hp-=s.damage;
+        if(s.slow) e.slowUntil=performance.now()/1000+1.5;
+      }
+    };
+    if(s.splash>0) state.enemies.forEach(hit);
+    else { target.hp-=s.damage; if(s.slow) target.slowUntil=performance.now()/1000+1.5; }
+  });
+  // kills
+  const now=performance.now()/1000;
+  state.enemies=state.enemies.filter(e=>{
+    if(e.hp<=0){
+      state.gold+=e.bounty; state.goldEarned+=e.bounty; state.kills++;
+      return false;
+    }
+    return true;
+  });
+  // move
+  const totalLen=pathLengthTiles();
+  state.enemies=state.enemies.filter(e=>{
+    const slow=(e.slowUntil&&now<e.slowUntil)?0.6:1;
+    e.dist+=e.speed*slow*dt;
+    if(e.dist>=totalLen){
+      state.lives-=e.lives;
+      showHint("An enemy slipped through! −"+e.lives+" "+(e.lives===1?"life":"lives")+".",true);
+      return false;
+    }
+    return true;
+  });
+  state.effects.forEach(f=>{ f.t-=dt; });
+  if(state.lives<=0){ state.lives=0; renderHud(); draw(); endGame(false); return; }
+  if(state.running&&!state.queue.length&&!state.enemies.length) endWave();
+  renderHud(); draw();
+}
+let lastTs=0;
+function loop(ts){
+  const dt=Math.min(0.05,(ts-lastTs)/1000||0);
+  lastTs=ts;
+  if(state.running&&!state.paused&&!state.over) step(dt);
+  requestAnimationFrame(loop);
+}
+
+function tileFromEvent(ev){
+  const rect=cv.getBoundingClientRect();
+  const x=(ev.clientX-rect.left)/rect.width*cv.width;
+  const y=(ev.clientY-rect.top)/rect.height*cv.height;
+  return {c:Math.floor(x/TILE), r:Math.floor(y/TILE)};
+}
+cv.addEventListener("click",ev=>{ const t=tileFromEvent(ev); placeTower(t.c,t.r); });
+cv.addEventListener("mousemove",ev=>{ state.hover=tileFromEvent(ev); if(!state.running)draw(); });
+cv.addEventListener("mouseleave",()=>{ state.hover=null; draw(); });
+
+$("btn-start").onclick=startWave;
+$("btn-pause").onclick=()=>{ if(!state.running)return; state.paused=!state.paused; showHint(state.paused?"Paused — take your time.":"Back to the battle."); renderHud(); };
+$("btn-speed").onclick=()=>{ state.speed=state.speed===1?2:1; renderHud(); };
+$("btn-restart").onclick=resetGame;
+$("btn-again").onclick=resetGame;
+$("btn-deselect").onclick=()=>{ state.selected=null; renderSelPanel(); draw(); };
+$("btn-sell").onclick=()=>{
+  const t=state.selected; if(!t)return;
+  state.gold+=sellValue(t.invested);
+  state.towers=state.towers.filter(x=>x!==t);
+  state.selected=null;
+  showHint("Tower sold for "+fmtGold(sellValue(t.invested))+".");
+  renderHud(); renderSelPanel(); draw();
+};
+$("btn-upgrade").onclick=()=>{
+  const t=state.selected; if(!t||t.level>=3)return;
+  const cost=upgradeCost(t.type,t.level);
+  if(state.gold<cost){ showHint("Not enough gold to upgrade ("+fmtGold(cost)+").",true); return; }
+  state.gold-=cost; t.invested+=cost; t.level++;
+  showHint("Upgraded to level "+t.level+" — damage and range increased.");
+  renderHud(); renderSelPanel(); draw();
+};
+document.addEventListener("keydown",e=>{
+  if(e.key===" "){ e.preventDefault(); if(!state.running&&!state.over)startWave(); }
+  else if(e.key==="p"||e.key==="P"){ if(state.running){ state.paused=!state.paused; renderHud(); } }
+  else if(e.key==="1"){ state.buildType="arrow"; state.selected=null; renderHud(); renderSelPanel(); draw(); }
+  else if(e.key==="2"){ state.buildType="cannon"; state.selected=null; renderHud(); renderSelPanel(); draw(); }
+  else if(e.key==="3"){ state.buildType="frost"; state.selected=null; renderHud(); renderSelPanel(); draw(); }
+});
+
+resetGame();
+requestAnimationFrame(loop);
+}
+</script>
+</body>
+</html>

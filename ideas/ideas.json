@@ -1,5 +1,5 @@
 {
-  "updated": "2026-11-18",
+  "updated": "2026-11-19",
   "ideas": [
     {
       "id": "idea-000a",
@@ -345,7 +345,9 @@
       "tagline": "Place towers, survive 20 waves.",
       "priority": 60,
       "effort": "L",
-      "status": "todo"
+      "status": "done",
+      "url": "/lab/tower-defense/",
+      "shipped": "2026-11-19"
     },
     {
       "id": "idea-028",
@@ -709,7 +711,9 @@
       "tagline": "Code128 barcodes rendered in-browser.",
       "priority": 60,
       "effort": "S",
-      "status": "todo"
+      "status": "done",
+      "url": "/lab/barcode-generator/",
+      "shipped": "2026-11-19"
     },
     {
       "id": "idea-059",

@@ -46,6 +46,11 @@
     <priority>0.7</priority>
   </url>
   <url>
+    <loc>https://shipwright-studio.pages.dev/lab/barcode-generator/</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
     <loc>https://shipwright-studio.pages.dev/lab/base64-lab/</loc>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
@@ -457,6 +462,11 @@
   </url>
   <url>
     <loc>https://shipwright-studio.pages.dev/lab/tip-splitter/</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://shipwright-studio.pages.dev/lab/tower-defense/</loc>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
