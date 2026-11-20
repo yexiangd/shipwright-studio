@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Band Name Gen · Shipwright Studio</title>
+<meta name="description" content="A free online band name generator — pick a genre and a naming style, hit Generate, and get a name worth keeping, with favourites that persist in your browser.">
+<link rel="canonical" href="https://shipwright-studio.pages.dev/lab/band-names/">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"WebApplication","name":"Band Name Gen","url":"https://shipwright-studio.pages.dev/lab/band-names/","description":"Band Name Gen is a free online tool that generates band names in one click. Pick a genre and a naming style, generate as many names as you like, and save your favourites — everything runs in your browser.","applicationCategory":"MusicApplication","operatingSystem":"Web","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"}}
+</script>
+<style>
+:root{--bg:#0a0c0f;--panel:#11141a;--line:#232a35;--txt:#e8e4da;--mut:#9aa3b2;--brass:#d2a24c;--green:#7fb069}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--txt);font-family:Inter,system-ui,sans-serif;line-height:1.6;padding:2.5rem 1.25rem 4rem;max-width:900px;margin:0 auto;text-align:center}
+a{color:var(--brass)}
+.eyebrow{font-size:.75rem;letter-spacing:.22em;text-transform:uppercase;color:var(--mut)}
+h1{font-family:Fraunces,serif;font-weight:600;font-size:clamp(2rem,4.5vw,3rem);margin:.4rem 0 .6rem}
+.define{color:var(--mut);max-width:52rem;margin:0 auto 1.6rem}
+.define strong{color:var(--txt)}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:1.5rem 1.4rem;margin-bottom:1.2rem;text-align:left}
+.panel h2{font-family:Fraunces,serif;font-weight:600;font-size:1.25rem;margin-bottom:1rem}
+.panel h2 .sub{font-family:Inter,system-ui,sans-serif;font-size:.8rem;font-weight:400;color:var(--mut);margin-left:.5rem}
+label{display:block;font-size:.82rem;letter-spacing:.08em;text-transform:uppercase;color:var(--mut);margin-bottom:.5rem}
+.chips{display:flex;gap:.5rem;flex-wrap:wrap;margin-bottom:1.3rem}
+.chips button{background:transparent;border:1px solid var(--line);color:var(--mut);border-radius:999px;padding:.45rem 1rem;cursor:pointer;font-family:inherit;font-size:.9rem}
+.chips button:hover{color:var(--brass);border-color:var(--brass)}
+.chips button.active{background:var(--brass);border-color:var(--brass);color:#14100a;font-weight:600}
+.styles{display:flex;gap:.5rem;flex-wrap:wrap;margin-bottom:1.3rem}
+.styles button{background:transparent;border:1px solid var(--line);color:var(--mut);border-radius:8px;padding:.5rem .9rem;cursor:pointer;font-family:inherit;font-size:.88rem}
+.styles button:hover{color:var(--brass);border-color:var(--brass)}
+.styles button.active{background:var(--brass);border-color:var(--brass);color:#14100a;font-weight:600}
+.generate{width:100%;background:var(--brass);border:0;color:#14100a;font-weight:600;font-size:1.15rem;padding:.95rem 1.3rem;border-radius:10px;cursor:pointer;font-family:inherit}
+.generate:hover{filter:brightness(1.08)}
+.name-display{text-align:center;padding:1.8rem 1rem 1.2rem;min-height:9rem;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.name-display .hint{color:var(--mut);font-size:1rem}
+.name-display .name{font-family:Fraunces,serif;font-weight:600;font-size:clamp(1.9rem,5.5vw,3rem);line-height:1.15;animation:fade .35s ease}
+.name-display .name .the{color:var(--brass)}
+.name-display .tag{color:var(--mut);font-size:.95rem;margin-top:.5rem;animation:fade .35s ease}
+.name-display .genre-label{display:inline-block;margin-top:.7rem;font-size:.75rem;letter-spacing:.18em;text-transform:uppercase;color:var(--brass);border:1px solid var(--brass);border-radius:999px;padding:.25rem .9rem;animation:fade .35s ease}
+@keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.name-actions{display:flex;gap:.7rem;justify-content:center;flex-wrap:wrap}
+button{font-family:inherit;cursor:pointer;border-radius:8px;font-size:1rem;padding:.7rem 1.3rem}
+button:disabled{opacity:.4;cursor:not-allowed}
+button.primary{background:var(--brass);border:0;color:#14100a;font-weight:600}
+button.primary:hover:not(:disabled){filter:brightness(1.08)}
+button.ghost{background:transparent;border:1px solid var(--line);color:var(--txt)}
+button.ghost:hover:not(:disabled){border-color:var(--brass);color:var(--brass)}
+button.copied{border-color:var(--green);color:var(--green)}
+button.starred{border-color:var(--brass);color:var(--brass)}
+.batch-list{list-style:none}
+.batch-list li{display:flex;align-items:center;justify-content:space-between;gap:.8rem;padding:.7rem .2rem;border-bottom:1px solid var(--line)}
+.batch-list li:last-child{border-bottom:0}
+.batch-list .bname{font-family:Fraunces,serif;font-size:1.15rem;text-align:left}
+.batch-list .bname small{display:block;font-family:Inter,system-ui,sans-serif;font-size:.8rem;color:var(--mut)}
+.batch-list .rowbtns{display:flex;gap:.45rem;flex-shrink:0}
+.mini{background:transparent;border:1px solid var(--line);color:var(--txt);border-radius:8px;padding:.45rem .8rem;font-size:.85rem}
+.mini:hover{border-color:var(--brass);color:var(--brass)}
+.mini.starred{border-color:var(--brass);color:var(--brass)}
+.empty{color:var(--mut);font-size:.95rem}
+.fav-list{list-style:none}
+.fav-list li{display:flex;align-items:center;justify-content:space-between;gap:.8rem;padding:.55rem .2rem;border-bottom:1px solid var(--line)}
+.fav-list li:last-child{border-bottom:0}
+.fav-list .fname{font-family:Fraunces,serif;font-size:1.05rem;text-align:left}
+.panel-actions{display:flex;gap:.7rem;flex-wrap:wrap;margin-top:1rem}
+.history-chips{display:flex;gap:.5rem;flex-wrap:wrap}
+.history-chips button{background:transparent;border:1px solid var(--line);color:var(--mut);border-radius:999px;padding:.4rem .95rem;cursor:pointer;font-family:Fraunces,serif;font-size:.95rem}
+.history-chips button:hover{color:var(--brass);border-color:var(--brass)}
+.dotd-name{font-family:Fraunces,serif;font-weight:600;font-size:clamp(1.5rem,4vw,2.1rem);text-align:center}
+.dotd-meta{text-align:center;color:var(--mut);font-size:.9rem;margin-top:.4rem}
+.dotd-actions{display:flex;justify-content:center;margin-top:1rem}
+h2.sec{font-family:Fraunces,serif;font-weight:600;font-size:1.5rem;margin:2.6rem 0 1rem}
+.howto{max-width:640px;margin:0 auto;text-align:left;color:var(--mut);font-size:.95rem}
+.howto p{margin-bottom:.8rem}
+.howto strong{color:var(--txt)}
+.back{display:inline-block;margin-top:2.5rem;font-size:.9rem}
+footer{margin-top:2.5rem;font-size:.85rem;color:var(--mut)}
+@media(max-width:600px){
+  .batch-list li{flex-direction:column;align-items:flex-start}
+  .batch-list .rowbtns{align-self:flex-end}
+  .fav-list li{flex-direction:column;align-items:flex-start}
+  .fav-list .rowbtns{align-self:flex-end}
+}
+</style>
+</head>
+<body>
+<p class="eyebrow">Shipwright Studio · Lab</p>
+<h1>Band Name Gen</h1>
+<p class="define"><strong>Band Name Gen is a free online tool that generates band names in one click.</strong> Pick a genre and a naming style, hit Generate, and get a name worth keeping — save your favourites, and they stay in your browser until you clear them. No account, no upload, nothing leaves your device.</p>
+
+<div class="panel">
+  <h2>Band name of the day</h2>
+  <p class="dotd-name" id="dotd-name">—</p>
+  <p class="dotd-meta" id="dotd-meta"></p>
+  <div class="dotd-actions"><button class="ghost" id="btn-dotd-copy" type="button">Copy today's name</button></div>
+</div>
+
+<div class="panel">
+  <h2>Generator</h2>
+  <label id="genre-label">Genre</label>
+  <div class="chips" id="genre-chips" role="group" aria-labelledby="genre-label"></div>
+  <label id="style-label">Name style</label>
+  <div class="styles" id="style-btns" role="group" aria-labelledby="style-label"></div>
+  <button class="generate" id="btn-generate" type="button">Generate a band name</button>
+  <div class="name-display" id="name-display">
+    <p class="hint">Hit Generate — your next band name is one click away.</p>
+  </div>
+  <div class="name-actions">
+    <button class="primary" id="btn-copy" type="button" disabled>Copy name</button>
+    <button class="ghost" id="btn-fav" type="button" disabled>☆ Favourite</button>
+    <button class="ghost" id="btn-five" type="button">Generate 5</button>
+  </div>
+</div>
+
+<div class="panel" id="batch-panel" hidden>
+  <h2>Five fresh names</h2>
+  <ul class="batch-list" id="batch-list"></ul>
+</div>
+
+<div class="panel">
+  <h2>Favourites <span class="sub">saved in your browser</span></h2>
+  <ul class="fav-list" id="fav-list"></ul>
+  <p class="empty" id="fav-empty">No favourites yet — star a name you like.</p>
+  <div class="panel-actions" id="fav-actions" hidden>
+    <button class="ghost" id="btn-copy-all" type="button">Copy all</button>
+    <button class="ghost" id="btn-clear-favs" type="button">Clear all</button>
+  </div>
+</div>
+
+<div class="panel">
+  <h2>Recent names <span class="sub">click any name to copy it</span></h2>
+  <div class="history-chips" id="history-chips"></div>
+  <p class="empty" id="history-empty">Nothing generated yet.</p>
+</div>
+
+<h2 class="sec">How it works</h2>
+<div class="howto">
+  <p><strong>Big word banks.</strong> Every name is assembled from banks of 48 universal adjectives and nouns, plus genre-specific banks — twelve adjectives and twelve nouns per genre — so repeats are rare and each genre genuinely sounds like itself. Metal leans <strong>Obsidian</strong> and <strong>Tormented</strong>; Jazz leans <strong>Velvety</strong> and <strong>Moonlit</strong>.</p>
+  <p><strong>Four naming patterns.</strong> "The + Noun", "Adjective + Noun", "The + Adjective + Noun" and "Noun + Noun" cover the shapes real band names take — or let Mix choose a pattern at random. A short tagline rides along with each name, because a band name deserves a little attitude.</p>
+  <p><strong>One name a day.</strong> The band name of the day is derived from the date with a seeded generator, so every visitor sees the same name on the same day — and a different one tomorrow.</p>
+  <p><strong>Nothing leaves your browser.</strong> Generation, favourites and history all run locally on this page. Favourites are stored in your browser's local storage; clearing them is one click.</p>
+</div>
+
+<a class="back" href="/ideas/">← Back to the idea bank</a>
+<footer>Built by <a href="/ideas/">Shipwright Studio</a></footer>
+
+<script>
+/* ---- Word banks ---- */
+const ADJ=["Velvet","Neon","Crimson","Hollow","Electric","Midnight","Silver","Golden","Broken","Silent","Wild","Cosmic","Frozen","Burning","Lonely","Savage","Amber","Rusty","Ivory","Cobalt","Scarlet","Lunar","Solar","Emerald","Onyx","Marble","Copper","Smoky","Ashen","Mossy","Static","Radio","Plastic","Magnetic","Liquid","Fragile","Dusty","Crooked","Blind","Angry","Quiet","Wicked","Young","Zen","Hungry","Jaded","Kinetic","Underground"];
+const NOUN=["Wolves","Static","Echoes","Mirrors","Ghosts","Rivers","Storms","Shadows","Lights","Hearts","Machines","Angels","Devils","Kings","Queens","Rebels","Saints","Sinners","Dogs","Cats","Birds","Snakes","Dragons","Tigers","Lions","Roses","Thorns","Flames","Waves","Clouds","Stars","Moons","Suns","Oceans","Deserts","Forests","Mountains","Cities","Streets","Highways","Motels","Diners","Jukeboxes","Radios","Telephones","Televisions","Guitars","Drums"];
+const GENRES={
+  any:{label:"Any genre",adj:[],noun:[]},
+  rock:{label:"Rock",adj:["Raw","Loud","Heavy","Dirty","Sweaty","Bloody","Gritty","Roaring","Thunderous","Fiery","Rebellious","Reckless"],noun:["Riffs","Amps","Stages","Anthems","Voltage","Cigarettes","Whiskey","Leather","Denim","Vinyl","Setlist","Strings"]},
+  metal:{label:"Metal",adj:["Obsidian","Blackened","Molten","Forged","Rusted","Brutal","Vicious","Demonic","Infernal","Apocalyptic","Chaotic","Tormented"],noun:["Hammers","Anvils","Skulls","Chains","Blades","Thrones","Graves","Ashes","Furnaces","Horns","Serpents","Crowns"]},
+  indie:{label:"Indie",adj:["Dreamy","Hazy","Wistful","Tender","Floating","Glowing","Soft","Gentle","Bittersweet","Nostalgic","Drowsy","Sundrenched"],noun:["Diaries","Polaroids","Summers","Postcards","Cassettes","Bedrooms","Rooftops","Bicycles","Fireflies","Memories","Sunsets","Weekends"]},
+  punk:{label:"Punk",adj:["Anarchic","Defiant","Feral","Rabid","Rotten","Spitting","Shrieking","Unruly","Reckless","Furious","Outrageous","Spiteful"],noun:["Bricks","Bottles","Alleys","Barricades","Molotovs","Sirens","Riots","Pins","Patches","Studs","Mohawks","Garages"]},
+  electronic:{label:"Electronic",adj:["Digital","Synthetic","Cyber","Glitchy","Holographic","Laser","Pixelated","Robotic","Strobe","Virtual","Algorithmic","Silicon"],noun:["Circuits","Synths","Modules","Frequencies","Waveforms","Algorithms","Signals","Volts","Servers","Drones","Pulses","Bytes"]},
+  jazz:{label:"Jazz",adj:["Blue","Sultry","Smooth","Mellow","Swinging","Late-Night","Velvety","Silky","Brassy","Speakeasy","Moonlit","Slinky"],noun:["Saxophones","Trumpets","Pianos","Contrabass","Standards","Ballads","Sets","Encores","Clubs","Cigars","Martinis","Midnights"]}
+};
+const STYLES={
+  mix:{label:"Mix"},
+  "the-noun":{label:"The + Noun"},
+  "adj-noun":{label:"Adjective + Noun"},
+  "the-adj-noun":{label:"The + Adjective + Noun"},
+  "noun-noun":{label:"Noun + Noun"}
+};
+const TAGLINES=[
+  "Sounds like a garage at 2 a.m.",
+  "Loud since day one.",
+  "Est. 2026 · still unsigned.",
+  "Three chords and a grudge.",
+  "Your parents' least favourite band.",
+  "Now touring basements near you.",
+  "As heard in a dream once.",
+  "Formed in a group chat.",
+  "Banned from two venues already.",
+  "Play it loud or don't play it.",
+  "A name that looks great on a poster.",
+  "The neighbours already hate it."
+];
+const MAX_FAVS=50,MAX_HISTORY=10;
+
+/* ---- Pure logic (exported for node validation) ---- */
+function pick(arr,rnd){return arr[Math.floor(rnd()*arr.length)];}
+function poolFor(genreKey,kind){
+  const g=GENRES[genreKey]||GENRES.any;
+  const base=kind==="adj"?ADJ:NOUN;
+  if(genreKey==="any")return base;
+  return base.concat(g[kind]);
+}
+function hashString(s){
+  let h=2166136261;
+  for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619);}
+  return h>>>0;
+}
+function mulberry32(seed){
+  let a=seed>>>0;
+  return function(){
+    a|=0;a=a+0x6D2B79F5|0;
+    let t=Math.imul(a^a>>>15,1|a);
+    t=t+Math.imul(t^t>>>7,61|t)^t;
+    return ((t^t>>>14)>>>0)/4294967296;
+  };
+}
+function styleKeys(){return ["the-noun","adj-noun","the-adj-noun","noun-noun"];}
+function buildName(genreKey,styleKey,rnd){
+  const adjs=poolFor(genreKey,"adj"),nouns=poolFor(genreKey,"noun");
+  const style=styleKey==="mix"?pick(styleKeys(),rnd):styleKey;
+  let name="";
+  if(style==="the-noun")name="The "+pick(nouns,rnd);
+  else if(style==="adj-noun")name=pick(adjs,rnd)+" "+pick(nouns,rnd);
+  else if(style==="the-adj-noun")name="The "+pick(adjs,rnd)+" "+pick(nouns,rnd);
+  else{ // noun-noun: two different nouns
+    const n1=pick(nouns,rnd);
+    let n2=pick(nouns,rnd),guard=0;
+    while(n2===n1&&guard++<20)n2=pick(nouns,rnd);
+    name=n1+" "+n2;
+  }
+  return {name:name,style:style,genre:genreKey,tagline:pick(TAGLINES,rnd)};
+}
+function generateName(genreKey,styleKey,rnd){
+  return buildName(genreKey,styleKey,rnd||Math.random);
+}
+function generateBatch(genreKey,styleKey,n,rnd){
+  rnd=rnd||Math.random;
+  const out=[],seen=new Set();
+  let guard=0;
+  while(out.length<n&&guard++<n*50){
+    const r=buildName(genreKey,styleKey,rnd);
+    if(!seen.has(r.name)){seen.add(r.name);out.push(r);}
+  }
+  return out;
+}
+function nameOfTheDay(dateStr){
+  const rnd=mulberry32(hashString(dateStr||new Date().toISOString().slice(0,10)));
+  const genreKeys=Object.keys(GENRES).filter(k=>k!=="any");
+  const genre=pick(genreKeys,rnd);
+  const r=buildName(genre,pick(styleKeys(),rnd),rnd);
+  return {name:r.name,genre:genre,tagline:r.tagline,date:dateStr||new Date().toISOString().slice(0,10)};
+}
+function addFavorite(list,name){
+  if(list.indexOf(name)>=0)return list.slice();
+  const next=[name].concat(list);
+  return next.slice(0,MAX_FAVS);
+}
+function removeFavorite(list,name){
+  return list.filter(n=>n!==name);
+}
+function favoritesToText(list){return list.join("\n");}
+if(typeof module!=="undefined"&&module.exports){
+  module.exports={ADJ,NOUN,GENRES,STYLES,TAGLINES,pick,poolFor,hashString,mulberry32,styleKeys,buildName,generateName,generateBatch,nameOfTheDay,addFavorite,removeFavorite,favoritesToText,MAX_FAVS,MAX_HISTORY};
+}
+
+if(typeof document!=="undefined"){
+  const $=id=>document.getElementById(id);
+  const FAV_KEY="bng-favorites";
+  let genre="any",style="mix",current=null,favorites=[],history=[];
+  try{favorites=JSON.parse(localStorage.getItem(FAV_KEY)||"[]");if(!Array.isArray(favorites))favorites=[];}catch(e){favorites=[];}
+  function saveFavs(){try{localStorage.setItem(FAV_KEY,JSON.stringify(favorites));}catch(e){/* private mode: favourites stay in memory */}}
+
+  function flashCopied(btn,label){
+    const orig=btn.textContent;
+    btn.textContent=label||"Copied ✓";btn.classList.add("copied");
+    setTimeout(()=>{btn.textContent=orig;btn.classList.remove("copied");},2000);
+  }
+  async function copyText(text,btn){
+    try{await navigator.clipboard.writeText(text);if(btn)flashCopied(btn);return true;}
+    catch(e){
+      try{
+        const ta=document.createElement("textarea");
+        ta.value=text;ta.style.position="fixed";ta.style.opacity="0";
+        document.body.appendChild(ta);ta.select();
+        document.execCommand("copy");ta.remove();
+        if(btn)flashCopied(btn);return true;
+      }catch(e2){
+        if(btn){const orig=btn.textContent;btn.textContent="Copy not supported";setTimeout(()=>{btn.textContent=orig;},2000);}
+        return false;
+      }
+    }
+  }
+  function esc(s){return s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");}
+
+  function renderFavs(){
+    const list=$("fav-list");
+    list.innerHTML=favorites.map(n=>
+      '<li><span class="fname">'+esc(n)+'</span><span class="rowbtns">'+
+      '<button class="mini" type="button" data-copy="'+esc(n)+'">Copy</button>'+
+      '<button class="mini" type="button" data-remove="'+esc(n)+'">Remove</button></span></li>'
+    ).join("");
+    $("fav-empty").style.display=favorites.length?"none":"block";
+    $("fav-actions").hidden=!favorites.length;
+  }
+  function renderHistory(){
+    const box=$("history-chips");
+    box.innerHTML=history.map(n=>'<button type="button" data-copy="'+esc(n)+'">'+esc(n)+"</button>").join("");
+    $("history-empty").style.display=history.length?"none":"block";
+  }
+  function showName(r){
+    current=r;
+    const disp=$("name-display");
+    const the=r.name.indexOf("The ")===0;
+    const rest=the?r.name.slice(4):r.name;
+    disp.innerHTML='<p class="name">'+(the?'<span class="the">The</span> ':"")+esc(rest)+"</p>"+
+      '<p class="tag">'+esc(r.tagline)+'</p>'+
+      '<span class="genre-label">'+esc(GENRES[r.genre].label)+"</span>";
+    $("btn-copy").disabled=false;
+    const favBtn=$("btn-fav");
+    favBtn.disabled=false;
+    favBtn.textContent=favorites.indexOf(r.name)>=0?"★ Favourited":"☆ Favourite";
+    favBtn.classList.toggle("starred",favorites.indexOf(r.name)>=0);
+    if(history[0]!==r.name){history=[r.name].concat(history).slice(0,MAX_HISTORY);renderHistory();}
+  }
+  function doGenerate(){
+    showName(generateName(genre,style));
+  }
+  function doBatch(){
+    const batch=generateBatch(genre,style,5);
+    $("batch-panel").hidden=false;
+    $("batch-list").innerHTML=batch.map(r=>
+      '<li><span class="bname">'+esc(r.name)+"<small>"+esc(r.tagline)+" · "+esc(GENRES[r.genre].label)+"</small></span>"+
+      '<span class="rowbtns"><button class="mini" type="button" data-copy="'+esc(r.name)+'">Copy</button>'+
+      '<button class="mini" type="button" data-fav="'+esc(r.name)+'">☆ Favourite</button></span></li>'
+    ).join("");
+    batch.forEach(r=>{if(history[0]!==r.name)history=[r.name].concat(history);});
+    history=history.slice(0,MAX_HISTORY);renderHistory();
+    if(batch.length)showName(batch[0]);
+    $("batch-panel").scrollIntoView({behavior:"smooth",block:"nearest"});
+  }
+
+  // Genre chips
+  Object.keys(GENRES).forEach(k=>{
+    const b=document.createElement("button");
+    b.type="button";b.textContent=GENRES[k].label;b.dataset.genre=k;
+    if(k==="any")b.classList.add("active");
+    b.onclick=()=>{genre=k;document.querySelectorAll("#genre-chips button").forEach(x=>x.classList.toggle("active",x===b));};
+    $("genre-chips").appendChild(b);
+  });
+  // Style buttons
+  Object.keys(STYLES).forEach(k=>{
+    const b=document.createElement("button");
+    b.type="button";b.textContent=STYLES[k].label;b.dataset.style=k;
+    if(k==="mix")b.classList.add("active");
+    b.onclick=()=>{style=k;document.querySelectorAll("#style-btns button").forEach(x=>x.classList.toggle("active",x===b));};
+    $("style-btns").appendChild(b);
+  });
+
+  $("btn-generate").onclick=doGenerate;
+  $("btn-five").onclick=doBatch;
+  $("btn-copy").onclick=e=>{if(current)copyText(current.name,e.currentTarget);};
+  $("btn-fav").onclick=e=>{
+    if(!current)return;
+    if(favorites.indexOf(current.name)>=0){favorites=removeFavorite(favorites,current.name);}
+    else{favorites=addFavorite(favorites,current.name);}
+    saveFavs();renderFavs();
+    const favBtn=$("btn-fav");
+    favBtn.textContent=favorites.indexOf(current.name)>=0?"★ Favourited":"☆ Favourite";
+    favBtn.classList.toggle("starred",favorites.indexOf(current.name)>=0);
+  };
+  $("btn-copy-all").onclick=e=>{if(favorites.length)copyText(favoritesToText(favorites),e.currentTarget);};
+  $("btn-clear-favs").onclick=()=>{favorites=[];saveFavs();renderFavs();if(current){const f=$("btn-fav");f.textContent="☆ Favourite";f.classList.remove("starred");}};
+  $("btn-dotd-copy").onclick=e=>{const t=$("dotd-name").textContent;if(t&&t!=="—")copyText(t,e.currentTarget);};
+
+  // Delegated copy / favourite / remove buttons
+  document.addEventListener("click",e=>{
+    const t=e.target.closest("button");
+    if(!t)return;
+    if(t.dataset.copy)copyText(t.dataset.copy,t);
+    else if(t.dataset.fav){
+      favorites=addFavorite(favorites,t.dataset.fav);saveFavs();renderFavs();
+      t.textContent="★ Favourited";t.classList.add("starred");
+      if(current&&current.name===t.dataset.fav){const f=$("btn-fav");f.textContent="★ Favourited";f.classList.add("starred");}
+    }
+    else if(t.dataset.remove){
+      favorites=removeFavorite(favorites,t.dataset.remove);saveFavs();renderFavs();
+      if(current&&current.name===t.dataset.remove){const f=$("btn-fav");f.textContent="☆ Favourite";f.classList.remove("starred");}
+    }
+  });
+
+  // Band name of the day
+  const dotd=nameOfTheDay();
+  $("dotd-name").textContent=dotd.name;
+  $("dotd-meta").textContent=GENRES[dotd.genre].label+" · "+dotd.tagline+" · "+dotd.date;
+
+  renderFavs();renderHistory();
+}
+</script>
+</body>
+</html>

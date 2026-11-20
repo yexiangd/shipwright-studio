@@ -1,0 +1,778 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Markdown Clipper · Shipwright Studio</title>
+<meta name="description" content="A free online HTML to Markdown converter — paste HTML and get clean Markdown back, with live preview, copy and .md download, all processed locally in your browser.">
+<link rel="canonical" href="https://shipwright-studio.pages.dev/lab/markdown-clipper/">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"WebApplication","name":"Markdown Clipper","url":"https://shipwright-studio.pages.dev/lab/markdown-clipper/","description":"Markdown Clipper is a free online tool that converts pasted HTML into clean Markdown entirely in the browser, with live preview, conversion options, copy and .md download.","applicationCategory":"UtilitiesApplication","operatingSystem":"Web","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"}}
+</script>
+<style>
+:root{--bg:#0a0c0f;--panel:#11141a;--line:#232a35;--txt:#e8e4da;--mut:#9aa3b2;--brass:#d2a24c;--red:#e0655f;--green:#7fb069}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--txt);font-family:Inter,system-ui,sans-serif;line-height:1.6;padding:2.5rem 1.25rem 4rem;max-width:900px;margin:0 auto;text-align:center}
+a{color:var(--brass)}
+.eyebrow{font-size:.75rem;letter-spacing:.22em;text-transform:uppercase;color:var(--mut)}
+h1{font-family:Fraunces,serif;font-weight:600;font-size:clamp(2rem,4.5vw,3rem);margin:.4rem 0 .6rem}
+.define{color:var(--mut);max-width:52rem;margin:0 auto 1.6rem}
+.define strong{color:var(--txt)}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:1.5rem 1.4rem;margin-bottom:1.2rem;text-align:left}
+.panel h2{font-family:Fraunces,serif;font-weight:600;font-size:1.25rem;margin-bottom:1rem}
+label{display:block;font-size:.82rem;letter-spacing:.08em;text-transform:uppercase;color:var(--mut);margin-bottom:.4rem}
+textarea{width:100%;background:#0a0c0f;border:1px solid var(--line);border-radius:8px;color:var(--txt);font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:.9rem;line-height:1.55;padding:.85rem .9rem;resize:vertical;min-height:200px}
+textarea:focus{outline:none;border-color:var(--brass)}
+.rowline{display:flex;justify-content:space-between;font-size:.8rem;color:var(--mut);margin-top:.4rem}
+.hint{font-size:.85rem;color:var(--mut);margin-top:.6rem}
+.hint.warn{color:var(--red)}
+.btnrow{display:flex;gap:.7rem;flex-wrap:wrap;margin-top:1rem}
+button{font-family:inherit;cursor:pointer;border-radius:8px;font-size:1rem;padding:.7rem 1.3rem}
+button:disabled{opacity:.4;cursor:not-allowed}
+button.primary{background:var(--brass);border:0;color:#14100a;font-weight:600}
+button.primary:hover:not(:disabled){filter:brightness(1.08)}
+button.ghost{background:transparent;border:1px solid var(--line);color:var(--txt)}
+button.ghost:hover:not(:disabled){border-color:var(--brass);color:var(--brass)}
+button.copied{border-color:var(--green);color:var(--green)}
+.options{display:grid;grid-template-columns:1fr 1fr 1fr;gap:1.1rem 1.6rem}
+@media(max-width:600px){.options{grid-template-columns:1fr}}
+select{width:100%;background:#0a0c0f;border:1px solid var(--line);border-radius:8px;color:var(--txt);font-family:inherit;font-size:1rem;padding:.65rem .7rem;cursor:pointer}
+select:focus{outline:none;border-color:var(--brass)}
+.toggle{display:flex;align-items:center;gap:.6rem;font-size:.95rem;cursor:pointer;text-transform:none;letter-spacing:0;color:var(--txt)}
+.toggle input{accent-color:var(--brass);width:1.1rem;height:1.1rem;cursor:pointer}
+.tabs{display:flex;gap:.4rem;margin-bottom:.9rem}
+.tabs button{background:transparent;border:1px solid var(--line);color:var(--mut);border-radius:999px;padding:.35rem 1rem;font-size:.88rem}
+.tabs button.active{color:#14100a;background:var(--brass);border-color:var(--brass);font-weight:600}
+.tabs button:not(.active):hover{color:var(--brass);border-color:var(--brass)}
+pre.output{background:#0a0c0f;border:1px solid var(--line);border-radius:8px;color:var(--txt);font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:.9rem;line-height:1.55;padding:.85rem .9rem;white-space:pre-wrap;word-break:break-word;min-height:200px;max-height:480px;overflow:auto;text-align:left}
+pre.output.empty{color:#5a6472}
+.preview{background:#f6f2ea;color:#1c1a16;border:1px solid var(--line);border-radius:8px;padding:1.1rem 1.2rem;min-height:200px;max-height:480px;overflow:auto;text-align:left;font-size:.95rem}
+.preview.empty{color:#8a8378}
+.preview h1,.preview h2,.preview h3,.preview h4{font-family:Fraunces,serif;color:#14100a;line-height:1.3;margin:.9em 0 .4em}
+.preview h1{font-size:1.6rem}.preview h2{font-size:1.35rem}.preview h3{font-size:1.15rem}.preview h4{font-size:1rem}
+.preview p{margin-bottom:.7em}
+.preview a{color:#8a6a25}
+.preview ul,.preview ol{margin:0 0 .7em 1.4em}
+.preview li{margin-bottom:.25em}
+.preview blockquote{border-left:3px solid var(--brass);padding-left:.9em;margin:0 0 .8em;color:#4a463d;font-style:italic}
+.preview code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:.85em;background:#e8e2d4;padding:.1em .3em;border-radius:4px}
+.preview pre{background:#14100a;color:#e8e4da;padding:.8em 1em;border-radius:8px;overflow-x:auto;margin-bottom:.8em}
+.preview pre code{background:transparent;padding:0;color:inherit}
+.preview hr{border:0;border-top:1px solid #c9c2b2;margin:1.2em 0}
+.preview table{border-collapse:collapse;margin-bottom:.8em;width:100%;font-size:.9em}
+.preview th,.preview td{border:1px solid #c9c2b2;padding:.35em .6em;text-align:left}
+.preview th{background:#ece6d8}
+.preview img{max-width:100%}
+.actions{display:flex;gap:.7rem;justify-content:center;flex-wrap:wrap;margin-bottom:1.2rem}
+h2.sec{font-family:Fraunces,serif;font-weight:600;font-size:1.5rem;margin:2.6rem 0 1rem}
+.howto{max-width:640px;margin:0 auto;text-align:left;color:var(--mut);font-size:.95rem}
+.howto p{margin-bottom:.8rem}
+.howto strong{color:var(--txt)}
+.back{display:inline-block;margin-top:2.5rem;font-size:.9rem}
+footer{margin-top:2.5rem;font-size:.85rem;color:var(--mut)}
+</style>
+</head>
+<body>
+<p class="eyebrow">Shipwright Studio · Lab</p>
+<h1>Markdown Clipper</h1>
+<p class="define"><strong>Markdown Clipper is a free online tool that converts pasted HTML into clean Markdown.</strong> Paste HTML from a web page, an email or a CMS, and get tidy, portable Markdown back — headings, lists, links, code and tables included. Everything runs locally in your browser; nothing you paste ever leaves the page.</p>
+
+<div class="panel">
+  <h2>Paste your HTML</h2>
+  <label for="input">HTML source</label>
+  <textarea id="input" placeholder="&lt;h1&gt;Hello&lt;/h1&gt;&#10;&lt;p&gt;Paste your HTML here…&lt;/p&gt;" spellcheck="false"></textarea>
+  <div class="rowline"><span>Paste from a web page, an email or a CMS</span><span id="in-count">0 words · 0 characters</span></div>
+  <p class="hint" id="input-note">Nothing leaves your browser — the conversion runs entirely on this page.</p>
+  <div class="btnrow">
+    <button class="ghost" id="btn-sample" type="button">Load sample</button>
+    <button class="ghost" id="btn-clear" type="button">Clear</button>
+  </div>
+</div>
+
+<div class="panel">
+  <h2>Options</h2>
+  <div class="options">
+    <div>
+      <label class="toggle"><input type="checkbox" id="opt-images" checked> Include images</label>
+      <p class="hint">Off drops <code>&lt;img&gt;</code> tags from the output.</p>
+    </div>
+    <div>
+      <label for="opt-links">Link style</label>
+      <select id="opt-links">
+        <option value="inline" selected>Inline — [text](url)</option>
+        <option value="reference">Reference — [text][1]</option>
+      </select>
+    </div>
+    <div>
+      <label for="opt-offset">Heading offset</label>
+      <select id="opt-offset">
+        <option value="0" selected>None — keep as-is</option>
+        <option value="1">Shift down +1</option>
+        <option value="2">Shift down +2</option>
+      </select>
+    </div>
+  </div>
+</div>
+
+<div class="panel">
+  <h2>Clean Markdown</h2>
+  <div class="tabs" role="tablist" aria-label="Output view">
+    <button type="button" id="tab-md" class="active" role="tab" aria-selected="true">Markdown</button>
+    <button type="button" id="tab-preview" role="tab" aria-selected="false">Preview</button>
+  </div>
+  <pre class="output empty" id="output">Your clean Markdown will appear here.</pre>
+  <div class="preview empty" id="preview" hidden>Your rendered preview will appear here.</div>
+  <div class="rowline"><span id="out-count">0 words · 0 characters</span><span id="out-note"></span></div>
+</div>
+
+<div class="actions">
+  <button class="primary" id="btn-copy" type="button" disabled>Copy Markdown</button>
+  <button class="ghost" id="btn-download" type="button" disabled>Download .md</button>
+</div>
+
+<h2 class="sec">How it works</h2>
+<div class="howto">
+  <p><strong>Kept, dropped, tidied.</strong> Headings, paragraphs, bold, italic, links, images, lists, code, quotes and tables are converted; <strong>scripts, styles, navigation, headers, footers and forms are stripped</strong>, along with every <code>class</code>, <code>id</code> and inline style. Whitespace is normalised and HTML entities are decoded, so the result reads like Markdown written by hand.</p>
+  <p><strong>No libraries, no server.</strong> The converter is a small hand-written HTML tokenizer and renderer in plain JavaScript — the same code is unit-tested with node, and it runs entirely in your browser. Paste a fragment or a whole page; malformed or unclosed tags are handled gracefully instead of crashing.</p>
+  <p><strong>Your text stays yours.</strong> Nothing is uploaded, stored or tracked. Copy the result, download it as a <code>.md</code> file, or check it in the Preview tab before you use it.</p>
+</div>
+
+<a class="back" href="/ideas/">← Back to the idea bank</a>
+<footer>Built by <a href="/ideas/">Shipwright Studio</a></footer>
+
+<script>
+// __CORE_START__
+/* Markdown Clipper core — dependency-free HTML → Markdown converter.
+   Pure JS (no DOMParser), so the same code runs in the browser and in node. */
+var VOID_TAGS={"br":1,"hr":1,"img":1,"input":1,"meta":1,"link":1,"wbr":1,"area":1,"base":1,"col":1,"embed":1,"source":1,"track":1};
+var SKIP_TAGS={"script":1,"style":1,"nav":1,"header":1,"footer":1,"svg":1,"iframe":1,"form":1,"noscript":1,"head":1,"title":1,"meta":1,"link":1,"object":1,"template":1,"select":1,"button":1};
+var BLOCK_TAGS={"h1":1,"h2":1,"h3":1,"h4":1,"h5":1,"h6":1,"p":1,"ul":1,"ol":1,"li":1,"blockquote":1,"pre":1,"hr":1,"table":1,"div":1,"section":1,"article":1,"main":1,"figure":1,"figcaption":1,"aside":1,"body":1,"html":1,"tr":1};
+
+var ENTITY_MAP={"amp":"&","lt":"<","gt":">","quot":'"',"apos":"'","nbsp":" ","copy":"©","reg":"®","trade":"™","hellip":"…","mdash":"—","ndash":"–","lsquo":"‘","rsquo":"’","ldquo":"“","rdquo":"”","laquo":"«","raquo":"»","amp2":"&"};
+
+function decodeEntities(s){
+  return String(s).replace(/&(#x[0-9a-fA-F]+|#\d+|[A-Za-z]+);/g,function(m,body){
+    if(body.charAt(0)==="#"){
+      var code=body.charAt(1).toLowerCase()==="x"?parseInt(body.slice(2),16):parseInt(body.slice(1),10);
+      if(!isNaN(code)&&code>=0&&code<=0x10FFFF){try{return String.fromCodePoint(code);}catch(e){return m;}}
+      return m;
+    }
+    return ENTITY_MAP[body]!==undefined?ENTITY_MAP[body]:m;
+  });
+}
+
+function parseAttrs(str){
+  var attrs={};
+  var re=/([A-Za-z_:][\w:.-]*)(?:\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s"'=<>`]+)))?/g;
+  var m;
+  while((m=re.exec(str))){
+    var v=m[2]!==undefined?m[2]:(m[3]!==undefined?m[3]:(m[4]!==undefined?m[4]:""));
+    attrs[m[1].toLowerCase()]=decodeEntities(v);
+  }
+  return attrs;
+}
+
+function tokenize(html){
+  var tokens=[];var i=0;var n=html.length;
+  while(i<n){
+    if(html.charAt(i)==="<"){
+      if(html.indexOf("<!--",i)===i){
+        var end=html.indexOf("-->",i+4);
+        i=end===-1?n:end+3;
+        continue;
+      }
+      if(html.indexOf("<!",i)===i||html.indexOf("<?",i)===i){
+        var gt=html.indexOf(">",i+2);
+        i=gt===-1?n:gt+1;
+        continue;
+      }
+      var m=/^<\/?([A-Za-z][A-Za-z0-9-]*)/.exec(html.slice(i));
+      if(!m){tokens.push({type:"text",value:"<"});i++;continue;}
+      var closing=html.charAt(i+1)==="/";
+      var tag=m[1].toLowerCase();
+      var j=i+m[0].length;var quote=null;
+      while(j<n){
+        var ch=html.charAt(j);
+        if(quote){if(ch===quote)quote=null;}
+        else if(ch==='"'||ch==="'")quote=ch;
+        else if(ch===">")break;
+        j++;
+      }
+      var attrStr=html.slice(i+m[0].length,j);
+      var selfClosing=/\/\s*$/.test(attrStr);
+      tokens.push({type:closing?"end":"start",tag:tag,attrs:parseAttrs(attrStr),selfClosing:selfClosing||!!VOID_TAGS[tag]});
+      i=j<n?j+1:n;
+    }else{
+      var k=html.indexOf("<",i);
+      if(k===-1)k=n;
+      tokens.push({type:"text",value:html.slice(i,k)});
+      i=k;
+    }
+  }
+  return tokens;
+}
+
+function parseTree(html){
+  var root={tag:"#root",attrs:{},children:[]};
+  var stack=[root];
+  var tokens=tokenize(html);
+  for(var t=0;t<tokens.length;t++){
+    var tok=tokens[t];
+    if(tok.type==="text"){
+      stack[stack.length-1].children.push({tag:"#text",attrs:{},children:[],text:tok.value});
+      continue;
+    }
+    if(tok.type==="start"){
+      var el={tag:tok.tag,attrs:tok.attrs,children:[]};
+      stack[stack.length-1].children.push(el);
+      if(!tok.selfClosing)stack.push(el);
+    }else{
+      var idx=-1;
+      for(var s=stack.length-1;s>=1;s--){if(stack[s].tag===tok.tag){idx=s;break;}}
+      if(idx>=0)stack.length=idx;
+    }
+  }
+  return root;
+}
+
+function textContent(node){
+  if(node.tag==="#text")return decodeEntities(node.text);
+  var out="";
+  for(var i=0;i<node.children.length;i++)out+=textContent(node.children[i]);
+  return out;
+}
+
+function isSkip(node){return !!SKIP_TAGS[node.tag];}
+function isBlock(tag){return !!BLOCK_TAGS[tag];}
+
+function inlineChildren(node,ctx,o){
+  var out="";
+  for(var i=0;i<node.children.length;i++)out+=inlineNode(node.children[i],ctx,o);
+  return out;
+}
+
+function inlineNode(node,ctx,o){
+  if(node.tag==="#text"){
+    var s=decodeEntities(node.text);
+    s=s.replace(/ /g," ");
+    s=s.replace(/[ \t\r\n\f]+/g," ");
+    return s;
+  }
+  if(isSkip(node))return "";
+  var tag=node.tag;
+  if(tag==="strong"||tag==="b"){
+    var inner=inlineChildren(node,ctx,o).trim();
+    return inner?"**"+inner+"**":"";
+  }
+  if(tag==="em"||tag==="i"){
+    var em=inlineChildren(node,ctx,o).trim();
+    return em?"*"+em+"*":"";
+  }
+  if(tag==="s"||tag==="del"||tag==="strike"){
+    var del=inlineChildren(node,ctx,o).trim();
+    return del?"~~"+del+"~~":"";
+  }
+  if(tag==="code"){
+    var code=inlineChildren(node,ctx,o);
+    if(!code.trim())return "";
+    if(code.indexOf("`")>=0)return "`` "+code+" ``";
+    return "`"+code+"`";
+  }
+  if(tag==="a"){
+    var text=inlineChildren(node,ctx,o).trim();
+    var href=(node.attrs.href||"").trim();
+    if(!href)return text;
+    if(!text||text===href)return href;
+    if(o.linkStyle==="reference"){
+      var n=ctx.refs.length+1;
+      ctx.refs.push(href);
+      return "["+text+"]["+n+"]";
+    }
+    var dest=(href.indexOf(" ")>=0||href.indexOf(")")>=0)?"<"+href+">":href;
+    return "["+text+"]("+dest+")";
+  }
+  if(tag==="img"){
+    if(!o.images)return "";
+    var src=(node.attrs.src||"").trim();
+    if(!src)return "";
+    var alt=(node.attrs.alt||"").replace(/[\[\]]/g,"");
+    var dest2=(src.indexOf(" ")>=0||src.indexOf(")")>=0)?"<"+src+">":src;
+    return "!["+alt+"]("+dest2+")";
+  }
+  if(tag==="br")return "\n";
+  if(tag==="pre")return inlineChildren(node,ctx,o);
+  return inlineChildren(node,ctx,o);
+}
+
+function cleanInline(s){
+  return s.replace(/[ \t]+/g," ").replace(/ *\n */g,"\n").trim();
+}
+
+function renderList(node,ctx,o,depth){
+  var lines=[];var counter=1;
+  var items=node.children.filter(function(c){return c.tag==="li";});
+  for(var i=0;i<items.length;i++){
+    var li=items[i];
+    var marker=node.tag==="ol"?(counter++)+".":"-";
+    var indent="  ";
+    var pad="";
+    for(var d=0;d<depth;d++)pad+=indent;
+    var inlineParts=[];var nested=[];
+    for(var c=0;c<li.children.length;c++){
+      var child=li.children[c];
+      if(child.tag==="ul"||child.tag==="ol"){
+        nested.push(renderList(child,ctx,o,depth+1));
+      }else if(isSkip(child)){
+        continue;
+      }else if(child.tag==="p"||child.tag==="div"){
+        var t=cleanInline(inlineChildren(child,ctx,o));
+        if(t)inlineParts.push(t);
+      }else{
+        var part=inlineNode(child,ctx,o);
+        if(part&&part.trim())inlineParts.push(cleanInline(part));
+      }
+    }
+    var first=cleanInline(inlineParts.join(" "));
+    lines.push(pad+marker+" "+first);
+    for(var n2=0;n2<nested.length;n2++){
+      var sub=nested[n2].split("\n");
+      for(var l=0;l<sub.length;l++)lines.push(sub[l]);
+    }
+  }
+  return lines.join("\n");
+}
+
+function collectRows(tableNode,ctx,o){
+  var rows=[];
+  function walk(node){
+    for(var i=0;i<node.children.length;i++){
+      var c=node.children[i];
+      if(c.tag==="tr"){
+        var cells=[];
+        for(var j=0;j<c.children.length;j++){
+          var cell=c.children[j];
+          if(cell.tag==="th"||cell.tag==="td"){
+            cells.push(cleanInline(inlineChildren(cell,ctx,o)).replace(/\|/g,"\\|"));
+          }
+        }
+        if(cells.length)rows.push(cells);
+      }else if(c.tag==="thead"||c.tag==="tbody"||c.tag==="tfoot"||c.tag==="table"){
+        walk(c);
+      }
+    }
+  }
+  walk(tableNode);
+  return rows;
+}
+
+function renderTable(node,ctx,o){
+  var rows=collectRows(node,ctx,o);
+  if(!rows.length)return "";
+  var cols=0;
+  for(var i=0;i<rows.length;i++)cols=Math.max(cols,rows[i].length);
+  for(var r=0;r<rows.length;r++){while(rows[r].length<cols)rows[r].push("");}
+  var lines=[];
+  lines.push("| "+rows[0].join(" | ")+" |");
+  var sep=[];for(var s=0;s<cols;s++)sep.push("---");
+  lines.push("| "+sep.join(" | ")+" |");
+  for(var b=1;b<rows.length;b++)lines.push("| "+rows[b].join(" | ")+" |");
+  return lines.join("\n");
+}
+
+function renderBlock(node,ctx,o,depth){
+  var tag=node.tag;
+  var hm=/^h([1-6])$/.exec(tag);
+  if(hm){
+    var level=Math.min(6,parseInt(hm[1],10)+(o.headingOffset||0));
+    var ht=cleanInline(inlineChildren(node,ctx,o));
+    if(!ht)return "";
+    var hashes="";for(var h=0;h<level;h++)hashes+="#";
+    return hashes+" "+ht;
+  }
+  if(tag==="p"){
+    var pt=cleanInline(inlineChildren(node,ctx,o));
+    return pt||"";
+  }
+  if(tag==="ul"||tag==="ol")return renderList(node,ctx,o,depth);
+  if(tag==="blockquote"){
+    var inner=renderBlocks(node.children,ctx,o,depth);
+    if(!inner.length)return "";
+    var joined=inner.join("\n\n");
+    var blines=joined.split("\n");
+    var out=[];
+    for(var i=0;i<blines.length;i++)out.push(blines[i].trim()?"> "+blines[i]:">");
+    return out.join("\n");
+  }
+  if(tag==="pre"){
+    var raw=textContent(node).replace(/\r\n/g,"\n").replace(/^\n+|\n+$/g,"");
+    if(!raw.trim())return "";
+    var lang="";
+    var cls=(node.attrs.class||"")+" "+((node.children[0]&&node.children[0].attrs)?(node.children[0].attrs.class||""):"");
+    var lm=/language-([\w-]+)/.exec(cls);
+    if(lm)lang=lm[1];
+    var fence=raw.indexOf("```")>=0?"~~~":"```";
+    return fence+lang+"\n"+raw+"\n"+fence;
+  }
+  if(tag==="hr")return "---";
+  if(tag==="table")return renderTable(node,ctx,o);
+  if(isBlock(tag)){
+    var innerBlocks=renderBlocks(node.children,ctx,o,depth);
+    return innerBlocks.join("\n\n");
+  }
+  return cleanInline(inlineChildren(node,ctx,o));
+}
+
+function renderBlocks(nodes,ctx,o,depth){
+  var out=[];var run=[];
+  function flush(){
+    if(!run.length)return;
+    var t="";
+    for(var i=0;i<run.length;i++)t+=inlineNode(run[i],ctx,o);
+    t=cleanInline(t);
+    if(t)out.push(t);
+    run=[];
+  }
+  for(var i=0;i<nodes.length;i++){
+    var n=nodes[i];
+    if(n.tag==="#text"){
+      if(n.text.trim())run.push(n);
+      continue;
+    }
+    if(isSkip(n))continue;
+    if(isBlock(n.tag)){
+      flush();
+      var b=renderBlock(n,ctx,o,depth);
+      if(b)out.push(b);
+    }else{
+      run.push(n);
+    }
+  }
+  flush();
+  return out;
+}
+
+function htmlToMarkdown(html,opts){
+  var o={images:true,linkStyle:"inline",headingOffset:0};
+  if(opts){
+    if(opts.images!==undefined)o.images=opts.images;
+    if(opts.linkStyle)o.linkStyle=opts.linkStyle;
+    if(opts.headingOffset!==undefined)o.headingOffset=opts.headingOffset;
+  }
+  if(!html||!String(html).trim())return "";
+  var ctx={refs:[]};
+  var root=parseTree(html);
+  var blocks=renderBlocks(root.children,ctx,o,0);
+  var out=blocks.join("\n\n").replace(/\n{3,}/g,"\n\n").trim();
+  if(o.linkStyle==="reference"&&ctx.refs.length){
+    var defs=[];
+    for(var i=0;i<ctx.refs.length;i++)defs.push("["+(i+1)+"]: "+ctx.refs[i]);
+    out=(out?out+"\n\n":"")+defs.join("\n");
+  }
+  return out;
+}
+
+/* ---- Tiny Markdown → HTML renderer for the Preview tab (pure strings). ---- */
+function escapeHtml(s){
+  return s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+}
+
+function mdInline(s,refs){
+  var codes=[];
+  s=s.replace(/``\s?(.+?)\s?``|`([^`]+)`/g,function(m,a,b){codes.push(a!==undefined?a:b);return "\x00"+(codes.length-1)+"\x00";});
+  s=s.replace(/!\[([^\]]*)\]\(([^)]+)\)/g,function(m,alt,src){return '<img src="'+src+'" alt="'+alt+'">';});
+  s=s.replace(/\[([^\]]+)\]\(([^)]+)\)/g,function(m,t,u){return '<a href="'+u+'" target="_blank" rel="noopener">'+t+"</a>";});
+  s=s.replace(/\[([^\]]+)\]\[(\d+)\]/g,function(m,t,n){
+    var u=refs&&refs[n];
+    return u?'<a href="'+u+'" target="_blank" rel="noopener">'+t+"</a>":t;
+  });
+  s=s.replace(/\*\*([^*]+)\*\*/g,"<strong>$1</strong>");
+  s=s.replace(/~~(.+?)~~/g,"<del>$1</del>");
+  s=s.replace(/\*([^*]+)\*/g,"<em>$1</em>");
+  s=s.replace(/\x00(\d+)\x00/g,function(m,n){return "<code>"+escapeHtml(codes[+n])+"</code>";});
+  return s;
+}
+
+function parseListTree(lines,start,baseIndent){
+  var items=[];var i=start;
+  while(i<lines.length){
+    var m=/^(\s*)(?:([-+*])|(\d+)\.)\s+(.*)$/.exec(lines[i]);
+    if(!m)break;
+    var indent=m[1].replace(/\t/g,"  ").length;
+    if(indent<baseIndent)break;
+    if(indent>baseIndent){
+      if(!items.length)break;
+      var sub=parseListTree(lines,i,indent);
+      items[items.length-1].children=sub.items;
+      i=sub.next;
+      continue;
+    }
+    items.push({ordered:!!m[3],content:m[4],children:null});
+    i++;
+  }
+  return {items:items,next:i};
+}
+
+function renderListTree(items,refs){
+  if(!items.length)return "";
+  var html="";var idx=0;
+  while(idx<items.length){
+    var ordered=items[idx].ordered;
+    var tag=ordered?"ol":"ul";
+    html+="<"+tag+">";
+    while(idx<items.length&&items[idx].ordered===ordered){
+      var it=items[idx];
+      html+="<li>"+mdInline(escapeHtml(it.content),refs);
+      if(it.children&&it.children.length)html+=renderListTree(it.children,refs);
+      html+="</li>";
+      idx++;
+    }
+    html+="</"+tag+">";
+  }
+  return html;
+}
+
+function renderMarkdownPreview(md){
+  if(!md||!md.trim())return "";
+  var refs={};
+  var lines=md.split("\n");
+  var kept=[];
+  for(var i=0;i<lines.length;i++){
+    var dm=/^\[(\d+)\]:\s*(.+)$/.exec(lines[i]);
+    if(dm)refs[dm[1]]=dm[2];
+    else kept.push(lines[i]);
+  }
+  lines=kept;
+  var html="";var i2=0;
+  function paraFlush(buf){
+    if(!buf.length)return;
+    html+="<p>"+buf.map(function(l){return mdInline(escapeHtml(l),refs);}).join("<br>")+"</p>";
+    buf.length=0;
+  }
+  var para=[];
+  while(i2<lines.length){
+    var line=lines[i2];
+    if(/^```|^\~\~\~/.test(line)){
+      paraFlush(para);
+      var fence=line.slice(0,3);
+      var buf2=[];i2++;
+      while(i2<lines.length&&lines[i2].slice(0,3)!==fence){buf2.push(lines[i2]);i2++;}
+      i2++;
+      html+="<pre><code>"+escapeHtml(buf2.join("\n"))+"</code></pre>";
+      continue;
+    }
+    var hm=/^(#{1,6})\s+(.*)$/.exec(line);
+    if(hm){
+      paraFlush(para);
+      html+="<h"+hm[1].length+">"+mdInline(escapeHtml(hm[2]),refs)+"</h"+hm[1].length+">";
+      i2++;continue;
+    }
+    if(/^\s*---\s*$/.test(line)){paraFlush(para);html+="<hr>";i2++;continue;}
+    if(/^>\s?/.test(line)){
+      paraFlush(para);
+      var q=[];
+      while(i2<lines.length&&/^>\s?/.test(lines[i2])){q.push(lines[i2].replace(/^>\s?/,""));i2++;}
+      html+="<blockquote><p>"+q.map(function(l){return mdInline(escapeHtml(l),refs);}).join("<br>")+"</p></blockquote>";
+      continue;
+    }
+    if(/^\|/.test(line)){
+      paraFlush(para);
+      var trows=[];
+      while(i2<lines.length&&/^\|/.test(lines[i2])){trows.push(lines[i2]);i2++;}
+      if(trows.length>=2){
+        var cells=function(r){return r.replace(/^\||\|$/g,"").split("|").map(function(c){return c.trim();});};
+        var head=cells(trows[0]);
+        var bodyStart=/^[\s|:-]+$/.test(trows[1])?2:1;
+        html+="<table><thead><tr>"+head.map(function(c){return "<th>"+mdInline(escapeHtml(c),refs)+"</th>";}).join("")+"</tr></thead><tbody>";
+        for(var r=bodyStart;r<trows.length;r++){
+          var cs=cells(trows[r]);
+          html+="<tr>"+cs.map(function(c){return "<td>"+mdInline(escapeHtml(c),refs)+"</td>";}).join("")+"</tr>";
+        }
+        html+="</tbody></table>";
+      }else{
+        para.push(line);
+      }
+      continue;
+    }
+    if(/^(\s*)(?:[-+*]|\d+\.)\s+/.test(line)){
+      paraFlush(para);
+      var tree=parseListTree(lines,i2,line.match(/^(\s*)/)[1].replace(/\t/g,"  ").length);
+      html+=renderListTree(tree.items,refs);
+      i2=tree.next;
+      continue;
+    }
+    if(!line.trim()){paraFlush(para);i2++;continue;}
+    para.push(line);i2++;
+  }
+  paraFlush(para);
+  return html;
+}
+
+if(typeof module!=="undefined"&&module.exports){
+  module.exports={htmlToMarkdown:htmlToMarkdown,renderMarkdownPreview:renderMarkdownPreview,tokenize:tokenize,parseTree:parseTree,decodeEntities:decodeEntities};
+}
+// __CORE_END__
+
+if(typeof document!=="undefined"){
+  var $=function(id){return document.getElementById(id);};
+  var EMPTY_MD="Your clean Markdown will appear here.";
+  var EMPTY_PV="Your rendered preview will appear here.";
+  var lastMd="";
+  var view="md";
+  var timer=null;
+
+  var SAMPLE=[
+    "<article>",
+    "  <h1>The Quiet Power of a Morning Walk</h1>",
+    "  <p>Walking before the world wakes up is the <strong>simplest habit</strong> I have kept for five years. It costs nothing, needs no equipment, and — unlike most productivity advice — it <em>actually works</em>.</p>",
+    "  <h2>Why it works</h2>",
+    "  <ul>",
+    "    <li><strong>Movement</strong> wakes the body up gently</li>",
+    "    <li><strong>Silence</strong> gives the mind room to think</li>",
+    "    <li><strong>Light</strong> sets your body clock for the day</li>",
+    "  </ul>",
+    "  <blockquote><p>The best ideas arrive on foot.</p></blockquote>",
+    "  <p>Read more in the <a href=\"https://example.com/morning-walks\">full guide to morning walks</a>, or try the <code>walk 30</code> challenge this week.</p>",
+    "  <pre><code class=\"language-bash\">walk --minutes 30 --before sunrise</code></pre>",
+    "  <h2>A week at a glance</h2>",
+    "  <table>",
+    "    <thead><tr><th>Day</th><th>Minutes</th><th>Notes</th></tr></thead>",
+    "    <tbody>",
+    "      <tr><td>Monday</td><td>30</td><td>Slow start</td></tr>",
+    "      <tr><td>Wednesday</td><td>45</td><td>Long loop</td></tr>",
+    "      <tr><td>Friday</td><td>30</td><td>With a friend</td></tr>",
+    "    </tbody>",
+    "  </table>",
+    "  <p><img src=\"https://example.com/dawn.jpg\" alt=\"Dawn light over a quiet street\"></p>",
+    "  <script>console.log(\"this should be stripped\");<\/script>",
+    "  <hr>",
+    "  <p><em>Written at dawn, edited at breakfast.</em></p>",
+    "</article>"
+  ].join("\n");
+
+  function countText(s){
+    var t=s.trim();
+    var words=t?t.split(/\s+/).length:0;
+    return words+" word"+(words===1?"":"s")+" · "+s.length+" character"+(s.length===1?"":"s");
+  }
+
+  function currentOpts(){
+    return {
+      images:$("opt-images").checked,
+      linkStyle:$("opt-links").value,
+      headingOffset:parseInt($("opt-offset").value,10)
+    };
+  }
+
+  function convert(){
+    var input=$("input").value;
+    $("in-count").textContent=countText(input);
+    var md="";
+    try{md=htmlToMarkdown(input,currentOpts());}catch(e){md="";}
+    lastMd=md;
+    var out=$("output");
+    var pv=$("preview");
+    var note=$("out-note");
+    if(!md){
+      out.textContent=EMPTY_MD;
+      out.classList.add("empty");
+      pv.textContent=EMPTY_PV;
+      pv.classList.add("empty");
+      $("out-count").textContent="0 words · 0 characters";
+      $("btn-copy").disabled=true;
+      $("btn-download").disabled=true;
+      if(input.trim()){
+        note.textContent="Nothing convertible found — the HTML contained only scripts, styles or navigation.";
+        note.style.color="var(--red)";
+      }else{
+        note.textContent="";
+      }
+      return;
+    }
+    note.textContent="";
+    out.textContent=md;
+    out.classList.remove("empty");
+    pv.innerHTML=renderMarkdownPreview(md);
+    pv.classList.remove("empty");
+    $("out-count").textContent=countText(md);
+    $("btn-copy").disabled=false;
+    $("btn-download").disabled=false;
+  }
+
+  function scheduleConvert(){
+    clearTimeout(timer);
+    timer=setTimeout(convert,150);
+  }
+
+  function setView(v){
+    view=v;
+    $("tab-md").classList.toggle("active",v==="md");
+    $("tab-preview").classList.toggle("active",v==="preview");
+    $("tab-md").setAttribute("aria-selected",v==="md"?"true":"false");
+    $("tab-preview").setAttribute("aria-selected",v==="preview"?"true":"false");
+    $("output").hidden=v!=="md";
+    $("preview").hidden=v!=="preview";
+  }
+
+  $("input").addEventListener("input",scheduleConvert);
+  ["opt-images","opt-links","opt-offset"].forEach(function(id){
+    $(id).addEventListener("change",convert);
+  });
+  $("btn-sample").addEventListener("click",function(){
+    $("input").value=SAMPLE;
+    convert();
+    $("input").focus();
+  });
+  $("btn-clear").addEventListener("click",function(){
+    $("input").value="";
+    convert();
+    $("input").focus();
+  });
+  $("tab-md").addEventListener("click",function(){setView("md");});
+  $("tab-preview").addEventListener("click",function(){setView("preview");});
+
+  $("btn-copy").addEventListener("click",function(){
+    var btn=$("btn-copy");
+    if(!lastMd)return;
+    function done(ok,label){
+      btn.textContent=label||"Copied ✓";
+      btn.classList.add("copied");
+      setTimeout(function(){btn.textContent="Copy Markdown";btn.classList.remove("copied");},2000);
+    }
+    function fallback(){
+      try{
+        var ta=document.createElement("textarea");
+        ta.value=lastMd;
+        ta.style.position="fixed";ta.style.opacity="0";
+        document.body.appendChild(ta);
+        ta.select();
+        var ok=document.execCommand("copy");
+        document.body.removeChild(ta);
+        if(ok)done(true);else done(false,"Copy not supported");
+      }catch(e){done(false,"Copy not supported");}
+    }
+    if(navigator.clipboard&&navigator.clipboard.writeText){
+      navigator.clipboard.writeText(lastMd).then(function(){done(true);},fallback);
+    }else{
+      fallback();
+    }
+  });
+
+  $("btn-download").addEventListener("click",function(){
+    if(!lastMd)return;
+    var blob=new Blob([lastMd],{type:"text/markdown"});
+    var a=document.createElement("a");
+    a.href=URL.createObjectURL(blob);
+    a.download="clipped-markdown.md";
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(function(){URL.revokeObjectURL(a.href);a.remove();},500);
+  });
+
+  convert();
+}
+</script>
+</body>
+</html>

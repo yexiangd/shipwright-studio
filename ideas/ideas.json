@@ -1,5 +1,5 @@
 {
-  "updated": "2026-11-19",
+  "updated": "2026-11-20",
   "ideas": [
     {
       "id": "idea-000a",
@@ -767,7 +767,9 @@
       "tagline": "Paste HTML, get clean markdown back.",
       "priority": 59,
       "effort": "S",
-      "status": "todo"
+      "status": "done",
+      "url": "/lab/markdown-clipper/",
+      "shipped": "2026-11-20"
     },
     {
       "id": "idea-064",
@@ -1101,7 +1103,9 @@
       "tagline": "Your next band name is one click away.",
       "priority": 60,
       "effort": "S",
-      "status": "todo"
+      "status": "done",
+      "url": "/lab/band-names/",
+      "shipped": "2026-11-20"
     },
     {
       "id": "idea-094",
