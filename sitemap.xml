@@ -321,6 +321,11 @@
     <priority>0.7</priority>
   </url>
   <url>
+    <loc>https://shipwright-studio.pages.dev/lab/orb-eater/</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
     <loc>https://shipwright-studio.pages.dev/lab/orderbook-visualizer/</loc>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
@@ -387,6 +392,11 @@
   </url>
   <url>
     <loc>https://shipwright-studio.pages.dev/lab/regex-tester/</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://shipwright-studio.pages.dev/lab/robots-builder/</loc>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>

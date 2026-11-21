@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>robots.txt Builder · Shipwright Studio</title>
+<meta name="description" content="A free online robots.txt builder — click together crawler rules for search engines and AI bots, preview the file live, and copy or download robots.txt, all in your browser.">
+<link rel="canonical" href="https://shipwright-studio.pages.dev/lab/robots-builder/">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"WebApplication","name":"robots.txt Builder","url":"https://shipwright-studio.pages.dev/lab/robots-builder/","description":"robots.txt Builder is a free online tool that builds a valid robots.txt crawler policy by clicking — rule groups, presets, sitemap and crawl-delay lines, live preview, copy and download.","applicationCategory":"UtilitiesApplication","operatingSystem":"Web","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"}}
+</script>
+<style>
+:root{--bg:#0a0c0f;--panel:#11141a;--sub:#161a21;--line:#232a35;--txt:#e8e4da;--mut:#9aa3b2;--brass:#d2a24c;--red:#e0655f;--green:#7fb069}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--txt);font-family:Inter,system-ui,sans-serif;line-height:1.6;padding:2.5rem 1.25rem 4rem;max-width:900px;margin:0 auto;text-align:center}
+a{color:var(--brass)}
+.eyebrow{font-size:.75rem;letter-spacing:.22em;text-transform:uppercase;color:var(--mut)}
+h1{font-family:Fraunces,serif;font-weight:600;font-size:clamp(2rem,4.5vw,3rem);margin:.4rem 0 .6rem}
+.define{color:var(--mut);max-width:52rem;margin:0 auto 1.6rem}
+.define strong{color:var(--txt)}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:1.5rem 1.4rem;margin-bottom:1.2rem;text-align:left}
+.panel h2{font-family:Fraunces,serif;font-weight:600;font-size:1.25rem;margin-bottom:1rem}
+label{display:block;font-size:.82rem;letter-spacing:.08em;text-transform:uppercase;color:var(--mut);margin-bottom:.4rem}
+input[type=text],input[type=number]{background:#0a0c0f;border:1px solid var(--line);border-radius:8px;color:var(--txt);font-family:inherit;font-size:1rem;padding:.65rem .7rem;width:100%}
+input[type=text]:focus,input[type=number]:focus,select:focus{outline:none;border-color:var(--brass)}
+select{background:#0a0c0f;border:1px solid var(--line);border-radius:8px;color:var(--txt);font-family:inherit;font-size:1rem;padding:.65rem .7rem;cursor:pointer}
+input.mono{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:.92rem}
+.hint{font-size:.85rem;color:var(--mut);margin-top:.6rem}
+.btnrow{display:flex;gap:.7rem;flex-wrap:wrap;margin-top:1rem}
+button{font-family:inherit;cursor:pointer;border-radius:8px;font-size:1rem;padding:.7rem 1.3rem}
+button:disabled{opacity:.4;cursor:not-allowed}
+button.primary{background:var(--brass);border:0;color:#14100a;font-weight:600}
+button.primary:hover:not(:disabled){filter:brightness(1.08)}
+button.ghost{background:transparent;border:1px solid var(--line);color:var(--txt)}
+button.ghost:hover:not(:disabled){border-color:var(--brass);color:var(--brass)}
+button.copied{border-color:var(--green);color:var(--green)}
+.presets{display:flex;gap:.6rem;flex-wrap:wrap}
+.presets button{font-size:.92rem;padding:.55rem 1rem}
+.extras{display:grid;grid-template-columns:1fr 1fr;gap:1.1rem 1.6rem}
+@media(max-width:600px){.extras{grid-template-columns:1fr}}
+.group{background:var(--sub);border:1px solid var(--line);border-left:3px solid var(--brass);border-radius:12px;padding:1rem 1rem .9rem;margin-bottom:1rem}
+.group-head{display:flex;gap:.7rem;align-items:flex-end;flex-wrap:wrap}
+.group-head .ua-wrap{flex:1;min-width:180px}
+.group-title{font-family:Fraunces,serif;font-weight:600;font-size:1.05rem;white-space:nowrap;padding-bottom:.65rem}
+.iconbtn{background:transparent;border:1px solid var(--line);color:var(--mut);border-radius:8px;font-size:.9rem;padding:.55rem .8rem;line-height:1}
+.iconbtn:hover:not(:disabled){border-color:var(--red);color:var(--red)}
+.rule-row{display:flex;gap:.6rem;align-items:center;margin-top:.6rem;flex-wrap:wrap}
+.rule-row select{flex:0 0 auto}
+.rule-row input{flex:1;min-width:140px}
+.rule-row.invalid input,.rule-row.invalid select{border-color:var(--red)}
+.group.invalid .ua-wrap input{border-color:var(--red)}
+.add-rule{margin-top:.8rem}
+.group-actions{display:flex;gap:.7rem;flex-wrap:wrap;margin-top:.4rem}
+.empty-note{color:var(--mut);font-size:.95rem}
+.filewrap{display:flex;background:#0a0c0f;border:1px solid var(--line);border-radius:8px;overflow:hidden;max-height:480px}
+.gutter{flex:0 0 auto;text-align:right;color:#5a6472;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:.9rem;line-height:1.55;padding:.85rem .6rem .85rem .9rem;border-right:1px solid var(--line);user-select:none;overflow:hidden;white-space:pre}
+pre.output{flex:1;color:var(--txt);font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:.9rem;line-height:1.55;padding:.85rem .9rem;white-space:pre;overflow:auto;text-align:left;min-height:200px}
+pre.output.empty{color:#5a6472;white-space:pre-wrap}
+.rowline{display:flex;justify-content:space-between;font-size:.8rem;color:var(--mut);margin-top:.4rem;flex-wrap:wrap;gap:.3rem}
+.warnings{border-color:var(--red)}
+.warnings h2{color:var(--red)}
+.warnings ul{list-style:none}
+.warnings li{font-size:.95rem;color:var(--red);margin-bottom:.35rem}
+.warnings li:last-child{margin-bottom:0}
+.actions{display:flex;gap:.7rem;justify-content:center;flex-wrap:wrap;margin-bottom:1.2rem}
+h2.sec{font-family:Fraunces,serif;font-weight:600;font-size:1.5rem;margin:2.6rem 0 1rem}
+.howto{max-width:640px;margin:0 auto;text-align:left;color:var(--mut);font-size:.95rem}
+.howto p{margin-bottom:.8rem}
+.howto strong{color:var(--txt)}
+.back{display:inline-block;margin-top:2.5rem;font-size:.9rem}
+footer{margin-top:2.5rem;font-size:.85rem;color:var(--mut)}
+</style>
+</head>
+<body>
+<p class="eyebrow">Shipwright Studio · Lab</p>
+<h1>robots.txt Builder</h1>
+<p class="define"><strong>robots.txt Builder is a free online tool that builds a valid robots.txt crawler policy by clicking, instead of hand-writing the file.</strong> Add rule groups for search engines and AI crawlers, load a preset, add a sitemap and crawl-delay — the file updates live, with warnings for common mistakes, ready to copy or download.</p>
+
+<div class="panel">
+  <h2>Presets</h2>
+  <div class="presets" id="presets">
+    <button class="ghost" type="button" data-preset="allow-all">Allow all</button>
+    <button class="ghost" type="button" data-preset="block-all">Block all</button>
+    <button class="ghost" type="button" data-preset="block-admin">Block admin / login / search</button>
+    <button class="ghost" type="button" data-preset="wordpress">WordPress-style</button>
+    <button class="ghost" type="button" data-preset="ai-crawlers">AI crawler rules</button>
+  </div>
+  <p class="hint">Loading a preset replaces the current rules. You can edit any preset afterwards — nothing is locked in.</p>
+</div>
+
+<div class="panel">
+  <h2>Rule groups</h2>
+  <div id="groups"></div>
+  <div class="group-actions">
+    <button class="ghost" id="btn-add-group" type="button">+ Add group</button>
+    <button class="ghost" id="btn-sample" type="button">Load sample</button>
+    <button class="ghost" id="btn-reset" type="button">Reset</button>
+  </div>
+</div>
+
+<div class="panel">
+  <h2>Sitemap &amp; crawl-delay</h2>
+  <div class="extras">
+    <div>
+      <label for="sitemap">Sitemap URL</label>
+      <input type="text" id="sitemap" class="mono" placeholder="https://example.com/sitemap.xml" spellcheck="false" autocomplete="off">
+      <p class="hint">Added once at the end of the file — only when the URL is valid.</p>
+    </div>
+    <div>
+      <label for="crawl-delay">Crawl-delay (seconds)</label>
+      <input type="number" id="crawl-delay" min="1" step="1" placeholder="10" inputmode="numeric">
+      <p class="hint">Added to every group — only when set. Not all crawlers honour it.</p>
+    </div>
+  </div>
+</div>
+
+<div class="panel">
+  <h2>Your robots.txt</h2>
+  <div class="filewrap">
+    <div class="gutter" id="gutter" aria-hidden="true">1</div>
+    <pre class="output empty" id="output">Your robots.txt will appear here — add a group or load a preset.</pre>
+  </div>
+  <div class="rowline"><span id="counts">0 groups · 0 rules · 0 lines</span><span id="out-note"></span></div>
+</div>
+
+<div class="panel warnings" id="warnings-panel" hidden>
+  <h2>Warnings</h2>
+  <ul id="warnings"></ul>
+</div>
+
+<div class="actions">
+  <button class="primary" id="btn-copy" type="button" disabled>Copy robots.txt</button>
+  <button class="ghost" id="btn-download" type="button" disabled>Download robots.txt</button>
+</div>
+
+<h2 class="sec">How it works</h2>
+<div class="howto">
+  <p><strong>A polite request, not a lock.</strong> A <code>robots.txt</code> file tells well-behaved crawlers — search engines, AI bots, archivers — which parts of your site they may visit. It does not block bad actors, and it is no substitute for authentication on private pages. Place the file at the root of your site, at <code>/robots.txt</code>.</p>
+  <p><strong>Groups, then rules.</strong> Each group names a crawler (or <code>*</code> for all of them) and lists the paths it may or may not visit. Groups are printed in order, separated by a blank line, followed by the optional crawl-delay and sitemap lines. The builder checks each rule as you type — empty paths, duplicates, stray wildcards and bad sitemap URLs are flagged, never silently fixed.</p>
+  <p><strong>Your policy stays yours.</strong> Everything runs locally in your browser. Nothing is uploaded, stored or tracked. Copy the file, download it as <code>robots.txt</code>, and upload it to your site's root.</p>
+</div>
+
+<a class="back" href="/ideas/">← Back to the idea bank</a>
+<footer>Built by <a href="/ideas/">Shipwright Studio</a></footer>
+
+<script>
+// __CORE_START__
+/* robots.txt Builder core — dependency-free generation + validation.
+   Pure JS (no DOM), so the same code runs in the browser and in node. */
+
+var PRESETS={
+  "allow-all":{groups:[{userAgent:"*",rules:[{type:"Allow",path:"/"}]}]},
+  "block-all":{groups:[{userAgent:"*",rules:[{type:"Disallow",path:"/"}]}]},
+  "block-admin":{groups:[{userAgent:"*",rules:[
+    {type:"Disallow",path:"/admin/"},
+    {type:"Disallow",path:"/login/"},
+    {type:"Disallow",path:"/search/"}
+  ]}]},
+  "wordpress":{groups:[{userAgent:"*",rules:[
+    {type:"Disallow",path:"/wp-admin/"},
+    {type:"Allow",path:"/wp-admin/admin-ajax.php"},
+    {type:"Disallow",path:"/wp-includes/"}
+  ]}]},
+  "ai-crawlers":{groups:[
+    {userAgent:"GPTBot",rules:[{type:"Disallow",path:"/"}]},
+    {userAgent:"CCBot",rules:[{type:"Disallow",path:"/"}]},
+    {userAgent:"ClaudeBot",rules:[{type:"Disallow",path:"/"}]},
+    {userAgent:"*",rules:[{type:"Allow",path:"/"}]}
+  ]}
+};
+
+function cloneState(state){
+  return JSON.parse(JSON.stringify(state));
+}
+
+function parseCrawlDelay(v){
+  if(v===undefined||v===null)return null;
+  var s=String(v).trim();
+  if(!/^\d+$/.test(s))return null;
+  var n=parseInt(s,10);
+  if(isNaN(n)||n<1)return null;
+  return n;
+}
+
+function isValidSitemap(url){
+  return /^https?:\/\/\S+$/.test(String(url||"").trim());
+}
+
+function generateRobotsTxt(state){
+  var lines=[];
+  var groups=state.groups||[];
+  for(var g=0;g<groups.length;g++){
+    var grp=groups[g];
+    var ua=(grp.userAgent||"").trim()||"*";
+    lines.push("User-agent: "+ua);
+    var rules=grp.rules||[];
+    for(var r=0;r<rules.length;r++){
+      var p=(rules[r].path||"").trim();
+      lines.push(p?rules[r].type+": "+p:rules[r].type+":");
+    }
+    var cd=parseCrawlDelay(state.crawlDelay);
+    if(cd!==null)lines.push("Crawl-delay: "+cd);
+    if(g<groups.length-1)lines.push("");
+  }
+  var sm=(state.sitemap||"").trim();
+  if(sm&&isValidSitemap(sm)){
+    if(lines.length)lines.push("");
+    lines.push("Sitemap: "+sm);
+  }
+  return lines.join("\n");
+}
+
+function countStats(state){
+  var rules=0;
+  var groups=state.groups||[];
+  for(var g=0;g<groups.length;g++)rules+=(groups[g].rules||[]).length;
+  var text=generateRobotsTxt(state);
+  var lines=text?text.split("\n").length:0;
+  return {groups:groups.length,rules:rules,lines:lines};
+}
+
+function validateRobotsTxt(state){
+  var warnings=[];
+  var groups=state.groups||[];
+  for(var g=0;g<groups.length;g++){
+    var grp=groups[g];
+    var label="Group "+(g+1);
+    if(!(grp.userAgent||"").trim()){
+      warnings.push({msg:label+" has no User-agent — it will be emitted as *.",group:g,rule:null});
+    }
+    var seen={};
+    var rules=grp.rules||[];
+    for(var r=0;r<rules.length;r++){
+      var rule=rules[r];
+      var p=(rule.path||"").trim();
+      var rlabel=label+", rule "+(r+1);
+      if(!p){
+        warnings.push({msg:rlabel+": empty path — a blank "+rule.type+" means “allow everything” for that rule.",group:g,rule:r});
+        continue;
+      }
+      var key=rule.type+":"+p;
+      if(seen[key]){
+        warnings.push({msg:label+": duplicate rule “"+rule.type+": "+p+"”.",group:g,rule:r});
+      }else{
+        seen[key]=true;
+      }
+      if(p.charAt(0)!=="/"&&p.charAt(0)!=="*"){
+        warnings.push({msg:rlabel+": path “"+p+"” should start with “/”.",group:g,rule:r});
+      }
+      if(p.indexOf("*")>=0&&p!=="*"&&p.charAt(p.length-1)!=="*"){
+        warnings.push({msg:rlabel+": “*” should only appear at the end of a path.",group:g,rule:r});
+      }
+    }
+  }
+  var sm=(state.sitemap||"").trim();
+  if(sm&&!isValidSitemap(sm)){
+    warnings.push({msg:"Sitemap URL is not a valid http(s) URL — the Sitemap line is omitted from the file.",group:null,rule:null});
+  }
+  return warnings;
+}
+
+if(typeof module!=="undefined"&&module.exports){
+  module.exports={PRESETS:PRESETS,cloneState:cloneState,parseCrawlDelay:parseCrawlDelay,isValidSitemap:isValidSitemap,generateRobotsTxt:generateRobotsTxt,countStats:countStats,validateRobotsTxt:validateRobotsTxt};
+}
+// __CORE_END__
+
+if(typeof document!=="undefined"){
+  var $=function(id){return document.getElementById(id);};
+  var EMPTY_TXT="Your robots.txt will appear here — add a group or load a preset.";
+  var state={groups:[{userAgent:"*",rules:[{type:"Allow",path:"/"}]}],sitemap:"",crawlDelay:""};
+  var lastTxt="";
+
+  function esc(s){
+    return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+  }
+
+  function renderGroups(){
+    var box=$("groups");
+    box.innerHTML="";
+    if(!state.groups.length){
+      var p=document.createElement("p");
+      p.className="empty-note";
+      p.textContent="No rule groups yet — add a group to start.";
+      box.appendChild(p);
+      return;
+    }
+    state.groups.forEach(function(grp,gi){
+      var gdiv=document.createElement("div");
+      gdiv.className="group";
+      gdiv.dataset.group=gi;
+      var head=document.createElement("div");
+      head.className="group-head";
+      var title=document.createElement("span");
+      title.className="group-title";
+      title.textContent="Group "+(gi+1);
+      var uaw=document.createElement("div");
+      uaw.className="ua-wrap";
+      var ulab=document.createElement("label");
+      ulab.setAttribute("for","ua-"+gi);
+      ulab.textContent="User-agent";
+      var uin=document.createElement("input");
+      uin.type="text";uin.id="ua-"+gi;uin.className="mono";uin.value=grp.userAgent;
+      uin.placeholder="*";uin.spellcheck=false;uin.autocomplete="off";
+      uin.setAttribute("aria-label","User-agent for group "+(gi+1));
+      uin.addEventListener("input",function(){
+        state.groups[gi].userAgent=uin.value;
+        refresh();
+      });
+      uaw.appendChild(ulab);uaw.appendChild(uin);
+      var rm=document.createElement("button");
+      rm.type="button";rm.className="iconbtn";rm.textContent="✕ Remove group";
+      rm.setAttribute("aria-label","Remove group "+(gi+1));
+      rm.addEventListener("click",function(){
+        state.groups.splice(gi,1);
+        renderGroups();refresh();
+      });
+      head.appendChild(title);head.appendChild(uaw);head.appendChild(rm);
+      gdiv.appendChild(head);
+      (grp.rules||[]).forEach(function(rule,ri){
+        var row=document.createElement("div");
+        row.className="rule-row";
+        row.dataset.group=gi;row.dataset.rule=ri;
+        var sel=document.createElement("select");
+        sel.setAttribute("aria-label","Directive for rule "+(ri+1)+" in group "+(gi+1));
+        ["Allow","Disallow"].forEach(function(t){
+          var o=document.createElement("option");
+          o.value=t;o.textContent=t;
+          if(rule.type===t)o.selected=true;
+          sel.appendChild(o);
+        });
+        sel.addEventListener("change",function(){
+          state.groups[gi].rules[ri].type=sel.value;
+          refresh();
+        });
+        var pin=document.createElement("input");
+        pin.type="text";pin.className="mono";pin.value=rule.path;
+        pin.placeholder="/path/";pin.spellcheck=false;pin.autocomplete="off";
+        pin.setAttribute("aria-label","Path for rule "+(ri+1)+" in group "+(gi+1));
+        pin.addEventListener("input",function(){
+          state.groups[gi].rules[ri].path=pin.value;
+          refresh();
+        });
+        var rrm=document.createElement("button");
+        rrm.type="button";rrm.className="iconbtn";rrm.textContent="✕";
+        rrm.setAttribute("aria-label","Remove rule "+(ri+1)+" from group "+(gi+1));
+        rrm.addEventListener("click",function(){
+          state.groups[gi].rules.splice(ri,1);
+          renderGroups();refresh();
+        });
+        row.appendChild(sel);row.appendChild(pin);row.appendChild(rrm);
+        gdiv.appendChild(row);
+      });
+      var add=document.createElement("button");
+      add.type="button";add.className="ghost add-rule";add.textContent="+ Add rule";
+      add.addEventListener("click",function(){
+        state.groups[gi].rules.push({type:"Disallow",path:""});
+        renderGroups();refresh();
+        var rows=gdiv.querySelectorAll(".rule-row input");
+        if(rows.length)rows[rows.length-1].focus();
+      });
+      gdiv.appendChild(add);
+      box.appendChild(gdiv);
+    });
+  }
+
+  function refresh(){
+    var warnings=validateRobotsTxt(state);
+    var txt=generateRobotsTxt(state);
+    lastTxt=txt;
+    var out=$("output");
+    var gutter=$("gutter");
+    var stats=countStats(state);
+    $("counts").textContent=stats.groups+" group"+(stats.groups===1?"":"s")+" · "+stats.rules+" rule"+(stats.rules===1?"":"s")+" · "+stats.lines+" line"+(stats.lines===1?"":"s");
+    var hasContent=!!txt;
+    if(!hasContent){
+      out.textContent=EMPTY_TXT;
+      out.classList.add("empty");
+      gutter.textContent="1";
+      $("btn-copy").disabled=true;
+      $("btn-download").disabled=true;
+    }else{
+      out.textContent=txt;
+      out.classList.remove("empty");
+      var nums=[];
+      for(var i=1;i<=stats.lines;i++)nums.push(i);
+      gutter.textContent=nums.join("\n");
+      $("btn-copy").disabled=false;
+      $("btn-download").disabled=false;
+    }
+    var panel=$("warnings-panel");
+    var list=$("warnings");
+    list.innerHTML="";
+    if(!warnings.length){
+      panel.hidden=true;
+    }else{
+      panel.hidden=false;
+      warnings.forEach(function(w){
+        var li=document.createElement("li");
+        li.textContent="⚠ "+w.msg;
+        list.appendChild(li);
+      });
+    }
+    // Highlight offending rows and groups.
+    document.querySelectorAll(".rule-row").forEach(function(row){
+      var gi=parseInt(row.dataset.group,10);
+      var ri=parseInt(row.dataset.rule,10);
+      var bad=warnings.some(function(w){return w.group===gi&&w.rule===ri;});
+      row.classList.toggle("invalid",bad);
+    });
+    document.querySelectorAll(".group").forEach(function(gdiv){
+      var gi=parseInt(gdiv.dataset.group,10);
+      var bad=warnings.some(function(w){return w.group===gi&&w.rule===null;});
+      gdiv.classList.toggle("invalid",bad);
+    });
+  }
+
+  function loadPreset(name){
+    state.groups=cloneState(PRESETS[name]).groups;
+    renderGroups();refresh();
+  }
+
+  $("presets").addEventListener("click",function(e){
+    var btn=e.target.closest("[data-preset]");
+    if(btn)loadPreset(btn.getAttribute("data-preset"));
+  });
+  $("btn-add-group").addEventListener("click",function(){
+    state.groups.push({userAgent:"*",rules:[{type:"Disallow",path:""}]});
+    renderGroups();refresh();
+  });
+  $("btn-sample").addEventListener("click",function(){loadPreset("wordpress");});
+  $("btn-reset").addEventListener("click",function(){
+    state={groups:[{userAgent:"*",rules:[{type:"Allow",path:"/"}]}],sitemap:"",crawlDelay:""};
+    $("sitemap").value="";$("crawl-delay").value="";
+    renderGroups();refresh();
+  });
+  $("sitemap").addEventListener("input",function(){
+    state.sitemap=$("sitemap").value;
+    refresh();
+  });
+  $("crawl-delay").addEventListener("input",function(){
+    state.crawlDelay=$("crawl-delay").value;
+    refresh();
+  });
+
+  $("btn-copy").addEventListener("click",function(){
+    var btn=$("btn-copy");
+    if(!lastTxt)return;
+    function done(ok,label){
+      btn.textContent=label||"Copied ✓";
+      btn.classList.add("copied");
+      setTimeout(function(){btn.textContent="Copy robots.txt";btn.classList.remove("copied");},2000);
+    }
+    function fallback(){
+      try{
+        var ta=document.createElement("textarea");
+        ta.value=lastTxt;
+        ta.style.position="fixed";ta.style.opacity="0";
+        document.body.appendChild(ta);
+        ta.select();
+        var ok=document.execCommand("copy");
+        document.body.removeChild(ta);
+        if(ok)done(true);else done(false,"Copy not supported");
+      }catch(e){done(false,"Copy not supported");}
+    }
+    if(navigator.clipboard&&navigator.clipboard.writeText){
+      navigator.clipboard.writeText(lastTxt).then(function(){done(true);},fallback);
+    }else{
+      fallback();
+    }
+  });
+
+  $("btn-download").addEventListener("click",function(){
+    if(!lastTxt)return;
+    var blob=new Blob([lastTxt],{type:"text/plain"});
+    var a=document.createElement("a");
+    a.href=URL.createObjectURL(blob);
+    a.download="robots.txt";
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(function(){URL.revokeObjectURL(a.href);a.remove();},500);
+  });
+
+  renderGroups();
+  refresh();
+}
+</script>
+</body>
+</html>

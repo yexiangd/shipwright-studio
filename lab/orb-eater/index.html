@@ -1,0 +1,689 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Orb Eater · Shipwright Studio</title>
+<meta name="description" content="A free online agar.io-style arena game — steer your orb, eat pellets and smaller orbs to grow, and dodge anything bigger, right in your browser.">
+<link rel="canonical" href="https://shipwright-studio.pages.dev/lab/orb-eater/">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"WebApplication","name":"Orb Eater","url":"https://shipwright-studio.pages.dev/lab/orb-eater/","description":"Orb Eater is a free online game that drops you into a petri dish arena: steer your orb, eat pellets and smaller orbs to grow, and dodge anything bigger.","applicationCategory":"GameApplication","operatingSystem":"Web","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"}}
+</script>
+<style>
+:root{--bg:#0a0c0f;--panel:#11141a;--line:#232a35;--txt:#e8e4da;--mut:#9aa3b2;--brass:#d2a24c;--red:#e0655f;--green:#7fb069;--teal:#5fc4b5}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--txt);font-family:Inter,system-ui,sans-serif;line-height:1.6;padding:2.5rem 1.25rem 4rem;max-width:900px;margin:0 auto;text-align:center}
+a{color:var(--brass)}
+.eyebrow{font-size:.75rem;letter-spacing:.22em;text-transform:uppercase;color:var(--mut)}
+h1{font-family:Fraunces,serif;font-weight:600;font-size:clamp(2rem,4.5vw,3rem);margin:.4rem 0 .6rem}
+.define{color:var(--mut);max-width:52rem;margin:0 auto 1.6rem}
+.define strong{color:var(--txt)}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:1.5rem 1.4rem;margin-bottom:1.2rem;text-align:left}
+.hud{display:grid;grid-template-columns:repeat(4,1fr);gap:.8rem;margin-bottom:1rem}
+.stat{background:#0a0c0f;border:1px solid var(--line);border-radius:10px;padding:.6rem .5rem;text-align:center}
+.stat .v{font-family:Fraunces,serif;font-size:1.5rem;font-weight:600;line-height:1.2}
+.stat .k{font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;color:var(--mut)}
+.controls{display:flex;gap:.7rem;flex-wrap:wrap;align-items:center;justify-content:center}
+.controls label{font-size:.85rem;color:var(--mut);display:flex;align-items:center;gap:.45rem;cursor:pointer}
+.controls select{background:#0a0c0f;border:1px solid var(--line);border-radius:8px;color:var(--txt);font-family:inherit;font-size:.95rem;padding:.55rem .6rem;cursor:pointer}
+.controls select:focus{outline:none;border-color:var(--brass)}
+.controls input{accent-color:var(--brass);width:1.05rem;height:1.05rem;cursor:pointer}
+button{font-family:inherit;cursor:pointer;border-radius:8px;font-size:1rem;padding:.65rem 1.25rem}
+button:disabled{opacity:.4;cursor:not-allowed}
+button.primary{background:var(--brass);border:0;color:#14100a;font-weight:600}
+button.primary:hover:not(:disabled){filter:brightness(1.08)}
+button.ghost{background:transparent;border:1px solid var(--line);color:var(--txt)}
+button.ghost:hover:not(:disabled){border-color:var(--brass);color:var(--brass)}
+.arena{position:relative;border-radius:12px;overflow:hidden;border:1px solid var(--line);background:#070b0d}
+canvas{display:block;width:100%;aspect-ratio:16/10;touch-action:none;cursor:crosshair}
+.overlay{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.9rem;background:rgba(7,11,13,.72);backdrop-filter:blur(2px);padding:1.2rem;text-align:center}
+.overlay[hidden]{display:none}
+.overlay h2{font-family:Fraunces,serif;font-weight:600;font-size:clamp(1.5rem,4vw,2.1rem)}
+.overlay p{color:var(--mut);max-width:26rem;font-size:.95rem}
+.overlay .rules{font-size:.9rem;color:var(--txt)}
+.overlay .rules b{color:var(--brass)}
+.best-line{font-size:.9rem;color:var(--brass)}
+.badge{display:inline-block;background:var(--brass);color:#14100a;font-weight:600;font-size:.85rem;border-radius:999px;padding:.25rem .9rem}
+.final{display:grid;grid-template-columns:repeat(4,1fr);gap:.6rem;width:100%;max-width:26rem}
+.final .stat .v{font-size:1.25rem}
+.hint{font-size:.85rem;color:var(--mut);margin-top:.7rem;text-align:center}
+h2.sec{font-family:Fraunces,serif;font-weight:600;font-size:1.5rem;margin:2.6rem 0 1rem}
+.howto{max-width:640px;margin:0 auto;text-align:left;color:var(--mut);font-size:.95rem}
+.howto p{margin-bottom:.8rem}
+.howto strong{color:var(--txt)}
+.back{display:inline-block;margin-top:2.5rem;font-size:.9rem}
+footer{margin-top:2.5rem;font-size:.85rem;color:var(--mut)}
+@media(max-width:600px){
+  .hud{grid-template-columns:repeat(2,1fr)}
+  .final{grid-template-columns:repeat(2,1fr)}
+  .stat .v{font-size:1.25rem}
+}
+</style>
+</head>
+<body>
+<p class="eyebrow">Shipwright Studio · Lab</p>
+<h1>Orb Eater</h1>
+<p class="define"><strong>Orb Eater is a free online game that drops you into a petri dish arena.</strong> Steer your orb with mouse, touch or keyboard, eat pellets and any orb smaller than you to grow, and dodge anything bigger — one touch from a larger orb ends your run. No download, no account: your best score is saved on your device.</p>
+
+<div class="panel">
+  <div class="hud" role="status" aria-label="Game stats">
+    <div class="stat"><div class="v" id="stat-score">0</div><div class="k">Score</div></div>
+    <div class="stat"><div class="v" id="stat-size">14</div><div class="k">Size</div></div>
+    <div class="stat"><div class="v" id="stat-time">0:00</div><div class="k">Time</div></div>
+    <div class="stat"><div class="v" id="stat-best">0</div><div class="k">Best</div></div>
+  </div>
+  <div class="controls">
+    <label for="difficulty">Difficulty
+      <select id="difficulty">
+        <option value="chill">Chill</option>
+        <option value="classic" selected>Classic</option>
+        <option value="spicy">Spicy</option>
+      </select>
+    </label>
+    <label><input type="checkbox" id="sound" checked> Sound</label>
+    <button class="ghost" id="btn-pause" type="button" disabled>Pause</button>
+    <button class="ghost" id="btn-restart" type="button" disabled>Restart</button>
+  </div>
+</div>
+
+<div class="panel">
+  <div class="arena" id="arena">
+    <canvas id="game" width="900" height="562" aria-label="Orb Eater arena — steer your orb, eat smaller orbs and pellets, avoid larger orbs"></canvas>
+    <div class="overlay" id="overlay-start">
+      <h2>Welcome to the dish</h2>
+      <p class="rules">Eat <b>pellets</b> and any orb <b>smaller than you</b> to grow.<br>Anything <b>bigger than you</b> eats <i>you</i>. Bigger orbs move slower — use it.</p>
+      <button class="primary" id="btn-start" type="button">Start game</button>
+      <p class="best-line" id="start-best" hidden></p>
+    </div>
+    <div class="overlay" id="overlay-pause" hidden>
+      <h2>Paused</h2>
+      <p>Take a breath. The dish will wait.</p>
+      <button class="primary" id="btn-resume" type="button">Resume</button>
+    </div>
+    <div class="overlay" id="overlay-over" hidden>
+      <h2>Eaten!</h2>
+      <p id="over-line">A bigger orb got you.</p>
+      <p class="badge" id="over-badge" hidden>New best!</p>
+      <div class="final">
+        <div class="stat"><div class="v" id="final-score">0</div><div class="k">Score</div></div>
+        <div class="stat"><div class="v" id="final-time">0:00</div><div class="k">Time</div></div>
+        <div class="stat"><div class="v" id="final-orbs">0</div><div class="k">Orbs eaten</div></div>
+        <div class="stat"><div class="v" id="final-pellets">0</div><div class="k">Pellets eaten</div></div>
+      </div>
+      <button class="primary" id="btn-again" type="button">Play again</button>
+    </div>
+  </div>
+  <p class="hint">Steer with mouse, touch or arrow keys / WASD — eat smaller, dodge bigger. <kbd>P</kbd> pauses.</p>
+</div>
+
+<h2 class="sec">How to play</h2>
+<div class="howto">
+  <p><strong>The one rule.</strong> You can eat anything at least 10% smaller than you; anything at least 10% bigger can eat you. Mass is conserved by area, so a meal makes you visibly larger — and larger orbs move slower, so every meal is a trade-off between size and speed. You also shed a little mass every second, so standing still slowly shrinks you.</p>
+  <p><strong>The other orbs play by the same rules.</strong> Enemies chase pellets and anything smaller than them, flee from anything bigger, and eat each other when they get the chance. Watch the crowd: a feeding frenzy nearby means a giant is about to appear.</p>
+  <p><strong>Make it yours.</strong> Chill slows the arena down, Spicy makes enemies faster, bolder and bigger from the start — the choice applies to your next run. Your best score is saved in your browser, and nothing about your game ever leaves this page.</p>
+</div>
+
+<a class="back" href="/ideas/">← Back to the idea bank</a>
+<footer>Built by <a href="/ideas/">Shipwright Studio</a></footer>
+
+<script>
+// __CORE_START__
+/* Orb Eater core — dependency-free game logic.
+   Pure JS (no DOM), so the same code runs in the browser and in node. */
+var WORLD=2400;
+var PELLET_COUNT=220;
+var ENEMY_COUNT=12;
+var PLAYER_START_R=14;
+var MIN_R=12;
+var EAT_RATIO=1.1;      // eater must be >= 10% larger than victim
+var PELLET_SCORE=5;
+var DECAY_PER_SEC=0.0015; // area lost per second while playing
+var PELLET_COLORS=["#d2a24c","#5fc4b5","#e0655f","#8fa8d8","#a8c686"];
+var ENEMY_COLORS=["#3f7d74","#8a4f56","#5a5f8a","#7a6a3f","#4f6a8a","#6a4f7d"];
+
+var DIFFICULTY={
+  chill:{speed:0.8,aggro:0.6,spawnMax:26},
+  classic:{speed:1.0,aggro:1.0,spawnMax:34},
+  spicy:{speed:1.25,aggro:1.3,spawnMax:46}
+};
+
+function rand(a,b){return a+Math.random()*(b-a);}
+function randPos(margin){
+  return {x:rand(margin,WORLD-margin),y:rand(margin,WORLD-margin)};
+}
+function dist(a,b){var dx=a.x-b.x,dy=a.y-b.y;return Math.sqrt(dx*dx+dy*dy);}
+function clamp(v,lo,hi){return v<lo?lo:(v>hi?hi:v);}
+
+/* Speed falls as an orb grows: big orbs are slower. */
+function speedFor(r,base){return clamp(base*Math.pow(16/r,0.35),80,340);}
+
+function makePellet(){
+  var p=randPos(30);
+  return {x:p.x,y:p.y,r:rand(3,5.5),color:PELLET_COLORS[Math.floor(Math.random()*PELLET_COLORS.length)],pulse:rand(0,6.28)};
+}
+function makeEnemy(world,playerR){
+  var p=randPos(60);
+  var maxR=world?Math.max(20,Math.min(world.diff.spawnMax,playerR*1.4)):34;
+  return {x:p.x,y:p.y,r:rand(12,maxR),vx:0,vy:0,alive:true,
+    color:ENEMY_COLORS[Math.floor(Math.random()*ENEMY_COLORS.length)],
+    wander:rand(0,6.28),wanderT:0,respawn:0};
+}
+
+function createWorld(diffName){
+  var diff=DIFFICULTY[diffName]||DIFFICULTY.classic;
+  var world={diffName:diffName||"classic",diff:diff,time:0,score:0,
+    orbsEaten:0,pelletsEaten:0,over:false,overReason:"",
+    pellets:[],enemies:[],rings:[],pelletRespawns:[],enemyRespawns:[],
+    player:null};
+  for(var i=0;i<PELLET_COUNT;i++)world.pellets.push(makePellet());
+  for(var j=0;j<ENEMY_COUNT;j++)world.enemies.push(makeEnemy(world,PLAYER_START_R));
+  var c=randPos(200);
+  world.player={x:c.x,y:c.y,r:PLAYER_START_R,vx:0,vy:0,tx:c.x,ty:c.y,
+    dirX:0,dirY:0,color:"#d2a24c",alive:true};
+  return world;
+}
+
+/* Can eater swallow victim? Radius must clear the 10% bar and the
+   victim's centre must be inside the eater's circle. */
+function canEat(eater,victim){
+  return eater.r>=victim.r*EAT_RATIO && dist(eater,victim)<eater.r;
+}
+function growByArea(eater,victimArea,fraction){
+  var a=eater.r*eater.r+victimArea*fraction;
+  eater.r=Math.sqrt(a);
+}
+function eatPellet(world,pellet){
+  var p=world.player;
+  growByArea(p,Math.PI*pellet.r*pellet.r,0.5);
+  world.score+=PELLET_SCORE;
+  world.pelletsEaten++;
+  world.rings.push({x:pellet.x,y:pellet.y,r:pellet.r,life:0.35,max:0.35,color:pellet.color});
+  world.pelletRespawns.push(1.5);
+}
+function eatOrb(world,eater,victim){
+  growByArea(eater,Math.PI*victim.r*victim.r,0.75);
+  world.rings.push({x:victim.x,y:victim.y,r:victim.r,life:0.45,max:0.45,color:victim.color});
+  if(eater===world.player){world.orbsEaten++;world.score+=Math.round(victim.r);}
+}
+
+/* Enemy AI: flee the nearest larger threat, else chase the nearest
+   edible target, else wander. Returns a steering vector. */
+function enemySteer(e,world){
+  var threat=null,threatD=1e9;
+  var all=world.enemies.concat([world.player]);
+  for(var i=0;i<all.length;i++){
+    var o=all[i];
+    if(o===e||o.respawn>0)continue;
+    if(o===world.player&&!o.alive)continue;
+    if(o.r>=e.r*EAT_RATIO){
+      var d=dist(e,o);
+      if(d<340&&d<threatD){threat=o;threatD=d;}
+    }
+  }
+  if(threat){
+    var dx=e.x-threat.x,dy=e.y-threat.y;
+    var l=Math.sqrt(dx*dx+dy*dy)||1;
+    return {x:dx/l,y:dy/l,mode:"flee"};
+  }
+  var best=null,bestScore=1e9;
+  for(var j=0;j<world.pellets.length;j++){
+    var pl=world.pellets[j];
+    var d2=dist(e,pl);
+    if(d2<520&&d2<bestScore){best=pl;bestScore=d2;}
+  }
+  for(var k=0;k<world.enemies.length;k++){
+    var en=world.enemies[k];
+    if(en===e||en.respawn>0)continue;
+    if(e.r>=en.r*EAT_RATIO){
+      var d3=dist(e,en);
+      if(d3<520*world.diff.aggro&&d3<bestScore){best=en;bestScore=d3;}
+    }
+  }
+  var px=world.player;
+  if(px.alive&&e.r>=px.r*EAT_RATIO){
+    var d4=dist(e,px);
+    if(d4<520*world.diff.aggro&&d4<bestScore){best=px;bestScore=d4;}
+  }
+  if(best){
+    var bx=best.x-e.x,by=best.y-e.y;
+    var bl=Math.sqrt(bx*bx+by*by)||1;
+    return {x:bx/bl,y:by/bl,mode:"chase"};
+  }
+  e.wanderT-=0.016;
+  if(e.wanderT<=0){e.wander=rand(0,6.28);e.wanderT=rand(1,3);}
+  return {x:Math.cos(e.wander),y:Math.sin(e.wander),mode:"wander"};
+}
+
+function moveOrb(o,dirX,dirY,baseSpeed,dt){
+  var sp=speedFor(o.r,baseSpeed);
+  var tx=dirX*sp,ty=dirY*sp;
+  o.vx+=(tx-o.vx)*Math.min(1,dt*5);
+  o.vy+=(ty-o.vy)*Math.min(1,dt*5);
+  o.x=clamp(o.x+o.vx*dt,o.r,WORLD-o.r);
+  o.y=clamp(o.y+o.vy*dt,o.r,WORLD-o.r);
+}
+
+/* Advance the world by dt seconds. input: {x,y} steering target for the
+   player (world coords) or null to hold still; keys: {x,y} unit vector. */
+function stepWorld(world,input,keys,dt){
+  if(world.over)return world;
+  world.time+=dt;
+  var p=world.player;
+
+  if(p.alive){
+    var sx=0,sy=0;
+    if(keys&&(keys.x||keys.y)){sx=keys.x;sy=keys.y;}
+    else if(input){
+      var dx=input.x-p.x,dy=input.y-p.y;
+      var l=Math.sqrt(dx*dx+dy*dy);
+      if(l>4){sx=dx/l;sy=dy/l;}
+    }
+    moveOrb(p,sx,sy,300,dt);
+    p.dirX=sx;p.dirY=sy;
+    /* Slow mass decay: sitting still is never free. */
+    var area=p.r*p.r*(1-DECAY_PER_SEC*dt);
+    p.r=Math.max(MIN_R,Math.sqrt(area));
+  }
+
+  for(var ei=0;ei<world.enemies.length;ei++){
+    var e=world.enemies[ei];
+    if(e.respawn>0)continue;
+    var steer=enemySteer(e,world);
+    var mult=steer.mode==="flee"?1.15:(steer.mode==="chase"?1.0:0.45);
+    moveOrb(e,steer.x,steer.y,240*world.diff.speed*mult,dt);
+  }
+
+  /* Player eats pellets. */
+  for(var pi=world.pellets.length-1;pi>=0;pi--){
+    var pel=world.pellets[pi];
+    if(p.alive&&dist(p,pel)<p.r+pel.r*0.5){
+      eatPellet(world,pel);
+      world.pellets.splice(pi,1);
+    }
+  }
+  /* Enemies eat pellets. */
+  for(var ej=0;ej<world.enemies.length;ej++){
+    var en=world.enemies[ej];
+    if(en.respawn>0)continue;
+    for(var pj=world.pellets.length-1;pj>=0;pj--){
+      var pp=world.pellets[pj];
+      if(dist(en,pp)<en.r+pp.r*0.5){
+        growByArea(en,Math.PI*pp.r*pp.r,0.5);
+        world.pellets.splice(pj,1);
+        world.pelletRespawns.push(1.5);
+      }
+    }
+  }
+  /* Orb-vs-orb eating, player included. Larger eats smaller. */
+  var orbs=world.enemies.concat([p]);
+  for(var a=0;a<orbs.length;a++){
+    for(var b=0;b<orbs.length;b++){
+      if(a===b)continue;
+      var A=orbs[a],B=orbs[b];
+      if(A.respawn>0||B.respawn>0)continue;
+      if(B===p&&!p.alive)continue;
+      if(world.attract&&B===p)continue;
+      if(canEat(A,B)){
+        if(B===p){
+          p.alive=false;
+          world.over=true;
+          world.overReason="eaten";
+          eatOrb(world,A,B);
+          return world;
+        }
+        eatOrb(world,A,B);
+        B.alive=false;
+        B.respawn=2;
+        world.enemyRespawns.push(B);
+      }
+    }
+  }
+
+  /* Respawns. */
+  for(var ri=world.pelletRespawns.length-1;ri>=0;ri--){
+    world.pelletRespawns[ri]-=dt;
+    if(world.pelletRespawns[ri]<=0){
+      world.pellets.push(makePellet());
+      world.pelletRespawns.splice(ri,1);
+    }
+  }
+  for(var ei2=0;ei2<world.enemyRespawns.length;ei2++){
+    var dead=world.enemyRespawns[ei2];
+    dead.respawn-=dt;
+    if(dead.respawn<=0){
+      var np=randPos(80);
+      var cap=Math.max(16,Math.min(world.diff.spawnMax,p.r*1.1));
+      dead.x=np.x;dead.y=np.y;dead.r=rand(12,cap);
+      dead.vx=0;dead.vy=0;dead.respawn=0;dead.alive=true;
+      world.enemyRespawns.splice(ei2,1);
+      ei2--;
+    }
+  }
+  /* Fade eat rings. */
+  for(var rg=world.rings.length-1;rg>=0;rg--){
+    world.rings[rg].life-=dt;
+    if(world.rings[rg].life<=0)world.rings.splice(rg,1);
+  }
+  return world;
+}
+
+function totalScore(world){return world.score+Math.floor(world.time);}
+
+if(typeof module!=="undefined"&&module.exports){
+  module.exports={createWorld:createWorld,stepWorld:stepWorld,canEat:canEat,
+    growByArea:growByArea,eatPellet:eatPellet,eatOrb:eatOrb,
+    enemySteer:enemySteer,speedFor:speedFor,totalScore:totalScore,
+    WORLD:WORLD,PELLET_COUNT:PELLET_COUNT,ENEMY_COUNT:ENEMY_COUNT,
+    MIN_R:MIN_R,EAT_RATIO:EAT_RATIO};
+}
+// __CORE_END__
+
+if(typeof document!=="undefined"){
+  var $=function(id){return document.getElementById(id);};
+  var canvas=$("game"),ctx=canvas.getContext("2d");
+  var arena=$("arena");
+  var BEST_KEY="orb-eater-best";
+  var best=0;
+  try{best=parseInt(localStorage.getItem(BEST_KEY)||"0",10)||0;}catch(e){best=0;}
+
+  var state="idle"; // idle | playing | paused | over
+  var world=null;
+  var diffName="classic";
+  var soundOn=true;
+  var audioCtx=null;
+  var keys={x:0,y:0};
+  var pointer={x:null,y:null,active:false};
+  var lastT=0,raf=0;
+  var dpr=Math.min(2,window.devicePixelRatio||1);
+
+  function fmtTime(t){
+    var m=Math.floor(t/60),s=Math.floor(t%60);
+    return m+":"+(s<10?"0":"")+s;
+  }
+  function saveBest(v){
+    best=v;
+    try{localStorage.setItem(BEST_KEY,String(v));}catch(e){}
+  }
+  function blip(freq,dur,vol){
+    if(!soundOn)return;
+    try{
+      if(!audioCtx)audioCtx=new (window.AudioContext||window.webkitAudioContext)();
+      var o=audioCtx.createOscillator(),g=audioCtx.createGain();
+      o.type="sine";o.frequency.value=freq;
+      g.gain.setValueAtTime(vol||0.06,audioCtx.currentTime);
+      g.gain.exponentialRampToValueAtTime(0.0001,audioCtx.currentTime+dur);
+      o.connect(g);g.connect(audioCtx.destination);
+      o.start();o.stop(audioCtx.currentTime+dur);
+    }catch(e){}
+  }
+
+  function resize(){
+    var w=arena.clientWidth;
+    canvas.width=Math.round(w*dpr);
+    canvas.height=Math.round(w*0.625*dpr);
+    canvas.style.height="auto";
+  }
+  window.addEventListener("resize",resize);
+  resize();
+
+  function showOverlay(which){
+    $("overlay-start").hidden=which!=="start";
+    $("overlay-pause").hidden=which!=="pause";
+    $("overlay-over").hidden=which!=="over";
+  }
+  function setButtons(){
+    $("btn-pause").disabled=state!=="playing"&&state!=="paused";
+    $("btn-restart").disabled=state==="idle";
+    $("btn-pause").textContent=state==="paused"?"Resume":"Pause";
+  }
+  function updateHud(){
+    if(!world)return;
+    $("stat-score").textContent=totalScore(world);
+    $("stat-size").textContent=Math.round(world.player.r);
+    $("stat-time").textContent=fmtTime(world.time);
+    $("stat-best").textContent=best;
+  }
+  function newWorld(){
+    world=createWorld(diffName);
+    updateHud();
+  }
+
+  function startGame(){
+    diffName=$("difficulty").value;
+    newWorld();
+    state="playing";
+    showOverlay(null);
+    setButtons();
+    $("btn-pause").focus();
+  }
+  function pauseGame(){
+    if(state!=="playing")return;
+    state="paused";
+    showOverlay("pause");
+    setButtons();
+  }
+  function resumeGame(){
+    if(state!=="paused")return;
+    state="playing";
+    showOverlay(null);
+    setButtons();
+  }
+  function endGame(){
+    state="over";
+    var sc=totalScore(world);
+    var isBest=sc>best;
+    if(isBest)saveBest(sc);
+    $("final-score").textContent=sc;
+    $("final-time").textContent=fmtTime(world.time);
+    $("final-orbs").textContent=world.orbsEaten;
+    $("final-pellets").textContent=world.pelletsEaten;
+    $("over-badge").hidden=!isBest;
+    $("over-line").textContent=isBest
+      ?"A bigger orb got you — but you set a new best score."
+      :"A bigger orb got you. The dish remembers your best: "+best+".";
+    showOverlay("over");
+    setButtons();
+    updateHud();
+    blip(160,0.4,0.09);
+  }
+
+  $("btn-start").addEventListener("click",startGame);
+  $("btn-again").addEventListener("click",startGame);
+  $("btn-resume").addEventListener("click",resumeGame);
+  $("btn-pause").addEventListener("click",function(){
+    if(state==="playing")pauseGame();
+    else if(state==="paused")resumeGame();
+  });
+  $("btn-restart").addEventListener("click",startGame);
+  $("sound").addEventListener("change",function(){soundOn=$("sound").checked;});
+  document.addEventListener("visibilitychange",function(){
+    if(document.hidden&&state==="playing")pauseGame();
+  });
+  document.addEventListener("keydown",function(ev){
+    if(ev.key==="p"||ev.key==="P"||ev.key==="Escape"){
+      if(state==="playing")pauseGame();
+      else if(state==="paused")resumeGame();
+      return;
+    }
+    var k={ArrowUp:[0,-1],ArrowDown:[0,1],ArrowLeft:[-1,0],ArrowRight:[1,0],
+      w:[0,-1],s:[0,1],a:[-1,0],d:[1,0],
+      W:[0,-1],S:[0,1],A:[-1,0],D:[1,0]}[ev.key];
+    if(k){keys.x=k[0];keys.y=k[1];ev.preventDefault();}
+  });
+  document.addEventListener("keyup",function(ev){
+    var k={ArrowUp:1,ArrowDown:1,ArrowLeft:1,ArrowRight:1,w:1,s:1,a:1,d:1,W:1,S:1,A:1,D:1}[ev.key];
+    if(k)keys={x:0,y:0};
+  });
+
+  function canvasPoint(ev){
+    var rect=canvas.getBoundingClientRect();
+    var cx=(ev.clientX-rect.left)/rect.width*canvas.width/dpr;
+    var cy=(ev.clientY-rect.top)/rect.height*canvas.height/dpr;
+    return {x:cx,y:cy};
+  }
+  function pointerToWorld(pt){
+    if(!world)return null;
+    var p=world.player;
+    var vw=canvas.width/dpr,vh=canvas.height/dpr;
+    var camX=clamp(p.x-vw/2,0,WORLD-vw);
+    var camY=clamp(p.y-vh/2,0,WORLD-vh);
+    if(WORLD<vw)camX=(WORLD-vw)/2;
+    if(WORLD<vh)camY=(WORLD-vh)/2;
+    return {x:pt.x+camX,y:pt.y+camY};
+  }
+  canvas.addEventListener("pointermove",function(ev){
+    var pt=canvasPoint(ev);
+    pointer.x=pt.x;pointer.y=pt.y;pointer.active=true;
+  });
+  canvas.addEventListener("pointerdown",function(ev){
+    var pt=canvasPoint(ev);
+    pointer.x=pt.x;pointer.y=pt.y;pointer.active=true;
+    canvas.setPointerCapture(ev.pointerId);
+  });
+  canvas.addEventListener("pointerup",function(){pointer.active=false;});
+  canvas.addEventListener("pointerleave",function(){pointer.active=false;});
+
+  function draw(){
+    var vw=canvas.width/dpr,vh=canvas.height/dpr;
+    ctx.setTransform(dpr,0,0,dpr,0,0);
+    ctx.clearRect(0,0,vw,vh);
+    if(!world)return;
+    var p=world.player;
+    var camX=clamp(p.x-vw/2,0,WORLD-vw);
+    var camY=clamp(p.y-vh/2,0,WORLD-vh);
+    if(WORLD<vw)camX=(WORLD-vw)/2;
+    if(WORLD<vh)camY=(WORLD-vh)/2;
+    ctx.save();
+    ctx.translate(-camX,-camY);
+
+    /* Dish background and grid. */
+    ctx.fillStyle="#070b0d";
+    ctx.fillRect(camX,camY,vw,vh);
+    ctx.strokeStyle="rgba(120,150,160,0.07)";
+    ctx.lineWidth=1;
+    ctx.beginPath();
+    for(var gx=Math.floor(camX/120)*120;gx<camX+vw;gx+=120){ctx.moveTo(gx,camY);ctx.lineTo(gx,camY+vh);}
+    for(var gy=Math.floor(camY/120)*120;gy<camY+vh;gy+=120){ctx.moveTo(camX,gy);ctx.lineTo(camX+vw,gy);}
+    ctx.stroke();
+    ctx.strokeStyle="rgba(210,162,76,0.35)";
+    ctx.lineWidth=3;
+    ctx.strokeRect(1.5,1.5,WORLD-3,WORLD-3);
+
+    var t=world.time;
+    /* Pellets. */
+    for(var i=0;i<world.pellets.length;i++){
+      var pel=world.pellets[i];
+      var pr=pel.r*(1+0.12*Math.sin(t*3+pel.pulse));
+      ctx.beginPath();
+      ctx.fillStyle=pel.color;
+      ctx.globalAlpha=0.9;
+      ctx.arc(pel.x,pel.y,pr,0,6.2832);
+      ctx.fill();
+    }
+    ctx.globalAlpha=1;
+    /* Eat rings. */
+    for(var r2=0;r2<world.rings.length;r2++){
+      var rg=world.rings[r2];
+      var frac=1-rg.life/rg.max;
+      ctx.beginPath();
+      ctx.strokeStyle=rg.color;
+      ctx.globalAlpha=Math.max(0,rg.life/rg.max)*0.8;
+      ctx.lineWidth=2;
+      ctx.arc(rg.x,rg.y,rg.r+frac*26,0,6.2832);
+      ctx.stroke();
+    }
+    ctx.globalAlpha=1;
+    /* Enemies. */
+    for(var e=0;e<world.enemies.length;e++){
+      var en=world.enemies[e];
+      if(en.respawn>0)continue;
+      drawOrb(en);
+    }
+    /* Player. */
+    if(p.alive)drawOrb(p,true);
+    ctx.restore();
+
+    /* Vignette. */
+    var grad=ctx.createRadialGradient(vw/2,vh/2,Math.min(vw,vh)*0.35,vw/2,vh/2,Math.max(vw,vh)*0.75);
+    grad.addColorStop(0,"rgba(0,0,0,0)");
+    grad.addColorStop(1,"rgba(0,0,0,0.35)");
+    ctx.fillStyle=grad;
+    ctx.fillRect(0,0,vw,vh);
+  }
+  function drawOrb(o,isPlayer){
+    ctx.beginPath();
+    ctx.fillStyle=o.color;
+    ctx.globalAlpha=isPlayer?0.95:0.85;
+    ctx.arc(o.x,o.y,o.r,0,6.2832);
+    ctx.fill();
+    ctx.globalAlpha=1;
+    ctx.strokeStyle="rgba(255,255,255,0.18)";
+    ctx.lineWidth=1.5;
+    ctx.stroke();
+    if(isPlayer&&o.r>=10){
+      var lx=o.dirX||0,ly=o.dirY||0;
+      var ll=Math.sqrt(lx*lx+ly*ly)||1;
+      var ex=lx/ll*o.r*0.32,ey=ly/ll*o.r*0.32;
+      var eyeR=Math.max(2,o.r*0.14),gap=Math.max(4,o.r*0.34);
+      ctx.fillStyle="#14100a";
+      ctx.beginPath();ctx.arc(o.x-gap+ex,o.y-gap*0.6+ey,eyeR,0,6.2832);ctx.fill();
+      ctx.beginPath();ctx.arc(o.x+gap+ex,o.y-gap*0.6+ey,eyeR,0,6.2832);ctx.fill();
+    }
+  }
+
+  function loop(ts){
+    raf=requestAnimationFrame(loop);
+    var dt=Math.min(0.05,(ts-lastT)/1000||0.016);
+    lastT=ts;
+    if(state==="playing"&&world){
+      var beforePellets=world.pelletsEaten,beforeOrbs=world.orbsEaten;
+      var input=pointer.active?pointerToWorld({x:pointer.x,y:pointer.y}):null;
+      stepWorld(world,input,keys,dt);
+      if(world.pelletsEaten>beforePellets)blip(660+Math.min(300,world.player.r*4),0.07,0.05);
+      if(world.orbsEaten>beforeOrbs)blip(440,0.15,0.08);
+      var sc=totalScore(world);
+      if(sc>best)saveBest(sc);
+      updateHud();
+      if(world.over){endGame();}
+    }
+    draw();
+  }
+
+  /* Attract mode: the dish lives behind the start overlay. */
+  newWorld();
+  world.attract=true; /* enemies drift and eat, but cannot eat the player */
+  state="idle";
+  showOverlay("start");
+  setButtons();
+  if(best>0){
+    $("start-best").hidden=false;
+    $("start-best").textContent="Your best score: "+best;
+  }
+  var attractId=0,attractTs=0;
+  function attract(ts){
+    if(state!=="idle")return;
+    var dt=Math.min(0.05,(ts-attractTs)/1000||0.016);
+    attractTs=ts;
+    stepWorld(world,null,{x:0,y:0},dt);
+    draw();
+    attractId=requestAnimationFrame(attract);
+  }
+  /* Hand over to the main loop once a run starts. */
+  var started=false;
+  function kickoff(){
+    if(started)return;
+    started=true;
+    cancelAnimationFrame(attractId);
+    lastT=performance.now();
+    raf=requestAnimationFrame(loop);
+  }
+  $("btn-start").addEventListener("click",kickoff);
+  $("btn-again").addEventListener("click",kickoff);
+  attractId=requestAnimationFrame(attract);
+}
+</script>
+</body>
+</html>

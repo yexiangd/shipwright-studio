@@ -1,5 +1,5 @@
 {
-  "updated": "2026-11-20",
+  "updated": "2026-11-21",
   "ideas": [
     {
       "id": "idea-000a",
@@ -357,7 +357,9 @@
       "tagline": "Eat or be eaten in a petri dish arena.",
       "priority": 58,
       "effort": "M",
-      "status": "todo"
+      "status": "done",
+      "url": "/lab/orb-eater/",
+      "shipped": "2026-11-21"
     },
     {
       "id": "idea-029",
@@ -723,7 +725,9 @@
       "tagline": "Click together a crawler policy, download the file.",
       "priority": 58,
       "effort": "S",
-      "status": "todo"
+      "status": "done",
+      "url": "/lab/robots-builder/",
+      "shipped": "2026-11-21"
     },
     {
       "id": "idea-060",
