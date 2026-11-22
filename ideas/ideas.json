@@ -1,5 +1,5 @@
 {
-  "updated": "2026-11-21",
+  "updated": "2026-11-22",
   "ideas": [
     {
       "id": "idea-000a",
@@ -783,7 +783,9 @@
       "tagline": "Pick any color on the page, copy every format.",
       "priority": 57,
       "effort": "S",
-      "status": "todo"
+      "status": "done",
+      "url": "/lab/eyedropper/",
+      "shipped": "2026-11-22"
     },
     {
       "id": "idea-065",
@@ -1119,7 +1121,9 @@
       "tagline": "Pick a vibe, get a plan. Romance, outsourced.",
       "priority": 58,
       "effort": "S",
-      "status": "todo"
+      "status": "done",
+      "url": "/lab/date-night/",
+      "shipped": "2026-11-22"
     },
     {
       "id": "idea-095",

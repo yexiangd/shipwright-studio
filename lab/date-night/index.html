@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Date Night Generator · Shipwright Studio</title>
+<meta name="description" content="A free online date night planner — pick a vibe, a budget and how much time you have, and get a complete three-step evening plan in seconds.">
+<link rel="canonical" href="https://shipwright-studio.pages.dev/lab/date-night/">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"WebApplication","name":"Date Night Generator","url":"https://shipwright-studio.pages.dev/lab/date-night/","description":"Date Night Generator is a free online tool that builds a complete date night plan — a pre-dinner activity, dinner and an after-dinner wind-down, with timings — from a vibe, a budget and the time you have.","applicationCategory":"LifestyleApplication","operatingSystem":"Web","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"}}
+</script>
+<style>
+:root{--bg:#0a0c0f;--panel:#11141a;--line:#232a35;--txt:#e8e4da;--mut:#9aa3b2;--brass:#d2a24c}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--txt);font-family:Inter,system-ui,sans-serif;line-height:1.6;padding:2.5rem 1.25rem 4rem;max-width:900px;margin:0 auto;text-align:center}
+a{color:var(--brass)}
+.eyebrow{font-size:.75rem;letter-spacing:.22em;text-transform:uppercase;color:var(--mut)}
+h1{font-family:Fraunces,serif;font-weight:600;font-size:clamp(2rem,4.5vw,3rem);margin:.4rem 0 .6rem}
+.define{color:var(--mut);max-width:52rem;margin:0 auto 1.6rem}
+.define strong{color:var(--txt)}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:1.5rem 1.4rem;margin-bottom:1.2rem;text-align:left}
+.field{margin-bottom:1.1rem}
+.field:last-child{margin-bottom:0}
+.field>span{display:block;font-size:.75rem;letter-spacing:.14em;text-transform:uppercase;color:var(--mut);margin-bottom:.55rem}
+.chips{display:flex;flex-wrap:wrap;gap:.5rem}
+.chip{font-family:inherit;font-size:.95rem;padding:.5rem 1rem;border-radius:999px;border:1px solid var(--line);background:#0a0c0f;color:var(--txt);cursor:pointer}
+.chip:hover{border-color:var(--brass)}
+.chip[aria-pressed="true"]{background:var(--brass);border-color:var(--brass);color:#14100a;font-weight:600}
+.seg{display:inline-flex;flex-wrap:wrap;gap:.5rem}
+.seg .chip{min-width:3.2rem}
+select{background:#0a0c0f;border:1px solid var(--line);border-radius:8px;color:var(--txt);font-family:inherit;font-size:.95rem;padding:.55rem .6rem;cursor:pointer}
+select:focus{outline:none;border-color:var(--brass)}
+.actions{display:flex;gap:.7rem;flex-wrap:wrap;justify-content:center;margin-bottom:1.2rem}
+button{font-family:inherit;cursor:pointer;border-radius:8px;font-size:1rem;padding:.65rem 1.25rem}
+button:disabled{opacity:.4;cursor:not-allowed}
+button.primary{background:var(--brass);border:0;color:#14100a;font-weight:600}
+button.primary:hover:not(:disabled){filter:brightness(1.08)}
+button.ghost{background:transparent;border:1px solid var(--line);color:var(--txt)}
+button.ghost:hover:not(:disabled){border-color:var(--brass);color:var(--brass)}
+.summary{display:flex;flex-wrap:wrap;gap:.6rem;justify-content:center;margin-bottom:1.2rem}
+.summary[hidden]{display:none}
+.pill{background:var(--panel);border:1px solid var(--line);border-radius:999px;padding:.35rem 1rem;font-size:.9rem;color:var(--mut)}
+.pill b{color:var(--brass);font-weight:600}
+.empty{color:var(--mut);text-align:center;padding:2rem 1rem}
+.empty .big{font-family:Fraunces,serif;font-size:1.4rem;color:var(--txt);margin-bottom:.4rem}
+.timeline{list-style:none;text-align:left}
+.timeline li{position:relative;padding:0 0 1.4rem 3.2rem}
+.timeline li:last-child{padding-bottom:0}
+.timeline li::before{content:"";position:absolute;left:1.05rem;top:2.6rem;bottom:-.2rem;width:2px;background:var(--line)}
+.timeline li:last-child::before{display:none}
+.num{position:absolute;left:0;top:0;width:2.2rem;height:2.2rem;border-radius:50%;background:var(--brass);color:#14100a;font-family:Fraunces,serif;font-weight:600;display:flex;align-items:center;justify-content:center;font-size:1.05rem}
+.step{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:1rem 1.1rem;transition:opacity .25s ease}
+.step.swap-anim{opacity:0}
+.step .meta{font-size:.8rem;letter-spacing:.1em;text-transform:uppercase;color:var(--brass);margin-bottom:.15rem}
+.step h3{font-family:Fraunces,serif;font-weight:600;font-size:1.25rem;line-height:1.3}
+.step p{color:var(--mut);font-size:.95rem;margin:.3rem 0 .5rem}
+.step .foot{display:flex;flex-wrap:wrap;gap:.5rem;align-items:center;justify-content:space-between}
+.step .dur{font-size:.85rem;color:var(--mut)}
+.step .tip{font-size:.85rem;color:var(--mut);font-style:italic}
+.swap{font-size:.85rem;padding:.35rem .8rem}
+.noalt{font-size:.85rem;color:var(--mut)}
+.fallback{width:100%;background:#0a0c0f;border:1px solid var(--line);border-radius:8px;color:var(--txt);font-family:inherit;font-size:.9rem;padding:.7rem;margin-top:1rem;min-height:7rem}
+.fallback[hidden]{display:none}
+h2.sec{font-family:Fraunces,serif;font-weight:600;font-size:1.5rem;margin:2.6rem 0 1rem}
+.howto{max-width:640px;margin:0 auto;text-align:left;color:var(--mut);font-size:.95rem}
+.howto p{margin-bottom:.8rem}
+.howto strong{color:var(--txt)}
+.back{display:inline-block;margin-top:2.5rem;font-size:.9rem}
+footer{margin-top:2.5rem;font-size:.85rem;color:var(--mut)}
+@media(max-width:600px){
+  .actions button{width:100%}
+  .timeline li{padding-left:0;padding-top:2.6rem}
+  .timeline li::before{display:none}
+  .num{top:0}
+  .step .foot{flex-direction:column;align-items:flex-start}
+}
+</style>
+</head>
+<body>
+<p class="eyebrow">Shipwright Studio · Lab</p>
+<h1>Date Night Generator</h1>
+<p class="define"><strong>Date Night Generator is a free online tool that builds a complete date night plan in seconds.</strong> Pick a vibe, a budget and how much time you have, and it assembles a full evening — a pre-dinner activity, dinner and an after-dinner wind-down — with timings that actually add up. Swap any step, shuffle the whole night, or let Surprise Me decide everything.</p>
+
+<div class="panel" id="controls">
+  <div class="field">
+    <span id="vibe-label">Vibe</span>
+    <div class="chips" role="group" aria-labelledby="vibe-label" id="vibes"></div>
+  </div>
+  <div class="field">
+    <span id="budget-label">Budget</span>
+    <div class="seg" role="group" aria-labelledby="budget-label" id="budgets"></div>
+  </div>
+  <div class="field">
+    <span id="time-label">Time available</span>
+    <div class="seg" role="group" aria-labelledby="time-label" id="times"></div>
+  </div>
+  <div class="field">
+    <span><label for="start">Start time</label></span>
+    <select id="start">
+      <option value="1020">17:00</option>
+      <option value="1050">17:30</option>
+      <option value="1080" selected>18:00</option>
+      <option value="1110">18:30</option>
+      <option value="1140">19:00</option>
+      <option value="1170">19:30</option>
+      <option value="1200">20:00</option>
+    </select>
+  </div>
+</div>
+
+<div class="actions">
+  <button class="primary" id="btn-plan" type="button">Plan my night</button>
+  <button class="ghost" id="btn-surprise" type="button">Surprise me</button>
+  <button class="ghost" id="btn-copy" type="button" hidden>Copy plan</button>
+</div>
+
+<div class="summary" id="summary" hidden></div>
+
+<div class="panel" id="plan-panel">
+  <div class="empty" id="empty">
+    <p class="big">Your evening, planned.</p>
+    <p>Pick a vibe and hit <strong>Plan my night</strong> — or let Surprise me decide everything.</p>
+  </div>
+  <ol class="timeline" id="timeline" hidden></ol>
+  <textarea class="fallback" id="fallback" hidden readonly aria-label="Plan text to copy manually"></textarea>
+</div>
+
+<h2 class="sec">How it works</h2>
+<div class="howto">
+  <p><strong>1. Choose your settings.</strong> A vibe sets the mood, a budget band keeps suggestions honest, and the time you have decides how long each step can run.</p>
+  <p><strong>2. Get a three-step evening.</strong> Every plan runs pre-dinner → dinner → after-dinner, with start and end times that fit your window — no maths required.</p>
+  <p><strong>3. Make it yours.</strong> Swap any single step, shuffle the whole night, or hit Surprise me and go with whatever comes up. Copy the plan to share it with your date.</p>
+</div>
+
+<a class="back" href="https://shipwright-studio.pages.dev/lab/">← Back to the Lab</a>
+<footer>Shipwright Studio · Lab — everything runs in your browser; nothing is sent anywhere.</footer>
+
+<script>
+/*__CORE_START__*/
+/* Curated option pools. cost: 1 = $, 2 = $$, 3 = $$$. dur: minutes. */
+var VIBES=[
+ {id:"cozy",label:"Cozy at Home"},
+ {id:"adventurous",label:"Adventurous"},
+ {id:"fancy",label:"Fancy Night Out"},
+ {id:"lowkey",label:"Low-Key"},
+ {id:"artsy",label:"Artsy"}
+];
+var BUDGETS=[
+ {id:1,label:"$ · Under $25"},
+ {id:2,label:"$$ · $25–$75"},
+ {id:3,label:"$$$ · $75+"}
+];
+var TIMES=[
+ {id:120,label:"~2 hours"},
+ {id:180,label:"~3 hours"},
+ {id:240,label:"~4 hours"}
+];
+var STEP_LABELS=["Pre-dinner","Dinner","After-dinner"];
+var POOLS={
+cozy:{
+ pre:[
+  {t:"Build a blanket fort",d:"Pile up cushions and blankets in the living room and claim the comfiest corner.",tip:"Fairy lights make it ten times better.",dur:45,cost:1},
+  {t:"Cook to a shared playlist",d:"Each of you picks five songs, then cook to the queue you built together.",tip:"Loser does the washing up.",dur:30,cost:1},
+  {t:"Start a 500-piece puzzle",d:"Spread it out on the table and see how far you get before dinner.",tip:"Pick one with a picture you both like.",dur:60,cost:1},
+  {t:"Sunset walk around the block",d:"An easy loop, no destination — just the two of you and the evening air.",tip:"Leave the phones at home.",dur:30,cost:1},
+  {t:"Order a pizza-making kit",d:"A kit arrives, you build the pizzas, the oven does the rest.",tip:"Order it earlier in the day.",dur:45,cost:2},
+  {t:"Hire a private chef",d:"A chef cooks in your kitchen while you relax with a drink.",tip:"Book at least a few days ahead.",dur:60,cost:3}
+ ],
+ dinner:[
+  {t:"Cook a favourite recipe together",d:"Pick a dish you both love and cook it side by side, no shortcuts.",tip:"Put your phones on silent.",dur:60,cost:1},
+  {t:"Fondue night",d:"Melted cheese, bread, and a pot in the middle of the table.",tip:"Keep the heat low and stir often.",dur:60,cost:2},
+  {t:"Homemade pasta from scratch",d:"Flour, eggs, rolling pins — messy, slow, and worth it.",tip:"A simple tomato sauce is plenty.",dur:75,cost:1},
+  {t:"Breakfast for dinner",d:"Pancakes, eggs and coffee at 7pm. Rules do not apply tonight.",tip:"Real maple syrup if you have it.",dur:45,cost:1},
+  {t:"Takeaway from your favourite spot",d:"Order the usual, eat it off proper plates, light a candle.",tip:"Order early on a Friday.",dur:45,cost:2},
+  {t:"A fancy meal, cooked at home",d:"Pick a recipe above your usual level and cook it properly, together.",tip:"Dress up for it — it counts.",dur:75,cost:1},
+  {t:"Private chef at home",d:"A chef plates a multi-course dinner in your own kitchen.",tip:"Mention dietary needs when booking.",dur:90,cost:3}
+ ],
+ after:[
+  {t:"Film night with a theme",d:"Pick a theme — 80s, heist, romance — and watch one film that fits.",tip:"Agree on the film before dinner.",dur:60,cost:1},
+  {t:"Stargazing from the garden",d:"Blanket, warm drinks, and the sky. Bring a star app if you like.",tip:"Give your eyes ten minutes to adjust.",dur:45,cost:1},
+  {t:"Dessert tasting",d:"Pick up three desserts and rank them like judges.",tip:"One spoon each, no sharing rules.",dur:30,cost:2},
+  {t:"Slow dance in the kitchen",d:"Put on a song you love and dance while the dishes wait.",tip:"Pick the song in advance.",dur:30,cost:1},
+  {t:"Board game tournament",d:"Best of three, winner picks the next date night.",tip:"Keep it to short games.",dur:60,cost:1},
+  {t:"Champagne and strawberries",d:"A bottle, a bowl of strawberries, and nowhere to be.",tip:"Chill the glasses first.",dur:30,cost:3}
+ ]},
+adventurous:{
+ pre:[
+  {t:"Sunset hike",d:"A short trail with a view at the top, timed for golden hour.",tip:"Bring water and a torch for the way down.",dur:60,cost:1},
+  {t:"Go-karting",d:"A few heats around the track — competitive, loud, and very fun.",tip:"Wear closed shoes.",dur:45,cost:3},
+  {t:"Rock climbing taster",d:"A beginner session with an instructor and all the gear provided.",tip:"Book a slot in advance.",dur:60,cost:2},
+  {t:"Bike ride somewhere new",d:"Pick a direction you have never ridden and see where it leads.",tip:"Check the route for hills first.",dur:45,cost:1},
+  {t:"Kayak at golden hour",d:"Paddle out as the light changes and drift for a while.",tip:"Dry clothes in the car.",dur:60,cost:3},
+  {t:"Scavenger hunt around town",d:"Write ten clues each, then race to find them all.",tip:"The loser buys dessert.",dur:45,cost:1},
+  {t:"Trampoline park",d:"An hour of bouncing, dodgeball and foam pits.",tip:"Grip socks help.",dur:45,cost:2}
+ ],
+ dinner:[
+  {t:"Street food crawl",d:"Hit three stalls and share everything — small plates, big flavours.",tip:"Go hungry.",dur:60,cost:2},
+  {t:"Cook over a fire pit",d:"Skewers, corn and marshmallows over real fire.",tip:"Check fire rules where you are.",dur:75,cost:1},
+  {t:"Food truck hopping",d:"Two trucks, two cuisines, one shared table.",tip:"Follow the trucks on social media.",dur:45,cost:1},
+  {t:"Rooftop barbecue",d:"Grill something simple and eat it with a view.",tip:"Charcoal beats gas for flavour.",dur:60,cost:2},
+  {t:"A cuisine neither of you has tried",d:"Pick a restaurant from a cuisine you have never had and order blind.",tip:"Ask the server for their favourite.",dur:60,cost:3},
+  {t:"Picnic with a view",d:"Pack a basket, find a high spot, and eat as the sun goes down.",tip:"A blanket and a corkscrew.",dur:45,cost:1}
+ ],
+ after:[
+  {t:"Night swim",d:"A warm pool or a calm beach, under the stars.",tip:"Towels and dry clothes ready.",dur:45,cost:1},
+  {t:"Stargazing drive",d:"Drive out of town, park somewhere dark, and look up.",tip:"A blanket and a thermos.",dur:60,cost:1},
+  {t:"Late-night mini golf",d:"Glow-in-the-dark mini golf, winner buys the next round.",tip:"Book the last slot.",dur:45,cost:2},
+  {t:"Bonfire and stories",d:"A fire, two chairs, and the stories you have never told each other.",tip:"Marshmallows are mandatory.",dur:60,cost:1},
+  {t:"Drive-in cinema",d:"A film from the front seat, snacks on the dashboard.",tip:"Arrive early for a good spot.",dur:60,cost:2},
+  {t:"Midnight bakery run",d:"Find the bakery that opens late and buy whatever is warm.",tip:"Cash helps at small bakeries.",dur:30,cost:1},
+  {t:"Escape room",d:"Sixty minutes, one locked room, and the two of you against the puzzles.",tip:"Book the two-player slot.",dur:60,cost:3}
+ ]},
+fancy:{
+ pre:[
+  {t:"Cocktails at a rooftop bar",d:"One drink each, a view over the city, and nowhere to rush to.",tip:"Arrive before sunset for the light.",dur:45,cost:3},
+  {t:"Gallery opening",d:"Wander a new exhibition with a glass in hand.",tip:"Check the opening times first.",dur:60,cost:2},
+  {t:"Get dressed up for photos",d:"Wear your best, take portraits of each other, feel like the occasion.",tip:"Golden hour light is free.",dur:30,cost:1},
+  {t:"Champagne tasting",d:"A flight of champagnes with someone to explain them.",tip:"Eat something beforehand.",dur:45,cost:3},
+  {t:"Stroll through the old town",d:"Slow walk, window shopping, and a stop wherever looks inviting.",tip:"Wear comfortable shoes.",dur:30,cost:1},
+  {t:"Live jazz warm-up",d:"A small jazz set to ease into the evening.",tip:"Book a table near the stage.",dur:45,cost:2}
+ ],
+ dinner:[
+  {t:"Tasting menu",d:"A chef's multi-course menu, one small plate at a time.",tip:"Mention allergies when booking.",dur:90,cost:3},
+  {t:"Omakase counter",d:"Sit at the counter and let the chef decide every course.",tip:"Arrive on time — it starts without you.",dur:75,cost:3},
+  {t:"Classic French bistro",d:"Butter, wine, and dishes that have not changed in fifty years.",tip:"Order the house special.",dur:75,cost:3},
+  {t:"Steakhouse",d:"A proper steak, a good red, and white tablecloths.",tip:"Book a booth if you can.",dur:75,cost:2},
+  {t:"Bistro set menu",d:"Two or three courses at a set price — the smart way to eat well.",tip:"Weekday set menus are the best value.",dur:60,cost:2},
+  {t:"Neighbourhood trattoria",d:"Handmade pasta, a bottle of house red, and candlelight.",tip:"Ask what is fresh today.",dur:60,cost:2},
+  {t:"A fancy meal, cooked at home",d:"Dress up, light candles, and cook something ambitious together.",tip:"Plate it like a restaurant.",dur:75,cost:1},
+  {t:"Cheese and charcuterie board",d:"A board of cheeses, cured meats and bread — dinner, but make it elegant.",tip:"A drizzle of honey elevates everything.",dur:45,cost:1}
+ ],
+ after:[
+  {t:"Dessert bar",d:"A counter that serves only desserts — small, beautiful plates.",tip:"Save room at dinner.",dur:45,cost:2},
+  {t:"Cocktail lounge",d:"One last drink in a low-lit room with good music.",tip:"Try the bartender's special.",dur:60,cost:2},
+  {t:"Late show at the theatre",d:"A play, a musical, or a show — the evening's grand finale.",tip:"Book seats in advance.",dur:60,cost:3},
+  {t:"Nightcap at a hotel bar",d:"A quiet drink in a grand room before heading home.",tip:"The oldest hotel in town is usually the best.",dur:45,cost:3},
+  {t:"Moonlit walk home",d:"Skip the cab, take the long way, and talk.",tip:"Pick the prettiest route.",dur:30,cost:1},
+  {t:"Dancing at a jazz club",d:"A live band, a small dance floor, and the rest of the night.",tip:"Flat shoes help.",dur:60,cost:2}
+ ]},
+lowkey:{
+ pre:[
+  {t:"Walk and talk",d:"An easy walk with no agenda — just conversation.",tip:"Pick a route with something to look at.",dur:30,cost:1},
+  {t:"Coffee and people-watching",d:"A café table, two coffees, and the world going by.",tip:"Pick the window seat.",dur:45,cost:1},
+  {t:"Browse a bookshop together",d:"Wander the shelves and pick a book for each other.",tip:"Set a price limit for fun.",dur:45,cost:1},
+  {t:"Cook a snack to share",d:"Something small and warm to nibble while you decide the evening.",tip:"Popcorn with real butter.",dur:30,cost:1},
+  {t:"Park bench and a podcast",d:"One episode, one bench, and a shared pair of earbuds.",tip:"Pick the episode in advance.",dur:45,cost:1},
+  {t:"Window-shopping",d:"Stroll the high street, point at things, buy nothing.",tip:"Start at the end you like best.",dur:45,cost:1}
+ ],
+ dinner:[
+  {t:"Your regular spot",d:"The place that knows your order — comfortable, easy, yours.",tip:"Sit at your usual table.",dur:60,cost:2},
+  {t:"Noodles at the counter",d:"A bowl each, steam in the air, and slurping encouraged.",tip:"Order the house special.",dur:45,cost:1},
+  {t:"Sandwiches on a bench",d:"Good sandwiches, a bench with a view, and no fuss at all.",tip:"Extra pickles.",dur:30,cost:1},
+  {t:"Takeaway and a film",d:"Order in, eat on the sofa, and pick a film you have both been meaning to see.",tip:"Order before you get hungry.",dur:60,cost:2},
+  {t:"Soup and bread",d:"A pot of soup, crusty bread, and a quiet table.",tip:"Butter the bread generously.",dur:45,cost:1},
+  {t:"Tacos to go",d:"Grab tacos, find a spot, and eat them while they are hot.",tip:"Napkins. Many napkins.",dur:30,cost:1},
+  {t:"Pizza night",d:"One pizza, two opinions, and a compromise topping.",tip:"Half and half solves everything.",dur:45,cost:2}
+ ],
+ after:[
+  {t:"Ice cream walk",d:"A cone each and a slow walk home.",tip:"Try a flavour you would never pick.",dur:30,cost:1},
+  {t:"Tea and a card game",d:"A pot of tea and a game that takes ten minutes to learn.",tip:"Loser makes the next pot.",dur:45,cost:1},
+  {t:"Evening stroll",d:"The same streets, a different hour, and nowhere to be.",tip:"Bring a jacket.",dur:30,cost:1},
+  {t:"Watch one episode, no more",d:"One episode of the show you are watching together — discipline included.",tip:"No ‘just one more’.",dur:45,cost:1},
+  {t:"Dessert from the corner shop",d:"Whatever looks good on the shelf, eaten on the way home.",tip:"Share one, buy two.",dur:30,cost:1}
+ ]},
+artsy:{
+ pre:[
+  {t:"Paint and sip at home",d:"Two canvases, some paint, and a glass of something while you create.",tip:"Cover the table first.",dur:60,cost:2},
+  {t:"Visit a gallery",d:"A quiet hour among new work, talking about what you actually like.",tip:"Start with the room you are drawn to.",dur:45,cost:1},
+  {t:"Sketch each other",d:"Ten minutes each, no peeking, then reveal the portraits.",tip:"Charcoal is forgiving.",dur:30,cost:1},
+  {t:"Photography walk",d:"Walk with a camera each and photograph the same street differently.",tip:"Compare shots over dinner.",dur:45,cost:1},
+  {t:"Pottery taster class",d:"An hour at the wheel, hands covered in clay, something to keep.",tip:"Wear clothes you do not mind ruining.",dur:60,cost:3},
+  {t:"Zine-making session",d:"Cut, paste and fold a tiny magazine about your evening.",tip:"Old magazines make the best material.",dur:45,cost:1},
+  {t:"Poetry reading",d:"Read poems to each other — found ones, or ones you wrote.",tip:"Pick short ones.",dur:30,cost:1}
+ ],
+ dinner:[
+  {t:"Cook a dish from a film",d:"Pick a dish from a film you love and recreate it at home.",tip:"Watch the scene first.",dur:75,cost:2},
+  {t:"Arty café dinner",d:"A café that doubles as a gallery — good food, better walls.",tip:"Ask about the artist.",dur:60,cost:2},
+  {t:"Build a grazing board",d:"Cheeses, bread, fruit and pickles, arranged like art.",tip:"Odd numbers look best.",dur:45,cost:2},
+  {t:"Dinner inspired by an exhibition",d:"Cook or order a meal inspired by the art you saw earlier.",tip:"Keep the theme loose.",dur:60,cost:3},
+  {t:"Street food and sketching",d:"Eat from a stall, then sketch it before you leave.",tip:"Bring a small sketchbook.",dur:45,cost:1},
+  {t:"Tapas and wine",d:"Small plates, shared, with a glass of something red.",tip:"Order three plates, then decide.",dur:60,cost:2}
+ ],
+ after:[
+  {t:"Open mic night",d:"Poetry, music, comedy — whoever is brave enough to get up.",tip:"Arrive early for seats.",dur:60,cost:2},
+  {t:"Watch an arthouse film",d:"Something strange, beautiful, and worth arguing about after.",tip:"Pick it together, no vetoes.",dur:60,cost:1},
+  {t:"Gallery after dark",d:"A late opening, low light, and art without the crowds.",tip:"Check late-night dates.",dur:45,cost:2},
+  {t:"Make a playlist for each other",d:"Ten songs each that say what you cannot.",tip:"No repeats from the last playlist.",dur:30,cost:1},
+  {t:"Write a tiny poem together",d:"One line each, back and forth, until it is done.",tip:"Rhyme is optional.",dur:30,cost:1},
+  {t:"Late-night museum",d:"A museum that stays open late — the quietest way to end a night.",tip:"The gift shop counts as art.",dur:60,cost:3},
+  {t:"Collage night",d:"Magazines, glue and a big sheet of paper — make something together.",tip:"Work on the same piece.",dur:45,cost:1}
+ ]}
+};
+function poolFor(vibe,step,budget){
+  return POOLS[vibe][step].filter(function(o){return o.cost<=budget;});
+}
+function rand(n){return Math.floor(Math.random()*n);}
+function pickOne(arr,exclude){
+  var c=arr.filter(function(o){return exclude.indexOf(o.t)===-1;});
+  if(!c.length)return null;
+  return c[rand(c.length)];
+}
+/* Pure generator: returns {steps:[{label,title,desc,tip,dur,cost,start,end}],total,costBand}
+   or null if no valid combination exists. startMin = minutes since midnight. */
+function pickPlan(vibe,budget,windowMin,startMin){
+  var steps=["pre","dinner","after"],best=null,bestSum=-1;
+  for(var i=0;i<400;i++){
+    var chosen=[],sum=0,ok=true;
+    for(var s=0;s<3;s++){
+      var o=pickOne(poolFor(vibe,steps[s],budget),chosen.map(function(c){return c.t;}));
+      if(!o){ok=false;break;}
+      chosen.push(o);sum+=o.dur;
+    }
+    if(!ok)continue;
+    if(sum<=windowMin&&sum>bestSum){best=chosen;bestSum=sum;}
+    if(bestSum>=windowMin-15)break;
+  }
+  if(!best)return null;
+  var t=startMin;
+  var stepsOut=best.map(function(o,idx){
+    var out={label:STEP_LABELS[idx],title:o.t,desc:o.d, tip:o.tip,dur:o.dur,cost:o.cost,start:t,end:t+o.dur};
+    t+=o.dur;return out;
+  });
+  var costSum=best.reduce(function(a,o){return a+o.cost;},0);
+  var costBand=costSum<=4?"$":(costSum<=6?"$$":"$$$");
+  return {steps:stepsOut,total:bestSum,costBand:costBand};
+}
+function alternativesFor(vibe,stepIdx,budget,currentPlan,windowMin){
+  var step=["pre","dinner","after"][stepIdx];
+  var othersTotal=currentPlan.reduce(function(a,s,idx){return idx===stepIdx?a:a+s.dur;},0);
+  return poolFor(vibe,step,budget).filter(function(o){
+    if(currentPlan.some(function(s){return s.title===o.t;}))return false;
+    return othersTotal+o.dur<=windowMin;
+  });
+}
+function fmtTime(min){
+  var h=Math.floor(min/60),m=min%60;
+  return (h<10?"0":"")+h+":"+(m<10?"0":"")+m;
+}
+function fmtDur(min){
+  return min>=60?Math.floor(min/60)+"h "+(min%60?min%60+"m":"").trim():min+"m";
+}
+function vibeLabel(id){return VIBES.filter(function(v){return v.id===id;})[0].label;}
+function budgetLabel(id){return BUDGETS.filter(function(b){return b.id===id;})[0].label;}
+function planText(plan,vibe,budget,startMin){
+  var lines=["Date night · "+vibeLabel(vibe)+" · "+fmtTime(startMin)+"–"+fmtTime(startMin+plan.total)+" ("+fmtDur(plan.total)+", about "+plan.costBand+")"];
+  plan.steps.forEach(function(s){
+    lines.push(fmtTime(s.start)+"–"+fmtTime(s.end)+" · "+s.label+": "+s.title+" — "+s.desc);
+  });
+  lines.push("Planned with Date Night Generator · Shipwright Studio");
+  return lines.join("\n");
+}
+function randomSettings(){
+  return {vibe:VIBES[rand(VIBES.length)].id,budget:BUDGETS[rand(BUDGETS.length)].id,time:TIMES[rand(TIMES.length)].id};
+}
+/*__CORE_END__*/
+</script>
+<script>
+(function(){
+  var $=function(id){return document.getElementById(id);};
+  var state={vibe:"cozy",budget:2,time:180,plan:null};
+
+  function renderChips(){
+    var v=$("vibes");v.innerHTML="";
+    VIBES.forEach(function(vb){
+      var b=document.createElement("button");
+      b.type="button";b.className="chip";b.textContent=vb.label;
+      b.setAttribute("aria-pressed",state.vibe===vb.id?"true":"false");
+      b.addEventListener("click",function(){state.vibe=vb.id;renderChips();});
+      v.appendChild(b);
+    });
+    var bg=$("budgets");bg.innerHTML="";
+    BUDGETS.forEach(function(bd){
+      var b=document.createElement("button");
+      b.type="button";b.className="chip";b.textContent=bd.label;
+      b.setAttribute("aria-pressed",state.budget===bd.id?"true":"false");
+      b.addEventListener("click",function(){state.budget=bd.id;renderChips();});
+      bg.appendChild(b);
+    });
+    var tm=$("times");tm.innerHTML="";
+    TIMES.forEach(function(t){
+      var b=document.createElement("button");
+      b.type="button";b.className="chip";b.textContent=t.label;
+      b.setAttribute("aria-pressed",state.time===t.id?"true":"false");
+      b.addEventListener("click",function(){state.time=t.id;renderChips();});
+      tm.appendChild(b);
+    });
+  }
+
+  function startMin(){return parseInt($("start").value,10);}
+
+  function renderSummary(){
+    var s=$("summary");
+    if(!state.plan){s.hidden=true;return;}
+    s.hidden=false;
+    var p=state.plan;
+    s.innerHTML=
+      '<span class="pill">Vibe · <b>'+vibeLabel(state.vibe)+'</b></span>'+
+      '<span class="pill">Budget · <b>'+budgetLabel(state.budget)+'</b></span>'+
+      '<span class="pill">Total · <b>'+fmtDur(p.total)+'</b></span>'+
+      '<span class="pill">Cost · <b>about '+p.costBand+'</b></span>'+
+      '<span class="pill"><b>'+fmtTime(startMin())+'–'+fmtTime(startMin()+p.total)+'</b></span>';
+  }
+
+  function renderPlan(){
+    var tl=$("timeline"),empty=$("empty");
+    if(!state.plan){tl.hidden=true;empty.hidden=false;$("btn-copy").hidden=true;renderSummary();return;}
+    empty.hidden=true;tl.hidden=false;$("btn-copy").hidden=false;
+    tl.innerHTML="";
+    state.plan.steps.forEach(function(st,idx){
+      var li=document.createElement("li");
+      var num=document.createElement("div");num.className="num";num.textContent=idx+1;
+      var card=document.createElement("div");card.className="step";card.id="step-"+idx;
+      var meta=document.createElement("div");meta.className="meta";
+      meta.textContent=st.label+" · "+fmtTime(st.start)+"–"+fmtTime(st.end);
+      var h=document.createElement("h3");h.textContent=st.title;
+      var p=document.createElement("p");p.textContent=st.desc;
+      var foot=document.createElement("div");foot.className="foot";
+      var left=document.createElement("span");left.className="dur";
+      left.textContent=fmtDur(st.dur)+" · "+st.tip;
+      foot.appendChild(left);
+      var alts=alternativesFor(state.vibe,idx,state.budget,state.plan.steps,state.time);
+      if(alts.length){
+        var sw=document.createElement("button");
+        sw.type="button";sw.className="ghost swap";sw.textContent="Swap";
+        sw.addEventListener("click",function(){swapStep(idx);});
+        foot.appendChild(sw);
+      }else{
+        var na=document.createElement("span");na.className="noalt";na.textContent="No alternative fits";
+        foot.appendChild(na);
+      }
+      card.appendChild(meta);card.appendChild(h);card.appendChild(p);card.appendChild(foot);
+      li.appendChild(num);li.appendChild(card);tl.appendChild(li);
+    });
+    renderSummary();
+  }
+
+  function generate(){
+    var plan=pickPlan(state.vibe,state.budget,state.time,startMin());
+    if(!plan){
+      $("empty").hidden=false;$("empty").innerHTML='<p class="big">No plan fits those settings.</p><p>Try a longer evening or a bigger budget.</p>';
+      $("timeline").hidden=true;state.plan=null;renderSummary();$("btn-copy").hidden=true;return;
+    }
+    state.plan=plan;renderPlan();
+  }
+
+  function swapStep(idx){
+    var alts=alternativesFor(state.vibe,idx,state.budget,state.plan.steps,state.time);
+    if(!alts.length)return;
+    var o=alts[rand(alts.length)];
+    var card=$("step-"+idx);
+    if(card)card.classList.add("swap-anim");
+    setTimeout(function(){
+      var t=startMin();
+      state.plan.steps[idx]={label:STEP_LABELS[idx],title:o.t,desc:o.d,tip:o.tip,dur:o.dur,cost:o.cost,start:0,end:0};
+      var total=0;
+      state.plan.steps.forEach(function(s){
+        s.start=t;s.end=t+s.dur;t+=s.dur;total+=s.dur;
+      });
+      state.plan.total=total;
+      var costSum=state.plan.steps.reduce(function(a,s){return a+s.cost;},0);
+      state.plan.costBand=costSum<=4?"$":(costSum<=6?"$$":"$$$");
+      renderPlan();
+    },180);
+  }
+
+  function copyPlan(){
+    var text=planText(state.plan,state.vibe,state.budget,startMin());
+    var btn=$("btn-copy");
+    function done(){
+      btn.textContent="Copied!";
+      setTimeout(function(){btn.textContent="Copy plan";},2000);
+    }
+    if(navigator.clipboard&&navigator.clipboard.writeText){
+      navigator.clipboard.writeText(text).then(done).catch(function(){showFallback(text);});
+    }else{
+      showFallback(text);
+    }
+  }
+  function showFallback(text){
+    var fb=$("fallback");fb.hidden=false;fb.value=text;fb.focus();fb.select();
+  }
+
+  $("btn-plan").addEventListener("click",generate);
+  $("btn-surprise").addEventListener("click",function(){
+    var r=randomSettings();
+    state.vibe=r.vibe;state.budget=r.budget;state.time=r.time;
+    renderChips();generate();
+  });
+  $("btn-copy").addEventListener("click",copyPlan);
+  renderChips();renderPlan();
+})();
+</script>
+</body>
+</html>

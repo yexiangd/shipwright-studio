@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Screen Color Picker · Shipwright Studio</title>
+<meta name="description" content="A free online color picker — sample any color on your screen with the browser eyedropper, or type a hex, and copy it as HEX, RGB, HSL or a CSS variable.">
+<link rel="canonical" href="https://shipwright-studio.pages.dev/lab/eyedropper/">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"WebApplication","name":"Screen Picker","url":"https://shipwright-studio.pages.dev/lab/eyedropper/","description":"Screen Picker is a free online color picker tool that samples any color on your screen with the browser eyedropper and converts it to HEX, RGB, HSL and CSS variables for copying.","applicationCategory":"UtilitiesApplication","operatingSystem":"Web","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"}}
+</script>
+<style>
+:root{--bg:#0a0c0f;--panel:#11141a;--line:#232a35;--txt:#e8e4da;--mut:#9aa3b2;--brass:#d2a24c;--red:#e0655f;--green:#7fb069}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--txt);font-family:Inter,system-ui,sans-serif;line-height:1.6;padding:2.5rem 1.25rem 4rem;max-width:900px;margin:0 auto;text-align:center}
+a{color:var(--brass)}
+.eyebrow{font-size:.75rem;letter-spacing:.22em;text-transform:uppercase;color:var(--mut)}
+h1{font-family:Fraunces,serif;font-weight:600;font-size:clamp(2rem,4.5vw,3rem);margin:.4rem 0 .6rem}
+.define{color:var(--mut);max-width:52rem;margin:0 auto 1.6rem}
+.define strong{color:var(--txt)}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:1.5rem 1.4rem;margin-bottom:1.2rem;text-align:left}
+.banner{border-radius:10px;padding:.7rem .9rem;font-size:.9rem;margin-bottom:1.2rem;text-align:left}
+.banner.ok{background:rgba(210,162,76,.1);border:1px solid rgba(210,162,76,.4);color:var(--txt)}
+.banner.no{background:rgba(154,163,178,.08);border:1px solid var(--line);color:var(--mut)}
+.banner b{color:var(--brass)}
+.preview{border-radius:12px;border:1px solid var(--line);min-height:180px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.3rem;margin-bottom:1.2rem;transition:background-color .15s ease}
+.preview .hex{font-family:"JetBrains Mono",ui-monospace,monospace;font-size:clamp(1.6rem,5vw,2.2rem);font-weight:600}
+.preview .rgb{font-family:"JetBrains Mono",ui-monospace,monospace;font-size:.9rem;opacity:.85}
+.controls{display:flex;gap:.7rem;flex-wrap:wrap;align-items:center}
+.controls .spacer{flex:1}
+button{font-family:inherit;cursor:pointer;border-radius:8px;font-size:1rem;padding:.65rem 1.25rem}
+button.primary{background:var(--brass);border:0;color:#14100a;font-weight:600}
+button.primary:hover{filter:brightness(1.08)}
+button.ghost{background:transparent;border:1px solid var(--line);color:var(--txt)}
+button.ghost:hover{border-color:var(--brass);color:var(--brass)}
+input[type="color"]{appearance:none;-webkit-appearance:none;border:1px solid var(--line);border-radius:8px;width:3rem;height:2.9rem;padding:.15rem;background:#0a0c0f;cursor:pointer}
+input[type="color"]::-webkit-color-swatch-wrapper{padding:0}
+input[type="color"]::-webkit-color-swatch{border:0;border-radius:6px}
+input[type="color"]::-moz-color-swatch{border:0;border-radius:6px}
+.hexfield{display:flex;flex-direction:column;gap:.25rem}
+.hexfield input{background:#0a0c0f;border:1px solid var(--line);border-radius:8px;color:var(--txt);font-family:"JetBrains Mono",ui-monospace,monospace;font-size:1rem;padding:.65rem .8rem;width:9.5rem}
+.hexfield input:focus{outline:none;border-color:var(--brass)}
+.hexfield input.invalid{border-color:var(--red);animation:shake .25s ease}
+.hexfield .err{font-size:.8rem;color:var(--red);min-height:1.1em}
+@keyframes shake{25%{transform:translateX(-4px)}75%{transform:translateX(4px)}}
+.formats{display:grid;gap:.6rem;margin-top:1.2rem}
+.fmt{display:flex;align-items:center;gap:.9rem;background:#0a0c0f;border:1px solid var(--line);border-radius:10px;padding:.75rem .95rem;cursor:pointer;text-align:left;width:100%;font-family:inherit;color:var(--txt)}
+.fmt:hover{border-color:var(--brass)}
+.fmt.copied{border-color:var(--brass);background:rgba(210,162,76,.08)}
+.fmt .k{font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;color:var(--mut);width:3.4rem;flex:none}
+.fmt .v{font-family:"JetBrains Mono",ui-monospace,monospace;font-size:.98rem;flex:1;word-break:break-all}
+.fmt .c{font-size:.8rem;color:var(--mut);flex:none}
+.fmt.copied .c{color:var(--brass);font-weight:600}
+h2.sec{font-family:Fraunces,serif;font-weight:600;font-size:1.5rem;margin:2.6rem 0 1rem}
+.sec-sub{color:var(--mut);font-size:.92rem;margin:-.6rem 0 1rem}
+.swatches{display:flex;flex-wrap:wrap;gap:.6rem}
+.sw{border:1px solid var(--line);border-radius:10px;width:3.4rem;height:3.4rem;cursor:pointer;padding:0;position:relative}
+.sw:hover{border-color:var(--brass);transform:translateY(-2px)}
+.sw:focus-visible{outline:2px solid var(--brass);outline-offset:2px}
+.swatches .empty{color:var(--mut);font-size:.9rem;padding:.8rem 0}
+.demo-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(9.5rem,1fr));gap:.7rem}
+.demo{display:flex;align-items:center;gap:.7rem;background:#0a0c0f;border:1px solid var(--line);border-radius:10px;padding:.55rem .7rem;cursor:pointer;text-align:left;font-family:inherit;color:var(--txt);width:100%}
+.demo:hover{border-color:var(--brass)}
+.demo .chip{width:2rem;height:2rem;border-radius:7px;flex:none;border:1px solid rgba(255,255,255,.12)}
+.demo .nm{font-size:.88rem;font-weight:500;line-height:1.3}
+.demo .hx{font-family:"JetBrains Mono",ui-monospace,monospace;font-size:.78rem;color:var(--mut)}
+.strip-head{display:flex;align-items:center;justify-content:space-between;gap:1rem}
+.strip-head button{font-size:.85rem;padding:.4rem .8rem}
+.howto{max-width:640px;margin:0 auto;text-align:left;color:var(--mut);font-size:.95rem}
+.howto p{margin-bottom:.8rem}
+.howto strong{color:var(--txt)}
+.toast{position:fixed;left:50%;bottom:1.5rem;transform:translate(-50%,200%);background:var(--brass);color:#14100a;font-weight:600;font-size:.95rem;border-radius:999px;padding:.6rem 1.2rem;transition:transform .25s ease;z-index:10;max-width:90vw;text-align:center}
+.toast.show{transform:translate(-50%,0)}
+.back{display:inline-block;margin-top:2.5rem;font-size:.9rem}
+footer{margin-top:2.5rem;font-size:.85rem;color:var(--mut)}
+@media(max-width:600px){
+  .controls{flex-direction:column;align-items:stretch}
+  .controls .spacer{display:none}
+  .hexfield input{width:100%}
+  input[type="color"]{width:100%;height:3rem}
+  .fmt .k{width:2.6rem}
+}
+</style>
+</head>
+<body>
+<p class="eyebrow">Shipwright Studio · Lab</p>
+<h1>Screen Picker</h1>
+<p class="define"><strong>Screen Picker is a free online tool that samples any color on your screen and converts it to HEX, RGB, HSL and CSS variables.</strong> Use the browser eyedropper to grab a color from anywhere on the page, or type a hex by hand — then click any format to copy it. No download, no account, nothing leaves your browser.</p>
+
+<div class="panel">
+  <div class="banner ok" id="support-ok" hidden><b>Screen eyedropper available.</b> This browser (Chrome or Edge) lets you pick a color from anywhere on your screen.</div>
+  <div class="banner no" id="support-no" hidden><b>Screen eyedropper not supported here.</b> The eyedropper API only works in Chromium browsers (Chrome, Edge). Use the color picker or a hex code below — everything else works the same.</div>
+
+  <div class="preview" id="preview" role="status" aria-label="Current color preview">
+    <div class="hex" id="preview-hex">#D2A24C</div>
+    <div class="rgb" id="preview-rgb">rgb(210, 162, 76)</div>
+  </div>
+
+  <div class="controls">
+    <button class="primary" id="btn-dropper" type="button" hidden>Pick a color from your screen</button>
+    <input type="color" id="input-color" value="#d2a24c" aria-label="Pick a color">
+    <div class="hexfield">
+      <input type="text" id="input-hex" value="#d2a24c" spellcheck="false" autocomplete="off" aria-label="Hex color code" aria-describedby="hex-err">
+      <span class="err" id="hex-err" role="alert"></span>
+    </div>
+    <div class="spacer"></div>
+    <button class="ghost" id="btn-random" type="button">Surprise me</button>
+  </div>
+
+  <div class="formats" id="formats">
+    <button class="fmt" type="button" data-fmt="hex"><span class="k">Hex</span><span class="v" id="fmt-hex">#D2A24C</span><span class="c">Copy</span></button>
+    <button class="fmt" type="button" data-fmt="rgb"><span class="k">RGB</span><span class="v" id="fmt-rgb">rgb(210, 162, 76)</span><span class="c">Copy</span></button>
+    <button class="fmt" type="button" data-fmt="hsl"><span class="k">HSL</span><span class="v" id="fmt-hsl">hsl(39, 60%, 56%)</span><span class="c">Copy</span></button>
+    <button class="fmt" type="button" data-fmt="css"><span class="k">CSS var</span><span class="v" id="fmt-css">--color: #d2a24c;</span><span class="c">Copy</span></button>
+  </div>
+</div>
+
+<div class="panel">
+  <div class="strip-head">
+    <h2 class="sec" style="margin:0">Recently picked</h2>
+    <button class="ghost" id="btn-clear" type="button">Clear</button>
+  </div>
+  <p class="sec-sub">Newest first — click a swatch to use it again. Saved on this device.</p>
+  <div class="swatches" id="recent"></div>
+</div>
+
+<div class="panel">
+  <h2 class="sec" style="margin:0 0 .4rem">Try a color</h2>
+  <p class="sec-sub">Curated swatches, including the Shipwright Studio palette — click one to load it.</p>
+  <div class="demo-grid" id="demo"></div>
+</div>
+
+<h2 class="sec">How it works</h2>
+<div class="howto">
+  <p><strong>The eyedropper.</strong> In Chrome or Edge, click "Pick a color from your screen" and your cursor becomes a magnifier — click anywhere, even outside this page, and the color lands here. The API is Chromium-only, so Safari and Firefox users get the manual picker instead; the conversions and copying work identically either way.</p>
+  <p><strong>Every format, one click.</strong> Each row copies its exact value — <strong>#D2A24C</strong>, <strong>rgb(210, 162, 76)</strong>, <strong>hsl(39, 60%, 56%)</strong>, or a ready-to-paste <strong>--color</strong> variable — so the color goes straight into your stylesheet, your design file, or your chat with a developer.</p>
+  <p><strong>Yours, on your device.</strong> Recently picked colors are stored in your browser's local storage and never sent anywhere. Clear them any time.</p>
+</div>
+
+<a class="back" href="/ideas/">← Back to the idea bank</a>
+<footer>Built by <a href="/ideas/">Shipwright Studio</a></footer>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+// __CORE_START__
+/* Screen Picker core — pure color logic, no DOM.
+   Same code runs in the browser and in node (for tests). */
+
+/* Parse a hex string: "#d2a24c", "d2a24c", "#abc" or "abc".
+   Returns {r,g,b} (0-255 ints) or null for anything invalid. */
+function parseHex(input){
+  if(typeof input!=="string")return null;
+  var s=input.trim().replace(/^#/,"");
+  if(!/^[0-9a-fA-F]{3}$/.test(s)&&!/^[0-9a-fA-F]{6}$/.test(s))return null;
+  if(s.length===3)s=s[0]+s[0]+s[1]+s[1]+s[2]+s[2];
+  return {
+    r:parseInt(s.slice(0,2),16),
+    g:parseInt(s.slice(2,4),16),
+    b:parseInt(s.slice(4,6),16)
+  };
+}
+
+function clamp255(v){return Math.max(0,Math.min(255,Math.round(v)));}
+
+function rgbToHex(r,g,b){
+  function h(v){var s=clamp255(v).toString(16);return s.length===1?"0"+s:s;}
+  return "#"+h(r)+h(g)+h(b);
+}
+
+/* RGB (0-255) -> HSL. Returns {h:0-359, s:0-100, l:0-100}, rounded. */
+function rgbToHsl(r,g,b){
+  r/=255;g/=255;b/=255;
+  var max=Math.max(r,g,b),min=Math.min(r,g,b);
+  var h=0,s=0,l=(max+min)/2;
+  var d=max-min;
+  if(d!==0){
+    s=l>0.5?d/(2-max-min):d/(max+min);
+    if(max===r)h=((g-b)/d)%6;
+    else if(max===g)h=(b-r)/d+2;
+    else h=(r-g)/d+4;
+    h*=60;
+    if(h<0)h+=360;
+  }
+  return {h:Math.round(h)%360,s:Math.round(s*100),l:Math.round(l*100)};
+}
+
+/* HSL (h 0-359, s/l 0-100) -> RGB (0-255 ints). Inverse of rgbToHsl. */
+function hslToRgb(h,s,l){
+  h=((h%360)+360)%360;
+  s=Math.max(0,Math.min(100,s))/100;
+  l=Math.max(0,Math.min(100,l))/100;
+  var c=(1-Math.abs(2*l-1))*s;
+  var x=c*(1-Math.abs(((h/60)%2)-1));
+  var m=l-c/2;
+  var r1=0,g1=0,b1=0;
+  if(h<60){r1=c;g1=x;}
+  else if(h<120){r1=x;g1=c;}
+  else if(h<180){g1=c;b1=x;}
+  else if(h<240){g1=x;b1=c;}
+  else if(h<300){r1=x;b1=c;}
+  else{r1=c;b1=x;}
+  return {r:clamp255((r1+m)*255),g:clamp255((g1+m)*255),b:clamp255((b1+m)*255)};
+}
+
+function formatRgb(rgb){return "rgb("+rgb.r+", "+rgb.g+", "+rgb.b+")";}
+function formatHsl(hsl){return "hsl("+hsl.h+", "+hsl.s+"%, "+hsl.l+"%)";}
+function formatCssVar(hex){return "--color: "+hex.toLowerCase()+";";}
+
+/* Relative luminance (WCAG) — picks a readable label color for a swatch. */
+function relativeLuminance(rgb){
+  function lin(v){
+    v/=255;
+    return v<=0.03928?v/12.92:Math.pow((v+0.055)/1.055,2.4);
+  }
+  return 0.2126*lin(rgb.r)+0.7152*lin(rgb.g)+0.0722*lin(rgb.b);
+}
+function labelColorFor(rgb){return relativeLuminance(rgb)>0.179?"#14100a":"#f5f1e8";}
+
+if(typeof module!=="undefined"&&module.exports){
+  module.exports={parseHex:parseHex,rgbToHex:rgbToHex,rgbToHsl:rgbToHsl,
+    hslToRgb:hslToRgb,formatRgb:formatRgb,formatHsl:formatHsl,
+    formatCssVar:formatCssVar,relativeLuminance:relativeLuminance,
+    labelColorFor:labelColorFor};
+}
+// __CORE_END__
+
+if(typeof document!=="undefined"){
+  var $=function(id){return document.getElementById(id);};
+  var RECENT_KEY="screen-picker-recent";
+  var MAX_RECENT=10;
+  var SEED_HEX="#d2a24c";
+
+  var DEMO=[
+    {name:"Studio Brass",hex:"#d2a24c"},
+    {name:"Studio Ink",hex:"#0a0c0f"},
+    {name:"Studio Panel",hex:"#11141a"},
+    {name:"Parchment",hex:"#e8e4da"},
+    {name:"Signal Red",hex:"#e0655f"},
+    {name:"Leaf Green",hex:"#7fb069"},
+    {name:"Lagoon Teal",hex:"#5fc4b5"},
+    {name:"Sky Blue",hex:"#8fa8d8"},
+    {name:"Violet",hex:"#6a4f7d"},
+    {name:"Sunset Orange",hex:"#e08a3c"}
+  ];
+
+  var current=parseHex(SEED_HEX);
+  var recents=loadRecents();
+  var toastTimer=null;
+
+  function loadRecents(){
+    try{
+      var raw=localStorage.getItem(RECENT_KEY);
+      if(!raw)return [];
+      var arr=JSON.parse(raw);
+      if(!Array.isArray(arr))return [];
+      return arr.filter(function(h){return parseHex(h)!==null;}).slice(0,MAX_RECENT);
+    }catch(e){return [];}
+  }
+  function saveRecents(){
+    try{localStorage.setItem(RECENT_KEY,JSON.stringify(recents));}catch(e){}
+  }
+  function pushRecent(hex){
+    hex=hex.toLowerCase();
+    recents=recents.filter(function(h){return h!==hex;});
+    recents.unshift(hex);
+    recents=recents.slice(0,MAX_RECENT);
+    saveRecents();
+    renderRecents();
+  }
+
+  function render(){
+    var hex=rgbToHex(current.r,current.g,current.b);
+    var hsl=rgbToHsl(current.r,current.g,current.b);
+    var label=labelColorFor(current);
+    var pv=$("preview");
+    pv.style.backgroundColor=hex;
+    pv.style.color=label;
+    $("preview-hex").textContent=hex.toUpperCase();
+    $("preview-rgb").textContent=formatRgb(current);
+    $("fmt-hex").textContent=hex.toUpperCase();
+    $("fmt-rgb").textContent=formatRgb(current);
+    $("fmt-hsl").textContent=formatHsl(hsl);
+    $("fmt-css").textContent=formatCssVar(hex);
+    $("input-color").value=hex;
+    var hx=$("input-hex");
+    if(document.activeElement!==hx)hx.value=hex;
+  }
+
+  function setColor(rgb,remember){
+    current={r:rgb.r,g:rgb.g,b:rgb.b};
+    render();
+    if(remember)pushRecent(rgbToHex(current.r,current.g,current.b));
+  }
+
+  function showToast(msg){
+    var t=$("toast");
+    t.textContent=msg;
+    t.classList.add("show");
+    clearTimeout(toastTimer);
+    toastTimer=setTimeout(function(){t.classList.remove("show");},2200);
+  }
+
+  function copyText(text,okMsg){
+    function fallback(){
+      var ta=document.createElement("textarea");
+      ta.value=text;
+      ta.style.position="fixed";ta.style.opacity="0";
+      document.body.appendChild(ta);
+      ta.select();
+      try{document.execCommand("copy");showToast(okMsg);}
+      catch(e){showToast("Copy failed — select the text manually");}
+      document.body.removeChild(ta);
+    }
+    if(navigator.clipboard&&navigator.clipboard.writeText){
+      navigator.clipboard.writeText(text).then(function(){showToast(okMsg);},fallback);
+    }else{
+      fallback();
+    }
+  }
+
+  function renderRecents(){
+    var box=$("recent");
+    box.innerHTML="";
+    if(recents.length===0){
+      var p=document.createElement("p");
+      p.className="empty";
+      p.textContent="Nothing picked yet — use the eyedropper, the picker, or a demo swatch below.";
+      box.appendChild(p);
+      return;
+    }
+    recents.forEach(function(hex){
+      var b=document.createElement("button");
+      b.type="button";
+      b.className="sw";
+      b.style.backgroundColor=hex;
+      b.title=hex;
+      b.setAttribute("aria-label","Use color "+hex);
+      b.addEventListener("click",function(){
+        var rgb=parseHex(hex);
+        if(rgb)setColor(rgb,false);
+      });
+      box.appendChild(b);
+    });
+  }
+
+  function renderDemo(){
+    var grid=$("demo");
+    DEMO.forEach(function(d){
+      var b=document.createElement("button");
+      b.type="button";
+      b.className="demo";
+      var chip=document.createElement("span");
+      chip.className="chip";
+      chip.style.backgroundColor=d.hex;
+      var meta=document.createElement("span");
+      var nm=document.createElement("span");
+      nm.className="nm";
+      nm.textContent=d.name;
+      var hx=document.createElement("span");
+      hx.className="hx";
+      hx.textContent=d.hex;
+      meta.appendChild(nm);
+      meta.appendChild(document.createElement("br"));
+      meta.appendChild(hx);
+      b.appendChild(chip);
+      b.appendChild(meta);
+      b.addEventListener("click",function(){
+        var rgb=parseHex(d.hex);
+        if(rgb)setColor(rgb,true);
+      });
+      grid.appendChild(b);
+    });
+  }
+
+  /* Eyedropper support detection. */
+  var dropperBtn=$("btn-dropper");
+  if(window.EyeDropper){
+    dropperBtn.hidden=false;
+    $("support-ok").hidden=false;
+    dropperBtn.addEventListener("click",function(){
+      var dropper=new window.EyeDropper();
+      dropper.open().then(function(result){
+        var rgb=parseHex(result.sRGBHex);
+        if(rgb)setColor(rgb,true);
+      }).catch(function(){/* user cancelled — leave color unchanged */});
+    });
+  }else{
+    $("support-no").hidden=false;
+  }
+
+  $("input-color").addEventListener("input",function(){
+    var rgb=parseHex(this.value);
+    if(rgb)setColor(rgb,false);
+  });
+  $("input-color").addEventListener("change",function(){
+    var rgb=parseHex(this.value);
+    if(rgb)pushRecent(rgbToHex(rgb.r,rgb.g,rgb.b));
+  });
+
+  $("input-hex").addEventListener("input",function(){
+    var rgb=parseHex(this.value);
+    var err=$("hex-err");
+    if(rgb){
+      this.classList.remove("invalid");
+      err.textContent="";
+      setColor(rgb,false);
+    }else{
+      this.classList.add("invalid");
+      err.textContent="Enter a hex like #d2a24c";
+    }
+  });
+  $("input-hex").addEventListener("change",function(){
+    var rgb=parseHex(this.value);
+    if(rgb)pushRecent(rgbToHex(rgb.r,rgb.g,rgb.b));
+  });
+
+  $("btn-random").addEventListener("click",function(){
+    var rgb={r:Math.floor(Math.random()*256),g:Math.floor(Math.random()*256),b:Math.floor(Math.random()*256)};
+    setColor(rgb,true);
+  });
+
+  $("btn-clear").addEventListener("click",function(){
+    recents=[];
+    saveRecents();
+    renderRecents();
+    showToast("Recent colors cleared");
+  });
+
+  document.querySelectorAll(".fmt").forEach(function(row){
+    row.addEventListener("click",function(){
+      var val=row.querySelector(".v").textContent;
+      row.classList.add("copied");
+      row.querySelector(".c").textContent="Copied ✓";
+      setTimeout(function(){
+        row.classList.remove("copied");
+        row.querySelector(".c").textContent="Copy";
+      },1600);
+      copyText(val,"Copied "+val);
+    });
+  });
+
+  render();
+  renderRecents();
+  renderDemo();
+}
+</script>
+</body>
+</html>
