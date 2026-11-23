@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Baby Name Explorer · Shipwright Studio</title>
+<meta name="description" content="A free online baby name explorer — browse 72 names by origin, meaning, gender and popularity, and shortlist your favourites.">
+<link rel="canonical" href="https://shipwright-studio.pages.dev/lab/baby-names/">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"WebApplication","name":"Baby Name Explorer","url":"https://shipwright-studio.pages.dev/lab/baby-names/","description":"Baby Name Explorer is a free online tool that lets you browse baby names by origin, meaning, gender and popularity, and shortlist your favourites.","applicationCategory":"LifestyleApplication","operatingSystem":"Web","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"}}
+</script>
+<style>
+:root{--bg:#0a0c0f;--panel:#11141a;--line:#232a35;--txt:#e8e4da;--mut:#9aa3b2;--brass:#d2a24c}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--txt);font-family:Inter,system-ui,sans-serif;line-height:1.6;padding:2.5rem 1.25rem 4rem;max-width:1080px;margin:0 auto;text-align:center}
+a{color:var(--brass)}
+.eyebrow{font-size:.75rem;letter-spacing:.22em;text-transform:uppercase;color:var(--mut)}
+h1{font-family:Fraunces,serif;font-weight:600;font-size:clamp(2rem,4.5vw,3rem);margin:.4rem 0 .6rem}
+.define{color:var(--mut);max-width:52rem;margin:0 auto 1.6rem}
+.define strong{color:var(--txt)}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:1.4rem;margin-bottom:1.2rem;text-align:left}
+.filters .row{display:flex;flex-wrap:wrap;gap:1.2rem}
+.field{min-width:0}
+.field>span{display:block;font-size:.75rem;letter-spacing:.14em;text-transform:uppercase;color:var(--mut);margin-bottom:.55rem}
+.field.grow{flex:1 1 100%}
+input[type="search"]{width:100%;background:#0a0c0f;border:1px solid var(--line);border-radius:8px;color:var(--txt);font-family:inherit;font-size:1rem;padding:.65rem .8rem}
+input[type="search"]:focus{outline:none;border-color:var(--brass)}
+.chips{display:flex;flex-wrap:wrap;gap:.5rem}
+.chip{font-family:inherit;font-size:.9rem;padding:.5rem 1rem;border-radius:999px;border:1px solid var(--line);background:#0a0c0f;color:var(--txt);cursor:pointer}
+.chip:hover{border-color:var(--brass)}
+.chip[aria-pressed="true"]{background:var(--brass);border-color:var(--brass);color:#14100a;font-weight:600}
+select{background:#0a0c0f;border:1px solid var(--line);border-radius:8px;color:var(--txt);font-family:inherit;font-size:.95rem;padding:.55rem .6rem;cursor:pointer;min-height:44px}
+select:focus{outline:none;border-color:var(--brass)}
+.actions{display:flex;gap:.7rem;flex-wrap:wrap;justify-content:space-between;align-items:center;margin-bottom:1.2rem}
+.actions .btns{display:flex;gap:.7rem;flex-wrap:wrap}
+button{font-family:inherit;cursor:pointer;border-radius:8px;font-size:1rem;padding:.65rem 1.25rem;min-height:44px}
+button.primary{background:var(--brass);border:0;color:#14100a;font-weight:600}
+button.primary:hover{filter:brightness(1.08)}
+button.ghost{background:transparent;border:1px solid var(--line);color:var(--txt)}
+button.ghost:hover{border-color:var(--brass);color:var(--brass)}
+.count{color:var(--mut);font-size:.95rem}
+.count b{color:var(--brass)}
+.layout{display:grid;grid-template-columns:1fr 300px;gap:1.2rem;align-items:start;text-align:left}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:.9rem}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:1rem 1.1rem;cursor:pointer;transition:transform .15s ease,border-color .15s ease;position:relative}
+.card:hover{transform:translateY(-2px);border-color:var(--brass)}
+.card h3{font-family:Fraunces,serif;font-weight:600;font-size:1.35rem;line-height:1.25;padding-right:2rem}
+.card .origin{font-size:.8rem;letter-spacing:.1em;text-transform:uppercase;color:var(--brass);margin:.15rem 0 .35rem}
+.card .meaning{color:var(--mut);font-size:.92rem}
+.badge{display:inline-block;font-size:.75rem;border-radius:999px;padding:.15rem .65rem;margin-top:.55rem}
+.badge.Classic{border:1px solid var(--brass);color:var(--brass)}
+.badge.Rising{background:var(--brass);color:#14100a;font-weight:600}
+.badge.Rare{border:1px solid var(--mut);color:var(--mut)}
+.star{position:absolute;top:.55rem;right:.55rem;background:none;border:0;font-size:1.35rem;color:var(--mut);padding:.35rem;min-height:44px;min-width:44px;line-height:1}
+.star:hover{color:var(--brass)}
+.star[aria-pressed="true"]{color:var(--brass)}
+.empty{color:var(--mut);text-align:center;padding:2.5rem 1rem;grid-column:1/-1}
+.empty .big{font-family:Fraunces,serif;font-size:1.4rem;color:var(--txt);margin-bottom:.4rem}
+.shortlist{position:sticky;top:1rem}
+.shortlist h2{font-family:Fraunces,serif;font-weight:600;font-size:1.3rem;margin-bottom:.2rem}
+.shortlist .note{color:var(--mut);font-size:.9rem;margin-bottom:.9rem}
+.shortlist ul{list-style:none}
+.shortlist li{display:flex;align-items:center;justify-content:space-between;gap:.5rem;padding:.45rem 0;border-bottom:1px solid var(--line);font-size:.95rem}
+.shortlist li button{background:none;border:0;color:var(--mut);font-size:1.1rem;padding:.3rem .5rem;min-height:36px;min-width:36px}
+.shortlist li button:hover{color:var(--brass)}
+.shortlist .sl-actions{display:flex;gap:.5rem;margin-top:1rem;flex-wrap:wrap}
+.shortlist .sl-actions button{font-size:.9rem;padding:.45rem .9rem;min-height:40px}
+.fallback{width:100%;background:#0a0c0f;border:1px solid var(--line);border-radius:8px;color:var(--txt);font-family:inherit;font-size:.9rem;padding:.7rem;margin-top:1rem;min-height:5rem}
+.fallback[hidden]{display:none}
+.modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.7);display:flex;align-items:center;justify-content:center;padding:1rem;z-index:10}
+.modal-backdrop[hidden]{display:none}
+.modal{background:var(--panel);border:1px solid var(--line);border-radius:16px;max-width:520px;width:100%;padding:1.8rem;text-align:left;position:relative;max-height:90vh;overflow:auto}
+.modal .close{position:absolute;top:.6rem;right:.6rem;background:none;border:0;color:var(--mut);font-size:1.5rem;padding:.4rem .7rem;min-height:44px;min-width:44px}
+.modal .close:hover{color:var(--brass)}
+.modal h2{font-family:Fraunces,serif;font-weight:600;font-size:2rem;line-height:1.2;padding-right:2rem}
+.modal .meaning{font-style:italic;color:var(--mut);font-size:1.05rem;margin:.5rem 0 .9rem}
+.meta-chips{display:flex;flex-wrap:wrap;gap:.5rem;margin-bottom:1.1rem}
+.meta-chips span{font-size:.85rem;border:1px solid var(--line);border-radius:999px;padding:.25rem .8rem;color:var(--mut)}
+.modal h3{font-family:Fraunces,serif;font-size:1.1rem;margin-bottom:.6rem}
+.similar{display:flex;flex-wrap:wrap;gap:.5rem}
+.similar button{font-family:inherit;font-size:.9rem;padding:.45rem .95rem;border-radius:999px;border:1px solid var(--brass);background:transparent;color:var(--brass);cursor:pointer;min-height:40px}
+.similar button:hover{background:var(--brass);color:#14100a}
+.similar .none{color:var(--mut);font-size:.9rem}
+.modal .modal-star{margin-top:1.2rem}
+h2.sec{font-family:Fraunces,serif;font-weight:600;font-size:1.5rem;margin:2.6rem 0 1rem}
+.howto{max-width:640px;margin:0 auto;text-align:left;color:var(--mut);font-size:.95rem}
+.howto p{margin-bottom:.8rem}
+.howto strong{color:var(--txt)}
+.back{display:inline-block;margin-top:2.5rem;font-size:.9rem}
+footer{margin-top:2.5rem;font-size:.85rem;color:var(--mut)}
+@media(max-width:860px){
+  .layout{grid-template-columns:1fr}
+  .shortlist{position:static}
+}
+@media(max-width:600px){
+  .actions{flex-direction:column;align-items:stretch}
+  .actions .btns button{flex:1}
+  .grid{grid-template-columns:1fr}
+  .filters .row{flex-direction:column}
+}
+</style>
+</head>
+<body>
+<p class="eyebrow">Shipwright Studio · Lab</p>
+<h1>Baby Name Explorer</h1>
+<p class="define"><strong>Baby Name Explorer is a free online tool that</strong> lets you browse baby names by origin, meaning, gender and popularity — and shortlist your favourites for the big decision.</p>
+
+<section class="panel filters" aria-label="Filters">
+  <div class="row">
+    <div class="field grow">
+      <span><label for="search">Search names</label></span>
+      <input type="search" id="search" placeholder="Type part of a name, e.g. “eli”…" autocomplete="off">
+    </div>
+  </div>
+  <div class="row" style="margin-top:1.1rem">
+    <div class="field">
+      <span id="gender-label">Gender</span>
+      <div class="chips" id="gender-chips" role="group" aria-labelledby="gender-label"></div>
+    </div>
+    <div class="field">
+      <span><label for="origin">Origin</label></span>
+      <select id="origin"></select>
+    </div>
+    <div class="field">
+      <span><label for="letter">Starts with</label></span>
+      <select id="letter"></select>
+    </div>
+    <div class="field">
+      <span id="pop-label">Popularity</span>
+      <div class="chips" id="pop-chips" role="group" aria-labelledby="pop-label"></div>
+    </div>
+  </div>
+</section>
+
+<div class="actions">
+  <p class="count" id="count" aria-live="polite"></p>
+  <div class="btns">
+    <button class="primary" id="surprise" type="button">🎲 Surprise me</button>
+    <button class="ghost" id="clear-filters" type="button">Clear filters</button>
+  </div>
+</div>
+
+<div class="layout">
+  <main>
+    <div class="grid" id="grid"></div>
+  </main>
+  <aside class="panel shortlist" aria-label="Shortlist">
+    <h2>Your shortlist <span id="sl-count"></span></h2>
+    <p class="note" id="sl-note">Tap the star on any name to save it here. Saved on this device.</p>
+    <ul id="sl-list"></ul>
+    <p class="note" id="sl-empty">No favourites yet — tap the star on any name.</p>
+    <div class="sl-actions">
+      <button class="ghost" id="copy-list" type="button">Copy list</button>
+      <button class="ghost" id="clear-list" type="button">Clear all</button>
+    </div>
+    <textarea class="fallback" id="copy-fallback" hidden readonly aria-label="Shortlist text to copy manually"></textarea>
+  </aside>
+</div>
+
+<h2 class="sec">How it works</h2>
+<div class="howto">
+  <p><strong>Browse.</strong> Filter 72 names by origin, meaning, gender and popularity — or just type a few letters.</p>
+  <p><strong>Compare.</strong> Tap any name to see its meaning and similar names from the same origin.</p>
+  <p><strong>Shortlist.</strong> Star the ones you love; your list is saved in your browser and copies out as plain text.</p>
+</div>
+
+<p><a class="back" href="/ideas/">← Back to the Lab</a></p>
+<footer>Built by <a href="/ideas/">Shipwright Studio</a></footer>
+
+<div class="modal-backdrop" id="modal-backdrop" hidden>
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-name">
+    <button class="close" id="modal-close" type="button" aria-label="Close">×</button>
+    <h2 id="modal-name"></h2>
+    <p class="meaning" id="modal-meaning"></p>
+    <div class="meta-chips" id="modal-meta"></div>
+    <h3>Similar names</h3>
+    <div class="similar" id="modal-similar"></div>
+    <button class="ghost modal-star" id="modal-star" type="button">☆ Add to shortlist</button>
+  </div>
+</div>
+
+<script>
+"use strict";
+/* Dataset: name, gender (girl|boy|unisex), origin, meaning, popularity (Classic|Rising|Rare) */
+const NAMES=[
+["Amelia","girl","English","work","Classic"],
+["Oliver","boy","English","olive tree","Classic"],
+["Charlotte","girl","English","free man","Classic"],
+["Henry","boy","English","ruler of the home","Classic"],
+["Eleanor","girl","English","bright, shining one","Classic"],
+["James","boy","English","supplanter","Classic"],
+["Hazel","girl","English","the hazel tree","Rising"],
+["Everett","boy","English","brave as a wild boar","Rising"],
+["Wren","unisex","English","small songbird","Rare"],
+["Aoife","girl","Irish","beauty, radiance","Rising"],
+["Liam","boy","Irish","resolute protection","Classic"],
+["Saoirse","girl","Irish","freedom","Rising"],
+["Cillian","boy","Irish","little church","Rising"],
+["Niamh","girl","Irish","bright, radiant","Rising"],
+["Finn","boy","Irish","fair, white","Classic"],
+["Aisling","girl","Irish","dream, vision","Rare"],
+["Ronan","boy","Irish","little seal","Rising"],
+["Maeve","girl","Irish","she who intoxicates","Classic"],
+["Amélie","girl","French","hardworking","Classic"],
+["Hugo","boy","French","mind, intellect","Classic"],
+["Camille","unisex","French","helper to the priest","Classic"],
+["Étienne","boy","French","crown, garland","Rare"],
+["Colette","girl","French","victory of the people","Rising"],
+["Bastien","boy","French","venerable","Rising"],
+["Margaux","girl","French","pearl","Rising"],
+["Théo","boy","French","gift of God","Classic"],
+["Odette","girl","French","wealthy","Rare"],
+["Clara","girl","Latin","bright, clear","Classic"],
+["Marcus","boy","Latin","warlike","Classic"],
+["Lucia","girl","Latin","light","Classic"],
+["Felix","boy","Latin","happy, fortunate","Rising"],
+["Aurora","girl","Latin","dawn","Rising"],
+["Julian","boy","Latin","youthful","Classic"],
+["Vivian","unisex","Latin","alive","Rising"],
+["Cassius","boy","Latin","hollow","Rare"],
+["Stella","girl","Latin","star","Classic"],
+["Alexander","boy","Greek","defender of men","Classic"],
+["Sophia","girl","Greek","wisdom","Classic"],
+["Nikolas","boy","Greek","victory of the people","Rising"],
+["Chloe","girl","Greek","young green shoot","Classic"],
+["Daphne","girl","Greek","laurel tree","Rising"],
+["Leonidas","boy","Greek","lion's son","Rare"],
+["Iris","girl","Greek","rainbow","Rising"],
+["Atlas","boy","Greek","to carry","Rising"],
+["Callista","girl","Greek","most beautiful","Rare"],
+["Noah","boy","Hebrew","rest, comfort","Classic"],
+["Abigail","girl","Hebrew","my father's joy","Classic"],
+["Elijah","boy","Hebrew","my God is Yahweh","Classic"],
+["Naomi","girl","Hebrew","pleasantness","Rising"],
+["Ezra","boy","Hebrew","help","Rising"],
+["Miriam","girl","Hebrew","wished-for child","Rare"],
+["Gabriel","boy","Hebrew","God is my strength","Classic"],
+["Eden","unisex","Hebrew","delight, paradise","Rising"],
+["Shiloh","unisex","Hebrew","peaceful","Rare"],
+["Hana","girl","Japanese","flower","Rising"],
+["Ren","unisex","Japanese","lotus","Rising"],
+["Sakura","girl","Japanese","cherry blossom","Classic"],
+["Haruto","boy","Japanese","sunlight","Rising"],
+["Aiko","girl","Japanese","beloved child","Classic"],
+["Kaito","boy","Japanese","sea, ocean","Rising"],
+["Yuki","unisex","Japanese","snow, happiness","Classic"],
+["Sora","unisex","Japanese","sky","Rising"],
+["Akira","unisex","Japanese","bright, clear","Classic"],
+["Layla","girl","Arabic","night","Classic"],
+["Omar","boy","Arabic","flourishing, long-lived","Classic"],
+["Amira","girl","Arabic","princess","Rising"],
+["Zayn","boy","Arabic","beauty, grace","Rising"],
+["Yasmin","girl","Arabic","jasmine flower","Classic"],
+["Tariq","boy","Arabic","morning star","Rare"],
+["Nadia","girl","Arabic","hope","Classic"],
+["Karim","boy","Arabic","generous, noble","Rising"],
+["Zara","girl","Arabic","blooming flower","Rising"]
+].map(function(r){return{name:r[0],gender:r[1],origin:r[2],meaning:r[3],popularity:r[4]}});
+const ORIGINS=[...new Set(NAMES.map(function(n){return n.origin}))].sort();
+const GENDERS=["all","girl","boy","unisex"];
+const POPS=["all","Classic","Rising","Rare"];
+const LETTERS=["all"].concat("ABCDEFGHIJKLMNOPQRSTUVWXYZ".split(""));
+
+const state={q:"",gender:"all",origin:"all",letter:"all",pop:"all"};
+let shortlist=[];
+let storageOK=true;
+try{
+  shortlist=JSON.parse(localStorage.getItem("bne-shortlist")||"[]");
+  if(!Array.isArray(shortlist)) shortlist=[];
+}catch(e){storageOK=false;shortlist=[];}
+function saveShortlist(){
+  if(!storageOK) return;
+  try{localStorage.setItem("bne-shortlist",JSON.stringify(shortlist));}
+  catch(e){storageOK=false;}
+}
+function shortlistAdd(name){if(!shortlist.includes(name)){shortlist.push(name);saveShortlist();}}
+function shortlistRemove(name){shortlist=shortlist.filter(function(n){return n!==name;});saveShortlist();}
+function shortlistToggle(name){
+  if(shortlist.includes(name)) shortlistRemove(name); else shortlistAdd(name);
+}
+function filterNames(list,f){
+  return list.filter(function(n){
+    if(f.q && !n.name.toLowerCase().includes(f.q.toLowerCase())) return false;
+    if(f.gender!=="all" && n.gender!==f.gender) return false;
+    if(f.origin!=="all" && n.origin!==f.origin) return false;
+    if(f.letter!=="all" && n.name.charAt(0).toUpperCase()!==f.letter) return false;
+    if(f.pop!=="all" && n.popularity!==f.pop) return false;
+    return true;
+  });
+}
+function randomPick(list){return list[Math.floor(Math.random()*list.length)];}
+function similarNames(name){
+  return NAMES.filter(function(n){return n.origin===name.origin && n.name!==name.name;}).slice(0,5);
+}
+
+const $=function(id){return document.getElementById(id);};
+const grid=$("grid"),countEl=$("count");
+
+function chip(label,value,group,onPick){
+  const b=document.createElement("button");
+  b.type="button";b.className="chip";b.textContent=label;
+  b.setAttribute("aria-pressed",String(state[group]===value));
+  b.addEventListener("click",function(){state[group]=value;syncChips();render();});
+  return b;
+}
+function syncChips(){
+  [["gender-chips",GENDERS,"gender"],["pop-chips",POPS,"pop"]].forEach(function(cfg){
+    const wrap=$(cfg[0]);wrap.innerHTML="";
+    cfg[1].forEach(function(v){
+      wrap.appendChild(chip(v==="all"?"All":v.charAt(0).toUpperCase()+v.slice(1),v,cfg[2]));
+    });
+  });
+}
+function fillSelect(el,options,allLabel){
+  el.innerHTML="";
+  options.forEach(function(v){
+    const o=document.createElement("option");
+    o.value=v;o.textContent=v==="all"?allLabel:v;el.appendChild(o);
+  });
+}
+fillSelect($("origin"),["all"].concat(ORIGINS),"All origins");
+fillSelect($("letter"),LETTERS,"All letters");
+syncChips();
+
+$("search").addEventListener("input",function(e){state.q=e.target.value.trim();render();});
+$("origin").addEventListener("change",function(e){state.origin=e.target.value;render();});
+$("letter").addEventListener("change",function(e){state.letter=e.target.value;render();});
+$("clear-filters").addEventListener("click",function(){
+  state.q="";state.gender="all";state.origin="all";state.letter="all";state.pop="all";
+  $("search").value="";$("origin").value="all";$("letter").value="all";
+  syncChips();render();
+});
+
+function render(){
+  const results=filterNames(NAMES,state);
+  countEl.innerHTML="Showing <b>"+results.length+"</b> of "+NAMES.length+" names";
+  grid.innerHTML="";
+  if(results.length===0){
+    const d=document.createElement("div");d.className="empty";
+    d.innerHTML='<p class="big">No names match those filters.</p><p>Try widening the search or clearing a filter.</p>';
+    const b=document.createElement("button");b.type="button";b.className="ghost";b.textContent="Clear filters";b.style.marginTop="1rem";
+    b.addEventListener("click",function(){$("clear-filters").click();});
+    d.appendChild(b);grid.appendChild(d);
+  }
+  results.forEach(function(n){
+    const card=document.createElement("article");card.className="card";card.tabIndex=0;
+    card.setAttribute("role","button");card.setAttribute("aria-label","View details for "+n.name);
+    const starred=shortlist.includes(n.name);
+    card.innerHTML='<h3></h3><p class="origin"></p><p class="meaning"></p><span class="badge '+n.popularity+'"></span>';
+    card.querySelector("h3").textContent=n.name;
+    card.querySelector(".origin").textContent=n.origin+" · "+n.gender;
+    card.querySelector(".meaning").textContent="“"+n.meaning+"”";
+    card.querySelector(".badge").textContent=n.popularity;
+    const star=document.createElement("button");
+    star.type="button";star.className="star";star.setAttribute("aria-pressed",String(starred));
+    star.setAttribute("aria-label",(starred?"Remove ":"Add ")+n.name+(starred?" from":" to")+" shortlist");
+    star.textContent=starred?"★":"☆";
+    star.addEventListener("click",function(e){e.stopPropagation();shortlistToggle(n.name);render();});
+    card.appendChild(star);
+    card.addEventListener("click",function(){openDetail(n);});
+    card.addEventListener("keydown",function(e){if(e.key==="Enter"||e.key===" "){e.preventDefault();openDetail(n);}});
+    grid.appendChild(card);
+  });
+  renderShortlist();
+}
+
+function renderShortlist(){
+  const list=$("sl-list");list.innerHTML="";
+  $("sl-count").textContent=shortlist.length?("("+shortlist.length+")"):"";
+  $("sl-empty").style.display=shortlist.length?"none":"block";
+  if(!storageOK) $("sl-note").textContent="Shortlist won't persist in this browser — it works for this visit only.";
+  shortlist.forEach(function(name){
+    const li=document.createElement("li");
+    const span=document.createElement("span");span.textContent=name;li.appendChild(span);
+    const rm=document.createElement("button");rm.type="button";rm.textContent="✕";rm.setAttribute("aria-label","Remove "+name);
+    rm.addEventListener("click",function(){shortlistRemove(name);render();});
+    li.appendChild(rm);list.appendChild(li);
+  });
+}
+
+let currentDetail=null;
+function openDetail(n){
+  currentDetail=n;
+  $("modal-name").textContent=n.name;
+  $("modal-meaning").textContent="“"+n.meaning+"”";
+  const meta=$("modal-meta");meta.innerHTML="";
+  [n.origin,n.gender,n.popularity].forEach(function(t){
+    const s=document.createElement("span");s.textContent=t;meta.appendChild(s);
+  });
+  const sim=$("modal-similar");sim.innerHTML="";
+  const sims=similarNames(n);
+  if(sims.length===0){const p=document.createElement("p");p.className="none";p.textContent="No other names from this origin yet.";sim.appendChild(p);}
+  sims.forEach(function(s){
+    const b=document.createElement("button");b.type="button";b.textContent=s.name;
+    b.addEventListener("click",function(){openDetail(s);});
+    sim.appendChild(b);
+  });
+  syncModalStar();
+  $("modal-backdrop").hidden=false;
+  document.body.style.overflow="hidden";
+}
+function syncModalStar(){
+  if(!currentDetail) return;
+  const starred=shortlist.includes(currentDetail.name);
+  const b=$("modal-star");
+  b.textContent=starred?"★ In your shortlist":"☆ Add to shortlist";
+}
+$("modal-star").addEventListener("click",function(){
+  if(!currentDetail) return;
+  shortlistToggle(currentDetail.name);syncModalStar();render();
+});
+function closeDetail(){
+  $("modal-backdrop").hidden=true;
+  document.body.style.overflow="";
+  currentDetail=null;
+}
+$("modal-close").addEventListener("click",closeDetail);
+$("modal-backdrop").addEventListener("click",function(e){if(e.target===$("modal-backdrop")) closeDetail();});
+document.addEventListener("keydown",function(e){if(e.key==="Escape" && !$("modal-backdrop").hidden) closeDetail();});
+
+$("surprise").addEventListener("click",function(){
+  const pool=filterNames(NAMES,state);
+  const pick=randomPick(pool.length?pool:NAMES);
+  openDetail(pick);
+});
+
+$("clear-list").addEventListener("click",function(){shortlist=[];saveShortlist();render();});
+$("copy-list").addEventListener("click",function(){
+  const text=shortlist.join("\n");
+  const btn=$("copy-list");
+  function done(){
+    btn.textContent="Copied!";setTimeout(function(){btn.textContent="Copy list";},2000);
+  }
+  if(!text){btn.textContent="Nothing to copy";setTimeout(function(){btn.textContent="Copy list";},2000);return;}
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(text).then(done).catch(function(){fallbackCopy(text);done();});
+  }else{fallbackCopy(text);done();}
+});
+function fallbackCopy(text){
+  const ta=$("copy-fallback");ta.hidden=false;ta.value=text;ta.focus();ta.select();
+}
+
+render();
+</script>
+</body>
+</html>

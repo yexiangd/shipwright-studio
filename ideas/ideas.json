@@ -1,5 +1,5 @@
 {
-  "updated": "2026-11-22",
+  "updated": "2026-11-23",
   "ideas": [
     {
       "id": "idea-000a",
@@ -737,7 +737,9 @@
       "tagline": "HTML entities encoded and decoded instantly.",
       "priority": 56,
       "effort": "S",
-      "status": "todo"
+      "status": "done",
+      "url": "/lab/entity-codec/",
+      "shipped": "2026-11-23"
     },
     {
       "id": "idea-061",
@@ -1133,7 +1135,9 @@
       "tagline": "Browse names by origin and meaning, shortlist yours.",
       "priority": 56,
       "effort": "M",
-      "status": "todo"
+      "status": "done",
+      "url": "/lab/baby-names/",
+      "shipped": "2026-11-23"
     },
     {
       "id": "idea-096",

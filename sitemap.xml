@@ -41,6 +41,11 @@
     <priority>0.7</priority>
   </url>
   <url>
+    <loc>https://shipwright-studio.pages.dev/lab/baby-names/</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
     <loc>https://shipwright-studio.pages.dev/lab/backtest-visualizer/</loc>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
@@ -137,6 +142,11 @@
   </url>
   <url>
     <loc>https://shipwright-studio.pages.dev/lab/efficient-frontier/</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://shipwright-studio.pages.dev/lab/entity-codec/</loc>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
