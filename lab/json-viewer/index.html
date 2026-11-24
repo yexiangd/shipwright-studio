@@ -1,0 +1,651 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>JSON Viewer · Shipwright Studio</title>
+  <meta name="description" content="JSON Viewer is a free online tool that turns raw JSON into a collapsible, searchable tree you can explore in your browser — nothing is uploaded." />
+  <link rel="canonical" href="https://shipwright-studio.pages.dev/lab/json-viewer/" />
+  <link rel="icon" type="image/svg+xml" href="../../favicon.svg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..700;1,9..144,300..700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "JSON Viewer",
+    "description": "A free online JSON tree viewer: paste JSON and explore it as a collapsible, searchable tree, copy any node's path, and inspect document stats — all in the browser.",
+    "applicationCategory": "DeveloperApplication",
+    "operatingSystem": "Web",
+    "offers": { "@type": "Offer", "price": "0" },
+    "author": { "@type": "Organization", "name": "Shipwright Studio", "url": "https://shipwright-studio.pages.dev/" }
+  }
+  </script>
+  <style>
+    :root {
+      --bg: #0a0c0f; --text: #f2efe6; --muted: #a6abb4; --faint: #6d737c;
+      --accent: #d2a24c; --line: rgba(255,255,255,.09); --card: rgba(255,255,255,.04);
+      --font-display: "Fraunces", Georgia, serif;
+      --font-body: "Inter", -apple-system, "Segoe UI", sans-serif;
+      --font-mono: "JetBrains Mono", ui-monospace, monospace;
+      --ok: #7bc98a; --bad: #f0858a;
+      --str: #9ece8a; --num: #8ab8ff; --bool: #c792ea;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: var(--bg); color: var(--text); font-family: var(--font-body); min-height: 100vh; display: flex; flex-direction: column; }
+    .topbar { display: flex; justify-content: space-between; align-items: center; padding: 16px 22px; border-bottom: 1px solid var(--line); }
+    .topbar a { color: var(--muted); text-decoration: none; font-size: 14px; }
+    .topbar a:hover { color: var(--accent); }
+    .brand { font-family: var(--font-display); font-size: 17px; }
+    .brand em { color: var(--accent); font-style: italic; }
+    main { flex: 1; max-width: 1180px; width: 100%; margin: 0 auto; padding: 40px 22px 64px; }
+    h1 { font-family: var(--font-display); font-weight: 500; font-size: clamp(34px, 6vw, 54px); line-height: 1.05; margin-bottom: 12px; }
+    h1 em { color: var(--accent); font-style: italic; }
+    .lede { color: var(--muted); font-size: clamp(15px, 2.4vw, 18px); max-width: 660px; line-height: 1.6; margin-bottom: 28px; }
+    .lede strong { color: var(--text); font-weight: 600; }
+    .toolbar { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-bottom: 14px; }
+    .btn { font-family: var(--font-body); font-size: 14px; font-weight: 600; padding: 10px 18px; border-radius: 999px; border: 1px solid var(--accent); background: var(--accent); color: #0a0c0f; cursor: pointer; }
+    .btn:hover { filter: brightness(1.08); }
+    .btn.ghost { background: transparent; color: var(--accent); }
+    .btn.ghost:hover { background: rgba(210,162,76,.08); filter: none; }
+    .btn.plain { background: transparent; color: var(--muted); border-color: var(--line); font-weight: 500; }
+    .btn.plain:hover { color: var(--text); border-color: var(--faint); filter: none; }
+    .btn:disabled { opacity: .45; cursor: default; filter: none; }
+    .toolbar .spacer { flex: 1; }
+    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; align-items: start; }
+    @media (max-width: 900px) { .grid { grid-template-columns: 1fr; } }
+    .pane { background: var(--card); border: 1px solid var(--line); border-radius: 14px; overflow: hidden; display: flex; flex-direction: column; min-height: 340px; }
+    .pane-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 10px 14px; border-bottom: 1px solid var(--line); }
+    .pane-head .t { font-family: var(--font-mono); font-size: 11.5px; letter-spacing: .14em; text-transform: uppercase; color: var(--faint); white-space: nowrap; }
+    .editor-wrap { display: flex; flex: 1; min-height: 300px; position: relative; }
+    .gutter { font-family: var(--font-mono); font-size: 13px; line-height: 1.6; color: var(--faint); text-align: right; padding: 12px 8px 12px 12px; user-select: none; overflow: hidden; background: rgba(255,255,255,.02); border-right: 1px solid var(--line); min-width: 44px; white-space: pre; }
+    .gutter .errline { color: var(--bad); font-weight: 700; }
+    textarea#input { flex: 1; background: #06080a; border: none; color: var(--text); font-family: var(--font-mono); font-size: 13px; line-height: 1.6; padding: 12px; resize: vertical; min-height: 300px; }
+    textarea#input:focus { outline: none; }
+    .error { display: none; padding: 10px 14px; border-top: 1px solid rgba(240,133,138,.35); background: rgba(240,133,138,.08); color: var(--bad); font-family: var(--font-mono); font-size: 13px; line-height: 1.5; }
+    .error.show { display: block; }
+    .search { display: flex; align-items: center; gap: 8px; flex: 1; min-width: 140px; }
+    .search input { flex: 1; min-width: 0; background: #06080a; border: 1px solid var(--line); border-radius: 999px; color: var(--text); font-family: var(--font-mono); font-size: 13px; padding: 8px 14px; }
+    .search input:focus { outline: none; border-color: var(--accent); }
+    .search .count { font-family: var(--font-mono); font-size: 12px; color: var(--muted); white-space: nowrap; }
+    .search .clear-search { background: none; border: none; color: var(--faint); font-size: 16px; cursor: pointer; padding: 2px 6px; display: none; }
+    .search .clear-search.show { display: inline; }
+    .tree { flex: 1; overflow: auto; padding: 12px 14px; font-family: var(--font-mono); font-size: 13px; line-height: 1.6; background: #06080a; min-height: 300px; max-height: 560px; }
+    .empty { color: var(--faint); font-size: 13.5px; line-height: 1.7; padding: 24px 8px; }
+    .empty strong { color: var(--muted); font-weight: 600; }
+    .tnode { margin-left: 2px; }
+    .trow { display: flex; align-items: baseline; gap: 6px; padding: 1px 4px; border-radius: 6px; }
+    .trow:hover { background: rgba(255,255,255,.04); }
+    .caret { width: 16px; color: var(--accent); cursor: pointer; user-select: none; font-size: 11px; flex-shrink: 0; text-align: center; }
+    .caret.leaf { cursor: default; }
+    .tkey { color: var(--accent); cursor: pointer; }
+    .tkey:hover { text-decoration: underline; }
+    .tidx { color: var(--faint); font-size: 11.5px; cursor: pointer; }
+    .tidx:hover { color: var(--accent); }
+    .tval-s { color: var(--str); word-break: break-all; }
+    .tval-n { color: var(--num); }
+    .tval-b { color: var(--bool); }
+    .tval-null { color: var(--bool); font-style: italic; }
+    .tpunct { color: var(--faint); }
+    .tsummary { color: var(--faint); font-size: 12px; }
+    mark { background: rgba(210,162,76,.35); color: var(--text); border-radius: 3px; padding: 0 1px; }
+    .stats { display: flex; flex-wrap: wrap; gap: 8px 20px; margin-top: 14px; padding: 12px 16px; background: var(--card); border: 1px solid var(--line); border-radius: 14px; font-family: var(--font-mono); font-size: 12.5px; color: var(--muted); }
+    .stats b { color: var(--text); font-weight: 600; }
+    .stats .lbl { color: var(--faint); letter-spacing: .08em; text-transform: uppercase; font-size: 10.5px; margin-right: 6px; }
+    .tips { margin-top: 36px; }
+    .tips h2 { font-family: var(--font-display); font-weight: 500; font-size: 24px; margin-bottom: 10px; }
+    .tips p, .tips li { color: var(--muted); font-size: 15px; line-height: 1.7; }
+    .tips ul { padding-left: 20px; }
+    .tips code { font-family: var(--font-mono); font-size: 13px; color: var(--accent); background: rgba(210,162,76,.08); padding: 1px 6px; border-radius: 6px; }
+    .toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(8px); background: #1a1e24; border: 1px solid var(--accent); color: var(--text); font-family: var(--font-mono); font-size: 13px; padding: 10px 18px; border-radius: 999px; opacity: 0; pointer-events: none; transition: opacity .18s ease, transform .18s ease; z-index: 10; max-width: 90vw; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+    footer { text-align: center; padding: 24px; color: var(--faint); font-size: 13px; border-top: 1px solid var(--line); }
+    footer a { color: var(--muted); text-decoration: none; }
+    footer a:hover { color: var(--accent); }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="/">Shipwright <em>Studio</em></a>
+    <a href="/ideas/">← All Lab demos</a>
+  </header>
+  <main>
+    <h1>JSON <em>Viewer</em></h1>
+    <p class="lede"><strong>JSON Viewer is a free online tool that turns raw JSON into a collapsible, searchable tree.</strong> Paste an API response, a config file, or a log payload and explore it node by node — expand what matters, search for any key or value, and copy the path of anything you find. Everything runs in your browser; nothing is uploaded.</p>
+
+    <div class="toolbar">
+      <button class="btn" id="viewBtn" type="button">View tree</button>
+      <button class="btn ghost" id="sampleApi" type="button">Sample: API response</button>
+      <button class="btn ghost" id="sampleConfig" type="button">Sample: Config</button>
+      <span class="spacer"></span>
+      <button class="btn plain" id="expandAll" type="button">Expand all</button>
+      <button class="btn plain" id="collapseAll" type="button">Collapse all</button>
+      <button class="btn plain" id="clearBtn" type="button">Clear</button>
+    </div>
+
+    <div class="grid">
+      <section class="pane" aria-label="JSON input">
+        <div class="pane-head"><span class="t">Input</span><span class="t" id="inputMeta">paste JSON</span></div>
+        <div class="editor-wrap">
+          <div class="gutter" id="gutter" aria-hidden="true">1</div>
+          <textarea id="input" spellcheck="false" placeholder='Paste JSON here…&#10;{&#10;  "store": {&#10;    "book": [&#10;      { "title": "Dune", "price": 9.99 }&#10;    ]&#10;  }&#10;}' aria-label="JSON input"></textarea>
+        </div>
+        <div class="error" id="error" role="alert"></div>
+      </section>
+
+      <section class="pane" aria-label="JSON tree">
+        <div class="pane-head">
+          <span class="t">Tree</span>
+          <div class="search">
+            <input id="search" type="search" placeholder="Search keys &amp; values…" aria-label="Search keys and values" />
+            <button class="clear-search" id="clearSearch" type="button" aria-label="Clear search">×</button>
+            <span class="count" id="matchCount"></span>
+          </div>
+        </div>
+        <div class="tree" id="tree"><p class="empty"><strong>Paste JSON to explore it.</strong><br />Valid JSON renders here as a collapsible tree. Click any key to copy its path.</p></div>
+      </section>
+    </div>
+
+    <div class="stats" id="stats" hidden></div>
+
+    <section class="tips">
+      <h2>How it works</h2>
+      <ul>
+        <li>Click a <code>▸</code> caret to expand a container, or <code>▾</code> to collapse it. <strong>Expand all</strong> and <strong>Collapse all</strong> do the whole document at once.</li>
+        <li>Click any key (or array index) to copy its JSON path, like <code>$.store.book[0].title</code>.</li>
+        <li>Search matches keys and values, highlights them, and hides branches with no match.</li>
+        <li>Private by design: parsing and rendering happen entirely in your browser — your JSON never leaves this page.</li>
+      </ul>
+    </section>
+  </main>
+  <footer><a href="/">Shipwright Studio</a> · Lab demo</footer>
+  <div class="toast" id="toast" role="status"></div>
+
+<script>
+"use strict";
+
+/* ---- Pure logic (no DOM) — also exercised by the node test ---- */
+
+function isContainer(v) { return v !== null && typeof v === "object"; }
+
+function pathToString(path) {
+  var out = "$";
+  for (var i = 0; i < path.length; i++) {
+    var seg = path[i];
+    if (typeof seg === "number") out += "[" + seg + "]";
+    else if (/^[A-Za-z_$][A-Za-z0-9_$]*$/.test(seg)) out += "." + seg;
+    else out += "[" + JSON.stringify(seg) + "]";
+  }
+  return out;
+}
+
+function parseJsonWithPosition(text) {
+  try {
+    return { ok: true, value: JSON.parse(text) };
+  } catch (e) {
+    var result = { ok: false, message: e.message };
+    var pos = findJsonErrorPosition(text);
+    if (pos >= 0) {
+      var before = text.slice(0, pos);
+      result.position = pos;
+      result.line = before.split("\n").length;
+      result.column = pos - before.lastIndexOf("\n");
+    }
+    return result;
+  }
+}
+
+// First offset where the text stops being valid JSON. Modern V8 error
+// messages no longer carry a position, so we scan for it ourselves.
+// Returns -1 if no error is found (should not happen after a failed parse).
+function findJsonErrorPosition(text) {
+  var i = 0, n = text.length;
+  function fail() { throw { pos: i }; }
+  function skipWs() { while (i < n && " \t\n\r".indexOf(text[i]) !== -1) i++; }
+  function expect(lit) {
+    for (var k = 0; k < lit.length; k++) { if (text[i + k] !== lit[k]) fail(); }
+    i += lit.length;
+  }
+  function parseString() {
+    i++; // opening quote
+    while (i < n) {
+      var c = text[i];
+      if (c === '"') { i++; return; }
+      if (c === "\\") {
+        i++;
+        if (i >= n) fail();
+        var e = text[i];
+        if ('"\\/bfnrt'.indexOf(e) !== -1) { i++; continue; }
+        if (e === "u") {
+          for (var h = 0; h < 4; h++) { i++; if (i >= n || "0123456789abcdefABCDEF".indexOf(text[i]) === -1) fail(); }
+          i++; continue;
+        }
+        fail();
+      }
+      if (c < " ") fail(); // unescaped control character
+      i++;
+    }
+    fail(); // unterminated string
+  }
+  function parseNumber() {
+    if (text[i] === "-") i++;
+    if (text[i] === "0") i++;
+    else if (text[i] >= "1" && text[i] <= "9") { while (i < n && text[i] >= "0" && text[i] <= "9") i++; }
+    else fail();
+    if (text[i] === ".") {
+      i++;
+      if (!(text[i] >= "0" && text[i] <= "9")) fail();
+      while (i < n && text[i] >= "0" && text[i] <= "9") i++;
+    }
+    if (text[i] === "e" || text[i] === "E") {
+      i++;
+      if (text[i] === "+" || text[i] === "-") i++;
+      if (!(text[i] >= "0" && text[i] <= "9")) fail();
+      while (i < n && text[i] >= "0" && text[i] <= "9") i++;
+    }
+  }
+  function parseArray() {
+    i++; skipWs();
+    if (text[i] === "]") { i++; return; }
+    for (;;) {
+      parseValue();
+      skipWs();
+      if (text[i] === ",") { i++; continue; }
+      if (text[i] === "]") { i++; return; }
+      fail();
+    }
+  }
+  function parseObject() {
+    i++; skipWs();
+    if (text[i] === "}") { i++; return; }
+    for (;;) {
+      skipWs();
+      if (text[i] !== '"') fail();
+      parseString();
+      skipWs();
+      if (text[i] !== ":") fail();
+      i++;
+      parseValue();
+      skipWs();
+      if (text[i] === ",") { i++; continue; }
+      if (text[i] === "}") { i++; return; }
+      fail();
+    }
+  }
+  function parseValue() {
+    skipWs();
+    if (i >= n) fail();
+    var c = text[i];
+    if (c === "{") parseObject();
+    else if (c === "[") parseArray();
+    else if (c === '"') parseString();
+    else if (c === "t") expect("true");
+    else if (c === "f") expect("false");
+    else if (c === "n") expect("null");
+    else if (c === "-" || (c >= "0" && c <= "9")) parseNumber();
+    else fail();
+  }
+  try {
+    parseValue();
+    skipWs();
+    if (i < n) fail(); // trailing content
+    return -1;
+  } catch (e) {
+    return (e && typeof e.pos === "number") ? e.pos : -1;
+  }
+}
+
+function computeStats(value) {
+  var stats = { nodes: 0, depth: 0, objects: 0, arrays: 0, strings: 0, numbers: 0, booleans: 0, nulls: 0 };
+  (function walk(v, d) {
+    stats.nodes++;
+    if (d > stats.depth) stats.depth = d;
+    if (Array.isArray(v)) {
+      stats.arrays++;
+      for (var i = 0; i < v.length; i++) walk(v[i], d + 1);
+    } else if (v !== null && typeof v === "object") {
+      stats.objects++;
+      var keys = Object.keys(v);
+      for (var j = 0; j < keys.length; j++) walk(v[keys[j]], d + 1);
+    } else if (typeof v === "string") stats.strings++;
+    else if (typeof v === "number") stats.numbers++;
+    else if (typeof v === "boolean") stats.booleans++;
+    else if (v === null) stats.nulls++;
+  })(value, 1);
+  return stats;
+}
+
+// Returns { matches: Map<pathString, "key"|"value"|"both">, visible: Set<pathString> }
+// A node is visible when it matches or has a matching descendant.
+function findMatches(value, query) {
+  var q = query.toLowerCase();
+  var matches = new Map();
+  var visible = new Set();
+  function nodeMatches(key, v) {
+    var keyHit = key !== null && String(key).toLowerCase().indexOf(q) !== -1;
+    var valHit = !isContainer(v) && String(v).toLowerCase().indexOf(q) !== -1;
+    if (keyHit && valHit) return "both";
+    if (keyHit) return "key";
+    if (valHit) return "value";
+    return null;
+  }
+  (function walk(v, path, key) {
+    var hit = nodeMatches(key, v);
+    var childVisible = false;
+    if (Array.isArray(v)) {
+      for (var i = 0; i < v.length; i++) childVisible = walk(v[i], path.concat(i), i) || childVisible;
+    } else if (isContainer(v)) {
+      var keys = Object.keys(v);
+      for (var j = 0; j < keys.length; j++) childVisible = walk(v[keys[j]], path.concat(keys[j]), keys[j]) || childVisible;
+    }
+    var ps = pathToString(path);
+    if (hit) matches.set(ps, hit);
+    if (hit || childVisible) { visible.add(ps); return true; }
+    return false;
+  })(value, [], null);
+  return { matches: matches, visible: visible };
+}
+
+if (typeof module !== "undefined" && module.exports) {
+  module.exports = { parseJsonWithPosition: parseJsonWithPosition, findJsonErrorPosition: findJsonErrorPosition, computeStats: computeStats, findMatches: findMatches, pathToString: pathToString, isContainer: isContainer };
+}
+
+/* ---- DOM layer ---- */
+
+if (typeof document !== "undefined") {
+  var $ = function (id) { return document.getElementById(id); };
+  var input = $("input"), gutter = $("gutter"), errorBox = $("error"), treeEl = $("tree"),
+      searchInput = $("search"), matchCount = $("matchCount"), clearSearchBtn = $("clearSearch"),
+      statsEl = $("stats"), inputMeta = $("inputMeta"), toastEl = $("toast");
+
+  var parsed = null;      // last successfully parsed value
+  var parseError = null;  // last parse failure
+  var collapsed = new Set(); // path strings of collapsed containers
+  var debounceTimer = null;
+  var toastTimer = null;
+
+  var SAMPLE_API = {
+    store: {
+      name: "Corner Books",
+      open: true,
+      rating: 4.7,
+      address: { street: "12 Harbor Lane", city: "Fremont", zip: "94538", geo: { lat: 37.548, lng: -121.988 } },
+      book: [
+        { category: "fiction", title: "Dune", author: "Frank Herbert", price: 9.99, tags: ["sci-fi", "classic"], inStock: true },
+        { category: "fiction", title: "The Left Hand of Darkness", author: "Ursula K. Le Guin", price: 8.5, tags: ["sci-fi"], inStock: false },
+        { category: "reference", title: "The Rust Book", author: null, price: 0, tags: [], inStock: true }
+      ],
+      bicycle: { color: "red", price: 19.95, electric: false }
+    },
+    meta: { generatedAt: "2026-11-24T06:00:00Z", total: 3, nextPage: null }
+  };
+
+  var SAMPLE_CONFIG = {
+    app: { name: "shipwright", version: "1.4.2", debug: false },
+    server: { host: "0.0.0.0", port: 8080, workers: 4, timeoutMs: 30000 },
+    database: { engine: "postgres", pool: { min: 2, max: 10 }, ssl: true },
+    features: { search: true, billing: false, beta: ["tree-view", "dark-mode"] },
+    limits: { requestsPerMinute: 120, maxPayloadKb: 512, retries: 3 }
+  };
+
+  function showToast(msg) {
+    toastEl.textContent = msg;
+    toastEl.classList.add("show");
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () { toastEl.classList.remove("show"); }, 2200);
+  }
+
+  function copyText(text, label) {
+    function done() { showToast("Copied path: " + text); }
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(done, function () { fallbackCopy(text); done(); });
+    } else { fallbackCopy(text); done(); }
+  }
+  function fallbackCopy(text) {
+    var ta = document.createElement("textarea");
+    ta.value = text; ta.style.position = "fixed"; ta.style.opacity = "0";
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand("copy"); } catch (e) {}
+    document.body.removeChild(ta);
+  }
+
+  function updateGutter() {
+    var lines = input.value.split("\n").length;
+    var html = "";
+    for (var i = 1; i <= lines; i++) {
+      html += (parseError && parseError.line === i)
+        ? '<span class="errline">' + i + "</span>\n"
+        : i + "\n";
+    }
+    gutter.innerHTML = html;
+  }
+
+  function renderError() {
+    if (!parseError) { errorBox.classList.remove("show"); errorBox.textContent = ""; return; }
+    var msg = "Invalid JSON";
+    if (parseError.line) msg += " — line " + parseError.line + ", column " + parseError.column;
+    msg += ": " + parseError.message;
+    errorBox.textContent = msg;
+    errorBox.classList.add("show");
+  }
+
+  function parseInput() {
+    var text = input.value;
+    inputMeta.textContent = text.length ? text.length + " chars" : "paste JSON";
+    if (!text.trim()) {
+      parsed = null; parseError = null;
+      treeEl.innerHTML = '<p class="empty"><strong>Paste JSON to explore it.</strong><br />Valid JSON renders here as a collapsible tree. Click any key to copy its path.</p>';
+      statsEl.hidden = true; matchCount.textContent = "";
+      renderError(); updateGutter();
+      return;
+    }
+    var result = parseJsonWithPosition(text);
+    if (!result.ok) {
+      parsed = null; parseError = result;
+      treeEl.innerHTML = '<p class="empty"><strong>Couldn’t parse this JSON.</strong><br />Fix the error below the input and the tree will appear.</p>';
+      statsEl.hidden = true; matchCount.textContent = "";
+      renderError(); updateGutter();
+      return;
+    }
+    parsed = result.value; parseError = null;
+    collapsed = new Set();
+    renderError(); updateGutter(); renderStats(); renderTree();
+  }
+
+  function renderStats() {
+    if (!parsed && parsed !== 0 && parsed !== false && parsed !== "" && parsed !== null) { statsEl.hidden = true; return; }
+    var s = computeStats(parsed);
+    statsEl.innerHTML =
+      '<span><span class="lbl">Nodes</span><b>' + s.nodes + '</b></span>' +
+      '<span><span class="lbl">Depth</span><b>' + s.depth + '</b></span>' +
+      '<span><span class="lbl">Objects</span><b>' + s.objects + '</b></span>' +
+      '<span><span class="lbl">Arrays</span><b>' + s.arrays + '</b></span>' +
+      '<span><span class="lbl">Strings</span><b>' + s.strings + '</b></span>' +
+      '<span><span class="lbl">Numbers</span><b>' + s.numbers + '</b></span>' +
+      '<span><span class="lbl">Booleans</span><b>' + s.booleans + '</b></span>' +
+      '<span><span class="lbl">Nulls</span><b>' + s.nulls + '</b></span>';
+    statsEl.hidden = false;
+  }
+
+  function highlight(text, query) {
+    if (!query) return document.createTextNode(text);
+    var frag = document.createDocumentFragment();
+    var lower = text.toLowerCase(), q = query.toLowerCase(), idx = 0, pos;
+    while ((pos = lower.indexOf(q, idx)) !== -1) {
+      if (pos > idx) frag.appendChild(document.createTextNode(text.slice(idx, pos)));
+      var mark = document.createElement("mark");
+      mark.textContent = text.slice(pos, pos + q.length);
+      frag.appendChild(mark);
+      idx = pos + q.length;
+    }
+    if (idx < text.length) frag.appendChild(document.createTextNode(text.slice(idx)));
+    return frag;
+  }
+
+  function renderTree() {
+    treeEl.innerHTML = "";
+    if (parsed === undefined || parsed === null && !parseError && !input.value.trim()) return;
+    var query = searchInput.value.trim();
+    var search = query ? findMatches(parsed, query) : null;
+    if (search) {
+      matchCount.textContent = search.matches.size === 1 ? "1 match" : search.matches.size + " matches";
+      if (search.matches.size === 0) {
+        treeEl.innerHTML = '<p class="empty"><strong>No matches.</strong><br />Nothing in this JSON contains “' + query.replace(/</g, "&lt;") + '”.</p>';
+        return;
+      }
+    } else {
+      matchCount.textContent = "";
+    }
+    treeEl.appendChild(buildNode(parsed, [], null, search, query));
+  }
+
+  function buildNode(value, path, key, search, query) {
+    var ps = pathToString(path);
+    var searching = !!search;
+    if (searching && !search.visible.has(ps)) return null;
+    var isCont = isContainer(value);
+    var empty = isCont && (Array.isArray(value) ? value.length === 0 : Object.keys(value).length === 0);
+    var node = document.createElement("div");
+    node.className = "tnode";
+    var row = document.createElement("div");
+    row.className = "trow";
+
+    var caret = document.createElement("span");
+    caret.className = "caret" + (isCont && !empty ? "" : " leaf");
+    var isCollapsed = isCont && !empty && collapsed.has(ps);
+    if (isCont && !empty) {
+      caret.textContent = isCollapsed ? "▸" : "▾";
+      caret.addEventListener("click", function () {
+        if (collapsed.has(ps)) collapsed.delete(ps); else collapsed.add(ps);
+        renderTree();
+      });
+    }
+    row.appendChild(caret);
+
+    // Key / index label (click to copy path)
+    if (key !== null) {
+      var keyEl = document.createElement("span");
+      keyEl.className = typeof key === "number" ? "tidx" : "tkey";
+      var keyText = typeof key === "number" ? key + ":" : JSON.stringify(key) + ":";
+      var hit = search && search.matches.get(ps);
+      if (hit === "key" || hit === "both") keyEl.appendChild(highlight(keyText, query));
+      else keyEl.textContent = keyText;
+      keyEl.title = "Click to copy path: " + ps;
+      keyEl.addEventListener("click", function () { copyText(ps); });
+      row.appendChild(keyEl);
+    }
+
+    if (!isCont) {
+      row.appendChild(primitiveEl(value, search, ps, query));
+    } else if (empty) {
+      var e = document.createElement("span");
+      e.className = "tpunct";
+      e.textContent = Array.isArray(value) ? "[]" : "{}";
+      row.appendChild(e);
+    } else {
+      var open = document.createElement("span");
+      open.className = "tpunct";
+      open.textContent = Array.isArray(value) ? "[" : "{";
+      row.appendChild(open);
+      // During search, ancestors of matches always expand; manual collapse applies otherwise.
+      var showSummary = isCollapsed && !searching;
+      if (showSummary) {
+        var summary = document.createElement("span");
+        summary.className = "tsummary";
+        summary.textContent = Array.isArray(value)
+          ? " " + value.length + (value.length === 1 ? " item " : " items ") + "… "
+          : " " + Object.keys(value).length + (Object.keys(value).length === 1 ? " key " : " keys ") + "… ";
+        row.appendChild(summary);
+        var close = document.createElement("span");
+        close.className = "tpunct";
+        close.textContent = Array.isArray(value) ? "]" : "}";
+        row.appendChild(close);
+      }
+    }
+    node.appendChild(row);
+
+    if (isCont && !empty && (!isCollapsed || searching)) {
+      var kids = document.createElement("div");
+      kids.style.marginLeft = "18px";
+      var entries = Array.isArray(value)
+        ? value.map(function (v, i) { return [i, v]; })
+        : Object.keys(value).map(function (k) { return [k, value[k]]; });
+      for (var i = 0; i < entries.length; i++) {
+        var child = buildNode(entries[i][1], path.concat(entries[i][0]), entries[i][0], search, query);
+        if (child) kids.appendChild(child);
+      }
+      node.appendChild(kids);
+      var closer = document.createElement("div");
+      closer.className = "trow";
+      var spacer = document.createElement("span");
+      spacer.className = "caret leaf";
+      closer.appendChild(spacer);
+      var closeEl = document.createElement("span");
+      closeEl.className = "tpunct";
+      closeEl.textContent = Array.isArray(value) ? "]" : "}";
+      closer.appendChild(closeEl);
+      node.appendChild(closer);
+    }
+    return node;
+  }
+
+  function primitiveEl(value, search, ps, query) {
+    var el = document.createElement("span");
+    var hit = search && search.matches.get(ps);
+    if (typeof value === "string") {
+      el.className = "tval-s";
+      if (hit === "value" || hit === "both") el.appendChild(highlight('"' + value + '"', query));
+      else el.textContent = '"' + value + '"';
+    } else if (typeof value === "number") {
+      el.className = "tval-n"; el.textContent = String(value);
+    } else if (typeof value === "boolean") {
+      el.className = "tval-b"; el.textContent = String(value);
+    } else {
+      el.className = "tval-null"; el.textContent = "null";
+    }
+    return el;
+  }
+
+  function setAllCollapsed(collapse) {
+    if (!parsed || !isContainer(parsed)) return;
+    collapsed = new Set();
+    if (collapse) {
+      (function walk(v, path) {
+        if (!isContainer(v)) return;
+        if (Array.isArray(v) ? v.length : Object.keys(v).length) collapsed.add(pathToString(path));
+        if (Array.isArray(v)) { for (var i = 0; i < v.length; i++) walk(v[i], path.concat(i)); }
+        else { var ks = Object.keys(v); for (var j = 0; j < ks.length; j++) walk(v[ks[j]], path.concat(ks[j])); }
+      })(parsed, []);
+    }
+    renderTree();
+  }
+
+  input.addEventListener("input", function () {
+    clearTimeout(debounceTimer);
+    debounceTimer = setTimeout(parseInput, 350);
+    updateGutter();
+  });
+  input.addEventListener("scroll", function () { gutter.scrollTop = input.scrollTop; });
+  $("viewBtn").addEventListener("click", parseInput);
+  $("sampleApi").addEventListener("click", function () { input.value = JSON.stringify(SAMPLE_API, null, 2); parseInput(); });
+  $("sampleConfig").addEventListener("click", function () { input.value = JSON.stringify(SAMPLE_CONFIG, null, 2); parseInput(); });
+  $("clearBtn").addEventListener("click", function () {
+    input.value = ""; searchInput.value = ""; clearSearchBtn.classList.remove("show");
+    collapsed = new Set(); parseInput(); input.focus();
+  });
+  $("expandAll").addEventListener("click", function () { setAllCollapsed(false); });
+  $("collapseAll").addEventListener("click", function () { setAllCollapsed(true); });
+  searchInput.addEventListener("input", function () {
+    clearSearchBtn.classList.toggle("show", searchInput.value.length > 0);
+    if (parsed !== null || input.value.trim()) renderTree();
+  });
+  clearSearchBtn.addEventListener("click", function () {
+    searchInput.value = ""; clearSearchBtn.classList.remove("show"); renderTree(); searchInput.focus();
+  });
+
+  updateGutter();
+}
+</script>
+</body>
+</html>
