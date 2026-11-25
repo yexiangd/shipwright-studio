@@ -1,5 +1,5 @@
 {
-  "updated": "2026-11-24",
+  "updated": "2026-11-25",
   "ideas": [
     {
       "id": "idea-000a",
@@ -381,7 +381,9 @@
       "tagline": "Roll any dice pool, see the distribution live.",
       "priority": 54,
       "effort": "S",
-      "status": "todo"
+      "status": "done",
+      "url": "/lab/dice-stats/",
+      "shipped": "2026-11-25"
     },
     {
       "id": "idea-031",
@@ -1151,7 +1153,9 @@
       "tagline": "Heads or tails, with physics-grade drama.",
       "priority": 54,
       "effort": "S",
-      "status": "todo"
+      "status": "done",
+      "url": "/lab/coin-flip/",
+      "shipped": "2026-11-25"
     },
     {
       "id": "idea-097",

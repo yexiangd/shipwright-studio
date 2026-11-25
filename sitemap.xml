@@ -91,6 +91,11 @@
     <priority>0.7</priority>
   </url>
   <url>
+    <loc>https://shipwright-studio.pages.dev/lab/coin-flip/</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
     <loc>https://shipwright-studio.pages.dev/lab/color-palette/</loc>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
@@ -127,6 +132,11 @@
   </url>
   <url>
     <loc>https://shipwright-studio.pages.dev/lab/depeg-monitor/</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://shipwright-studio.pages.dev/lab/dice-stats/</loc>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>

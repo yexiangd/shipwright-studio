@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dice Lab · Shipwright Studio</title>
+<meta name="description" content="Free online dice roller for any pool — d4 to d100, modifiers, advantage and 4d6 drop lowest — with the exact probability distribution shown live beside your rolls.">
+<link rel="canonical" href="https://shipwright-studio.pages.dev/lab/dice-stats/">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"WebApplication","name":"Dice Lab","url":"https://shipwright-studio.pages.dev/lab/dice-stats/","description":"Dice Lab is a free online tool that rolls any dice pool and shows the exact probability distribution live beside your results.","applicationCategory":"GameApplication","operatingSystem":"Web","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"}}
+</script>
+<style>
+:root{--bg:#0a0c0f;--panel:#101318;--line:#1c2128;--txt:#e8e4da;--mut:#9aa3b2;--brass:#d2a24c;--green:#7fb069;--red:#e0655f;--pale:#e8e4da}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--txt);font-family:Fraunces,Georgia,serif;line-height:1.65;padding:2rem 1.2rem 4rem;max-width:960px;margin:0 auto}
+a{color:var(--brass)}
+.nav{display:flex;gap:1.2rem;font-size:.85rem;margin-bottom:1.2rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.nav a{color:var(--mut);text-decoration:none}.nav a:hover{color:var(--brass)}
+.eyebrow{font-size:.75rem;letter-spacing:.22em;text-transform:uppercase;color:var(--mut);font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+h1{font-weight:600;font-size:clamp(2.1rem,5vw,3rem);margin:.5rem 0 .7rem}
+.define{color:var(--mut);max-width:46rem;margin-bottom:1.2rem}.define strong{color:var(--txt)}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:1.4rem;margin-bottom:1.4rem}
+.cardlabel{font-size:.72rem;letter-spacing:.18em;text-transform:uppercase;color:var(--mut);margin-bottom:.8rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.ui{font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.mono{font-family:"JetBrains Mono",ui-monospace,monospace}
+.btn{font-size:1rem;border:1px solid var(--line);background:transparent;color:var(--txt);border-radius:999px;padding:.6rem 1.2rem;cursor:pointer;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.btn:hover{border-color:var(--brass);color:var(--brass)}
+.btn.brass{border-color:var(--brass);color:var(--brass);background:rgba(210,162,76,.08)}
+.btn:disabled{opacity:.45;cursor:default}
+.btn.active{border-color:var(--brass);color:var(--brass);background:rgba(210,162,76,.12)}
+.btnrow{display:flex;gap:.6rem;flex-wrap:wrap;align-items:center}
+.btn.sm{font-size:.85rem;padding:.4rem .9rem}
+.stepper{display:flex;align-items:center;gap:.6rem}
+.stepper .val{font-size:1.4rem;min-width:2.2rem;text-align:center}
+.stepper .btn{padding:.35rem .9rem;font-size:1.1rem}
+.builder{display:grid;grid-template-columns:1fr 1fr;gap:1.2rem}
+.builder .field p{font-size:.85rem;color:var(--mut);margin-bottom:.5rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.notation{font-size:1.8rem;color:var(--brass);text-align:center;padding:.6rem 0 .2rem}
+.notation small{display:block;font-size:.8rem;color:var(--mut);font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.chips{display:flex;gap:.5rem;flex-wrap:wrap;margin-top:1rem}
+.mode-note{font-size:.85rem;color:var(--mut);margin-top:.6rem;min-height:1.2em;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.dice{display:flex;gap:.6rem;justify-content:center;flex-wrap:wrap;padding:1rem 0 .4rem;min-height:5.2rem;align-items:center}
+.die{width:4.2rem;height:4.2rem;background:#08090c;border:2px solid var(--line);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:1.5rem;font-family:"JetBrains Mono",ui-monospace,monospace}
+.die.dropped{opacity:.35;text-decoration:line-through}
+.die.rolling{border-color:var(--mut)}
+.total{text-align:center;font-size:1.15rem;min-height:1.8em}
+.total .bignum{color:var(--brass);font-size:1.6rem;font-weight:600}
+.total .nat{color:var(--green)}
+.total .nat1{color:var(--red)}
+.rollbtn{width:100%;font-size:1.2rem;padding:.9rem;margin-top:1rem}
+.histwrap{overflow-x:auto;padding-bottom:.4rem}
+.hist{display:flex;gap:2px;align-items:flex-end;min-height:180px;padding-top:1.2rem}
+.col{flex:1;min-width:9px;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:180px}
+.bars{display:flex;gap:1px;align-items:flex-end;height:150px}
+.bar{width:5px;border-radius:2px 2px 0 0}
+.bar.exact{background:var(--brass)}
+.bar.obs{background:var(--pale);opacity:.85}
+.blabel{font-size:.62rem;color:var(--mut);margin-top:.35rem;font-family:"JetBrains Mono",ui-monospace,monospace;white-space:nowrap}
+.legend{display:flex;gap:1.4rem;font-size:.85rem;color:var(--mut);margin-top:.8rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.legend i{display:inline-block;width:.7rem;height:.7rem;border-radius:2px;margin-right:.35rem}
+.legend .sw-exact{background:var(--brass)}
+.legend .sw-obs{background:var(--pale)}
+.histmeta{font-size:.9rem;color:var(--mut);margin-top:.6rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.histmeta strong{color:var(--txt)}
+.hist{list-style:none}.hist li{padding:.45rem 0;border-bottom:1px solid var(--line);font-size:.95rem}.hist li:last-child{border-bottom:0}
+.statsline{display:flex;gap:1rem;text-align:center;flex-wrap:wrap}
+.statsline div{flex:1;min-width:110px;background:#08090c;border:1px solid var(--line);border-radius:10px;padding:.8rem .4rem}
+.statsline .n{font-size:1.8rem;line-height:1.1}.statsline .l{font-size:.75rem;color:var(--mut);letter-spacing:.12em;text-transform:uppercase}
+.explain{font-size:.92rem;color:var(--mut)}.explain li{margin:.4rem 0}
+footer{margin-top:2.5rem;color:var(--mut);font-size:.85rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+@media(max-width:640px){.builder{grid-template-columns:1fr}.die{width:3.2rem;height:3.2rem;font-size:1.2rem}.notation{font-size:1.5rem}}
+</style>
+</head>
+<body>
+<nav class="nav"><a href="/">Shipwright Studio</a><a href="/ideas/">Lab</a></nav>
+<p class="eyebrow">Lab — Game</p>
+<h1>Dice Lab</h1>
+<p class="define"><strong>Dice Lab is a free online tool that</strong> rolls any dice pool — d4 to d100, with modifiers, advantage, and 4d6 drop lowest — and shows the exact probability distribution live beside your results, so you can see how likely that roll really was.</p>
+
+<div class="card">
+<p class="cardlabel">Your dice pool</p>
+<div class="builder">
+<div class="field">
+<p>Die type</p>
+<div class="btnrow" id="sidesRow">
+<button class="btn die-btn" data-sides="4">d4</button>
+<button class="btn die-btn" data-sides="6">d6</button>
+<button class="btn die-btn" data-sides="8">d8</button>
+<button class="btn die-btn" data-sides="10">d10</button>
+<button class="btn die-btn" data-sides="12">d12</button>
+<button class="btn die-btn active" data-sides="20">d20</button>
+<button class="btn die-btn" data-sides="100">d100</button>
+</div>
+</div>
+<div class="field">
+<p>Number of dice (1–20)</p>
+<div class="stepper">
+<button class="btn" id="countDown" aria-label="Fewer dice">−</button>
+<span class="val mono" id="countVal">1</span>
+<button class="btn" id="countUp" aria-label="More dice">+</button>
+</div>
+</div>
+<div class="field">
+<p>Modifier (−20 to +20)</p>
+<div class="stepper">
+<button class="btn" id="modDown" aria-label="Lower modifier">−</button>
+<span class="val mono" id="modVal">+0</span>
+<button class="btn" id="modUp" aria-label="Raise modifier">+</button>
+</div>
+</div>
+<div class="field">
+<p>Roll mode</p>
+<div class="btnrow" id="modeRow">
+<button class="btn mode-btn active" data-mode="standard">Standard</button>
+<button class="btn mode-btn" data-mode="droplowest">Drop lowest</button>
+<button class="btn mode-btn" data-mode="advantage">Advantage</button>
+<button class="btn mode-btn" data-mode="disadvantage">Disadvantage</button>
+</div>
+</div>
+</div>
+<p class="notation mono"><span id="notation">1d20</span><small id="notationSub">one twenty-sided die</small></p>
+<p class="mode-note" id="modeNote"></p>
+<p class="cardlabel" style="margin-top:1rem">Quick presets</p>
+<div class="chips">
+<button class="btn sm preset" data-preset="1d20">1d20</button>
+<button class="btn sm preset" data-preset="2d6">2d6</button>
+<button class="btn sm preset" data-preset="4d6dl">4d6 drop lowest</button>
+<button class="btn sm preset" data-preset="adv">Advantage d20</button>
+<button class="btn sm preset" data-preset="dis">Disadvantage d20</button>
+</div>
+<p class="ui" style="font-size:.85rem;color:var(--mut);margin-top:1rem">Changing the pool starts a fresh session — observed counts never mix pools.</p>
+</div>
+
+<div class="card">
+<p class="cardlabel">Roll</p>
+<div class="dice" id="diceRow"><div class="die">–</div></div>
+<p class="total" id="totalLine">Pick your dice and hit Roll.</p>
+<button class="btn brass rollbtn" id="rollBtn">Roll — or press Space / R</button>
+</div>
+
+<div class="card">
+<p class="cardlabel">Distribution — exact vs observed</p>
+<div class="histwrap"><div class="hist" id="hist"></div></div>
+<div class="legend"><span><i class="sw-exact"></i>Exact probability</span><span><i class="sw-obs"></i>Your rolls so far</span></div>
+<p class="histmeta" id="histMeta"></p>
+</div>
+
+<div class="card">
+<p class="cardlabel">Roll history — last 12</p>
+<ul class="hist" id="history"><li>No rolls yet — pick your dice and hit Roll.</li></ul>
+</div>
+
+<div class="card">
+<p class="cardlabel">Session stats</p>
+<div class="statsline">
+<div><div class="n" id="statRolls">0</div><div class="l">Rolls</div></div>
+<div><div class="n" id="statMean">—</div><div class="l">Mean</div></div>
+<div><div class="n" id="statMin">—</div><div class="l">Min</div></div>
+<div><div class="n" id="statMax">—</div><div class="l">Max</div></div>
+</div>
+<div class="btnrow" style="margin-top:1rem">
+<button class="btn brass" id="resetBtn">Clear session</button>
+</div>
+</div>
+
+<div class="card">
+<p class="cardlabel">How the maths works</p>
+<ul class="explain">
+<li>The exact curve is computed by convolution: the distribution of one die is combined with itself once per extra die, so every total's probability is exact — no simulation involved. Drop-lowest, advantage and disadvantage are computed by enumerating every possible combination instead.</li>
+<li>That is why 2d6 clusters at 7: there are six ways to make 7 and only one way to make 2 or 12. A single d20 is flat — every face is equally likely.</li>
+<li>Advantage (keep the higher of 2d20) lifts the average roll from 10.5 to about 13.8; disadvantage drops it to about 7.2. The pale bars are your observed rolls — roll enough and they settle onto the brass curve.</li>
+<li>Everything is stored in localStorage in your browser only. If storage is unavailable the page still works, it just forgets the session when you leave.</li>
+</ul>
+</div>
+
+<footer>Built by Shipwright Studio · <a href="/ideas/">Back to the Lab</a></footer>
+
+<script>
+// --- Pure logic (extracted verbatim by the node test) ---
+const SIDES_LIST=[4,6,8,10,12,20,100];
+const COUNT_MIN=1,COUNT_MAX=20,MOD_MIN=-20,MOD_MAX=20;
+const ENUM_CAP=200000;
+function clamp(n,lo,hi){return Math.max(lo,Math.min(hi,n));}
+function formatMod(m){return (m>=0?"+":"")+m;}
+function notation(pool){
+  let s=pool.count+"d"+pool.sides;
+  if(pool.mode==="droplowest")s+=" drop lowest";
+  if(pool.mode==="advantage")s="2d"+pool.sides+" advantage";
+  if(pool.mode==="disadvantage")s="2d"+pool.sides+" disadvantage";
+  if(pool.modifier!==0)s+=formatMod(pool.modifier);
+  return s;
+}
+// Exact distribution for a standard pool: returns {totals:[...], probs:[...]} with probs summing to 1.
+function distStandard(count,sides,modifier){
+  let dist=[1];
+  for(let d=0;d<count;d++){
+    const next=new Array(dist.length+sides).fill(0);
+    for(let i=0;i<dist.length;i++){
+      if(dist[i]===0)continue;
+      const p=dist[i]/sides;
+      for(let f=1;f<=sides;f++)next[i+f]+=p;
+    }
+    dist=next;
+  }
+  const totals=[],probs=[];
+  for(let i=count;i<dist.length;i++){totals.push(i+modifier);probs.push(dist[i]);}
+  return {totals:totals,probs:probs};
+}
+// Exact distribution by enumeration, for drop-lowest / advantage / disadvantage.
+// keep: "lowest" drops the single lowest die; "highest"/"lowest" keeps one extreme of 2 dice.
+function distEnumerated(count,sides,modifier,mode){
+  const combos=Math.pow(sides,count);
+  if(combos>ENUM_CAP)return null;
+  const counts={};
+  const dice=new Array(count).fill(1);
+  function record(){
+    let kept;
+    if(mode==="droplowest"){
+      let minIdx=0;
+      for(let i=1;i<count;i++)if(dice[i]<dice[minIdx])minIdx=i;
+      kept=dice.reduce((a,v,i)=>i===minIdx?a:a+v,0);
+    } else if(mode==="advantage"){kept=Math.max(dice[0],dice[1]);}
+    else {kept=Math.min(dice[0],dice[1]);}
+    const t=kept+modifier;
+    counts[t]=(counts[t]||0)+1;
+  }
+  (function enumerate(pos){
+    if(pos===count){record();return;}
+    for(let f=1;f<=sides;f++){dice[pos]=f;enumerate(pos+1);}
+  })(0);
+  const totals=Object.keys(counts).map(Number).sort((a,b)=>a-b);
+  const probs=totals.map(t=>counts[t]/combos);
+  return {totals:totals,probs:probs};
+}
+function exactDist(pool){
+  if(pool.mode==="standard")return distStandard(pool.count,pool.sides,pool.modifier);
+  const eff=pool.mode==="droplowest"
+    ? {count:pool.count,sides:pool.sides}
+    : {count:2,sides:pool.sides};
+  const d=distEnumerated(eff.count,eff.sides,pool.modifier,pool.mode);
+  if(d)return d;
+  return distStandard(pool.count,pool.sides,pool.modifier);
+}
+function meanOf(dist){
+  let m=0;
+  for(let i=0;i<dist.totals.length;i++)m+=dist.totals[i]*dist.probs[i];
+  return m;
+}
+function varianceOf(dist){
+  const m=meanOf(dist);
+  let v=0;
+  for(let i=0;i<dist.totals.length;i++)v+=Math.pow(dist.totals[i]-m,2)*dist.probs[i];
+  return v;
+}
+// Roll one pool with the supplied random function. Returns {dice, kept, dropped, droppedIdx, total}.
+function rollPool(rand,pool){
+  let n=pool.count;
+  if(pool.mode==="advantage"||pool.mode==="disadvantage")n=2;
+  const dice=[];
+  for(let i=0;i<n;i++)dice.push(1+Math.floor(rand()*pool.sides));
+  let kept=dice.slice(),dropped=[],droppedIdx=[];
+  if(pool.mode==="droplowest"){
+    let minIdx=0;
+    for(let i=1;i<dice.length;i++)if(dice[i]<dice[minIdx])minIdx=i;
+    dropped=[dice[minIdx]];
+    droppedIdx=[minIdx];
+    kept=dice.filter((_,i)=>i!==minIdx);
+  } else if(pool.mode==="advantage"){
+    const hi=Math.max(dice[0],dice[1]);
+    const dropIdx=dice[0]===hi?1:0;
+    kept=[hi];dropped=[dice[dropIdx]];droppedIdx=[dropIdx];
+  } else if(pool.mode==="disadvantage"){
+    const lo=Math.min(dice[0],dice[1]);
+    const dropIdx=dice[0]===lo?1:0;
+    kept=[lo];dropped=[dice[dropIdx]];droppedIdx=[dropIdx];
+  }
+  const total=kept.reduce((a,v)=>a+v,0)+pool.modifier;
+  return {dice:dice,kept:kept,dropped:dropped,droppedIdx:droppedIdx,total:total};
+}
+// Bucket a distribution (and observed counts) into at most maxBins bins for display.
+// Returns [{label, exact, observed}] where exact is probability and observed is a share (0..1).
+function bucketDist(dist,observed,totalRolls,maxBins){
+  const lo=dist.totals[0],hi=dist.totals[dist.totals.length-1];
+  const span=hi-lo+1;
+  const binSize=Math.max(1,Math.ceil(span/maxBins));
+  const bins=[];
+  for(let start=lo;start<=hi;start+=binSize){
+    const end=Math.min(hi,start+binSize-1);
+    let exact=0;
+    for(let i=0;i<dist.totals.length;i++)
+      if(dist.totals[i]>=start&&dist.totals[i]<=end)exact+=dist.probs[i];
+    let obs=0;
+    for(let t=start;t<=end;t++)obs+=observed[t]||0;
+    bins.push({label:start===end?String(start):start+"–"+end,exact:exact,observed:totalRolls>0?obs/totalRolls:0});
+  }
+  return bins;
+}
+// --- DOM wiring below ---
+const $=id=>document.getElementById(id);
+let pool={count:1,sides:20,modifier:0,mode:"standard"};
+let history=[];
+let observed={};
+let rolling=false;
+let storageOK=true;
+function save(){
+  if(!storageOK)return;
+  try{localStorage.setItem("dice-lab-session",JSON.stringify({pool:pool,history:history,observed:observed}));}catch(e){storageOK=false;}
+}
+function load(){
+  try{
+    const s=JSON.parse(localStorage.getItem("dice-lab-session")||"null");
+    if(s&&s.pool){
+      pool={count:clamp(s.pool.count||1,COUNT_MIN,COUNT_MAX),sides:SIDES_LIST.includes(s.pool.sides)?s.pool.sides:20,modifier:clamp(s.pool.modifier||0,MOD_MIN,MOD_MAX),mode:["standard","droplowest","advantage","disadvantage"].includes(s.pool.mode)?s.pool.mode:"standard"};
+      history=Array.isArray(s.history)?s.history.slice(0,12):[];
+      observed=s.observed||{};
+    }
+  }catch(e){storageOK=false;}
+}
+function clearSession(){
+  history=[];observed={};
+  save();renderAll();
+}
+function poolChanged(){
+  clearSession();
+}
+function modeNoteText(){
+  if(pool.mode==="droplowest"&&Math.pow(pool.sides,pool.count)>ENUM_CAP)
+    return "Drop-lowest needs a small pool (under 200,000 combinations) — showing the standard distribution instead.";
+  if(pool.mode==="droplowest")return "Rolls "+pool.count+"d"+pool.sides+" and drops the lowest die.";
+  if(pool.mode==="advantage")return "Rolls 2d"+pool.sides+" and keeps the highest.";
+  if(pool.mode==="disadvantage")return "Rolls 2d"+pool.sides+" and keeps the lowest.";
+  return "";
+}
+function renderPool(){
+  document.querySelectorAll(".die-btn").forEach(b=>b.classList.toggle("active",+b.dataset.sides===pool.sides));
+  document.querySelectorAll(".mode-btn").forEach(b=>b.classList.toggle("active",b.dataset.mode===pool.mode));
+  $("countVal").textContent=pool.count;
+  $("modVal").textContent=formatMod(pool.modifier);
+  $("notation").textContent=notation(pool);
+  const sub=pool.mode==="standard"
+    ? (pool.count===1?"one ":"")+pool.count+" "+(pool.count===1?"die":"dice")+" with "+pool.sides+" sides"+(pool.modifier!==0?", modifier "+formatMod(pool.modifier):"")
+    : pool.mode==="droplowest"?pool.count+"d"+pool.sides+", lowest dropped"
+    : pool.mode==="advantage"?"two d"+pool.sides+", keep the highest":"two d"+pool.sides+", keep the lowest";
+  $("notationSub").textContent=sub;
+  $("modeNote").textContent=modeNoteText();
+  $("countDown").disabled=rolling||pool.count<=COUNT_MIN;
+  $("countUp").disabled=rolling||pool.count>=COUNT_MAX;
+  $("modDown").disabled=rolling||pool.modifier<=MOD_MIN;
+  $("modUp").disabled=rolling||pool.modifier>=MOD_MAX;
+}
+function renderHist(){
+  const dist=exactDist(pool);
+  const bins=bucketDist(dist,observed,history.length,80);
+  let maxV=0;
+  bins.forEach(b=>{maxV=Math.max(maxV,b.exact,b.observed);});
+  const h=$("hist");
+  h.innerHTML=bins.map(b=>{
+    const eh=maxV>0?(b.exact/maxV*100):0;
+    const oh=maxV>0?(b.observed/maxV*100):0;
+    return '<div class="col" title="'+b.label+': exact '+(b.exact*100).toFixed(1)+'%, observed '+(b.observed*100).toFixed(1)+'%"><div class="bars"><div class="bar exact" style="height:'+Math.max(eh,0.5)+'%"></div><div class="bar obs" style="height:'+Math.max(oh,b.observed>0?0.5:0)+'%"></div></div><div class="blabel">'+b.label+'</div></div>';
+  }).join("");
+  const mean=meanOf(dist);
+  const sd=Math.sqrt(varianceOf(dist));
+  $("histMeta").innerHTML="Exact mean <strong>"+mean.toFixed(2)+"</strong> · standard deviation <strong>"+sd.toFixed(2)+"</strong> · range <strong>"+dist.totals[0]+"–"+dist.totals[dist.totals.length-1]+"</strong> · "+history.length+" roll"+(history.length===1?"":"s")+" so far";
+}
+function renderHistory(){
+  const h=$("history");
+  if(!history.length){h.innerHTML="<li>No rolls yet — pick your dice and hit Roll.</li>";return;}
+  h.innerHTML=history.slice().reverse().map(r=>{
+    const di=r.droppedIdx||[];
+    const diceStr=r.dice.map((v,i)=>di.includes(i)?"<s>"+v+"</s>":v).join(", ");
+    return "<li><span class='mono'>"+r.notation+"</span> — ["+diceStr+"]"+(r.modifier!==0?" "+formatMod(r.modifier):"")+" = <strong>"+r.total+"</strong></li>";
+  }).join("");
+}
+function renderStats(){
+  $("statRolls").textContent=history.length;
+  if(!history.length){$("statMean").textContent="—";$("statMin").textContent="—";$("statMax").textContent="—";return;}
+  const totals=history.map(r=>r.total);
+  const mean=totals.reduce((a,v)=>a+v,0)/totals.length;
+  $("statMean").textContent=mean.toFixed(1);
+  $("statMin").textContent=Math.min.apply(null,totals);
+  $("statMax").textContent=Math.max.apply(null,totals);
+}
+function renderAll(){renderPool();renderHist();renderHistory();renderStats();$("rollBtn").disabled=rolling;}
+function setPool(p){
+  pool=p;
+  poolChanged();
+}
+document.querySelectorAll(".die-btn").forEach(b=>b.addEventListener("click",()=>{
+  if(rolling)return;
+  setPool({count:pool.count,sides:+b.dataset.sides,modifier:pool.modifier,mode:pool.mode});
+}));
+$("countDown").addEventListener("click",()=>{if(!rolling&&pool.count>COUNT_MIN)setPool({count:pool.count-1,sides:pool.sides,modifier:pool.modifier,mode:pool.mode});});
+$("countUp").addEventListener("click",()=>{if(!rolling&&pool.count<COUNT_MAX)setPool({count:pool.count+1,sides:pool.sides,modifier:pool.modifier,mode:pool.mode});});
+$("modDown").addEventListener("click",()=>{if(!rolling&&pool.modifier>MOD_MIN)setPool({count:pool.count,sides:pool.sides,modifier:pool.modifier-1,mode:pool.mode});});
+$("modUp").addEventListener("click",()=>{if(!rolling&&pool.modifier<MOD_MAX)setPool({count:pool.count,sides:pool.sides,modifier:pool.modifier+1,mode:pool.mode});});
+document.querySelectorAll(".mode-btn").forEach(b=>b.addEventListener("click",()=>{
+  if(rolling)return;
+  setPool({count:pool.count,sides:pool.sides,modifier:pool.modifier,mode:b.dataset.mode});
+}));
+document.querySelectorAll(".preset").forEach(b=>b.addEventListener("click",()=>{
+  if(rolling)return;
+  const p=b.dataset.preset;
+  if(p==="1d20")setPool({count:1,sides:20,modifier:0,mode:"standard"});
+  if(p==="2d6")setPool({count:2,sides:6,modifier:0,mode:"standard"});
+  if(p==="4d6dl")setPool({count:4,sides:6,modifier:0,mode:"droplowest"});
+  if(p==="adv")setPool({count:2,sides:20,modifier:0,mode:"advantage"});
+  if(p==="dis")setPool({count:2,sides:20,modifier:0,mode:"disadvantage"});
+}));
+$("resetBtn").addEventListener("click",()=>{clearSession();$("totalLine").textContent="Session cleared — pick your dice and hit Roll.";});
+function showRoll(r,final){
+  const row=$("diceRow");
+  row.innerHTML=r.dice.map((v,i)=>{
+    const isDropped=(r.droppedIdx||[]).includes(i);
+    return '<div class="die'+(isDropped?" dropped":"")+'">'+v+'</div>';
+  }).join("");
+  const dist=exactDist(pool);
+  const idx=dist.totals.indexOf(r.total);
+  const pct=idx>=0?(dist.probs[idx]*100).toFixed(1):"?";
+  let callout="";
+  if(pool.mode==="standard"&&pool.count===1&&pool.sides===20){
+    if(r.dice[0]===20)callout=' <span class="nat">Natural 20!</span>';
+    if(r.dice[0]===1)callout=' <span class="nat1">Natural 1…</span>';
+  }
+  $("totalLine").innerHTML="Total <span class='bignum'>"+r.total+"</span> · exact chance of this total: "+pct+"%"+callout;
+}
+function roll(){
+  if(rolling)return;
+  rolling=true;renderAll();
+  const r=rollPool(Math.random,pool);
+  const row=$("diceRow");
+  row.innerHTML=r.dice.map(()=>'<div class="die rolling">?</div>').join("");
+  $("totalLine").textContent="Rolling…";
+  const faces=row.querySelectorAll(".die");
+  const iv=setInterval(()=>{
+    faces.forEach(f=>{f.textContent=1+Math.floor(Math.random()*pool.sides);});
+  },70);
+  const settleMs=120+r.dice.length*90;
+  setTimeout(()=>{
+    clearInterval(iv);
+    showRoll(r,true);
+    history.push({notation:notation(pool),dice:r.dice,dropped:r.dropped,droppedIdx:r.droppedIdx,total:r.total,modifier:pool.modifier});
+    if(history.length>12)history.shift();
+    observed[r.total]=(observed[r.total]||0)+1;
+    save();
+    rolling=false;
+    renderAll();
+  },settleMs);
+}
+$("rollBtn").addEventListener("click",roll);
+document.addEventListener("keydown",e=>{
+  if((e.code==="Space"||e.code==="KeyR")&&document.activeElement.tagName!=="BUTTON"){e.preventDefault();roll();}
+});
+load();
+renderAll();
+if(!storageOK){
+  const note=document.createElement("p");
+  note.className="ui";
+  note.style.cssText="font-size:.85rem;color:var(--mut);margin-top:1rem";
+  note.textContent="Note: browser storage is unavailable, so this session will not be remembered after you leave.";
+  document.querySelector(".card").appendChild(note);
+}
+</script>
+</body>
+</html>

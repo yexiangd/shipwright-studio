@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Coin Flip · Shipwright Studio</title>
+<meta name="description" content="Free online coin flip with a 3D spinning coin, best-of series mode, call-it mode, and honest crypto-grade 50/50 odds.">
+<link rel="canonical" href="https://shipwright-studio.pages.dev/lab/coin-flip/">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"WebApplication","name":"Coin Flip","url":"https://shipwright-studio.pages.dev/lab/coin-flip/","description":"Coin Flip is a free online tool that flips a virtual coin with crypto-grade 50/50 odds, best-of series mode, and a call-it mode for settling decisions.","applicationCategory":"GameApplication","operatingSystem":"Web","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"}}
+</script>
+<style>
+:root{--bg:#0a0c0f;--panel:#101318;--line:#1c2128;--txt:#e8e4da;--mut:#9aa3b2;--brass:#d2a24c;--green:#7fb069;--red:#e0655f}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--txt);font-family:Fraunces,Georgia,serif;line-height:1.65;padding:2rem 1.2rem 4rem;max-width:960px;margin:0 auto}
+a{color:var(--brass)}
+.nav{display:flex;gap:1.2rem;font-size:.85rem;margin-bottom:1.2rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.nav a{color:var(--mut);text-decoration:none}.nav a:hover{color:var(--brass)}
+.eyebrow{font-size:.75rem;letter-spacing:.22em;text-transform:uppercase;color:var(--mut);font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+h1{font-weight:600;font-size:clamp(2.1rem,5vw,3rem);margin:.5rem 0 .7rem}
+.define{color:var(--mut);max-width:46rem;margin-bottom:1.2rem}.define strong{color:var(--txt)}
+.notice{border:1px solid var(--brass);border-radius:10px;padding:.7rem 1rem;color:var(--brass);font-size:.92rem;margin-bottom:1.8rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:1.4rem;margin-bottom:1.4rem}
+.cardlabel{font-size:.72rem;letter-spacing:.18em;text-transform:uppercase;color:var(--mut);margin-bottom:.8rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.ui{font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.mono{font-family:"JetBrains Mono",ui-monospace,monospace}
+.btn{font-size:1rem;border:1px solid var(--line);background:transparent;color:var(--txt);border-radius:999px;padding:.6rem 1.2rem;cursor:pointer;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.btn:hover{border-color:var(--brass);color:var(--brass)}
+.btn.brass{border-color:var(--brass);color:var(--brass);background:rgba(210,162,76,.08)}
+.btn:disabled{opacity:.45;cursor:default}
+.btn.active{border-color:var(--brass);color:var(--brass);background:rgba(210,162,76,.12)}
+.btnrow{display:flex;gap:.6rem;flex-wrap:wrap;align-items:center}
+.stage{display:flex;justify-content:center;padding:1.6rem 0 .8rem;perspective:900px;cursor:pointer}
+.coin{width:min(220px,58vw);aspect-ratio:1/1;position:relative;transform-style:preserve-3d;transition:transform 1.4s cubic-bezier(.15,.75,.25,1)}
+.face{position:absolute;inset:0;border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;backface-visibility:hidden;-webkit-backface-visibility:hidden;border:6px solid var(--brass);background:radial-gradient(circle at 35% 30%,#f4d98a 0%,#d2a24c 45%,#8a6a2a 100%);color:#241a05;box-shadow:0 10px 40px rgba(0,0,0,.6),inset 0 0 0 3px rgba(255,255,255,.25)}
+.face .glyph{font-size:clamp(3.4rem,14vw,5rem);font-weight:600;line-height:1}
+.face .word{font-size:.8rem;letter-spacing:.3em;text-transform:uppercase;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif;font-weight:600}
+.face.tails{transform:rotateX(180deg)}
+.result{font-size:1.25rem;text-align:center;min-height:1.8em}
+.result .win{color:var(--green)}
+.result .lose{color:var(--mut)}
+.result .banner{color:var(--brass);font-weight:600}
+.flipbtn{width:100%;font-size:1.2rem;padding:.9rem;margin-top:1rem}
+.scoreboard{display:flex;gap:1rem;text-align:center;flex-wrap:wrap}
+.scoreboard div{flex:1;min-width:120px;background:#08090c;border:1px solid var(--line);border-radius:10px;padding:.8rem .4rem}
+.scoreboard .n{font-size:2rem;line-height:1.1}.scoreboard .l{font-size:.75rem;color:var(--mut);letter-spacing:.12em;text-transform:uppercase}
+.scoreboard div.leading{border-color:var(--brass)}
+.sublabel{font-size:.85rem;color:var(--mut);margin:.9rem 0 .5rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.chips{list-style:none;display:flex;gap:.45rem;flex-wrap:wrap}
+.chips li{width:2.1rem;height:2.1rem;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:"JetBrains Mono",ui-monospace,monospace;font-size:.85rem;border:1px solid var(--line);color:var(--mut)}
+.chips li.heads{border-color:var(--brass);color:var(--brass)}
+.chips li.tails{border-color:var(--mut);color:var(--txt)}
+.chips li.latest{box-shadow:0 0 0 2px var(--brass)}
+.chips li.empty{width:auto;height:auto;border:0;padding:.45rem 0;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.statgrid{display:flex;gap:1rem;text-align:center;flex-wrap:wrap}
+.statgrid div{flex:1;min-width:120px;background:#08090c;border:1px solid var(--line);border-radius:10px;padding:.8rem .4rem}
+.statgrid .n{font-size:1.7rem;line-height:1.1}.statgrid .l{font-size:.72rem;color:var(--mut);letter-spacing:.12em;text-transform:uppercase}
+.explain{font-size:.92rem;color:var(--mut)}.explain li{margin:.4rem 0}
+footer{margin-top:2.5rem;color:var(--mut);font-size:.85rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+@media(max-width:640px){.statgrid .n{font-size:1.4rem}.scoreboard .n{font-size:1.6rem}}
+</style>
+</head>
+<body>
+<nav class="nav"><a href="/">Shipwright Studio</a><a href="/ideas/">Lab</a></nav>
+<p class="eyebrow">Lab — Game</p>
+<h1>Coin Flip</h1>
+<p class="define"><strong>Coin Flip is a free online tool that</strong> flips a virtual coin with crypto-grade 50/50 odds — spin the coin, call it before it lands, or run a best-of series to settle a decision properly.</p>
+<p class="notice">Fair by construction. Each flip is decided by crypto.getRandomValues — exactly 50/50, fixed before the coin stops spinning. The animation is presentation only; the coin never changes its mind.</p>
+
+<div class="card">
+<p class="cardlabel">The coin — click it, or press Space</p>
+<div class="stage" id="stage" title="Flip the coin">
+<div class="coin" id="coin">
+<div class="face heads"><span class="glyph">H</span><span class="word">Heads</span></div>
+<div class="face tails"><span class="glyph">T</span><span class="word">Tails</span></div>
+</div>
+</div>
+<p class="result" id="result">Hit Flip and let it land.</p>
+<button class="btn brass flipbtn" id="flipBtn">Flip — or press Space</button>
+</div>
+
+<div class="card">
+<p class="cardlabel">Mode</p>
+<div class="btnrow" id="modeRow">
+<button class="btn mode active" data-mode="free">Free flip</button>
+<button class="btn mode" data-mode="call">Call it</button>
+<button class="btn mode" data-mode="series">Best of</button>
+</div>
+
+<div id="callPanel" hidden>
+<p class="sublabel">Call it before you flip:</p>
+<div class="btnrow" id="callRow">
+<button class="btn call" data-call="heads">Heads</button>
+<button class="btn call" data-call="tails">Tails</button>
+</div>
+</div>
+
+<div id="seriesPanel" hidden>
+<p class="sublabel">Series length:</p>
+<div class="btnrow" id="seriesLenRow">
+<button class="btn slen active" data-len="3">Best of 3</button>
+<button class="btn slen" data-len="5">Best of 5</button>
+<button class="btn slen" data-len="7">Best of 7</button>
+</div>
+<div class="scoreboard" style="margin-top:1rem">
+<div id="headsBox"><div class="n" id="headsScore">0</div><div class="l">Heads</div></div>
+<div id="tailsBox"><div class="n" id="tailsScore">0</div><div class="l">Tails</div></div>
+<div><div class="n" id="seriesTarget">2</div><div class="l">To win</div></div>
+</div>
+<p class="ui" style="color:var(--mut);font-size:.9rem;margin-top:.8rem" id="seriesStatus">First to 2 flips wins the series.</p>
+<div class="btnrow" style="margin-top:.8rem"><button class="btn" id="newSeriesBtn">New series</button></div>
+</div>
+</div>
+
+<div class="card">
+<p class="cardlabel">Flip history — last 12</p>
+<ul class="chips" id="history"><li class="empty">No flips yet — hit Flip and let it land.</li></ul>
+</div>
+
+<div class="card">
+<p class="cardlabel">Running stats</p>
+<div class="statgrid">
+<div><div class="n" id="statFlips">0</div><div class="l">Flips</div></div>
+<div><div class="n" id="statHeads">0 · —</div><div class="l">Heads</div></div>
+<div><div class="n" id="statTails">0 · —</div><div class="l">Tails</div></div>
+<div><div class="n" id="statStreak">—</div><div class="l">Current streak</div></div>
+<div><div class="n" id="statLongest">0</div><div class="l">Longest streak</div></div>
+<div id="callStatBox" hidden><div class="n" id="statCalls">0 / 0 · —</div><div class="l">Correct calls</div></div>
+</div>
+<div class="btnrow" style="margin-top:1rem">
+<button class="btn" id="resetStats">Reset stats &amp; history</button>
+</div>
+</div>
+
+<div class="card">
+<p class="cardlabel">How fairness works</p>
+<ul class="explain">
+<li>Each flip draws one 32-bit value from <span class="mono">crypto.getRandomValues</span> (with a <span class="mono">Math.random</span> fallback only if the crypto API is unavailable). Values below half the range land Heads; the rest land Tails — exactly 50/50, no weighting, no memory.</li>
+<li>The result is decided the instant you flip, before the coin starts turning. The spin is a fixed number of full turns plus the half-turn needed to land on the pre-decided face, so the animation can never change the outcome.</li>
+<li>Flips, streaks, call accuracy and history live in localStorage only. Resetting clears them from this browser and nothing else.</li>
+</ul>
+</div>
+
+<footer>Built by Shipwright Studio · <a href="/ideas/">Back to the Lab</a></footer>
+
+<script>
+// --- Pure game logic (extracted verbatim by the node test) ---
+function decideFlip(rand01){return rand01<0.5?"heads":"tails";}
+function seriesThreshold(bestOf){return Math.floor(bestOf/2)+1;}
+function seriesWinner(headsWins,tailsWins,bestOf){
+  const t=seriesThreshold(bestOf);
+  if(headsWins>=t)return "heads";
+  if(tailsWins>=t)return "tails";
+  return null;
+}
+function updateStreak(state,outcome){
+  const count=(state.side===outcome)?state.count+1:1;
+  return {side:outcome,count:count,longest:Math.max(state.longest,count)};
+}
+function callCorrect(call,outcome){return call===outcome;}
+function coinFace(rotation){return (Math.round(rotation/180)%2===0)?"heads":"tails";}
+function targetRotation(rotation,outcome){
+  const current=coinFace(rotation);
+  const extra=(outcome===current)?0:180;
+  return rotation+1800+extra;
+}
+// --- DOM wiring below ---
+const $=id=>document.getElementById(id);
+let mode="free",call=null,spinning=false,rotation=0;
+let series={len:3,h:0,t:0,over:false,winner:null};
+let stats={flips:0,heads:0,tails:0,streakSide:null,streakCount:0,longest:0,calls:0,callsCorrect:0};
+let history=[];
+try{
+  const s=JSON.parse(localStorage.getItem("coin-flip-stats")||"null");if(s)stats=s;
+  const h=JSON.parse(localStorage.getItem("coin-flip-history")||"null");if(Array.isArray(h))history=h;
+}catch(e){}
+function save(){try{localStorage.setItem("coin-flip-stats",JSON.stringify(stats));localStorage.setItem("coin-flip-history",JSON.stringify(history));}catch(e){}}
+function secureRand01(){
+  try{
+    const a=new Uint32Array(1);
+    window.crypto.getRandomValues(a);
+    return a[0]/4294967296;
+  }catch(e){return Math.random();}
+}
+function pct(n,d){return d?Math.round(100*n/d)+"%":"—";}
+function render(){
+  $("statFlips").textContent=stats.flips;
+  $("statHeads").textContent=stats.heads+" · "+pct(stats.heads,stats.flips);
+  $("statTails").textContent=stats.tails+" · "+pct(stats.tails,stats.flips);
+  $("statStreak").textContent=stats.streakCount?(stats.streakSide==="heads"?"H":"T")+" × "+stats.streakCount:"—";
+  $("statLongest").textContent=stats.longest;
+  $("statCalls").textContent=stats.callsCorrect+" / "+stats.calls+" · "+(stats.calls?pct(stats.callsCorrect,stats.calls):"—");
+  $("callStatBox").hidden=(mode!=="call");
+  document.querySelectorAll(".mode").forEach(b=>b.classList.toggle("active",b.dataset.mode===mode));
+  document.querySelectorAll(".call").forEach(b=>b.classList.toggle("active",b.dataset.call===call));
+  document.querySelectorAll(".slen").forEach(b=>b.classList.toggle("active",+b.dataset.len===series.len));
+  $("callPanel").hidden=(mode!=="call");
+  $("seriesPanel").hidden=(mode!=="series");
+  $("headsScore").textContent=series.h;
+  $("tailsScore").textContent=series.t;
+  $("seriesTarget").textContent=seriesThreshold(series.len);
+  $("headsBox").classList.toggle("leading",series.h>series.t);
+  $("tailsBox").classList.toggle("leading",series.t>series.h);
+  $("seriesStatus").textContent=series.over
+    ?(series.winner==="heads"?"Heads wins the series!":"Tails wins the series!")+" Final score "+series.h+"–"+series.t+"."
+    :"First to "+seriesThreshold(series.len)+" flips wins the series.";
+  $("flipBtn").disabled=spinning||(mode==="series"&&series.over);
+  const h=$("history");
+  if(!history.length){h.innerHTML='<li class="empty">No flips yet — hit Flip and let it land.</li>';return;}
+  h.innerHTML=history.slice().reverse().map((o,i)=>'<li class="'+o+(i===0?" latest":"")+'">'+(o==="heads"?"H":"T")+"</li>").join("");
+}
+function setResult(html){$("result").innerHTML=html;}
+function flip(){
+  if(spinning)return;
+  if(mode==="series"&&series.over){setResult("Series over — start a new series to flip again.");return;}
+  if(mode==="call"&&!call){setResult("Call it first — pick Heads or Tails, then flip.");return;}
+  spinning=true;render();
+  const outcome=decideFlip(secureRand01());
+  rotation=targetRotation(rotation,outcome);
+  const coin=$("coin");
+  coin.style.transform="rotateX("+rotation+"deg)";
+  setResult("Spinning&hellip;");
+  setTimeout(()=>{
+    spinning=false;
+    stats.flips++;
+    if(outcome==="heads")stats.heads++;else stats.tails++;
+    const st=updateStreak({side:stats.streakSide,count:stats.streakCount,longest:stats.longest},outcome);
+    stats.streakSide=st.side;stats.streakCount=st.count;stats.longest=st.longest;
+    history.push(outcome);
+    if(history.length>12)history.shift();
+    let msg;
+    if(mode==="call"){
+      const right=callCorrect(call,outcome);
+      stats.calls++;
+      if(right)stats.callsCorrect++;
+      msg=right
+        ?'<span class="win">Your call was right — '+outcome+'!</span>'
+        :'<span class="lose">Your call was wrong — it landed '+outcome+'.</span>';
+      call=null;
+    }else if(mode==="series"){
+      if(outcome==="heads")series.h++;else series.t++;
+      const w=seriesWinner(series.h,series.t,series.len);
+      if(w){series.over=true;series.winner=w;}
+      msg=w
+        ?'<span class="banner">'+(w==="heads"?"Heads":"Tails")+' wins the series '+series.h+'–'+series.t+'!</span>'
+        :'<span class="'+(outcome==="heads"?"win":"lose")+'">'+(outcome==="heads"?"Heads":"Tails")+'! Series '+series.h+'–'+series.t+'.</span>';
+    }else{
+      msg='<span class="'+(outcome==="heads"?"win":"lose")+'">'+(outcome==="heads"?"Heads":"Tails")+'!</span>';
+    }
+    setResult(msg);
+    save();
+    render();
+  },1450);
+}
+document.querySelectorAll(".mode").forEach(b=>b.addEventListener("click",()=>{
+  if(spinning)return;
+  mode=b.dataset.mode;
+  if(mode==="series"&&series.over)series={len:series.len,h:0,t:0,over:false,winner:null};
+  render();
+}));
+document.querySelectorAll(".call").forEach(b=>b.addEventListener("click",()=>{
+  if(spinning)return;
+  call=b.dataset.call;render();
+}));
+document.querySelectorAll(".slen").forEach(b=>b.addEventListener("click",()=>{
+  if(spinning)return;
+  series={len:+b.dataset.len,h:0,t:0,over:false,winner:null};
+  setResult("Best of "+series.len+" — first to "+seriesThreshold(series.len)+" wins.");
+  render();
+}));
+$("newSeriesBtn").addEventListener("click",()=>{
+  series={len:series.len,h:0,t:0,over:false,winner:null};
+  setResult("New series — best of "+series.len+". Hit Flip to start.");
+  render();
+});
+$("flipBtn").addEventListener("click",flip);
+$("stage").addEventListener("click",flip);
+document.addEventListener("keydown",e=>{if((e.code==="Space"||e.code==="Enter")&&document.activeElement.tagName!=="BUTTON"){e.preventDefault();flip();}});
+$("resetStats").addEventListener("click",()=>{
+  stats={flips:0,heads:0,tails:0,streakSide:null,streakCount:0,longest:0,calls:0,callsCorrect:0};
+  history=[];
+  series={len:series.len,h:0,t:0,over:false,winner:null};
+  save();setResult("Stats and history cleared — fresh coin, fresh luck.");render();
+});
+render();
+</script>
+</body>
+</html>
