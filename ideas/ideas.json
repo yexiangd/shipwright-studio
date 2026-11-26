@@ -1,5 +1,5 @@
 {
-  "updated": "2026-11-25",
+  "updated": "2026-11-26",
   "ideas": [
     {
       "id": "idea-000a",
@@ -813,7 +813,9 @@
       "tagline": "A concept page for the distraction-killing extension.",
       "priority": 52,
       "effort": "S",
-      "status": "todo"
+      "status": "done",
+      "url": "/lab/focus-blocker/",
+      "shipped": "2026-11-26"
     },
     {
       "id": "idea-067",
@@ -1165,7 +1167,9 @@
       "tagline": "Body mass index with honest context, not judgment.",
       "priority": 52,
       "effort": "S",
-      "status": "todo"
+      "status": "done",
+      "url": "/lab/bmi-calc/",
+      "shipped": "2026-11-26"
     },
     {
       "id": "idea-098",

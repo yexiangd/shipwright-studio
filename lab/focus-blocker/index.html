@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Focus Blocker · Shipwright Studio</title>
+<meta name="description" content="Focus Blocker is a free concept demo for a distraction-blocking extension: build a blocklist, run a 25/50/90-minute focus timer, and watch blocked sites get stopped in-page.">
+<link rel="canonical" href="https://shipwright-studio.pages.dev/lab/focus-blocker/">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"WebApplication","name":"Focus Blocker","url":"https://shipwright-studio.pages.dev/lab/focus-blocker/","description":"Focus Blocker is a free online tool that simulates a distraction-blocking browser extension: build a blocklist, run a focus timer, and watch blocked sites get stopped in-page.","applicationCategory":"ProductivityApplication","operatingSystem":"Web","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"}}
+</script>
+<style>
+:root{--bg:#0a0c0f;--panel:#101318;--line:#1c2128;--txt:#e8e4da;--mut:#9aa3b2;--brass:#d2a24c;--green:#7fb069;--red:#e0655f}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--txt);font-family:Fraunces,Georgia,serif;line-height:1.65;padding:2rem 1.2rem 4rem;max-width:960px;margin:0 auto}
+a{color:var(--brass)}
+.nav{display:flex;gap:1.2rem;font-size:.85rem;margin-bottom:1.2rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.nav a{color:var(--mut);text-decoration:none}.nav a:hover{color:var(--brass)}
+.eyebrow{font-size:.75rem;letter-spacing:.22em;text-transform:uppercase;color:var(--mut);font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+h1{font-weight:600;font-size:clamp(2.1rem,5vw,3rem);margin:.5rem 0 .7rem}
+.define{color:var(--mut);max-width:46rem;margin-bottom:1.2rem}.define strong{color:var(--txt)}
+.notice{border:1px solid var(--brass);border-radius:10px;padding:.7rem 1rem;color:var(--brass);font-size:.92rem;margin-bottom:1.8rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:1.4rem;margin-bottom:1.4rem}
+.cardlabel{font-size:.72rem;letter-spacing:.18em;text-transform:uppercase;color:var(--mut);margin-bottom:.8rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.ui{font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.mono{font-family:"JetBrains Mono",ui-monospace,monospace}
+.btn{font-size:1rem;border:1px solid var(--line);background:transparent;color:var(--txt);border-radius:999px;padding:.6rem 1.2rem;cursor:pointer;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.btn:hover{border-color:var(--brass);color:var(--brass)}
+.btn.brass{border-color:var(--brass);color:var(--brass);background:rgba(210,162,76,.08)}
+.btn:disabled{opacity:.45;cursor:default}
+.btn.active{border-color:var(--brass);color:var(--brass);background:rgba(210,162,76,.12)}
+.btnrow{display:flex;gap:.6rem;flex-wrap:wrap;align-items:center}
+input[type="text"],input[type="number"]{background:#08090c;border:1px solid var(--line);border-radius:10px;color:var(--txt);font-size:1rem;padding:.6rem .9rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+input[type="text"]:focus,input[type="number"]:focus{outline:none;border-color:var(--brass)}
+.timer{text-align:center;padding:.6rem 0 .4rem}
+.clock{font-family:"JetBrains Mono",ui-monospace,monospace;font-size:clamp(3.2rem,12vw,5rem);font-weight:500;line-height:1.1;letter-spacing:.02em}
+.progress{height:6px;background:#08090c;border:1px solid var(--line);border-radius:999px;overflow:hidden;margin:1rem 0 .4rem}
+.progress i{display:block;height:100%;background:var(--brass);width:0%;transition:width 1s linear}
+.sessionline{color:var(--mut);font-size:.95rem;min-height:1.6em}
+.sessionline .ok{color:var(--green)}
+.sessionline .warn{color:var(--brass)}
+.error{color:var(--red);font-size:.9rem;min-height:1.4em;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.chips{list-style:none;display:flex;gap:.5rem;flex-wrap:wrap}
+.chips li{display:flex;align-items:center;gap:.45rem;border:1px solid var(--line);border-radius:999px;padding:.45rem .5rem .45rem 1rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif;font-size:.95rem}
+.chips li.on{border-color:var(--brass);color:var(--brass)}
+.chips li .x{border:1px solid var(--line);background:transparent;color:var(--mut);border-radius:50%;width:1.5rem;height:1.5rem;cursor:pointer;font-size:.85rem;line-height:1}
+.chips li .x:hover{border-color:var(--red);color:var(--red)}
+.chips li.empty{border:0;padding:.45rem 0;color:var(--mut)}
+.sublabel{font-size:.85rem;color:var(--mut);margin:.9rem 0 .5rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.addrow{display:flex;gap:.6rem;flex-wrap:wrap}
+.addrow input[type="text"]{flex:1;min-width:200px}
+.sitegrid{display:flex;gap:.6rem;flex-wrap:wrap}
+.sitebtn{border:1px solid var(--line);background:#08090c;color:var(--txt);border-radius:10px;padding:.7rem 1rem;cursor:pointer;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif;font-size:.95rem;text-align:left}
+.sitebtn:hover{border-color:var(--brass)}
+.sitebtn .tag{display:block;font-size:.72rem;letter-spacing:.12em;text-transform:uppercase;color:var(--mut)}
+.sitebtn.blocked .tag{color:var(--red)}
+.sitebtn.allowed .tag{color:var(--green)}
+.tryresult{font-size:.95rem;min-height:1.6em;margin-top:.9rem}
+.tryresult .bad{color:var(--red)}
+.tryresult .good{color:var(--green)}
+.blockedpanel{border:1px solid var(--red);border-radius:12px;padding:1.2rem;margin-top:1rem;background:rgba(224,101,95,.06)}
+.blockedpanel h2{font-size:1.5rem;color:var(--red);margin-bottom:.3rem}
+.blockedpanel p{color:var(--mut);font-size:.95rem}
+.blockedpanel .mono{color:var(--txt)}
+.statgrid{display:flex;gap:1rem;text-align:center;flex-wrap:wrap}
+.statgrid div{flex:1;min-width:120px;background:#08090c;border:1px solid var(--line);border-radius:10px;padding:.8rem .4rem}
+.statgrid .n{font-size:1.7rem;line-height:1.1}.statgrid .l{font-size:.72rem;color:var(--mut);letter-spacing:.12em;text-transform:uppercase}
+.explain{font-size:.92rem;color:var(--mut)}.explain li{margin:.4rem 0}
+footer{margin-top:2.5rem;color:var(--mut);font-size:.85rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+@media(max-width:640px){.statgrid .n{font-size:1.4rem}.clock{font-size:3rem}}
+</style>
+</head>
+<body>
+<nav class="nav"><a href="/">Shipwright Studio</a><a href="/ideas/">Lab</a></nav>
+<p class="eyebrow">Lab — Extension</p>
+<h1>Focus Blocker</h1>
+<p class="define"><strong>Focus Blocker is a free online tool that</strong> simulates a distraction-blocking browser extension — build a blocklist of distracting sites, start a focus timer, and watch blocked attempts get stopped before they steal your attention.</p>
+<p class="notice">Concept demo — blocking is simulated in-page only. No extension is installed and no site is actually blocked outside this page.</p>
+
+<div class="card">
+<p class="cardlabel">Focus session</p>
+<div class="btnrow" id="presetRow">
+<button class="btn preset active" data-min="25">25 min</button>
+<button class="btn preset" data-min="50">50 min</button>
+<button class="btn preset" data-min="90">90 min</button>
+<span class="ui" style="color:var(--mut);font-size:.9rem">Custom:</span>
+<input type="number" id="customMin" min="1" max="240" placeholder="min" style="width:6.5rem" aria-label="Custom session length in minutes">
+<button class="btn" id="setCustomBtn">Set</button>
+</div>
+<p class="error" id="minError" role="alert"></p>
+<div class="timer">
+<div class="clock" id="clock">25:00</div>
+<div class="progress"><i id="progressBar"></i></div>
+<p class="sessionline ui" id="sessionLine">Pick a length, then start your session.</p>
+</div>
+<div class="btnrow">
+<button class="btn brass" id="startBtn">Start focus</button>
+<button class="btn" id="pauseBtn" disabled>Pause</button>
+<button class="btn" id="resetBtn">Reset</button>
+</div>
+</div>
+
+<div class="card">
+<p class="cardlabel">Blocklist — sites to stop during a session</p>
+<p class="sublabel">Preset distractions — click to toggle:</p>
+<ul class="chips" id="presetChips"></ul>
+<p class="sublabel">Your blocklist:</p>
+<ul class="chips" id="blocklist"></ul>
+<div class="addrow" style="margin-top:1rem">
+<input type="text" id="addDomain" placeholder="Add a site, e.g. news.example.com" aria-label="Add a site to the blocklist">
+<button class="btn" id="addBtn">Add site</button>
+</div>
+<p class="error" id="addError" role="alert"></p>
+</div>
+
+<div class="card">
+<p class="cardlabel">Try it — visit a site while a session runs</p>
+<p class="ui" style="color:var(--mut);font-size:.92rem;margin-bottom:.9rem">These buttons pretend to open a site. Blocked sites are stopped by the demo; allowed sites pass straight through. The list below follows your blocklist above.</p>
+<div class="sitegrid" id="siteGrid"></div>
+<p class="tryresult ui" id="tryResult">Start a session, then try visiting a blocked site.</p>
+<div class="blockedpanel" id="blockedPanel" hidden>
+<h2>⛔ Blocked</h2>
+<p><span class="mono" id="blockedSite"></span> is on your blocklist. Your focus session has <strong class="mono" id="blockedRemaining"></strong> left — the distraction can wait.</p>
+<div class="btnrow" style="margin-top:.9rem"><button class="btn" id="dismissBlocked">Back to focus</button></div>
+</div>
+</div>
+
+<div class="card">
+<p class="cardlabel">Session stats</p>
+<div class="statgrid">
+<div><div class="n" id="statSessions">0</div><div class="l">Sessions completed</div></div>
+<div><div class="n" id="statMinutes">0</div><div class="l">Minutes focused</div></div>
+<div><div class="n" id="statBlocked">0</div><div class="l">Sites blocked today</div></div>
+<div><div class="n" id="statStreak">0</div><div class="l">Session streak</div></div>
+</div>
+<div class="btnrow" style="margin-top:1rem">
+<button class="btn" id="resetStats">Reset stats</button>
+</div>
+</div>
+
+<div class="card">
+<p class="cardlabel">How it would work</p>
+<ul class="explain">
+<li><strong>Blocklist.</strong> Pick the sites that pull you away — social feeds, video, news — or add any domain of your own. The real extension would intercept those tabs the moment a session starts.</li>
+<li><strong>Timer.</strong> A session is a commitment: 25, 50, or 90 minutes of protected time. Pausing is allowed; quitting early breaks the streak.</li>
+<li><strong>Blocked screen.</strong> Slip and click a blocked site mid-session and you meet a wall instead of the feed — plus a tally of every attempt you survived. Stats live in localStorage only, on this browser, and reset clears them.</li>
+</ul>
+</div>
+
+<footer>Built by Shipwright Studio · <a href="/ideas/">Back to the Lab</a></footer>
+
+<script>
+// --- Pure logic (extracted verbatim by the node test) ---
+function normalizeDomain(input){
+  let d=(input||"").trim().toLowerCase();
+  d=d.replace(/^https?:\/\//,"").replace(/^www\./,"");
+  d=d.split("/")[0].split("?")[0].split("#")[0];
+  return d;
+}
+function isValidDomain(d){
+  return /^[a-z0-9-]+(\.[a-z0-9-]+)+$/.test(d)&&d.length<=253&&!/^-|-\./.test(d)&&!/\.-/.test(d);
+}
+function addToBlocklist(list,raw){
+  const d=normalizeDomain(raw);
+  if(!d)return {list:list,added:null,error:"Type a domain first — e.g. news.example.com."};
+  if(!isValidDomain(d))return {list:list,added:null,error:"That doesn't look like a domain — try something like news.example.com."};
+  if(list.indexOf(d)!==-1)return {list:list,added:null,error:d+" is already on your blocklist."};
+  return {list:list.concat([d]),added:d,error:null};
+}
+function removeFromBlocklist(list,domain){
+  return list.filter(function(d){return d!==domain;});
+}
+function formatTime(totalSeconds){
+  const s=Math.max(0,Math.floor(totalSeconds));
+  const m=Math.floor(s/60),r=s%60;
+  return (m<10?"0":"")+m+":"+(r<10?"0":"")+r;
+}
+function progressPct(elapsedSeconds,totalSeconds){
+  if(!totalSeconds||totalSeconds<=0)return 0;
+  return Math.min(100,Math.max(0,elapsedSeconds/totalSeconds*100));
+}
+function tickTimer(remainingSeconds){
+  const next=remainingSeconds-1;
+  return {remaining:Math.max(0,next),done:next<=0};
+}
+function parseCustomMinutes(raw){
+  const n=Number(raw);
+  if(!raw||raw===""||!isFinite(n)||Math.floor(n)!==n)return {minutes:null,error:"Enter a whole number of minutes."};
+  if(n<1||n>240)return {minutes:null,error:"Pick between 1 and 240 minutes."};
+  return {minutes:n,error:null};
+}
+function todayKey(date){
+  const d=date||new Date();
+  return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");
+}
+function freshStats(){
+  return {sessions:0,minutes:0,blockedToday:0,blockedDate:todayKey(),streak:0};
+}
+function rolloverStats(stats,date){
+  const s=Object.assign(freshStats(),stats);
+  if(s.blockedDate!==todayKey(date)){s.blockedToday=0;s.blockedDate=todayKey(date);}
+  return s;
+}
+function completeSession(stats,minutes){
+  const s=rolloverStats(stats);
+  return {sessions:s.sessions+1,minutes:s.minutes+minutes,blockedToday:s.blockedToday,blockedDate:s.blockedDate,streak:s.streak+1};
+}
+function recordBlocked(stats,date){
+  const s=rolloverStats(stats,date);
+  return {sessions:s.sessions,minutes:s.minutes,blockedToday:s.blockedToday+1,blockedDate:s.blockedDate,streak:s.streak};
+}
+function isBlockedSite(domain,blocklist){
+  const d=normalizeDomain(domain);
+  return blocklist.indexOf(d)!==-1;
+}
+// --- DOM wiring below ---
+const $=id=>document.getElementById(id);
+const PRESETS=["youtube.com","x.com","instagram.com","reddit.com","tiktok.com","facebook.com"];
+const DEMO_SITES=[
+  {domain:"youtube.com",label:"YouTube"},
+  {domain:"x.com",label:"X (Twitter)"},
+  {domain:"instagram.com",label:"Instagram"},
+  {domain:"reddit.com",label:"Reddit"},
+  {domain:"tiktok.com",label:"TikTok"},
+  {domain:"facebook.com",label:"Facebook"},
+  {domain:"wikipedia.org",label:"Wikipedia"},
+  {domain:"github.com",label:"GitHub"},
+  {domain:"stackoverflow.com",label:"Stack Overflow"}
+];
+let blocklist=PRESETS.slice();
+let stats=freshStats();
+try{
+  const b=JSON.parse(localStorage.getItem("focus-blocker-list")||"null");
+  if(Array.isArray(b)&&b.length)b.forEach(function(d){if(isValidDomain(d)&&blocklist.indexOf(d)===-1)blocklist.push(d);});
+  const s=JSON.parse(localStorage.getItem("focus-blocker-stats")||"null");
+  if(s)stats=rolloverStats(s);
+}catch(e){}
+function save(){
+  try{
+    localStorage.setItem("focus-blocker-list",JSON.stringify(blocklist));
+    localStorage.setItem("focus-blocker-stats",JSON.stringify(stats));
+  }catch(e){}
+}
+// Timer state: idle | running | paused
+let timerState="idle";
+let durationMin=25;
+let remainingSec=25*60;
+let intervalId=null;
+let startAnyway=false;
+function render(){
+  $("clock").textContent=formatTime(remainingSec);
+  $("progressBar").style.width=progressPct(durationMin*60-remainingSec,durationMin*60)+"%";
+  document.querySelectorAll(".preset").forEach(function(b){
+    b.classList.toggle("active",+b.dataset.min===durationMin&&timerState==="idle");
+  });
+  $("customMin").disabled=timerState!=="idle";
+  $("setCustomBtn").disabled=timerState!=="idle";
+  $("startBtn").disabled=timerState==="running";
+  $("pauseBtn").disabled=timerState!=="running";
+  $("pauseBtn").textContent=timerState==="paused"?"Resume":"Pause";
+  $("startBtn").textContent=timerState==="paused"?"Restart session":(startAnyway?"Start anyway":"Start focus");
+  if(timerState==="running"){
+    $("sessionLine").innerHTML='<span class="warn">Focusing — '+durationMin+'-minute session in progress. Blocked sites will be stopped.</span>';
+  }else if(timerState==="paused"){
+    $("sessionLine").textContent="Paused — your time is frozen. Resume when you're ready.";
+  }else{
+    $("sessionLine").textContent=startAnyway
+      ?"Your blocklist is empty — nothing will be blocked. Start anyway, or add a site first."
+      :"Pick a length, then start your session.";
+  }
+  // Preset chips
+  $("presetChips").innerHTML=PRESETS.map(function(d){
+    return '<li class="'+(blocklist.indexOf(d)!==-1?"on":"")+'"><button class="btn" style="border:0;padding:0;background:none;color:inherit" data-preset="'+d+'" aria-pressed="'+(blocklist.indexOf(d)!==-1)+'">'+d+'</button></li>';
+  }).join("");
+  // Blocklist
+  if(!blocklist.length){
+    $("blocklist").innerHTML='<li class="empty">No sites blocked yet — add one below.</li>';
+  }else{
+    $("blocklist").innerHTML=blocklist.map(function(d){
+      return '<li>'+d+'<button class="x" data-remove="'+d+'" aria-label="Remove '+d+'">×</button></li>';
+    }).join("");
+  }
+  // Demo site grid
+  $("siteGrid").innerHTML=DEMO_SITES.map(function(s){
+    const blocked=isBlockedSite(s.domain,blocklist);
+    return '<button class="sitebtn '+(blocked?"blocked":"allowed")+'" data-site="'+s.domain+'">'+s.label+'<span class="tag">'+(blocked?"Blocked":"Allowed")+'</span></button>';
+  }).join("");
+  // Stats
+  $("statSessions").textContent=stats.sessions;
+  $("statMinutes").textContent=stats.minutes;
+  $("statBlocked").textContent=stats.blockedToday;
+  $("statStreak").textContent=stats.streak;
+}
+function setLine(html){$("sessionLine").innerHTML=html;}
+function stopInterval(){if(intervalId){clearInterval(intervalId);intervalId=null;}}
+function startSession(){
+  if(timerState==="running")return;
+  if(!blocklist.length&&!startAnyway){
+    startAnyway=true;
+    render();
+    return;
+  }
+  startAnyway=false;
+  timerState="running";
+  remainingSec=durationMin*60;
+  $("blockedPanel").hidden=true;
+  setLine('<span class="warn">Focusing — '+durationMin+'-minute session in progress. Blocked sites will be stopped.</span>');
+  render();
+  stopInterval();
+  intervalId=setInterval(function(){
+    const t=tickTimer(remainingSec);
+    remainingSec=t.remaining;
+    if(t.done){
+      stopInterval();
+      timerState="idle";
+      stats=completeSession(stats,durationMin);
+      remainingSec=durationMin*60;
+      save();
+      setLine('<span class="ok">Session complete — '+durationMin+' minutes of focus banked. Streak: '+stats.streak+'.</span>');
+      $("tryResult").textContent="Session complete — nice work. Start another when you're ready.";
+    }
+    render();
+  },1000);
+}
+function pauseOrResume(){
+  if(timerState==="running"){
+    timerState="paused";
+    stopInterval();
+    render();
+  }else if(timerState==="paused"){
+    timerState="running";
+    render();
+    intervalId=setInterval(function(){
+      const t=tickTimer(remainingSec);
+      remainingSec=t.remaining;
+      if(t.done){
+        stopInterval();
+        timerState="idle";
+        stats=completeSession(stats,durationMin);
+        remainingSec=durationMin*60;
+        save();
+        setLine('<span class="ok">Session complete — '+durationMin+' minutes of focus banked. Streak: '+stats.streak+'.</span>');
+        $("tryResult").textContent="Session complete — nice work. Start another when you're ready.";
+      }
+      render();
+    },1000);
+  }
+}
+function resetTimer(){
+  stopInterval();
+  timerState="idle";
+  remainingSec=durationMin*60;
+  startAnyway=false;
+  $("blockedPanel").hidden=true;
+  $("tryResult").textContent="Start a session, then try visiting a blocked site.";
+  render();
+}
+$("startBtn").addEventListener("click",startSession);
+$("pauseBtn").addEventListener("click",pauseOrResume);
+$("resetBtn").addEventListener("click",resetTimer);
+document.querySelectorAll(".preset").forEach(function(b){
+  b.addEventListener("click",function(){
+    if(timerState!=="idle")return;
+    durationMin=+b.dataset.min;
+    remainingSec=durationMin*60;
+    startAnyway=false;
+    render();
+  });
+});
+$("setCustomBtn").addEventListener("click",function(){
+  if(timerState!=="idle")return;
+  const r=parseCustomMinutes($("customMin").value);
+  if(r.error){$("minError").textContent=r.error;return;}
+  $("minError").textContent="";
+  durationMin=r.minutes;
+  remainingSec=durationMin*60;
+  startAnyway=false;
+  render();
+});
+$("customMin").addEventListener("keydown",function(e){if(e.key==="Enter")$("setCustomBtn").click();});
+$("addBtn").addEventListener("click",function(){
+  const r=addToBlocklist(blocklist,$("addDomain").value);
+  if(r.error){$("addError").textContent=r.error;return;}
+  $("addError").textContent="";
+  blocklist=r.list;
+  $("addDomain").value="";
+  save();
+  render();
+});
+$("addDomain").addEventListener("keydown",function(e){if(e.key==="Enter")$("addBtn").click();});
+$("presetChips").addEventListener("click",function(e){
+  const d=e.target.getAttribute&&e.target.getAttribute("data-preset");
+  if(!d)return;
+  if(blocklist.indexOf(d)!==-1)blocklist=removeFromBlocklist(blocklist,d);
+  else blocklist=blocklist.concat([d]);
+  save();
+  render();
+});
+$("blocklist").addEventListener("click",function(e){
+  const d=e.target.getAttribute&&e.target.getAttribute("data-remove");
+  if(!d)return;
+  blocklist=removeFromBlocklist(blocklist,d);
+  save();
+  render();
+});
+$("siteGrid").addEventListener("click",function(e){
+  const btn=e.target.closest?e.target.closest("[data-site]"):null;
+  if(!btn)return;
+  const domain=btn.getAttribute("data-site");
+  if(timerState!=="running"){
+    $("tryResult").innerHTML='<span class="good">No session running — '+domain+' would open normally. Start a session to test blocking.</span>';
+    return;
+  }
+  if(isBlockedSite(domain,blocklist)){
+    stats=recordBlocked(stats);
+    save();
+    $("blockedSite").textContent=domain;
+    $("blockedRemaining").textContent=formatTime(remainingSec);
+    $("blockedPanel").hidden=false;
+    $("tryResult").innerHTML='<span class="bad">Blocked attempt #'+stats.blockedToday+' today — '+domain+' was stopped.</span>';
+    render();
+  }else{
+    $("blockedPanel").hidden=true;
+    $("tryResult").innerHTML='<span class="good">'+domain+' is not on your blocklist — it opened. Add it to the list if it distracts you.</span>';
+  }
+});
+$("dismissBlocked").addEventListener("click",function(){
+  $("blockedPanel").hidden=true;
+  $("tryResult").textContent="Back to focus — "+formatTime(remainingSec)+" left in this session.";
+});
+$("resetStats").addEventListener("click",function(){
+  stats=freshStats();
+  save();
+  render();
+});
+render();
+</script>
+</body>
+</html>

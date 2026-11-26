@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BMI Check · Shipwright Studio</title>
+<meta name="description" content="Free online BMI calculator with metric and imperial units, WHO categories, a visual gauge, and the healthy weight range for your height — all computed in your browser.">
+<link rel="canonical" href="https://shipwright-studio.pages.dev/lab/bmi-calc/">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"WebApplication","name":"BMI Check","url":"https://shipwright-studio.pages.dev/lab/bmi-calc/","description":"BMI Check is a free online tool that calculates your body mass index in metric or imperial units, shows your WHO category on a visual gauge, and gives the healthy weight range for your height.","applicationCategory":"HealthApplication","operatingSystem":"Web","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"}}
+</script>
+<style>
+:root{--bg:#0a0c0f;--panel:#101318;--line:#1c2128;--txt:#e8e4da;--mut:#9aa3b2;--brass:#d2a24c;--green:#7fb069;--blue:#7ba7bc;--amber:#d2a24c;--red:#e0655f}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--txt);font-family:Fraunces,Georgia,serif;line-height:1.65;padding:2rem 1.2rem 4rem;max-width:960px;margin:0 auto}
+a{color:var(--brass)}
+.nav{display:flex;gap:1.2rem;font-size:.85rem;margin-bottom:1.2rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.nav a{color:var(--mut);text-decoration:none}.nav a:hover{color:var(--brass)}
+.eyebrow{font-size:.75rem;letter-spacing:.22em;text-transform:uppercase;color:var(--mut);font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+h1{font-weight:600;font-size:clamp(2.1rem,5vw,3rem);margin:.5rem 0 .7rem}
+.define{color:var(--mut);max-width:46rem;margin-bottom:1.2rem}.define strong{color:var(--txt)}
+.notice{border:1px solid var(--brass);border-radius:10px;padding:.7rem 1rem;color:var(--brass);font-size:.92rem;margin-bottom:1.8rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:1.4rem;margin-bottom:1.4rem}
+.cardlabel{font-size:.72rem;letter-spacing:.18em;text-transform:uppercase;color:var(--mut);margin-bottom:.8rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.ui{font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.mono{font-family:"JetBrains Mono",ui-monospace,monospace}
+.btn{font-size:1rem;border:1px solid var(--line);background:transparent;color:var(--txt);border-radius:999px;padding:.6rem 1.2rem;cursor:pointer;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.btn:hover{border-color:var(--brass);color:var(--brass)}
+.btn.active{border-color:var(--brass);color:var(--brass);background:rgba(210,162,76,.12)}
+.btnrow{display:flex;gap:.6rem;flex-wrap:wrap;align-items:center}
+.fields{display:flex;gap:1rem;flex-wrap:wrap}
+.field{flex:1;min-width:140px}
+.field label{display:block;font-size:.8rem;color:var(--mut);margin-bottom:.4rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.field input{width:100%;background:#08090c;border:1px solid var(--line);border-radius:10px;color:var(--txt);font-size:1.4rem;padding:.7rem .9rem;font-family:"JetBrains Mono",ui-monospace,monospace}
+.field input:focus{outline:none;border-color:var(--brass)}
+.field .unit{font-size:.8rem;color:var(--mut);margin-top:.35rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.hint{color:var(--mut);font-size:.92rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.result{text-align:center;padding:1.2rem 0 .4rem}
+.result .bmi{font-size:clamp(3rem,10vw,4.5rem);font-weight:600;line-height:1}
+.result .cat{display:inline-block;margin-top:.5rem;padding:.3rem .9rem;border-radius:999px;border:1px solid;font-size:.95rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.cat.under{color:var(--blue);border-color:var(--blue)}
+.cat.healthy{color:var(--green);border-color:var(--green)}
+.cat.over{color:var(--amber);border-color:var(--amber)}
+.cat.obese{color:var(--red);border-color:var(--red)}
+.result .range{color:var(--mut);font-size:.95rem;margin-top:.7rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.gauge{margin:1.4rem 0 .4rem;position:relative}
+.gaugebar{display:flex;height:14px;border-radius:7px;overflow:hidden}
+.gaugebar div{height:100%}
+.gaugebar .s-under{width:17.3%;background:var(--blue);opacity:.55}
+.gaugebar .s-healthy{width:25%;background:var(--green);opacity:.55}
+.gaugebar .s-over{width:19.2%;background:var(--amber);opacity:.55}
+.gaugebar .s-obese{width:38.5%;background:var(--red);opacity:.55}
+.marker{position:absolute;top:-7px;width:3px;height:28px;background:var(--txt);border-radius:2px;transform:translateX(-50%);transition:left .3s ease}
+.marker::after{content:"";position:absolute;left:50%;top:-6px;transform:translateX(-50%);border:6px solid transparent;border-top-color:var(--txt)}
+.ticks{display:flex;justify-content:space-between;font-size:.75rem;color:var(--mut);margin-top:.5rem;font-family:"JetBrains Mono",ui-monospace,monospace}
+.result .prompt{font-size:1.15rem;color:var(--mut)}
+.explain{font-size:.95rem;color:var(--mut)}
+.explain h2{font-size:1.15rem;color:var(--txt);margin:1rem 0 .4rem}
+.explain h2:first-child{margin-top:0}
+.explain p{margin:.4rem 0}
+.catrow{display:flex;gap:.8rem;align-items:baseline;padding:.45rem 0;border-bottom:1px solid var(--line);font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.catrow:last-of-type{border-bottom:0}
+.catrow .dot{width:.7rem;height:.7rem;border-radius:50%;flex:none;transform:translateY(-1px)}
+.catrow .name{font-weight:600;color:var(--txt);min-width:7.5rem}
+.catrow .rng{font-family:"JetBrains Mono",ui-monospace,monospace;font-size:.85rem;color:var(--mut)}
+.catrow .note{color:var(--mut);font-size:.88rem}
+footer{margin-top:2.5rem;color:var(--mut);font-size:.85rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+@media(max-width:640px){.catrow{flex-wrap:wrap;gap:.3rem .8rem}.catrow .note{flex-basis:100%;margin-left:1.5rem}}
+</style>
+</head>
+<body>
+<nav class="nav"><a href="/">Shipwright Studio</a><a href="/ideas/">Lab</a></nav>
+<p class="eyebrow">Lab — App</p>
+<h1>BMI Check</h1>
+<p class="define"><strong>BMI Check is a free online tool that</strong> calculates your body mass index in metric or imperial units, shows your WHO category on a visual gauge, and gives the healthy weight range for your height — with honest context about what the number can and can't tell you.</p>
+<p class="notice">Everything is calculated in your browser. No data leaves this page — no account, no tracking, nothing stored.</p>
+
+<div class="card">
+<p class="cardlabel">Your measurements</p>
+<div class="btnrow" style="margin-bottom:1.1rem" id="unitRow">
+<button class="btn unitbtn active" data-unit="metric">Metric · cm / kg</button>
+<button class="btn unitbtn" data-unit="imperial">Imperial · ft / lb</button>
+</div>
+
+<div class="fields" id="metricFields">
+<div class="field"><label for="heightCm">Height</label><input id="heightCm" type="number" inputmode="decimal" min="100" max="250" step="0.1" placeholder="178" autocomplete="off"><p class="unit">centimetres · 100–250 cm</p></div>
+<div class="field"><label for="weightKg">Weight</label><input id="weightKg" type="number" inputmode="decimal" min="20" max="400" step="0.1" placeholder="80" autocomplete="off"><p class="unit">kilograms · 20–400 kg</p></div>
+</div>
+
+<div class="fields" id="imperialFields" hidden>
+<div class="field"><label for="heightFt">Height</label><input id="heightFt" type="number" inputmode="decimal" min="3" max="8" step="1" placeholder="5" autocomplete="off"><p class="unit">feet</p></div>
+<div class="field"><label for="heightIn">Height</label><input id="heightIn" type="number" inputmode="decimal" min="0" max="11.9" step="0.1" placeholder="10" autocomplete="off"><p class="unit">inches · 0–11.9 in</p></div>
+<div class="field"><label for="weightLb">Weight</label><input id="weightLb" type="number" inputmode="decimal" min="45" max="880" step="0.1" placeholder="176" autocomplete="off"><p class="unit">pounds · 45–880 lb</p></div>
+</div>
+</div>
+
+<div class="card">
+<p class="cardlabel">Your result</p>
+<div class="result" id="result">
+<p class="prompt">Enter your height and weight to see your BMI.</p>
+</div>
+<div class="gauge" id="gauge" hidden>
+<div class="gaugebar" aria-hidden="true"><div class="s-under"></div><div class="s-healthy"></div><div class="s-over"></div><div class="s-obese"></div></div>
+<div class="marker" id="marker" style="left:50%"></div>
+<div class="ticks"><span>14</span><span>18.5</span><span>25</span><span>30</span><span>40</span></div>
+</div>
+<p class="hint" id="hint" hidden></p>
+</div>
+
+<div class="card explain">
+<p class="cardlabel">What the number means</p>
+<h2>The four WHO categories</h2>
+<div class="catrow"><span class="dot" style="background:var(--blue)"></span><span class="name">Underweight</span><span class="rng">BMI &lt; 18.5</span><span class="note">Below the range most associated with good health.</span></div>
+<div class="catrow"><span class="dot" style="background:var(--green)"></span><span class="name">Healthy</span><span class="rng">BMI 18.5 – 24.9</span><span class="note">The range most associated with good health.</span></div>
+<div class="catrow"><span class="dot" style="background:var(--amber)"></span><span class="name">Overweight</span><span class="rng">BMI 25 – 29.9</span><span class="note">Above the healthy range; worth a look, not a verdict.</span></div>
+<div class="catrow"><span class="dot" style="background:var(--red)"></span><span class="name">Obese</span><span class="rng">BMI ≥ 30</span><span class="note">Well above the healthy range; a clinician can help interpret it.</span></div>
+<h2>What BMI can't tell you</h2>
+<p>BMI is a ratio of weight to height — it can't tell muscle from fat, so a very muscular person can score high while being lean. It says nothing about where fat sits on the body, and it doesn't account for age, sex, or ethnicity. Use it as one rough signal among many, not as a diagnosis. If the number worries you, a clinician — not a website — is the right next step.</p>
+</div>
+
+<footer>Built by Shipwright Studio · <a href="/ideas/">Back to the Lab</a></footer>
+
+<script>
+// --- Pure BMI logic (extracted verbatim by the node test) ---
+const KG_PER_LB=0.45359237;
+const CM_PER_IN=2.54;
+function bmiMetric(weightKg,heightCm){
+  if(!(weightKg>0)||!(heightCm>0))return null;
+  const h=heightCm/100;
+  return weightKg/(h*h);
+}
+function bmiImperial(weightLb,heightFt,heightIn){
+  const totalIn=(heightFt||0)*12+(heightIn||0);
+  if(!(weightLb>0)||!(totalIn>0))return null;
+  return bmiMetric(weightLb*KG_PER_LB,totalIn*CM_PER_IN);
+}
+function category(bmi){
+  if(bmi==null||!isFinite(bmi))return null;
+  if(bmi<18.5)return {key:"under",label:"Underweight"};
+  if(bmi<25)return {key:"healthy",label:"Healthy"};
+  if(bmi<30)return {key:"over",label:"Overweight"};
+  return {key:"obese",label:"Obese"};
+}
+function healthyWeightRange(heightCm){
+  if(!(heightCm>0))return null;
+  const h=heightCm/100;
+  return {lowKg:18.5*h*h,highKg:24.9*h*h};
+}
+function gaugePercent(bmi){
+  const lo=14,hi=40;
+  if(bmi==null||!isFinite(bmi))return null;
+  return Math.min(100,Math.max(0,(bmi-lo)/(hi-lo)*100));
+}
+function cmToFtIn(cm){
+  const totalIn=cm/CM_PER_IN;
+  const ft=Math.floor(totalIn/12);
+  const inch=Math.round((totalIn-ft*12)*10)/10;
+  return {ft:ft,in:inch};
+}
+function ftInToCm(ft,inches){
+  return ((ft||0)*12+(inches||0))*CM_PER_IN;
+}
+function kgToLb(kg){return kg/KG_PER_LB;}
+function lbToKg(lb){return lb*KG_PER_LB;}
+function fmt1(n){return (Math.round(n*10)/10).toFixed(1);}
+// --- DOM wiring below ---
+const $=id=>document.getElementById(id);
+let unit="metric";
+const inputs=["heightCm","weightKg","heightFt","heightIn","weightLb"].map($);
+function readMetric(){
+  const h=parseFloat($("heightCm").value),w=parseFloat($("weightKg").value);
+  return {heightCm:h,weightKg:w};
+}
+function readImperial(){
+  const ft=parseFloat($("heightFt").value),inch=parseFloat($("heightIn").value),w=parseFloat($("weightLb").value);
+  return {heightFt:ft,heightIn:inch,weightLb:w};
+}
+function showHint(msg){
+  $("hint").hidden=false;$("hint").textContent=msg;
+  $("gauge").hidden=true;
+  $("result").innerHTML='<p class="prompt">Enter your height and weight to see your BMI.</p>';
+}
+function render(){
+  const hint=$("hint");
+  if(unit==="metric"){
+    const r=readMetric();
+    if(isNaN(r.heightCm)&&isNaN(r.weightKg)){hint.hidden=true;$("gauge").hidden=true;$("result").innerHTML='<p class="prompt">Enter your height and weight to see your BMI.</p>';return;}
+    if(isNaN(r.heightCm)||isNaN(r.weightKg)){showHint("Enter both your height and your weight.");return;}
+    if(r.heightCm<100||r.heightCm>250){showHint("Enter a height between 100 and 250 cm.");return;}
+    if(r.weightKg<20||r.weightKg>400){showHint("Enter a weight between 20 and 400 kg.");return;}
+    showResult(bmiMetric(r.weightKg,r.heightCm),r.heightCm,"kg");
+  }else{
+    const r=readImperial();
+    if(isNaN(r.heightFt)&&isNaN(r.heightIn)&&isNaN(r.weightLb)){hint.hidden=true;$("gauge").hidden=true;$("result").innerHTML='<p class="prompt">Enter your height and weight to see your BMI.</p>';return;}
+    if(isNaN(r.weightLb)||(isNaN(r.heightFt)&&isNaN(r.heightIn))){showHint("Enter both your height and your weight.");return;}
+    const totalIn=(r.heightFt||0)*12+(r.heightIn||0);
+    if(totalIn<36||totalIn>98){showHint("Enter a height between 3 ft and 8 ft 2 in.");return;}
+    if(r.weightLb<45||r.weightLb>880){showHint("Enter a weight between 45 and 880 lb.");return;}
+    showResult(bmiImperial(r.weightLb,r.heightFt||0,r.heightIn||0),ftInToCm(r.heightFt||0,r.heightIn||0),"lb");
+  }
+}
+function showResult(bmi,heightCm,weightUnit){
+  const cat=category(bmi);
+  const range=healthyWeightRange(heightCm);
+  const low=weightUnit==="kg"?fmt1(range.lowKg)+" kg":fmt1(kgToLb(range.lowKg))+" lb";
+  const high=weightUnit==="kg"?fmt1(range.highKg)+" kg":fmt1(kgToLb(range.highKg))+" lb";
+  $("hint").hidden=true;
+  $("result").innerHTML='<div class="bmi">'+fmt1(bmi)+'</div>'
+    +'<div><span class="cat '+cat.key+'">'+cat.label+'</span></div>'
+    +'<p class="range">Healthy weight for your height: '+low+' – '+high+'</p>';
+  $("gauge").hidden=false;
+  $("marker").style.left=gaugePercent(bmi)+"%";
+}
+function switchUnit(next){
+  if(next===unit)return;
+  // Convert the entered values so nothing is lost.
+  if(next==="imperial"&&unit==="metric"){
+    const r=readMetric();
+    if(!isNaN(r.heightCm)){const f=cmToFtIn(r.heightCm);$("heightFt").value=f.ft;$("heightIn").value=f.in;}
+    if(!isNaN(r.weightKg))$("weightLb").value=fmt1(kgToLb(r.weightKg));
+  }else if(next==="metric"&&unit==="imperial"){
+    const r=readImperial();
+    if(!isNaN(r.heightFt)||!isNaN(r.heightIn))$("heightCm").value=fmt1(ftInToCm(r.heightFt||0,r.heightIn||0));
+    if(!isNaN(r.weightLb))$("weightKg").value=fmt1(lbToKg(r.weightLb));
+  }
+  unit=next;
+  document.querySelectorAll(".unitbtn").forEach(b=>b.classList.toggle("active",b.dataset.unit===unit));
+  $("metricFields").hidden=(unit!=="metric");
+  $("imperialFields").hidden=(unit!=="imperial");
+  render();
+}
+document.querySelectorAll(".unitbtn").forEach(b=>b.addEventListener("click",()=>switchUnit(b.dataset.unit)));
+inputs.forEach(el=>el.addEventListener("input",render));
+render();
+</script>
+</body>
+</html>
