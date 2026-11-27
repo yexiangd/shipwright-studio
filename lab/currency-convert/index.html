@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Currency Convert · Shipwright Studio</title>
+<meta name="description" content="Free online currency converter with clearly-labelled sample rates for 12 major currencies — instant conversion, swap, reverse rates, and a copyable result, all in your browser.">
+<link rel="canonical" href="https://shipwright-studio.pages.dev/lab/currency-convert/">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"WebApplication","name":"Currency Convert","url":"https://shipwright-studio.pages.dev/lab/currency-convert/","description":"Currency Convert is a free online tool that converts amounts between 12 major currencies instantly, using clearly-labelled sample rates, with swap, reverse conversion, and a copyable result.","applicationCategory":"FinanceApplication","operatingSystem":"Web","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"}}
+</script>
+<style>
+:root{--bg:#0a0c0f;--panel:#101318;--line:#1c2128;--txt:#e8e4da;--mut:#9aa3b2;--brass:#d2a24c}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--txt);font-family:Fraunces,Georgia,serif;line-height:1.65;padding:2rem 1.2rem 4rem;max-width:960px;margin:0 auto}
+a{color:var(--brass)}
+.nav{display:flex;gap:1.2rem;font-size:.85rem;margin-bottom:1.2rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.nav a{color:var(--mut);text-decoration:none}.nav a:hover{color:var(--brass)}
+.eyebrow{font-size:.75rem;letter-spacing:.22em;text-transform:uppercase;color:var(--mut);font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+h1{font-weight:600;font-size:clamp(2.1rem,5vw,3rem);margin:.5rem 0 .7rem}
+.define{color:var(--mut);max-width:46rem;margin-bottom:1.2rem}.define strong{color:var(--txt)}
+.notice{border:1px solid var(--brass);border-radius:10px;padding:.7rem 1rem;color:var(--brass);font-size:.92rem;margin-bottom:1.8rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:1.4rem;margin-bottom:1.4rem}
+.cardlabel{font-size:.72rem;letter-spacing:.18em;text-transform:uppercase;color:var(--mut);margin-bottom:.8rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.ui{font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.mono{font-family:"JetBrains Mono",ui-monospace,monospace}
+.btn{font-size:1rem;border:1px solid var(--line);background:transparent;color:var(--txt);border-radius:999px;padding:.6rem 1.2rem;cursor:pointer;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.btn:hover{border-color:var(--brass);color:var(--brass)}
+.btn.active{border-color:var(--brass);color:var(--brass);background:rgba(210,162,76,.12)}
+.btnrow{display:flex;gap:.6rem;flex-wrap:wrap;align-items:center}
+.hint{color:var(--mut);font-size:.92rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.field label{display:block;font-size:.8rem;color:var(--mut);margin-bottom:.4rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.field input,.field select{width:100%;background:#08090c;border:1px solid var(--line);border-radius:10px;color:var(--txt);font-size:1.4rem;padding:.7rem .9rem;font-family:"JetBrains Mono",ui-monospace,monospace}
+.field input:focus,.field select:focus{outline:none;border-color:var(--brass)}
+.field select{cursor:pointer}
+.field .unit{font-size:.8rem;color:var(--mut);margin-top:.35rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.convgrid{display:grid;grid-template-columns:1fr auto 1fr;gap:.8rem;align-items:end}
+.swapbtn{width:3rem;height:3rem;border-radius:50%;border:1px solid var(--brass);background:transparent;color:var(--brass);font-size:1.3rem;cursor:pointer;margin-bottom:.1rem;flex:none}
+.swapbtn:hover{background:rgba(210,162,76,.12)}
+.amountrow{margin-bottom:1rem}
+.chips{display:flex;gap:.5rem;flex-wrap:wrap;margin-top:1rem}
+.chip{font-size:.9rem;border:1px solid var(--line);background:transparent;color:var(--mut);border-radius:999px;padding:.4rem .9rem;cursor:pointer;font-family:"JetBrains Mono",ui-monospace,monospace}
+.chip:hover{border-color:var(--brass);color:var(--brass)}
+.result{text-align:center;padding:1.4rem 0 .4rem}
+.result .amount{font-size:clamp(2.4rem,8vw,3.6rem);font-weight:600;line-height:1.1;font-family:"JetBrains Mono",ui-monospace,monospace}
+.result .amount .code{color:var(--brass);font-size:.55em}
+.result .rate{color:var(--mut);font-size:.95rem;margin-top:.6rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.result .reverse{color:var(--mut);font-size:.9rem;margin-top:.2rem;font-family:"JetBrains Mono",ui-monospace,monospace}
+.result .prompt{font-size:1.15rem;color:var(--mut)}
+.copybtn{margin-top:1rem}
+.copybtn.done{border-color:var(--brass);color:var(--brass)}
+table{width:100%;border-collapse:collapse;font-family:"JetBrains Mono",ui-monospace,monospace;font-size:.92rem}
+th,td{padding:.5rem .4rem;text-align:right;border-bottom:1px solid var(--line)}
+th:first-child,td:first-child{text-align:left}
+th{color:var(--mut);font-size:.78rem;letter-spacing:.08em;text-transform:uppercase;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+tbody tr{cursor:pointer}
+tbody tr:hover td{color:var(--brass)}
+tbody tr.sel td{color:var(--brass)}
+.tablewrap{overflow-x:auto}
+.explain{font-size:.95rem;color:var(--mut)}
+.explain h2{font-size:1.15rem;color:var(--txt);margin:1rem 0 .4rem}
+.explain h2:first-child{margin-top:0}
+.explain p{margin:.4rem 0}
+.explain code{font-family:"JetBrains Mono",ui-monospace,monospace;color:var(--txt);font-size:.88em}
+footer{margin-top:2.5rem;color:var(--mut);font-size:.85rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+@media(max-width:640px){.convgrid{grid-template-columns:1fr;gap:.6rem}.swapbtn{margin:0 auto;transform:rotate(90deg)}}
+</style>
+</head>
+<body>
+<nav class="nav"><a href="/">Shipwright Studio</a><a href="/ideas/">Lab</a></nav>
+<p class="eyebrow">Lab — App</p>
+<h1>Currency Convert</h1>
+<p class="define"><strong>Currency Convert is a free online tool that</strong> converts an amount between 12 major currencies instantly — with the rate shown, the reverse conversion alongside it, and a result you can copy — using clearly-labelled sample rates, all in your browser.</p>
+<p class="notice">Sample rates, updated 2026-11-27, for illustration only — these are not live market rates. Use them for quick estimates, not for real transactions.</p>
+
+<div class="card">
+<p class="cardlabel">Convert</p>
+<div class="amountrow field">
+<label for="amount">Amount</label>
+<input id="amount" type="number" inputmode="decimal" min="0" step="any" placeholder="100" autocomplete="off">
+</div>
+<div class="convgrid">
+<div class="field">
+<label for="fromCur">From</label>
+<select id="fromCur"></select>
+<p class="unit" id="fromName"></p>
+</div>
+<button class="swapbtn" id="swapBtn" type="button" aria-label="Swap currencies">⇄</button>
+<div class="field">
+<label for="toCur">To</label>
+<select id="toCur"></select>
+<p class="unit" id="toName"></p>
+</div>
+</div>
+<div class="chips" id="chips">
+<button class="chip" type="button" data-amt="1">1</button>
+<button class="chip" type="button" data-amt="10">10</button>
+<button class="chip" type="button" data-amt="50">50</button>
+<button class="chip" type="button" data-amt="100">100</button>
+<button class="chip" type="button" data-amt="500">500</button>
+<button class="chip" type="button" data-amt="1000">1000</button>
+</div>
+<div class="result" id="result">
+<p class="prompt">Enter an amount to convert.</p>
+</div>
+<p class="hint" id="hint" hidden></p>
+</div>
+
+<div class="card">
+<p class="cardlabel">Sample rates · per 1 USD · updated 2026-11-27</p>
+<div class="tablewrap">
+<table id="ratesTable">
+<thead><tr><th>Currency</th><th>Per 1 USD</th><th id="perFromHead">Per 1 USD</th></tr></thead>
+<tbody id="ratesBody"></tbody>
+</table>
+</div>
+<p class="hint" style="margin-top:.8rem">Tap a row to convert into that currency. Rates are samples for illustration only.</p>
+</div>
+
+<div class="card explain">
+<p class="cardlabel">How conversion works</p>
+<h2>The formula</h2>
+<p>Every rate is stored as units per 1 US dollar. To convert, the amount is first turned into dollars, then into the target currency: <code>result = amount ÷ rate(from) × rate(to)</code>. The reverse rate is simply the reciprocal, so converting back returns the starting amount (within rounding).</p>
+<h2>Rounding</h2>
+<p>Most currencies show two decimals. Yen and won have no minor unit, so they show whole numbers. Rates are shown to four significant figures where it helps readability.</p>
+<h2>Why sample rates?</h2>
+<p>Real exchange rates move every second and need a market data feed. This tool is a fast estimator, not a trading desk — so it uses fixed, dated sample rates and says so plainly, rather than pretending to be live. For a real transaction, always check your bank or card provider's rate.</p>
+</div>
+
+<footer>Built by Shipwright Studio · <a href="/ideas/">Back to the Lab</a></footer>
+
+<script>
+// --- Pure conversion logic (extracted verbatim by the node test) ---
+// Sample rates: units per 1 USD, dated 2026-11-27, for illustration only.
+const RATES={
+  USD:{name:"US Dollar",rate:1},
+  EUR:{name:"Euro",rate:0.86},
+  GBP:{name:"British Pound",rate:0.75},
+  JPY:{name:"Japanese Yen",rate:155.20},
+  CNY:{name:"Chinese Yuan",rate:7.12},
+  CAD:{name:"Canadian Dollar",rate:1.38},
+  AUD:{name:"Australian Dollar",rate:1.52},
+  CHF:{name:"Swiss Franc",rate:0.88},
+  HKD:{name:"Hong Kong Dollar",rate:7.79},
+  SGD:{name:"Singapore Dollar",rate:1.33},
+  INR:{name:"Indian Rupee",rate:88.40},
+  KRW:{name:"South Korean Won",rate:1395.00}
+};
+const ZERO_DECIMAL=new Set(["JPY","KRW"]);
+function convert(amount,from,to){
+  if(!RATES[from]||!RATES[to])return null;
+  if(!(amount>0)||!isFinite(amount))return null;
+  return amount/RATES[from].rate*RATES[to].rate;
+}
+function rateBetween(from,to){
+  if(!RATES[from]||!RATES[to])return null;
+  return RATES[to].rate/RATES[from].rate;
+}
+function validAmount(amount){
+  return typeof amount==="number"&&isFinite(amount)&&amount>0&&amount<=1e12;
+}
+function formatAmount(value,code){
+  if(value==null||!isFinite(value))return null;
+  if(ZERO_DECIMAL.has(code))return Math.round(value).toLocaleString("en-GB");
+  return value.toLocaleString("en-GB",{minimumFractionDigits:2,maximumFractionDigits:2});
+}
+function formatRate(rate){
+  if(rate==null||!isFinite(rate))return null;
+  if(rate>=100)return rate.toLocaleString("en-GB",{minimumFractionDigits:2,maximumFractionDigits:2});
+  if(rate>=1)return rate.toLocaleString("en-GB",{minimumFractionDigits:2,maximumFractionDigits:4});
+  return rate.toLocaleString("en-GB",{minimumFractionDigits:4,maximumFractionDigits:4});
+}
+function copyLine(amount,from,to){
+  const result=convert(amount,from,to);
+  if(result==null)return null;
+  return formatAmount(amount,from)+" "+from+" = "+formatAmount(result,to)+" "+to+" (sample rate)";
+}
+// --- DOM wiring below ---
+const $=id=>document.getElementById(id);
+const codes=Object.keys(RATES);
+function fillSelect(el,selected){
+  el.innerHTML=codes.map(c=>'<option value="'+c+'"'+(c===selected?' selected':'')+'>'+c+' — '+RATES[c].name+'</option>').join("");
+}
+fillSelect($("fromCur"),"USD");
+fillSelect($("toCur"),"EUR");
+function renderTable(){
+  const from=$("fromCur").value;
+  $("perFromHead").textContent="Per 1 "+from;
+  $("ratesBody").innerHTML=codes.map(c=>{
+    const perFrom=rateBetween(from,c);
+    return '<tr data-code="'+c+'" class="'+(c===$("toCur").value?"sel":"")+'"><td>'+c+' · '+RATES[c].name+'</td><td>'+formatRate(RATES[c].rate)+'</td><td>'+formatRate(perFrom)+'</td></tr>';
+  }).join("");
+  document.querySelectorAll("#ratesBody tr").forEach(tr=>tr.addEventListener("click",()=>{
+    $("toCur").value=tr.dataset.code;render();
+  }));
+}
+function render(){
+  const raw=$("amount").value.trim();
+  const amount=parseFloat(raw);
+  const from=$("fromCur").value,to=$("toCur").value;
+  $("fromName").textContent=RATES[from].name;
+  $("toName").textContent=RATES[to].name;
+  renderTable();
+  const hint=$("hint"),result=$("result");
+  if(raw===""){hint.hidden=true;result.innerHTML='<p class="prompt">Enter an amount to convert.</p>';return;}
+  if(!validAmount(amount)){
+    hint.hidden=false;
+    hint.textContent=isNaN(amount)?"Enter a number, e.g. 100.":"Enter an amount greater than zero.";
+    result.innerHTML='<p class="prompt">Enter an amount to convert.</p>';return;
+  }
+  hint.hidden=true;
+  const converted=convert(amount,from,to);
+  const fwd=rateBetween(from,to),rev=rateBetween(to,from);
+  result.innerHTML='<div class="amount">'+formatAmount(converted,to)+' <span class="code">'+to+'</span></div>'
+    +'<p class="rate">'+formatAmount(amount,from)+' '+from+' × '+formatRate(fwd)+' = '+formatAmount(converted,to)+' '+to+'</p>'
+    +'<p class="reverse">1 '+from+' = '+formatRate(fwd)+' '+to+' · 1 '+to+' = '+formatRate(rev)+' '+from+'</p>'
+    +'<button class="btn copybtn ui" id="copyBtn" type="button">Copy result</button>';
+  $("copyBtn").addEventListener("click",()=>{
+    const line=copyLine(amount,from,to);
+    const done=()=>{const b=$("copyBtn");if(!b)return;b.textContent="Copied ✓";b.classList.add("done");setTimeout(()=>{b.textContent="Copy result";b.classList.remove("done");},2000);};
+    if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(line).then(done).catch(done);}
+    else{const ta=document.createElement("textarea");ta.value=line;document.body.appendChild(ta);ta.select();try{document.execCommand("copy");}catch(e){}document.body.removeChild(ta);done();}
+  });
+}
+$("amount").addEventListener("input",render);
+$("fromCur").addEventListener("change",render);
+$("toCur").addEventListener("change",render);
+$("swapBtn").addEventListener("click",()=>{
+  const f=$("fromCur").value;$("fromCur").value=$("toCur").value;$("toCur").value=f;render();
+});
+document.querySelectorAll(".chip").forEach(ch=>ch.addEventListener("click",()=>{
+  $("amount").value=ch.dataset.amt;render();
+}));
+render();
+</script>
+</body>
+</html>

@@ -1,5 +1,5 @@
 {
-  "updated": "2026-11-26",
+  "updated": "2026-11-27",
   "ideas": [
     {
       "id": "idea-000a",
@@ -825,7 +825,9 @@
       "tagline": "Popup notes that persist — localStorage demo.",
       "priority": 50,
       "effort": "S",
-      "status": "todo"
+      "status": "done",
+      "url": "/lab/quick-notes/",
+      "shipped": "2026-11-27"
     },
     {
       "id": "idea-068",
@@ -1179,7 +1181,9 @@
       "tagline": "Quick conversions with clearly-labeled sample rates.",
       "priority": 50,
       "effort": "S",
-      "status": "todo"
+      "status": "done",
+      "url": "/lab/currency-convert/",
+      "shipped": "2026-11-27"
     },
     {
       "id": "idea-099",

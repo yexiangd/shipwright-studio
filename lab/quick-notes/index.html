@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Quick Notes · Shipwright Studio</title>
+<meta name="description" content="Free online sticky notes that persist in your browser — create, pin, colour, search and export quick notes, saved instantly with localStorage.">
+<link rel="canonical" href="https://shipwright-studio.pages.dev/lab/quick-notes/">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"WebApplication","name":"Quick Notes","url":"https://shipwright-studio.pages.dev/lab/quick-notes/","description":"Quick Notes is a free online tool that lets you jot down quick sticky notes in a browser-extension-style popup, with pinning, colour labels, search, and notes that persist in your browser via localStorage.","applicationCategory":"UtilitiesApplication","operatingSystem":"Web","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"}}
+</script>
+<style>
+:root{--bg:#0a0c0f;--panel:#101318;--line:#1c2128;--txt:#e8e4da;--mut:#9aa3b2;--brass:#d2a24c;--sage:#7fb069;--blue:#7ba7bc;--rose:#d98a8a;--stone:#9aa3b2;--red:#e0655f}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--txt);font-family:Fraunces,Georgia,serif;line-height:1.65;padding:2rem 1.2rem 4rem;max-width:960px;margin:0 auto}
+a{color:var(--brass)}
+.nav{display:flex;gap:1.2rem;font-size:.85rem;margin-bottom:1.2rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.nav a{color:var(--mut);text-decoration:none}.nav a:hover{color:var(--brass)}
+.eyebrow{font-size:.75rem;letter-spacing:.22em;text-transform:uppercase;color:var(--mut);font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+h1{font-weight:600;font-size:clamp(2.1rem,5vw,3rem);margin:.5rem 0 .7rem}
+.define{color:var(--mut);max-width:46rem;margin-bottom:1.2rem}.define strong{color:var(--txt)}
+.notice{border:1px solid var(--brass);border-radius:10px;padding:.7rem 1rem;color:var(--brass);font-size:.92rem;margin-bottom:1.8rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.notice.warn{border-color:var(--red);color:var(--red)}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:1.4rem;margin-bottom:1.4rem}
+.cardlabel{font-size:.72rem;letter-spacing:.18em;text-transform:uppercase;color:var(--mut);margin-bottom:.8rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.ui{font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.mono{font-family:"JetBrains Mono",ui-monospace,monospace}
+.btn{font-size:.95rem;border:1px solid var(--line);background:transparent;color:var(--txt);border-radius:999px;padding:.55rem 1.1rem;cursor:pointer;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.btn:hover{border-color:var(--brass);color:var(--brass)}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.btn:disabled:hover{border-color:var(--line);color:var(--txt)}
+.btn.primary{border-color:var(--brass);color:var(--brass);background:rgba(210,162,76,.12)}
+.btnrow{display:flex;gap:.6rem;flex-wrap:wrap;align-items:center}
+.toolbar{display:flex;gap:.8rem;flex-wrap:wrap;align-items:center}
+.toolbar .search{flex:1;min-width:180px}
+input[type="text"],textarea{background:#08090c;border:1px solid var(--line);border-radius:10px;color:var(--txt);font-size:1rem;padding:.65rem .9rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif;width:100%}
+input[type="text"]:focus,textarea:focus{outline:none;border-color:var(--brass)}
+textarea{resize:vertical;min-height:5.5rem;line-height:1.6}
+.field label{display:block;font-size:.8rem;color:var(--mut);margin-bottom:.4rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.hint{color:var(--red);font-size:.92rem;margin-top:.5rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.count{color:var(--mut);font-size:.85rem;font-family:"JetBrains Mono",ui-monospace,monospace}
+.pills{display:flex;gap:.4rem;flex-wrap:wrap}
+.pill{font-size:.82rem;border:1px solid var(--line);background:transparent;color:var(--mut);border-radius:999px;padding:.3rem .8rem;cursor:pointer;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.pill:hover{color:var(--txt);border-color:var(--mut)}
+.pill.active{border-color:var(--brass);color:var(--brass)}
+.pill .dot{display:inline-block;width:.55rem;height:.55rem;border-radius:50%;margin-right:.35rem;vertical-align:baseline}
+.dots{display:flex;gap:.55rem;align-items:center}
+.dotbtn{width:1.35rem;height:1.35rem;border-radius:50%;border:2px solid transparent;cursor:pointer;padding:0;background:none}
+.dotbtn.active{border-color:var(--txt)}
+.dotbtn:focus{outline:none;border-color:var(--txt)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:1rem}
+.note{background:var(--panel);border:1px solid var(--line);border-top:3px solid var(--stone);border-radius:12px;padding:1rem 1.1rem;display:flex;flex-direction:column;gap:.5rem}
+.note h3{font-size:1.05rem;font-weight:600;word-break:break-word}
+.note .body{color:var(--mut);font-size:.95rem;white-space:pre-wrap;word-break:break-word;flex:1}
+.note .meta{font-size:.78rem;color:var(--mut);font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.note .actions{display:flex;gap:.35rem;flex-wrap:wrap;align-items:center;border-top:1px solid var(--line);padding-top:.6rem}
+.iconbtn{font-size:.8rem;border:1px solid var(--line);background:transparent;color:var(--mut);border-radius:999px;padding:.28rem .7rem;cursor:pointer;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.iconbtn:hover{border-color:var(--brass);color:var(--brass)}
+.iconbtn.on{border-color:var(--brass);color:var(--brass)}
+.iconbtn.danger:hover{border-color:var(--red);color:var(--red)}
+.note .pinmark{color:var(--brass);font-size:.8rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.note .editfield{width:100%}
+.note .editfield textarea{min-height:4.5rem}
+.note .editfield input[type="text"]{margin-bottom:.5rem}
+.sectionlabel{font-size:.72rem;letter-spacing:.18em;text-transform:uppercase;color:var(--mut);margin:1.6rem 0 .8rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.empty{text-align:center;color:var(--mut);padding:2rem 1rem;font-size:1.05rem}
+.empty .sub{font-size:.92rem;margin-top:.4rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.toast{position:fixed;left:50%;bottom:1.5rem;transform:translateX(-50%);background:var(--panel);border:1px solid var(--brass);color:var(--txt);border-radius:999px;padding:.6rem 1.1rem;font-size:.92rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif;box-shadow:0 8px 30px rgba(0,0,0,.5);display:flex;gap:.9rem;align-items:center;z-index:10}
+.toast button{background:none;border:none;color:var(--brass);cursor:pointer;font-size:.92rem;font-weight:600;font-family:inherit}
+footer{margin-top:2.5rem;color:var(--mut);font-size:.85rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+@media(max-width:640px){.grid{grid-template-columns:1fr}.toolbar .search{flex-basis:100%}}
+</style>
+</head>
+<body>
+<nav class="nav"><a href="/">Shipwright Studio</a><a href="/ideas/">Lab</a></nav>
+<p class="eyebrow">Lab — App</p>
+<h1>Quick Notes</h1>
+<p class="define"><strong>Quick Notes is a free online tool that</strong> lets you jot down quick sticky notes in a browser-extension-style popup — create, pin, colour and search them, and they stay saved in your browser, even after you close the tab.</p>
+<p class="notice">A demo of the browser-extension popup — notes are saved in this browser only, via localStorage. This page is not a real extension, and nothing syncs or leaves your device.</p>
+<p class="notice warn" id="storageWarn" hidden>This browser won't let notes be saved — your notes will disappear when you leave this page.</p>
+
+<div class="card">
+<p class="cardlabel">Find &amp; share</p>
+<div class="toolbar">
+<input type="text" class="search" id="search" placeholder="Search notes…" autocomplete="off" aria-label="Search notes">
+<div class="pills" id="colorFilter" role="group" aria-label="Filter by colour"></div>
+</div>
+<div class="btnrow" style="margin-top:.9rem">
+<button class="btn" id="copyAll">Copy all</button>
+<button class="btn" id="exportTxt">Export .txt</button>
+<span class="count" id="noteCount"></span>
+</div>
+</div>
+
+<div class="card">
+<p class="cardlabel">New note</p>
+<div class="field"><label for="newTitle">Title <span style="color:var(--mut)">(optional)</span></label><input type="text" id="newTitle" placeholder="e.g. Call the plumber" autocomplete="off" maxlength="120"></div>
+<div class="field" style="margin-top:.8rem"><label for="newBody">Note</label><textarea id="newBody" placeholder="Write it down before it slips away…" maxlength="2000"></textarea></div>
+<div class="btnrow" style="margin-top:.8rem;justify-content:space-between">
+<div class="dots" id="composerColors" role="group" aria-label="Note colour"></div>
+<span class="count" id="composerCount">0 / 2000</span>
+</div>
+<p class="hint" id="composerHint" hidden>Write something first.</p>
+<div class="btnrow" style="margin-top:.9rem"><button class="btn primary" id="addNote">Add note</button></div>
+</div>
+
+<div id="pinnedSection" hidden>
+<p class="sectionlabel">Pinned</p>
+<div class="grid" id="pinnedGrid"></div>
+</div>
+
+<div id="notesSection">
+<p class="sectionlabel">Notes</p>
+<div class="grid" id="notesGrid"></div>
+<div class="empty" id="emptyState" hidden>
+<p>No notes yet — jot down your first one above.</p>
+<p class="sub">It will still be here when you come back.</p>
+</div>
+<div class="empty" id="noMatchState" hidden>
+<p>No notes match that search.</p>
+<p class="sub">Try a different word, or clear the colour filter.</p>
+</div>
+</div>
+
+<div class="toast" id="toast" hidden><span id="toastMsg"></span><button id="toastAction" hidden>Undo</button></div>
+
+<footer>Built by Shipwright Studio · <a href="/ideas/">Back to the Lab</a></footer>
+
+<script>
+// --- Pure notes logic (extracted verbatim by the node test) ---
+const COLORS=["brass","sage","blue","rose","stone"];
+const COLOR_HEX={brass:"#d2a24c",sage:"#7fb069",blue:"#7ba7bc",rose:"#d98a8a",stone:"#9aa3b2"};
+const MAX_BODY=2000;
+function validateBody(body){
+  if(!body||!body.trim())return "Write something first.";
+  if(body.length>MAX_BODY)return "Note is too long — keep it under "+MAX_BODY+" characters.";
+  return null;
+}
+function createNote(id,now,title,body,color){
+  return {id:id,title:(title||"").trim(),body:body.trim(),color:COLORS.indexOf(color)>=0?color:"brass",pinned:false,createdAt:now,updatedAt:now};
+}
+function updateNote(notes,id,patch,now){
+  return notes.map(function(n){
+    if(n.id!==id)return n;
+    var next={id:n.id,title:patch.title!==undefined?patch.title.trim():n.title,body:patch.body!==undefined?patch.body.trim():n.body,color:patch.color!==undefined?(COLORS.indexOf(patch.color)>=0?patch.color:n.color):n.color,pinned:patch.pinned!==undefined?!!patch.pinned:n.pinned,createdAt:n.createdAt,updatedAt:now};
+    return next;
+  });
+}
+function deleteNote(notes,id){
+  var removed=null;
+  var kept=notes.filter(function(n){if(n.id===id){removed=n;return false;}return true;});
+  return {notes:kept,removed:removed};
+}
+function sortNotes(notes){
+  return notes.slice().sort(function(a,b){
+    if(a.pinned!==b.pinned)return a.pinned?-1:1;
+    return b.createdAt-a.createdAt;
+  });
+}
+function filterNotes(notes,query,color){
+  var q=(query||"").trim().toLowerCase();
+  return notes.filter(function(n){
+    var matchesQuery=!q||n.title.toLowerCase().indexOf(q)>=0||n.body.toLowerCase().indexOf(q)>=0;
+    var matchesColor=!color||n.color===color;
+    return matchesQuery&&matchesColor;
+  });
+}
+function serializeNotes(notes){return JSON.stringify(notes);}
+function parseNotes(json){
+  try{
+    var data=JSON.parse(json);
+    if(!Array.isArray(data))return [];
+    return data.filter(function(n){
+      return n&&typeof n.id==="string"&&typeof n.body==="string"&&typeof n.createdAt==="number";
+    }).map(function(n){
+      return {id:n.id,title:typeof n.title==="string"?n.title:"",body:n.body,color:COLORS.indexOf(n.color)>=0?n.color:"brass",pinned:!!n.pinned,createdAt:n.createdAt,updatedAt:typeof n.updatedAt==="number"?n.updatedAt:n.createdAt};
+    });
+  }catch(e){return [];}
+}
+function formatExport(notes){
+  return notes.map(function(n){
+    var head=(n.pinned?"[Pinned] ":"")+(n.title||"Untitled");
+    return head+"\n"+n.body;
+  }).join("\n\n");
+}
+function charCount(text){return (text||"").length;}
+// --- DOM wiring below ---
+const $=id=>document.getElementById(id);
+const STORAGE_KEY="quickNotes.v1";
+let notes=[];
+let filterColor="";
+let composerColor="brass";
+let toastTimer=null;
+let lastDeleted=null;
+
+function storageAvailable(){
+  try{const k="__qn_test__";localStorage.setItem(k,"1");localStorage.removeItem(k);return true;}
+  catch(e){return false;}
+}
+const canStore=storageAvailable();
+if(!canStore)$("storageWarn").hidden=false;
+
+function save(){
+  if(!canStore)return;
+  try{localStorage.setItem(STORAGE_KEY,serializeNotes(notes));}
+  catch(e){$("storageWarn").hidden=false;}
+}
+function load(){
+  if(!canStore)return;
+  notes=parseNotes(localStorage.getItem(STORAGE_KEY)||"[]");
+}
+function esc(s){
+  return s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+}
+function fmtDate(ts){
+  return new Date(ts).toLocaleString(undefined,{month:"short",day:"numeric",hour:"2-digit",minute:"2-digit"});
+}
+function showToast(msg,actionLabel,onAction,ms){
+  const t=$("toast");
+  $("toastMsg").textContent=msg;
+  const btn=$("toastAction");
+  if(actionLabel){btn.hidden=false;btn.textContent=actionLabel;btn.onclick=function(){hideToast();onAction&&onAction();};}
+  else{btn.hidden=true;btn.onclick=null;}
+  t.hidden=false;
+  clearTimeout(toastTimer);
+  toastTimer=setTimeout(hideToast,ms||3000);
+}
+function hideToast(){$("toast").hidden=true;clearTimeout(toastTimer);}
+
+function noteCard(n){
+  const el=document.createElement("article");
+  el.className="note";
+  el.style.borderTopColor=COLOR_HEX[n.color]||COLOR_HEX.brass;
+  el.dataset.id=n.id;
+  const pinMark=n.pinned?'<span class="pinmark">&#128204; Pinned</span>':"";
+  el.innerHTML='<h3>'+(esc(n.title)||"Untitled")+'</h3>'
+    +'<p class="body">'+esc(n.body)+'</p>'
+    +'<p class="meta">'+pinMark+' Updated '+esc(fmtDate(n.updatedAt))+'</p>'
+    +'<div class="actions">'
+    +'<button class="iconbtn pinbtn'+(n.pinned?" on":"")+'" type="button">'+(n.pinned?"Unpin":"Pin")+'</button>'
+    +'<button class="iconbtn editbtn" type="button">Edit</button>'
+    +'<button class="iconbtn danger delbtn" type="button">Delete</button>'
+    +'<span class="dots" style="margin-left:auto"></span>'
+    +'</div>';
+  const dots=el.querySelector(".dots");
+  COLORS.forEach(function(c){
+    const b=document.createElement("button");
+    b.type="button";b.className="dotbtn"+(n.color===c?" active":"");
+    b.style.background=COLOR_HEX[c];b.title=c;b.setAttribute("aria-label","Colour "+c);
+    b.addEventListener("click",function(){notes=updateNote(notes,n.id,{color:c},Date.now());save();render();});
+    dots.appendChild(b);
+  });
+  el.querySelector(".pinbtn").addEventListener("click",function(){
+    notes=updateNote(notes,n.id,{pinned:!n.pinned},Date.now());save();render();
+  });
+  el.querySelector(".delbtn").addEventListener("click",function(){
+    const res=deleteNote(notes,n.id);
+    notes=res.notes;lastDeleted=res.removed;save();render();
+    if(res.removed)showToast("Note deleted.","Undo",function(){
+      if(lastDeleted){notes=notes.concat([lastDeleted]);lastDeleted=null;save();render();}
+    },5000);
+  });
+  el.querySelector(".editbtn").addEventListener("click",function(){startEdit(el,n);});
+  el.querySelector(".body").addEventListener("click",function(){startEdit(el,n);});
+  return el;
+}
+function startEdit(el,n){
+  const body=el.querySelector(".body");
+  const title=el.querySelector("h3");
+  const wrap=document.createElement("div");
+  wrap.className="editfield";
+  wrap.innerHTML='<input type="text" value="'+esc(n.title)+'" maxlength="120" aria-label="Note title">'
+    +'<textarea maxlength="2000" aria-label="Note body">'+esc(n.body)+'</textarea>'
+    +'<p class="count" style="margin:.4rem 0 .6rem"></p>'
+    +'<div class="btnrow"><button class="btn primary savebtn" type="button">Save</button><button class="btn cancelbtn" type="button">Cancel</button></div>';
+  const titleInput=wrap.querySelector('input[type="text"]');
+  const bodyInput=wrap.querySelector("textarea");
+  const countEl=wrap.querySelector(".count");
+  function updateCount(){countEl.textContent=charCount(bodyInput.value)+" / "+MAX_BODY;}
+  bodyInput.addEventListener("input",updateCount);
+  updateCount();
+  wrap.querySelector(".cancelbtn").addEventListener("click",function(){render();});
+  wrap.querySelector(".savebtn").addEventListener("click",function(){
+    const err=validateBody(bodyInput.value);
+    if(err){countEl.textContent=err;countEl.style.color="var(--red)";return;}
+    notes=updateNote(notes,n.id,{title:titleInput.value,body:bodyInput.value},Date.now());
+    save();render();showToast("Note saved.");
+  });
+  title.replaceWith(wrap);
+  body.remove();
+  bodyInput.focus();
+}
+function render(){
+  const query=$("search").value;
+  const filtered=filterNotes(notes,query,filterColor);
+  const sorted=sortNotes(filtered);
+  const pinned=sorted.filter(function(n){return n.pinned;});
+  const rest=sorted.filter(function(n){return !n.pinned;});
+  const pg=$("pinnedGrid"),ng=$("notesGrid");
+  pg.innerHTML="";ng.innerHTML="";
+  pinned.forEach(function(n){pg.appendChild(noteCard(n));});
+  rest.forEach(function(n){ng.appendChild(noteCard(n));});
+  $("pinnedSection").hidden=pinned.length===0;
+  const total=notes.length;
+  $("noteCount").textContent=total===0?"No notes yet":total+(total===1?" note":" notes")+(filtered.length!==total?" · "+filtered.length+" shown":"");
+  $("emptyState").hidden=total!==0;
+  $("noMatchState").hidden=!(total>0&&filtered.length===0);
+  const hasNotes=total>0;
+  $("copyAll").disabled=!hasNotes;
+  $("exportTxt").disabled=!hasNotes;
+}
+function buildPills(){
+  const wrap=$("colorFilter");
+  const all=document.createElement("button");
+  all.type="button";all.className="pill active";all.textContent="All colours";
+  all.addEventListener("click",function(){filterColor="";syncPills();render();});
+  wrap.appendChild(all);
+  COLORS.forEach(function(c){
+    const b=document.createElement("button");
+    b.type="button";b.className="pill";b.dataset.color=c;
+    b.innerHTML='<span class="dot" style="background:'+COLOR_HEX[c]+'"></span>'+c;
+    b.addEventListener("click",function(){filterColor=(filterColor===c?"":c);syncPills();render();});
+    wrap.appendChild(b);
+  });
+}
+function syncPills(){
+  document.querySelectorAll("#colorFilter .pill").forEach(function(p){
+    p.classList.toggle("active",(!p.dataset.color&&!filterColor)||(p.dataset.color===filterColor));
+  });
+}
+function buildComposerColors(){
+  const wrap=$("composerColors");
+  COLORS.forEach(function(c){
+    const b=document.createElement("button");
+    b.type="button";b.className="dotbtn"+(c===composerColor?" active":"");
+    b.style.background=COLOR_HEX[c];b.title=c;b.setAttribute("aria-label","Colour "+c);
+    b.addEventListener("click",function(){
+      composerColor=c;
+      wrap.querySelectorAll(".dotbtn").forEach(function(d,i){d.classList.toggle("active",COLORS[i]===composerColor);});
+    });
+    wrap.appendChild(b);
+  });
+}
+$("newBody").addEventListener("input",function(){
+  $("composerCount").textContent=charCount(this.value)+" / "+MAX_BODY;
+});
+$("addNote").addEventListener("click",function(){
+  const body=$("newBody").value;
+  const err=validateBody(body);
+  const hint=$("composerHint");
+  if(err){hint.hidden=false;hint.textContent=err;return;}
+  hint.hidden=true;
+  const now=Date.now();
+  const id="n"+now.toString(36)+Math.floor(Math.random()*1e6).toString(36);
+  notes=notes.concat([createNote(id,now,$("newTitle").value,body,composerColor)]);
+  $("newTitle").value="";$("newBody").value="";$("composerCount").textContent="0 / "+MAX_BODY;
+  save();render();showToast("Note saved.");
+});
+$("search").addEventListener("input",render);
+$("copyAll").addEventListener("click",function(){
+  const text=formatExport(sortNotes(notes));
+  function done(){showToast("All notes copied.");}
+  if(navigator.clipboard&&navigator.clipboard.writeText){
+    navigator.clipboard.writeText(text).then(done,function(){fallbackCopy(text);done();});
+  }else{fallbackCopy(text);done();}
+});
+function fallbackCopy(text){
+  const ta=document.createElement("textarea");
+  ta.value=text;ta.style.position="fixed";ta.style.opacity="0";
+  document.body.appendChild(ta);ta.select();
+  try{document.execCommand("copy");}catch(e){}
+  document.body.removeChild(ta);
+}
+$("exportTxt").addEventListener("click",function(){
+  const blob=new Blob([formatExport(sortNotes(notes))],{type:"text/plain;charset=utf-8"});
+  const a=document.createElement("a");
+  a.href=URL.createObjectURL(blob);a.download="quick-notes.txt";
+  document.body.appendChild(a);a.click();
+  setTimeout(function(){URL.revokeObjectURL(a.href);a.remove();},100);
+  showToast("Exported quick-notes.txt.");
+});
+buildPills();
+buildComposerColors();
+load();
+render();
+</script>
+</body>
+</html>

@@ -121,6 +121,11 @@
     <priority>0.7</priority>
   </url>
   <url>
+    <loc>https://shipwright-studio.pages.dev/lab/currency-convert/</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
     <loc>https://shipwright-studio.pages.dev/lab/dao-voting-viz/</loc>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
@@ -422,6 +427,11 @@
   </url>
   <url>
     <loc>https://shipwright-studio.pages.dev/lab/qr-generator/</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://shipwright-studio.pages.dev/lab/quick-notes/</loc>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
