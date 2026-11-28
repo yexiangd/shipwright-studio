@@ -1,5 +1,5 @@
 {
-  "updated": "2026-11-27",
+  "updated": "2026-11-28",
   "ideas": [
     {
       "id": "idea-000a",
@@ -837,7 +837,9 @@
       "tagline": "Preview any palette in dark mode before you ship it.",
       "priority": 48,
       "effort": "S",
-      "status": "todo"
+      "status": "done",
+      "url": "/lab/dark-lab/",
+      "shipped": "2026-11-28"
     },
     {
       "id": "idea-069",
@@ -1193,7 +1195,9 @@
       "tagline": "Tune by mic with a needle that tells the truth.",
       "priority": 48,
       "effort": "M",
-      "status": "todo"
+      "status": "done",
+      "url": "/lab/guitar-tuner/",
+      "shipped": "2026-11-28"
     },
     {
       "id": "idea-100",

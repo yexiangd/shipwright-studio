@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Guitar Tuner · Shipwright Studio</title>
+<meta name="description" content="Free online guitar tuner that listens through your microphone and shows exactly how sharp or flat each string is, with a needle gauge, cents readout, and reference tones — no app to install.">
+<link rel="canonical" href="https://shipwright-studio.pages.dev/lab/guitar-tuner/">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"WebApplication","name":"Guitar Tuner","url":"https://shipwright-studio.pages.dev/lab/guitar-tuner/","description":"Guitar Tuner is a free online tool that listens through your microphone and shows, with a needle gauge, exactly how sharp or flat each guitar string is — with cents readout, standard-tuning string targets, and reference tones to tune by ear.","applicationCategory":"MultimediaApplication","operatingSystem":"Web","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"}}
+</script>
+<style>
+:root{--bg:#0a0c0f;--panel:#101318;--line:#1c2128;--txt:#e8e4da;--mut:#9aa3b2;--brass:#d2a24c;--green:#5cb85c;--red:#c96a5e;--blue:#6a8fc9}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--txt);font-family:Fraunces,Georgia,serif;line-height:1.65;padding:2rem 1.2rem 4rem;max-width:960px;margin:0 auto}
+a{color:var(--brass)}
+.nav{display:flex;gap:1.2rem;font-size:.85rem;margin-bottom:1.2rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.nav a{color:var(--mut);text-decoration:none}.nav a:hover{color:var(--brass)}
+.eyebrow{font-size:.75rem;letter-spacing:.22em;text-transform:uppercase;color:var(--mut);font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+h1{font-weight:600;font-size:clamp(2.1rem,5vw,3rem);margin:.5rem 0 .7rem}
+.define{color:var(--mut);max-width:46rem;margin-bottom:1.2rem}.define strong{color:var(--txt)}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:1.4rem;margin-bottom:1.4rem}
+.cardlabel{font-size:.72rem;letter-spacing:.18em;text-transform:uppercase;color:var(--mut);margin-bottom:.8rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.ui{font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.mono{font-family:"JetBrains Mono",ui-monospace,monospace}
+.btn{font-size:1rem;border:1px solid var(--line);background:transparent;color:var(--txt);border-radius:999px;padding:.6rem 1.2rem;cursor:pointer;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif;min-height:44px}
+.btn:hover{border-color:var(--brass);color:var(--brass)}
+.btn.active{border-color:var(--brass);color:var(--brass);background:rgba(210,162,76,.12)}
+.btn.primary{border-color:var(--brass);color:var(--brass)}
+.btn.primary:hover{background:rgba(210,162,76,.12)}
+.btnrow{display:flex;gap:.6rem;flex-wrap:wrap;align-items:center}
+.hint{color:var(--mut);font-size:.92rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.status{font-size:.95rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.status.err{color:var(--red)}
+.status.ok{color:var(--green)}
+.gauge-wrap{max-width:420px;margin:0 auto;text-align:center}
+.gauge-wrap svg{width:100%;height:auto;display:block}
+.notedisplay{margin-top:.2rem}
+.notedisplay .note{font-size:clamp(2.6rem,9vw,3.8rem);font-weight:600;line-height:1.05}
+.notedisplay .note.intune{color:var(--green)}
+.notedisplay .cents{font-size:1.4rem;font-family:"JetBrains Mono",ui-monospace,monospace;margin-top:.2rem}
+.notedisplay .cents.sharp{color:var(--red)}
+.notedisplay .cents.flat{color:var(--blue)}
+.notedisplay .cents.intune{color:var(--green)}
+.badge{display:inline-block;margin-top:.6rem;padding:.25rem .9rem;border-radius:999px;border:1px solid var(--green);color:var(--green);font-size:.9rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+.badge[hidden]{display:none}
+.freqread{display:flex;gap:2rem;justify-content:center;flex-wrap:wrap;margin-top:1rem;font-family:"JetBrains Mono",ui-monospace,monospace;font-size:.95rem}
+.freqread span{color:var(--mut)}
+.freqread b{color:var(--txt);font-weight:500}
+.meter{height:8px;background:#08090c;border:1px solid var(--line);border-radius:999px;overflow:hidden;margin-top:.6rem}
+.meter i{display:block;height:100%;width:0%;background:var(--brass);transition:width .1s linear}
+.meter i.low{background:var(--red)}
+.stringbtn{min-width:64px}
+.toggle{display:inline-flex;align-items:center;gap:.5rem;cursor:pointer;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif;font-size:.95rem;color:var(--txt)}
+.toggle input{width:1.2rem;height:1.2rem;accent-color:var(--brass);cursor:pointer}
+.history{list-style:none;font-family:"JetBrains Mono",ui-monospace,monospace;font-size:.92rem;color:var(--mut)}
+.history li{padding:.25rem 0;border-bottom:1px solid var(--line)}
+.history li:last-child{border-bottom:none}
+.history b{color:var(--green);font-weight:500}
+.explain{font-size:.95rem;color:var(--mut)}
+.explain h2{font-size:1.15rem;color:var(--txt);margin:1rem 0 .4rem}
+.explain h2:first-child{margin-top:0}
+.explain p{margin:.4rem 0}
+.explain code{font-family:"JetBrains Mono",ui-monospace,monospace;color:var(--txt);font-size:.88em}
+footer{margin-top:2.5rem;color:var(--mut);font-size:.85rem;font-family:-apple-system,"Segoe UI",Inter,system-ui,sans-serif}
+@media(max-width:640px){.btnrow{justify-content:center}}
+</style>
+</head>
+<body>
+<nav class="nav"><a href="/">Shipwright Studio</a><a href="/ideas/">Lab</a></nav>
+<p class="eyebrow">Lab — App</p>
+<h1>Guitar Tuner</h1>
+<p class="define"><strong>Guitar Tuner is a free online tool that</strong> listens through your microphone and shows, with a needle gauge, exactly how sharp or flat each guitar string is — pick a string in standard tuning or let it auto-detect the nearest note, and tune by ear with reference tones if you prefer.</p>
+
+<div class="card">
+<p class="cardlabel">Microphone</p>
+<div class="btnrow">
+<button class="btn primary" id="startBtn" type="button">Start listening</button>
+<button class="btn" id="stopBtn" type="button" hidden>Stop</button>
+</div>
+<p class="status" id="micStatus" style="margin-top:.8rem">Your microphone is only used while you listen — nothing is recorded or sent anywhere.</p>
+</div>
+
+<div class="card">
+<p class="cardlabel">Needle gauge</p>
+<div class="gauge-wrap">
+<svg id="dial" viewBox="0 0 300 175" role="img" aria-label="Tuning needle gauge, minus 50 to plus 50 cents">
+<path d="M 32 148 A 118 118 0 0 1 268 148" fill="none" stroke="#1c2128" stroke-width="8" stroke-linecap="round"/>
+<path d="M 134.6 31 A 118 118 0 0 1 165.4 31" fill="none" stroke="#5cb85c" stroke-width="8"/>
+<g id="ticks"></g>
+<line id="needle" x1="150" y1="148" x2="150" y2="48" stroke="#d2a24c" stroke-width="3" stroke-linecap="round" transform="rotate(0 150 148)"/>
+<circle cx="150" cy="148" r="8" fill="#d2a24c"/>
+<text x="150" y="172" text-anchor="middle" fill="#9aa3b2" font-size="11" font-family="-apple-system,'Segoe UI',Inter,system-ui,sans-serif">cents</text>
+</svg>
+<div class="notedisplay">
+<p class="note" id="noteName">—</p>
+<p class="cents" id="centsRead">Tap Start listening</p>
+<p><span class="badge" id="inTuneBadge" hidden>✓ In tune</span></p>
+</div>
+<div class="freqread">
+<p>Detected <b id="detectedHz">—</b></p>
+<p>Target <b id="targetHz">—</b></p>
+</div>
+</div>
+<p class="hint" id="loudHint" style="text-align:center;margin-top:.8rem" hidden>Signal is very quiet — play louder or move closer to the mic.</p>
+<p class="hint" style="margin-top:.8rem">Signal strength</p>
+<div class="meter" aria-hidden="true"><i id="signalBar"></i></div>
+</div>
+
+<div class="card">
+<p class="cardlabel">String · standard tuning</p>
+<div class="btnrow" id="stringRow" role="group" aria-label="Choose a string"></div>
+<p class="hint" style="margin-top:.8rem">Auto detects the nearest note. Picking a string targets its exact pitch.</p>
+<label class="toggle" style="margin-top:.8rem"><input type="checkbox" id="chromaticToggle"> Chromatic mode — show any detected note, not just the six strings</label>
+</div>
+
+<div class="card">
+<p class="cardlabel">Reference tones · tune by ear</p>
+<div class="btnrow" id="toneRow"></div>
+<div class="btnrow" style="margin-top:.8rem">
+<button class="btn" id="toneStopBtn" type="button" hidden>Stop tone</button>
+</div>
+<p class="hint" id="toneHint" style="margin-top:.8rem">Plays the target pitch through your speakers. Works even if the microphone is unavailable.</p>
+</div>
+
+<div class="card">
+<p class="cardlabel">Tuned this session</p>
+<ul class="history" id="historyList"><li>No strings tuned yet.</li></ul>
+</div>
+
+<div class="card explain">
+<p class="cardlabel">How it works</p>
+<h2>The needle</h2>
+<p>The microphone signal is analysed with the YIN pitch-detection algorithm to find the pitch, then compared with the target note. The difference is measured in <code>cents</code> — one hundredth of a semitone — using <code>cents = 1200 × log₂(f / f_target)</code>. The needle swings from −50 to +50 cents; the green band in the middle is ±5 cents, which is close enough that the string counts as in tune.</p>
+<h2>Standard tuning</h2>
+<p>From the thickest string to the thinnest: E2 82.41 Hz, A2 110.00 Hz, D3 146.83 Hz, G3 196.00 Hz, B3 246.94 Hz, E4 329.63 Hz. In chromatic mode the tuner names whatever note it hears, so it works for other instruments too.</p>
+<h2>Privacy</h2>
+<p>Audio is analysed live in your browser and never leaves your device. The tuner only starts listening when you press Start, and stops completely when you press Stop.</p>
+</div>
+
+<footer>Built by Shipwright Studio · <a href="/ideas/">Back to the Lab</a></footer>
+
+<script>
+// --- Pure pitch logic (extracted verbatim by the node test) ---
+const NOTE_NAMES=["C","C#","D","D#","E","F","F#","G","G#","A","A#","B"];
+const STRINGS=[
+  {name:"E2",freq:82.41},
+  {name:"A2",freq:110.00},
+  {name:"D3",freq:146.83},
+  {name:"G3",freq:196.00},
+  {name:"B3",freq:246.94},
+  {name:"E4",freq:329.63}
+];
+function centsOff(freq,target){
+  if(!(freq>0)||!(target>0))return null;
+  return 1200*Math.log2(freq/target);
+}
+function freqToNote(freq){
+  if(!(freq>0)||!isFinite(freq))return null;
+  const midi=Math.round(69+12*Math.log2(freq/440));
+  const name=NOTE_NAMES[((midi%12)+12)%12];
+  const octave=Math.floor(midi/12)-1;
+  const noteFreq=440*Math.pow(2,(midi-69)/12);
+  return {name:name+octave,midi:midi,cents:centsOff(freq,noteFreq),freq:noteFreq};
+}
+function rmsOf(buf){
+  let sum=0;
+  for(let i=0;i<buf.length;i++)sum+=buf[i]*buf[i];
+  return Math.sqrt(sum/buf.length);
+}
+// YIN pitch detection (difference function + CMNDF). Returns {freq, rms, confidence} or null.
+function detectPitch(buf,sampleRate){
+  const N=buf.length;
+  if(N<512||!(sampleRate>0))return null;
+  const rms=rmsOf(buf);
+  if(rms<0.01)return null;
+  const minLag=Math.max(2,Math.floor(sampleRate/1200));
+  const maxLag=Math.min(N-2,Math.ceil(sampleRate/50));
+  // Difference function: exactly zero at the true period for a periodic signal,
+  // regardless of window edges (unlike autocorrelation, whose peak is shifted
+  // by the finite-window boundary term on the low strings).
+  const diff=new Float64Array(maxLag+2);
+  for(let tau=0;tau<=maxLag+1;tau++){
+    let s=0;
+    for(let i=0;i<N-tau;i++){const d=buf[i]-buf[i+tau];s+=d*d;}
+    diff[tau]=s;
+  }
+  // Cumulative mean normalised difference function.
+  const cmndf=new Float64Array(maxLag+2);
+  cmndf[0]=1;
+  let runningSum=0;
+  for(let tau=1;tau<=maxLag+1;tau++){
+    runningSum+=diff[tau];
+    cmndf[tau]=diff[tau]/(runningSum/tau);
+  }
+  // First dip below the threshold, then the local minimum from there.
+  const THRESHOLD=0.15;
+  let tau=minLag;
+  while(tau<=maxLag&&cmndf[tau]>THRESHOLD)tau++;
+  if(tau>maxLag)return null;
+  let best=tau;
+  while(best+1<=maxLag&&cmndf[best+1]<cmndf[best])best++;
+  // Parabolic interpolation for sub-sample accuracy.
+  const y0=cmndf[best-1],y1=cmndf[best],y2=cmndf[best+1];
+  const denom=y0-2*y1+y2;
+  const shift=denom!==0?0.5*(y0-y2)/denom:0;
+  const refinedLag=best+Math.max(-0.5,Math.min(0.5,shift));
+  return {freq:sampleRate/refinedLag,rms:rms,confidence:1-cmndf[best]};
+}
+// --- End pure pitch logic ---
+
+// --- DOM wiring below ---
+const $=id=>document.getElementById(id);
+const IN_TUNE_CENTS=5,IN_TUNE_MS=500;
+const state={listening:false,selected:null,chromatic:false,inTuneSince:null,inTuneRecorded:false,history:[]};
+let audioCtx=null,analyser=null,micStream=null,rafId=null,toneOsc=null,toneGain=null;
+
+// Build dial ticks and labels.
+(function buildDial(){
+  const g=$("ticks");
+  const NS="http://www.w3.org/2000/svg";
+  [-50,-25,0,25,50].forEach(c=>{
+    const a=c/50*75*Math.PI/180;
+    const x1=150+118*Math.sin(a),y1=148-118*Math.cos(a);
+    const x2=150+104*Math.sin(a),y2=148-104*Math.cos(a);
+    const line=document.createElementNS(NS,"line");
+    line.setAttribute("x1",x1.toFixed(1));line.setAttribute("y1",y1.toFixed(1));
+    line.setAttribute("x2",x2.toFixed(1));line.setAttribute("y2",y2.toFixed(1));
+    line.setAttribute("stroke","#9aa3b2");line.setAttribute("stroke-width","1.5");
+    g.appendChild(line);
+    const lx=150+88*Math.sin(a),ly=148-88*Math.cos(a)+4;
+    const t=document.createElementNS(NS,"text");
+    t.setAttribute("x",lx.toFixed(1));t.setAttribute("y",ly.toFixed(1));
+    t.setAttribute("text-anchor","middle");t.setAttribute("fill","#9aa3b2");
+    t.setAttribute("font-size","11");t.setAttribute("font-family","-apple-system,'Segoe UI',Inter,system-ui,sans-serif");
+    t.textContent=(c>0?"+":"")+c;
+    g.appendChild(t);
+  });
+})();
+
+// String selector buttons.
+const stringRow=$("stringRow");
+function renderStrings(){
+  stringRow.innerHTML="";
+  const auto=document.createElement("button");
+  auto.type="button";auto.className="btn stringbtn"+(state.selected===null?" active":"");
+  auto.textContent="Auto";
+  auto.addEventListener("click",()=>{state.selected=null;state.inTuneSince=null;state.inTuneRecorded=false;renderStrings();renderTarget();});
+  stringRow.appendChild(auto);
+  STRINGS.forEach((s,i)=>{
+    const b=document.createElement("button");
+    b.type="button";b.className="btn stringbtn"+(state.selected===i?" active":"");
+    b.textContent=s.name;
+    b.addEventListener("click",()=>{state.selected=i;state.inTuneSince=null;state.inTuneRecorded=false;renderStrings();renderTarget();});
+    stringRow.appendChild(b);
+  });
+}
+function renderTarget(){
+  const t=targetString();
+  $("targetHz").textContent=t?t.freq.toFixed(2)+" Hz":"—";
+}
+function targetString(){
+  if(state.selected===null)return null;
+  return STRINGS[state.selected];
+}
+
+// Reference tone buttons.
+const toneRow=$("toneRow");
+STRINGS.forEach(s=>{
+  const b=document.createElement("button");
+  b.type="button";b.className="btn mono";b.textContent="▶ "+s.name;
+  b.setAttribute("aria-label","Play reference tone "+s.name+" at "+s.freq.toFixed(2)+" hertz");
+  b.addEventListener("click",()=>playTone(s));
+  toneRow.appendChild(b);
+});
+function ensureAudioCtx(){
+  if(!audioCtx)audioCtx=new (window.AudioContext||window.webkitAudioContext)();
+  if(audioCtx.state==="suspended")audioCtx.resume();
+  return audioCtx;
+}
+function playTone(s){
+  try{
+    const ctx=ensureAudioCtx();
+    stopTone();
+    toneOsc=ctx.createOscillator();
+    toneGain=ctx.createGain();
+    toneOsc.type="sine";
+    toneOsc.frequency.setValueAtTime(s.freq,ctx.currentTime);
+    toneGain.gain.setValueAtTime(0,ctx.currentTime);
+    toneGain.gain.linearRampToValueAtTime(0.18,ctx.currentTime+0.05);
+    toneOsc.connect(toneGain);toneGain.connect(ctx.destination);
+    toneOsc.start();
+    $("toneStopBtn").hidden=false;
+    $("toneHint").textContent="Playing "+s.name+" at "+s.freq.toFixed(2)+" Hz — press Stop tone when you are done.";
+  }catch(e){
+    $("toneHint").textContent="Could not play the tone in this browser. Try another browser.";
+  }
+}
+function stopTone(){
+  if(toneOsc){try{toneOsc.stop();}catch(e){}toneOsc.disconnect();toneOsc=null;}
+  if(toneGain){toneGain.disconnect();toneGain=null;}
+  $("toneStopBtn").hidden=true;
+  $("toneHint").textContent="Plays the target pitch through your speakers. Works even if the microphone is unavailable.";
+}
+$("toneStopBtn").addEventListener("click",stopTone);
+
+// Chromatic toggle.
+$("chromaticToggle").addEventListener("change",e=>{
+  state.chromatic=e.target.checked;
+  state.inTuneSince=null;state.inTuneRecorded=false;
+});
+
+// Gauge rendering.
+function setNeedle(cents){
+  const clamped=Math.max(-50,Math.min(50,cents));
+  const deg=clamped/50*75;
+  $("needle").setAttribute("transform","rotate("+deg.toFixed(1)+" 150 148)");
+}
+function fmtCents(c){
+  return (c>0?"+":"")+c.toFixed(1)+"¢";
+}
+function renderIdle(msg){
+  setNeedle(0);
+  $("noteName").textContent="—";
+  $("noteName").classList.remove("intune");
+  $("centsRead").textContent=msg||"Tap Start listening";
+  $("centsRead").className="cents";
+  $("inTuneBadge").hidden=true;
+  $("detectedHz").textContent="—";
+  $("signalBar").style.width="0%";
+  $("loudHint").hidden=true;
+}
+function renderReading(freq,note,cents){
+  const el=$("centsRead");
+  $("noteName").textContent=note.name;
+  el.textContent=fmtCents(cents);
+  $("detectedHz").textContent=freq.toFixed(2)+" Hz";
+  setNeedle(cents);
+  const inTune=Math.abs(cents)<=IN_TUNE_CENTS;
+  el.className="cents "+(inTune?"intune":(cents>0?"sharp":"flat"));
+  $("noteName").classList.toggle("intune",inTune);
+  const now=performance.now();
+  if(inTune){
+    if(state.inTuneSince===null)state.inTuneSince=now;
+    if(now-state.inTuneSince>=IN_TUNE_MS){
+      $("inTuneBadge").hidden=false;
+      if(!state.inTuneRecorded){
+        state.inTuneRecorded=true;
+        const label=(state.chromatic||state.selected===null)?note.name:(targetString()?targetString().name:note.name);
+        addHistory(label);
+      }
+    }
+  }else{
+    state.inTuneSince=null;state.inTuneRecorded=false;
+    $("inTuneBadge").hidden=true;
+  }
+}
+function addHistory(label){
+  state.history.unshift({label:label,when:new Date()});
+  state.history=state.history.slice(0,8);
+  const ul=$("historyList");
+  ul.innerHTML=state.history.map(h=>{
+    const t=h.when.toLocaleTimeString("en-GB",{hour:"2-digit",minute:"2-digit"});
+    return "<li><b>"+h.label+"</b> in tune ✓ · "+t+"</li>";
+  }).join("");
+}
+
+// Mic listening loop.
+function tick(){
+  if(!state.listening)return;
+  const buf=new Float32Array(analyser.fftSize);
+  analyser.getFloatTimeDomainData(buf);
+  const rms=rmsOf(buf);
+  const pct=Math.min(100,rms/0.3*100);
+  const bar=$("signalBar");
+  bar.style.width=pct.toFixed(0)+"%";
+  bar.classList.toggle("low",rms<0.01);
+  if(rms<0.01){
+    $("loudHint").hidden=false;
+    rafId=requestAnimationFrame(tick);
+    return;
+  }
+  $("loudHint").hidden=true;
+  const res=detectPitch(buf,analyser.context.sampleRate);
+  if(!res){rafId=requestAnimationFrame(tick);return;}
+  const note=freqToNote(res.freq);
+  if(!note){rafId=requestAnimationFrame(tick);return;}
+  let cents,targetFreq;
+  const t=targetString();
+  if(t&&!state.chromatic){
+    cents=centsOff(res.freq,t.freq);
+    targetFreq=t.freq;
+  }else{
+    cents=note.cents;
+    targetFreq=note.freq;
+  }
+  // In string mode the needle is relative to the string; show the string name.
+  if(t&&!state.chromatic){
+    renderReading(res.freq,{name:t.name},cents);
+  }else{
+    renderReading(res.freq,note,cents);
+  }
+  $("targetHz").textContent=targetFreq.toFixed(2)+" Hz";
+  rafId=requestAnimationFrame(tick);
+}
+async function startListening(){
+  if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){
+    $("micStatus").textContent="Microphone is not available in this browser or context — reference tones below still work.";
+    $("micStatus").className="status err";
+    return;
+  }
+  try{
+    const ctx=ensureAudioCtx();
+    micStream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:false,noiseSuppression:false,autoGainControl:false}});
+    const src=ctx.createMediaStreamSource(micStream);
+    analyser=ctx.createAnalyser();
+    analyser.fftSize=2048;
+    src.connect(analyser);
+    state.listening=true;
+    state.inTuneSince=null;state.inTuneRecorded=false;
+    $("startBtn").hidden=true;
+    $("stopBtn").hidden=false;
+    $("micStatus").textContent="Listening… play a string and watch the needle.";
+    $("micStatus").className="status ok";
+    $("centsRead").textContent="Listening…";
+    tick();
+  }catch(e){
+    $("micStatus").textContent="Microphone unavailable — permission was denied or no microphone was found. Reference tones below still work.";
+    $("micStatus").className="status err";
+  }
+}
+function stopListening(){
+  state.listening=false;
+  if(rafId)cancelAnimationFrame(rafId);
+  if(micStream){micStream.getTracks().forEach(t=>t.stop());micStream=null;}
+  analyser=null;
+  $("startBtn").hidden=false;
+  $("stopBtn").hidden=true;
+  $("micStatus").textContent="Stopped. Your microphone is only used while you listen — nothing is recorded or sent anywhere.";
+  $("micStatus").className="status";
+  renderIdle();
+}
+$("startBtn").addEventListener("click",startListening);
+$("stopBtn").addEventListener("click",stopListening);
+
+renderStrings();
+renderTarget();
+renderIdle();
+</script>
+</body>
+</html>
